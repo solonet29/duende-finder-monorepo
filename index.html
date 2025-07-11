@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de Flamenco</title>
+    <style>
+        /* Estilos básicos para que se vea ordenado */
+        body { font-family: sans-serif; background-color: #f4f4f4; color: #333; margin: 2rem; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        input { width: 70%; padding: 10px; font-size: 1rem; }
+        button { padding: 10px 20px; font-size: 1rem; cursor: pointer; }
+        .evento { border: 1px solid #ddd; padding: 1rem; margin-top: 1rem; border-radius: 5px; }
+        .evento h3 { margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Duende Finder 💃</h1>
+        <p>Encuentra los próximos eventos de flamenco.</p>
+        
+        <input type="text" id="searchInput" placeholder="Busca por artista, ciudad, tablao...">
+        <button id="searchButton">Buscar</button>
+
+        <div id="loadingMessage" style="display: none;">
+            <p>Buscando...</p>
+        </div>
+
+        <div id="resultsContainer">
+            </div>
+    </div>
+
+    <script>
+        const searchButton = document.getElementById('searchButton');
+        const searchInput = document.getElementById('searchInput');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const loadingMessage = document.getElementById('loadingMessage');
+
+        // URL de tu API. Por ahora, es la local. ¡Luego la cambiaremos!
+        const API_URL_BASE = 'http://localhost:3001/events';
+
+        searchButton.addEventListener('click', async () => {
+            const query = searchInput.value.trim();
+            
+            // Muestra el mensaje "Buscando..." y limpia resultados anteriores
+            loadingMessage.style.display = 'block';
+            resultsContainer.innerHTML = '';
+
+            try {
+                // Construimos la URL completa con el parámetro de búsqueda
+                const fullUrl = `${API_URL_BASE}?search=${encodeURIComponent(query)}`;
+                
+                const response = await fetch(fullUrl);
+                if (!response.ok) {
+                    throw new Error('La respuesta de la red no fue correcta');
+                }
+                const events = await response.json();
+
+                // Oculta el mensaje "Buscando..."
+                loadingMessage.style.display = 'none';
+                
+                if (events.length === 0) {
+                    resultsContainer.innerHTML = '<p>No se encontraron eventos para tu búsqueda.</p>';
+                } else {
+                    displayEvents(events);
+                }
+
+            } catch (error) {
+                loadingMessage.style.display = 'none';
+                resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda. Inténtalo de nuevo.</p>';
+                console.error('Error al buscar eventos:', error);
+            }
+        });
+
+        function displayEvents(events) {
+            events.forEach(event => {
+                const eventElement = document.createElement('div');
+                eventElement.className = 'evento';
+
+                // Formateamos la fecha para que sea más legible
+                const eventDate = new Date(event.date).toLocaleDateString('es-ES', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                });
+
+                eventElement.innerHTML = `
+                    <h3>${event.name} - ${event.artist}</h3>
+                    <p><strong>Descripción:</strong> ${event.description}</p>
+                    <p><strong>Lugar:</strong> ${event.venue}, ${event.city}</p>
+                    <p><strong>Fecha y Hora:</strong> ${eventDate} a las ${event.time}</p>
+                `;
+                resultsContainer.appendChild(eventElement);
+            });
+        }
+    </script>
+
+</body>
+</html>
