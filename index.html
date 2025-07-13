@@ -71,9 +71,7 @@
         .evento-detalle { display: flex; align-items: center; gap: 0.75rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); padding-top: 1rem; }
         .evento-detalle i { color: var(--color-primario); width: 20px; text-align: center; }
 
-        /* --- INICIO DEL NUEVO CSS PARA EL SEPARADOR --- */
         .results-separator {
-            /* Hacemos que ocupe todas las columnas de la grilla */
             grid-column: 1 / -1; 
             text-align: left;
             margin-top: 2rem;
@@ -85,6 +83,20 @@
             font-size: 1.8rem;
             color: var(--color-texto-secundario);
             margin: 0;
+        }
+
+        /* --- INICIO DEL NUEVO CSS PARA ENLACES --- */
+        .evento-detalle a {
+            color: inherit; /* Hereda el color del texto de su contenedor */
+            text-decoration: none; /* Le quitamos el subrayado por defecto */
+            transition: color 0.2s ease-in-out;
+            display: flex; /* Para alinear el icono y el texto si estuvieran dentro */
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .evento-detalle a:hover {
+            color: var(--color-primario); /* Cambia al color verde principal */
+            text-decoration: underline; /* Le ponemos un subrayado */
         }
         /* --- FIN DEL NUEVO CSS --- */
         
@@ -145,9 +157,7 @@
         });
 
         function displayEvents(events) {
-            // --- INICIO DE LA LÓGICA DE SEPARACIÓN ---
-
-            resultsContainer.innerHTML = ''; // Limpiamos contenedor
+            resultsContainer.innerHTML = ''; 
             const query = searchInput.value.trim().toLowerCase();
 
             if (events.length === 0) {
@@ -155,7 +165,6 @@
                 return;
             }
 
-            // 1. Filtramos los eventos en dos grupos
             const primaryEvents = events.filter(event => 
                 event.artist.toLowerCase().includes(query)
             );
@@ -163,14 +172,22 @@
                 !event.artist.toLowerCase().includes(query)
             );
 
-            // 2. Creamos una función auxiliar para no repetir código
+            // --- INICIO DE LA MODIFICACIÓN JAVASCRIPT ---
             const renderEventCards = (eventList) => {
                 eventList.forEach(event => {
                     const eventCard = document.createElement('div');
                     eventCard.className = event.verified ? 'evento-card verificado' : 'evento-card';
+                    
                     const eventDate = new Date(event.date).toLocaleDateString('es-ES', {
                         year: 'numeric', month: 'long', day: 'numeric'
                     });
+
+                    // 1. Creamos la URL de Google Maps para la ubicación
+                    const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
+                    const encodedLocation = encodeURIComponent(fullLocation);
+                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+
+                    // 2. Insertamos el HTML con el nuevo enlace en la ubicación
                     eventCard.innerHTML = `
                         <div class="verificado-badge"><i class="fas fa-check"></i></div>
                         <h3>${event.name}</h3>
@@ -178,16 +195,20 @@
                         <p class="descripcion">${event.description}</p>
                         <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
                         <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
-                        <div class="evento-detalle"><i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${event.venue}, ${event.city}</span></div>
+                        <div class="evento-detalle">
+                            <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span><strong>Lugar:</strong> ${event.venue}, ${event.city}</span>
+                            </a>
+                        </div>
                     `;
                     resultsContainer.appendChild(eventCard);
                 });
             };
+            // --- FIN DE LA MODIFICACIÓN JAVASCRIPT ---
 
-            // 3. Mostramos los resultados
             renderEventCards(primaryEvents);
 
-            // 4. Si hay resultados de ambos tipos, mostramos el separador
             if (primaryEvents.length > 0 && recommendedEvents.length > 0) {
                 const separator = document.createElement('div');
                 separator.className = 'results-separator';
@@ -196,8 +217,6 @@
             }
             
             renderEventCards(recommendedEvents);
-
-            // --- FIN DE LA LÓGICA DE SEPARACIÓN ---
         }
     </script>
 
