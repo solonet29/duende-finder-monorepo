@@ -7,20 +7,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <style>
-        /* --- ESTILOS GENERALES Y TEMA OSCURO --- */
+        /* Todos los estilos CSS que ya teníamos */
         :root {
             --color-fondo: #121212;
             --color-superficie: #1e1e1e;
             --color-borde: #444;
-            --color-primario: #3DDC84; /* Un verde vibrante */
+            --color-primario: #3DDC84;
             --color-texto-principal: #e0e0e0;
             --color-texto-secundario: #a0a0a0;
         }
-
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--color-fondo);
@@ -28,126 +26,21 @@
             margin: 0;
             padding: 2rem;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 3rem;
-            font-weight: 900;
-        }
-        h1 span {
-            color: var(--color-primario);
-        }
-
-        /* --- ESTILOS DEL BUSCADOR --- */
-        .search-wrapper {
-            position: relative;
-            max-width: 500px;
-            margin: 2rem auto 4rem auto;
-        }
-
-        #searchInput {
-            width: 100%;
-            padding: 1rem 3.5rem 1rem 1.5rem;
-            font-size: 1rem;
-            border-radius: 50px;
-            border: 1px solid var(--color-borde);
-            background-color: var(--color-superficie);
-            color: var(--color-texto-principal);
-            box-sizing: border-box; /* Importante para que el padding no afecte el ancho */
-        }
-
-        #searchButton {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: none;
-            background-color: var(--color-primario);
-            color: var(--color-fondo);
-            cursor: pointer;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* 3. --- MAQUETACIÓN CON CSS GRID (LA MAGIA RESPONSIVE) --- */
-        #resultsContainer {
-            display: grid;
-            /* Crea columnas automáticas. Cada una tendrá un mínimo de 320px. 
-               Se ajustarán para llenar el espacio. En pantallas pequeñas, solo cabrá una. */
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem; /* Espacio entre las tarjetas */
-            text-align: left;
-        }
-
-        /* 4. --- ESTILOS DE LAS TARJETAS DE EVENTO --- */
-        .evento-card {
-            background-color: var(--color-superficie);
-            border: 1px solid var(--color-borde);
-            border-radius: 12px;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .evento-card h3 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .evento-card .artista {
-            color: var(--color-primario);
-            font-weight: 700;
-        }
-
-        .evento-card .descripcion {
-            color: var(--color-texto-secundario);
-            line-height: 1.6;
-        }
-
-        .evento-detalle {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: var(--color-texto-secundario);
-            border-top: 1px solid var(--color-borde);
-            padding-top: 1rem;
-        }
-        
-        .evento-detalle i {
-            color: var(--color-primario);
-            width: 20px;
-            text-align: center;
-        }
-
-        .verificado-badge {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background-color: rgba(61, 220, 132, 0.1);
-            color: var(--color-primario);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            border: 1px solid var(--color-primario);
-        }
-        
-        .card-header {
-            position: relative;
-        }
-
+        .container { max-width: 1200px; margin: auto; text-align: center; }
+        h1 { font-size: 3rem; font-weight: 900; }
+        h1 span { color: var(--color-primario); }
+        .search-wrapper { position: relative; max-width: 500px; margin: 2rem auto 4rem auto; }
+        #searchInput { width: 100%; padding: 1rem 3.5rem 1rem 1.5rem; font-size: 1rem; border-radius: 50px; border: 1px solid var(--color-borde); background-color: var(--color-superficie); color: var(--color-texto-principal); box-sizing: border-box; }
+        #searchButton { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: none; background-color: var(--color-primario); color: var(--color-fondo); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+        #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; text-align: left; }
+        .evento-card { background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); }
+        .evento-card h3 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+        .evento-card .artista { color: var(--color-primario); font-weight: 700; }
+        .evento-card .descripcion { color: var(--color-texto-secundario); line-height: 1.6; }
+        .evento-detalle { display: flex; align-items: center; gap: 0.75rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); padding-top: 1rem; }
+        .evento-detalle i { color: var(--color-primario); width: 20px; text-align: center; }
+        .verificado-badge { position: absolute; top: 1rem; right: 1rem; background-color: rgba(61, 220, 132, 0.1); color: var(--color-primario); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; border: 1px solid var(--color-primario); }
+        .card-header { position: relative; }
     </style>
 </head>
 <body>
@@ -175,18 +68,22 @@
         const resultsContainer = document.getElementById('resultsContainer');
         const loadingMessage = document.getElementById('loadingMessage');
 
-        const API_URL_BASE = 'https://duende-api.onrender.com/events'; // Tu URL de la API
+        const API_URL_BASE = 'https://duende-api.onrender.com/events';
 
-        // Event listener para buscar al pulsar Enter en el input
+        // --- INICIO DEL CÓDIGO NUEVO ---
+        // Añadimos un "escuchador" al campo de búsqueda para la tecla "Enter"
         searchInput.addEventListener('keyup', function(event) {
-            if (event.key === "Enter") {
-                searchButton.click();
-            }
+          // Si la tecla pulsada es "Enter"...
+          if (event.key === "Enter") {
+            // ...simulamos un clic en el botón de búsqueda
+            searchButton.click();
+          }
         });
+        // --- FIN DEL CÓDIGO NUEVO ---
 
         searchButton.addEventListener('click', async () => {
             const query = searchInput.value.trim();
-            if (!query) return; // No hacer nada si la búsqueda está vacía
+            if (!query) return;
             
             loadingMessage.style.display = 'block';
             resultsContainer.innerHTML = '';
@@ -205,7 +102,6 @@
             }
         });
 
-        // 6. --- ¡IMPORTANTE! HEMOS CAMBIADO CÓMO SE MUESTRAN LOS EVENTOS ---
         function displayEvents(events) {
             if (events.length === 0) {
                 resultsContainer.innerHTML = '<p>No se encontraron eventos para tu búsqueda.</p>';
@@ -216,12 +112,10 @@
                 const eventCard = document.createElement('div');
                 eventCard.className = 'evento-card';
 
-                // Formatear la fecha para que sea más legible
                 const eventDate = new Date(event.date).toLocaleDateString('es-ES', {
                     year: 'numeric', month: 'long', day: 'numeric'
                 });
 
-                // Generar el HTML interno de la tarjeta
                 eventCard.innerHTML = `
                     <div class="card-header">
                         <h3>${event.name}</h3>
