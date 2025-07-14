@@ -29,72 +29,37 @@
             flex-direction: column;
             min-height: 100vh;
         }
-        .container { 
-            max-width: 1200px; 
-            margin: auto; 
-            text-align: center;
-            flex-grow: 1; /* Permite que el footer se quede abajo */
-        }
+        .container { max-width: 1200px; margin: auto; text-align: center; flex-grow: 1; }
         h1 { font-size: 3rem; font-weight: 900; }
         h1 span { color: var(--color-primario); }
         .search-wrapper { position: relative; max-width: 500px; margin: 2rem auto 4rem auto; }
         #searchInput { width: 100%; padding: 1rem 3.5rem 1rem 1.5rem; font-size: 1rem; border-radius: 50px; border: 1px solid var(--color-borde); background-color: var(--color-superficie); color: var(--color-texto-principal); box-sizing: border-box; }
         #searchButton { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: none; background-color: var(--color-primario); color: var(--color-fondo); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
         #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; text-align: left; }
-        
-        /* --- MEJORA 1: TRANSICIÓN PARA EL EFECTO HOVER --- */
-        .evento-card {
-            background-color: var(--color-superficie);
-            border: 1px solid var(--color-borde);
-            border-radius: 12px;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transición suave */
-            animation: fadeIn 0.5s ease-in-out; /* Aplicamos la animación de entrada */
-        }
-
-        /* --- MEJORA 1: EFECTO HOVER --- */
-        .evento-card:hover {
-            transform: translateY(-5px); /* Eleva la tarjeta */
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); /* Sombra más pronunciada */
-        }
-        
+        .evento-card { background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeIn 0.5s ease-in-out; }
+        .evento-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); }
         .evento-card h3 { margin: 0; font-size: 1.5rem; font-weight: 700; }
         .evento-card .artista { color: var(--color-primario); font-weight: 700; display: flex; align-items: center; }
         .evento-card .descripcion { color: var(--color-texto-secundario); line-height: 1.6; }
         .evento-detalle { display: flex; align-items: center; gap: 0.75rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); padding-top: 1rem; }
         .evento-detalle i { color: var(--color-primario); width: 20px; text-align: center; }
-        .card-header { padding-bottom: 0.5rem; }
-        .verificado-badge { display: inline-block; background-color: rgba(61, 220, 132, 0.1); color: var(--color-primario); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; border: 1px solid var(--color-primario); margin-left: 0.75rem; vertical-align: middle; }
-
-        /* --- MEJORA 2: ANIMACIÓN DE ENTRADA --- */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        
+        /* --- ¡NUEVO! ESTILO PARA EL ENLACE DEL MAPA --- */
+        .evento-detalle a {
+            color: inherit; /* Hereda el color del texto normal */
+            text-decoration: none; /* Quita el subrayado */
+            transition: color 0.3s ease;
+        }
+        .evento-detalle a:hover {
+            color: var(--color-primario); /* Cambia de color al pasar el ratón */
+            text-decoration: underline; /* Muestra el subrayado al pasar el ratón */
         }
         
-        /* --- MEJORA 3: ESTILOS DEL FOOTER --- */
-        footer {
-            text-align: center;
-            padding: 2rem;
-            margin-top: 4rem;
-            color: var(--color-texto-secundario);
-            border-top: 1px solid var(--color-borde);
-        }
-        footer a {
-            color: var(--color-primario);
-            text-decoration: none;
-            font-weight: 700;
-        }
+        .card-header { padding-bottom: 0.5rem; }
+        .verificado-badge { display: inline-block; background-color: rgba(61, 220, 132, 0.1); color: var(--color-primario); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; border: 1px solid var(--color-primario); margin-left: 0.75rem; vertical-align: middle; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        footer { text-align: center; padding: 2rem; margin-top: 4rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); }
+        footer a { color: var(--color-primario); text-decoration: none; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -112,8 +77,7 @@
             <p>Buscando...</p>
         </div>
 
-        <div id="resultsContainer">
-            </div>
+        <div id="resultsContainer"></div>
     </div>
 
     <footer>
@@ -121,16 +85,13 @@
     </footer>
 
     <script>
-        // El script no necesita cambios
         const searchButton = document.getElementById('searchButton');
         const searchInput = document.getElementById('searchInput');
         const resultsContainer = document.getElementById('resultsContainer');
         const loadingMessage = document.getElementById('loadingMessage');
         const API_URL_BASE = 'https://duende-api.onrender.com/events';
 
-        searchInput.addEventListener('keyup', function(event) {
-          if (event.key === "Enter") { searchButton.click(); }
-        });
+        searchInput.addEventListener('keyup', function(event) { if (event.key === "Enter") { searchButton.click(); } });
 
         searchButton.addEventListener('click', async () => {
             const query = searchInput.value.trim();
@@ -160,6 +121,16 @@
                 const eventCard = document.createElement('div');
                 eventCard.className = 'evento-card';
                 const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+
+                // --- ¡AQUÍ ESTÁ LA MEJORA! ---
+                // 1. Creamos el texto completo de la ubicación
+                const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
+                // 2. Codificamos ese texto para que funcione en una URL
+                const mapsQuery = encodeURIComponent(fullLocation);
+                // 3. Construimos el enlace completo de Google Maps
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+
+                // 4. Usamos el nuevo enlace en la tarjeta
                 eventCard.innerHTML = `
                     <div class="card-header"><h3>${event.name}</h3></div>
                     <div class="artista">
@@ -170,7 +141,12 @@
                     <p class="descripcion">${event.description}</p>
                     <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
                     <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
-                    <div class="evento-detalle"><i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${event.venue}, ${event.city}, ${event.country}</span></div>
+                    <div class="evento-detalle">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">
+                            <strong>Lugar:</strong> ${fullLocation}
+                        </a>
+                    </div>
                 `;
                 resultsContainer.appendChild(eventCard);
             });
