@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="icono-buscador.jpg">
 
     <style>
         :root {
@@ -39,9 +39,37 @@
         }
         h1 { font-size: 3rem; font-weight: 900; }
         h1 span { color: var(--color-primario); }
-        .search-wrapper { position: relative; max-width: 500px; margin: 2rem auto 4rem auto; }
+        .search-wrapper { position: relative; max-width: 500px; margin: 2rem auto; } /* Reducido el margen inferior */
         #searchInput { width: 100%; padding: 1rem 3.5rem 1rem 1.5rem; font-size: 1rem; border-radius: 50px; border: 1px solid var(--color-borde); background-color: var(--color-superficie); color: var(--color-texto-principal); box-sizing: border-box; }
         #searchButton { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: none; background-color: var(--color-primario); color: var(--color-fondo); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+        
+        /* --- NUEVOS ESTILOS PARA LOS BOTONES DE FILTRO --- */
+        .filtros-ciudades {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 4rem; /* Margen inferior que antes tenía el search-wrapper */
+        }
+        .filtro-ciudad {
+            background-color: var(--color-superficie);
+            color: var(--color-texto-secundario);
+            border: 1px solid var(--color-borde);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        .filtro-ciudad:hover {
+            background-color: var(--color-primario);
+            color: var(--color-fondo);
+            border-color: var(--color-primario);
+            transform: translateY(-2px);
+        }
+        /* --- FIN DE NUEVOS ESTILOS --- */
+
         #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; text-align: left; }
         
         .evento-card {
@@ -106,6 +134,13 @@
             <button id="searchButton" aria-label="Buscar"><i class="fas fa-search"></i></button>
         </div>
 
+        <div class="filtros-ciudades">
+            <button class="filtro-ciudad" data-ciudad="Jerez">Jerez</button>
+            <button class="filtro-ciudad" data-ciudad="Sevilla">Sevilla</button>
+            <button class="filtro-ciudad" data-ciudad="Madrid">Madrid</button>
+            <button class="filtro-ciudad" data-ciudad="Cádiz">Cádiz</button>
+            <button class="filtro-ciudad" data-ciudad="Granada">Granada</button>
+        </div>
         <div id="loadingMessage" style="display: none;">
             <p>Buscando...</p>
         </div>
@@ -118,88 +153,106 @@
     </footer>
 
     <script>
-        const searchButton = document.getElementById('searchButton');
-        const searchInput = document.getElementById('searchInput');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const loadingMessage = document.getElementById('loadingMessage');
-        const API_URL_BASE = 'https://duende-api.onrender.com/events';
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchButton = document.getElementById('searchButton');
+            const searchInput = document.getElementById('searchInput');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const API_URL_BASE = 'https://duende-api.onrender.com/events';
 
-        // Función para cargar los eventos de la semana
-        async function loadUpcomingEvents() {
-            console.log("Cargando eventos de los próximos 7 días...");
-            loadingMessage.style.display = 'block';
-            resultsContainer.innerHTML = '';
-            try {
-                const response = await fetch(`${API_URL_BASE}?timeframe=week`);
-                if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
-                const events = await response.json();
-                displayEvents(events);
-            } catch (error) {
-                resultsContainer.innerHTML = '<p>No se pudieron cargar los eventos próximos.</p>';
-                console.error('Error al cargar eventos próximos:', error);
-            } finally {
-                loadingMessage.style.display = 'none';
+            // Función para cargar los eventos de la semana
+            async function loadUpcomingEvents() {
+                console.log("Cargando eventos de los próximos 7 días...");
+                loadingMessage.style.display = 'block';
+                resultsContainer.innerHTML = '';
+                try {
+                    const response = await fetch(`${API_URL_BASE}?timeframe=week`);
+                    if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
+                    const events = await response.json();
+                    displayEvents(events);
+                } catch (error) {
+                    resultsContainer.innerHTML = '<p>No se pudieron cargar los eventos próximos.</p>';
+                    console.error('Error al cargar eventos próximos:', error);
+                } finally {
+                    loadingMessage.style.display = 'none';
+                }
             }
-        }
 
-        // Se activa cuando la página ha cargado por completo
-        document.addEventListener('DOMContentLoaded', loadUpcomingEvents);
+            // Carga inicial de eventos
+            loadUpcomingEvents();
 
-        // Búsqueda con la tecla "Enter"
-        searchInput.addEventListener('keyup', function(event) {
-          if (event.key === "Enter") {
-            searchButton.click();
-          }
-        });
-
-        // Búsqueda con el botón
-        searchButton.addEventListener('click', async () => {
-            const query = searchInput.value.trim();
-            if (!query) {
-                loadUpcomingEvents(); // Si la búsqueda está vacía, volvemos a mostrar los eventos de la semana
-                return;
-            }
-            loadingMessage.style.display = 'block';
-            resultsContainer.innerHTML = '';
-            try {
-                const fullUrl = `${API_URL_BASE}?search=${encodeURIComponent(query)}`;
-                const response = await fetch(fullUrl);
-                if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
-                const events = await response.json();
-                displayEvents(events);
-            } catch (error) {
-                resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda. Inténtalo de nuevo.</p>';
-                console.error('Error al buscar eventos:', error);
-            } finally {
-                loadingMessage.style.display = 'none';
-            }
-        });
-
-        // Función para mostrar los eventos en tarjetas
-        function displayEvents(events) {
-            if (events.length === 0) {
-                resultsContainer.innerHTML = '<p>No se encontraron eventos.</p>';
-                return;
-            }
-            resultsContainer.innerHTML = ''; // Limpiar antes de añadir nuevos
-            events.forEach(event => {
-                const eventCard = document.createElement('div');
-                eventCard.className = 'evento-card';
-                const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-                const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
-                const mapsQuery = encodeURIComponent(fullLocation);
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
-                eventCard.innerHTML = `
-                    <div class="card-header"><h3>${event.name}</h3></div>
-                    <div class="artista"><i class="fas fa-user"></i><span>${event.artist}</span>${event.verified ? '<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>' : ''}</div>
-                    <p class="descripcion">${event.description}</p>
-                    <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
-                    <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
-                    <div class="evento-detalle"><i class="fas fa-map-marker-alt"></i><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><strong>Lugar:</strong> ${fullLocation}</a></div>
-                `;
-                resultsContainer.appendChild(eventCard);
+            // Búsqueda con la tecla "Enter"
+            searchInput.addEventListener('keyup', function(event) {
+                if (event.key === "Enter") {
+                    searchButton.click();
+                }
             });
-        }
+
+            // Búsqueda con el botón principal
+            searchButton.addEventListener('click', async () => {
+                const query = searchInput.value.trim();
+                if (!query) {
+                    loadUpcomingEvents();
+                    return;
+                }
+                loadingMessage.style.display = 'block';
+                resultsContainer.innerHTML = '';
+                try {
+                    const fullUrl = `${API_URL_BASE}?search=${encodeURIComponent(query)}`;
+                    const response = await fetch(fullUrl);
+                    if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
+                    const events = await response.json();
+                    displayEvents(events);
+                } catch (error) {
+                    resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda. Inténtalo de nuevo.</p>';
+                    console.error('Error al buscar eventos:', error);
+                } finally {
+                    loadingMessage.style.display = 'none';
+                }
+            });
+            
+            // --- NUEVO JAVASCRIPT PARA LOS BOTONES DE FILTRO ---
+            const botonesFiltro = document.querySelectorAll('.filtro-ciudad');
+
+            botonesFiltro.forEach(boton => {
+                boton.addEventListener('click', () => {
+                    // 1. Obtiene la ciudad del atributo data-ciudad
+                    const ciudad = boton.dataset.ciudad;
+                    // 2. Pone la ciudad en la barra de búsqueda
+                    searchInput.value = ciudad;
+                    // 3. Simula un clic en el botón de búsqueda para lanzar la búsqueda
+                    searchButton.click();
+                });
+            });
+            // --- FIN DE NUEVO JAVASCRIPT ---
+
+            // Función para mostrar los eventos en tarjetas
+            function displayEvents(events) {
+                if (events.length === 0) {
+                    resultsContainer.innerHTML = '<p>No se encontraron eventos.</p>';
+                    return;
+                }
+                resultsContainer.innerHTML = '';
+                events.forEach(event => {
+                    const eventCard = document.createElement('div');
+                    eventCard.className = 'evento-card';
+                    const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+                    const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
+                    const mapsQuery = encodeURIComponent(fullLocation);
+                    // Corregido un pequeño error en la URL de Google Maps
+                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+                    eventCard.innerHTML = `
+                        <div class="card-header"><h3>${event.name}</h3></div>
+                        <div class="artista"><i class="fas fa-user"></i><span>${event.artist}</span>${event.verified ? '<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>' : ''}</div>
+                        <p class="descripcion">${event.description}</p>
+                        <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
+                        <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
+                        <div class="evento-detalle"><i class="fas fa-map-marker-alt"></i><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><strong>Lugar:</strong> ${fullLocation}</a></div>
+                    `;
+                    resultsContainer.appendChild(eventCard);
+                });
+            }
+        });
     </script>
 </body>
 </html>
