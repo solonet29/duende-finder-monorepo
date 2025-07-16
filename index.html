@@ -14,7 +14,7 @@
 
     <style>
         :root {
-            --color-fondo: #121212;
+            --color-fondo: #170837;
             --color-superficie: #1e1e1e;
             --color-borde: #444;
             --color-primario: #3DDC84;
@@ -68,31 +68,39 @@
             transform: translateY(-2px);
         }
         
-        /* --- ESTILOS DEL SLIDER --- */
+        /* --- ESTILOS PARA AMBOS MODOS: SLIDER Y GRID --- */
+        #resultsContainer { text-align: left; }
+        
+        /* Estilos para el modo GRID */
+        .grid-mode {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Estilos para el modo SLIDER */
         .slider-container {
             width: 90%;
             max-width: 800px;
             margin: 2rem auto;
-            overflow: hidden; /* Oculta las diapositivas que están fuera */
+            overflow: hidden;
             border-radius: 12px;
         }
         .slider-track {
-            display: flex; /* Pone las diapositivas en línea */
-            transition: transform 0.5s ease-in-out; /* Animación suave */
+            display: flex;
+            transition: transform 0.5s ease-in-out;
         }
         .slide {
-            min-width: 50%; /* Cambiado a 50% para mostrar dos a la vez */
+            min-width: 50%;
             box-sizing: border-box;
-            padding: 1rem; /* Ajustamos un poco el padding */
-            color: #e0e0e0;
+            padding: 1rem;
         }
-        /* Hacemos que en pantallas de móvil (menos de 768px) se vea solo un slide */
         @media (max-width: 768px) {
             .slide {
                 min-width: 100%;
             }
         }
-        /* --- FIN ESTILOS SLIDER --- */
+        /* --- FIN ESTILOS --- */
         
         .evento-card {
             background-color: var(--color-superficie);
@@ -101,10 +109,11 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            text-align: left;
+            border-radius: 12px; /* Añadimos border-radius aquí para que funcione en ambos modos */
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            height: 100%; /* Para que todas las tarjetas en una fila tengan la misma altura */
+            height: 100%;
+            animation: fadeIn 0.5s ease-in-out;
         }
         .evento-card:hover {
             transform: translateY(-5px);
@@ -161,10 +170,8 @@
             <p>Buscando...</p>
         </div>
 
-        <div id="resultsContainer" class="slider-container">
-            <div class="slider-track">
-                </div>
-        </div>
+        <div id="resultsContainer">
+            </div>
     </div>
 
     <footer>
@@ -175,147 +182,128 @@
         document.addEventListener('DOMContentLoaded', () => {
             const searchButton = document.getElementById('searchButton');
             const searchInput = document.getElementById('searchInput');
+            const resultsContainer = document.getElementById('resultsContainer');
             const loadingMessage = document.getElementById('loadingMessage');
             const API_URL_BASE = 'https://duende-api.onrender.com/events';
+            let sliderInterval = null;
 
-            // --- LÓGICA DEL SLIDER ---
-            let sliderInterval = null; // Variable para controlar el intervalo del slider
+            // --- LÓGICA PARA MOSTRAR LOS RESULTADOS ---
 
-            function initSlider() {
-                // Si ya hay un slider funcionando, lo detenemos antes de crear uno nuevo
-                if (sliderInterval) {
-                    clearInterval(sliderInterval);
-                }
+            function displayEvents(events, displayMode = 'slider') {
+                if (sliderInterval) clearInterval(sliderInterval); // Detener cualquier slider anterior
+                resultsContainer.innerHTML = ''; // Limpiar el contenedor
                 
-                const track = document.querySelector('.slider-track');
-                if (!track) return;
-
-                const slides = Array.from(track.children);
-                // No iniciar el slider si hay 1 o ninguna diapositiva
-                if (slides.length <= 1) return;
-
-                const slideWidth = slides[0].getBoundingClientRect().width;
-                let currentIndex = 0;
-
-                const moveToNextSlide = () => {
-                    currentIndex = (currentIndex + 1) % slides.length; // Bucle infinito
-                    track.style.transform = 'translateX(-' + slideWidth * currentIndex + 'px)';
-                };
-                
-                // Iniciar el movimiento automático
-                sliderInterval = setInterval(moveToNextSlide, 3000); // Cambiado a 3 segundos
-            }
-            
-            // --- FUNCIÓN PARA CARGAR EVENTOS ---
-            async function loadUpcomingEvents() {
-                console.log("Cargando eventos de los próximos 7 días...");
-                loadingMessage.style.display = 'block';
-                document.querySelector('.slider-track').innerHTML = ''; // Limpiar el slider
-                
-                try {
-                    const response = await fetch(`${API_URL_BASE}?timeframe=week`);
-                    if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
-                    const events = await response.json();
-                    displayEvents(events);
-                } catch (error) {
-                    document.getElementById('resultsContainer').innerHTML = '<p>No se pudieron cargar los eventos próximos.</p>';
-                    console.error('Error al cargar eventos próximos:', error);
-                } finally {
-                    loadingMessage.style.display = 'none';
-                }
-            }
-
-            // Carga inicial de eventos
-            loadUpcomingEvents();
-
-            // --- LÓGICA DE BÚSQUEDA ---
-            searchInput.addEventListener('keyup', function(event) {
-                if (event.key === "Enter") {
-                    searchButton.click();
-                }
-            });
-
-            searchButton.addEventListener('click', async () => {
-                const query = searchInput.value.trim();
-                if (!query) {
-                    loadUpcomingEvents();
-                    return;
-                }
-                loadingMessage.style.display = 'block';
-                document.querySelector('.slider-track').innerHTML = '';
-                
-                try {
-                    const fullUrl = `${API_URL_BASE}?search=${encodeURIComponent(query)}`;
-                    const response = await fetch(fullUrl);
-                    if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
-                    const events = await response.json();
-                    displayEvents(events);
-                } catch (error) {
-                    document.getElementById('resultsContainer').innerHTML = '<p>Hubo un error al realizar la búsqueda.</p>';
-                    console.error('Error al buscar eventos:', error);
-                } finally {
-                    loadingMessage.style.display = 'none';
-                }
-            });
-            
-            const botonesFiltro = document.querySelectorAll('.filtro-ciudad');
-            botonesFiltro.forEach(boton => {
-                boton.addEventListener('click', () => {
-                    const ciudad = boton.dataset.ciudad;
-                    searchInput.value = ciudad;
-                    searchButton.click();
-                });
-            });
-
-            // --- FUNCIÓN MODIFICADA PARA MOSTRAR EVENTOS EN EL SLIDER ---
-            function displayEvents(events) {
-                const track = document.querySelector('.slider-track');
-                const resultsContainer = document.getElementById('resultsContainer');
-
-                if (!track || !resultsContainer) return;
-                track.innerHTML = ''; // Limpiar diapositivas anteriores
-
                 if (events.length === 0) {
-                    // Si no hay eventos, muestra el mensaje dentro del contenedor principal
                     resultsContainer.innerHTML = '<p style="padding: 2rem;">No se encontraron eventos.</p>';
-                    if (sliderInterval) clearInterval(sliderInterval); // Detener el slider si está activo
                     return;
                 }
-                
-                // Asegurarse de que el track esté dentro del resultsContainer si fue borrado
-                resultsContainer.innerHTML = '';
+
+                if (displayMode === 'slider') {
+                    displayAsSlider(events);
+                } else {
+                    displayAsGrid(events);
+                }
+            }
+            
+            function displayAsSlider(events) {
+                resultsContainer.className = 'slider-container';
+                const track = document.createElement('div');
+                track.className = 'slider-track';
                 resultsContainer.appendChild(track);
 
                 events.forEach(event => {
-                    // 1. Crear el contenedor de la diapositiva
                     const slideElement = document.createElement('div');
                     slideElement.className = 'slide';
-                    
-                    // 2. Crear la tarjeta del evento (tu lógica original)
-                    const eventCard = document.createElement('div');
-                    eventCard.className = 'evento-card';
-                    const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-                    const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
-                    const mapsQuery = encodeURIComponent(fullLocation);
-                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+                    slideElement.innerHTML = createEventCardHTML(event);
+                    track.appendChild(slideElement);
+                });
+                initSlider();
+            }
 
-                    eventCard.innerHTML = `
+            function displayAsGrid(events) {
+                resultsContainer.className = 'grid-mode';
+                events.forEach(event => {
+                    const eventCard = document.createElement('div');
+                    eventCard.innerHTML = createEventCardHTML(event);
+                    resultsContainer.appendChild(eventCard.firstChild);
+                });
+            }
+
+            function createEventCardHTML(event) {
+                const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+                const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
+                const mapsQuery = encodeURIComponent(fullLocation);
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+
+                return `
+                    <div class="evento-card">
                         <div class="card-header"><h3>${event.name}</h3></div>
                         <div class="artista"><i class="fas fa-user"></i><span>${event.artist}</span>${event.verified ? '<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>' : ''}</div>
                         <p class="descripcion">${event.description}</p>
                         <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
                         <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
                         <div class="evento-detalle"><i class="fas fa-map-marker-alt"></i><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><strong>Lugar:</strong> ${fullLocation}</a></div>
-                    `;
-
-                    // 3. Añadir la tarjeta a la diapositiva, y la diapositiva a la pista del slider
-                    slideElement.appendChild(eventCard);
-                    track.appendChild(slideElement);
-                });
-
-                // 4. (Re)iniciar el slider con las nuevas diapositivas
-                initSlider();
+                    </div>`;
             }
+
+            function initSlider() {
+                const track = document.querySelector('.slider-track');
+                if (!track) return;
+                const slides = Array.from(track.children);
+                if (slides.length <= 2) return; // No iniciar si no hay suficientes slides para mover
+
+                const slideWidth = slides[0].getBoundingClientRect().width;
+                let currentIndex = 0;
+
+                const moveToNextSlide = () => {
+                    currentIndex = (currentIndex + 1) % (slides.length -1); // Modificado para 2 visibles
+                    track.style.transform = 'translateX(-' + slideWidth * currentIndex + 'px)';
+                };
+                sliderInterval = setInterval(moveToNextSlide, 3000);
+            }
+
+            // --- LÓGICA DE CARGA Y BÚSQUEDA ---
+
+            async function fetchData(url) {
+                loadingMessage.style.display = 'block';
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Respuesta de red no fue correcta');
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error al obtener datos:', error);
+                    resultsContainer.innerHTML = '<p>No se pudieron cargar los eventos.</p>';
+                    return [];
+                } finally {
+                    loadingMessage.style.display = 'none';
+                }
+            }
+
+            async function loadUpcomingEvents() {
+                const events = await fetchData(`${API_URL_BASE}?timeframe=week`);
+                displayEvents(events, 'slider'); // Carga inicial como slider
+            }
+
+            async function performSearch() {
+                const query = searchInput.value.trim();
+                if (!query) {
+                    loadUpcomingEvents();
+                    return;
+                }
+                const events = await fetchData(`${API_URL_BASE}?search=${encodeURIComponent(query)}`);
+                displayEvents(events, 'grid'); // Búsquedas como grid
+            }
+
+            // --- EVENT LISTENERS ---
+            loadUpcomingEvents();
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keyup', e => e.key === "Enter" && performSearch());
+            document.querySelectorAll('.filtro-ciudad').forEach(boton => {
+                boton.addEventListener('click', () => {
+                    searchInput.value = boton.dataset.ciudad;
+                    performSearch();
+                });
+            });
         });
     </script>
 </body>
