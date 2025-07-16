@@ -14,7 +14,7 @@
 
     <style>
         :root {
-            --color-fondo: #170837;
+            --color-fondo: #121212;
             --color-superficie: #1e1e1e;
             --color-borde: #444;
             --color-primario: #3DDC84;
@@ -109,7 +109,7 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            border-radius: 12px; /* Añadimos border-radius aquí para que funcione en ambos modos */
+            border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             height: 100%;
@@ -190,11 +190,12 @@
             // --- LÓGICA PARA MOSTRAR LOS RESULTADOS ---
 
             function displayEvents(events, displayMode = 'slider') {
-                if (sliderInterval) clearInterval(sliderInterval); // Detener cualquier slider anterior
-                resultsContainer.innerHTML = ''; // Limpiar el contenedor
+                if (sliderInterval) clearInterval(sliderInterval);
+                resultsContainer.innerHTML = ''; 
                 
                 if (events.length === 0) {
                     resultsContainer.innerHTML = '<p style="padding: 2rem;">No se encontraron eventos.</p>';
+                    resultsContainer.className = ''; // Limpiar clases de modo
                     return;
                 }
 
@@ -219,14 +220,11 @@
                 });
                 initSlider();
             }
-
+            
             function displayAsGrid(events) {
                 resultsContainer.className = 'grid-mode';
-                events.forEach(event => {
-                    const eventCard = document.createElement('div');
-                    eventCard.innerHTML = createEventCardHTML(event);
-                    resultsContainer.appendChild(eventCard.firstChild);
-                });
+                const allCardsHTML = events.map(event => createEventCardHTML(event)).join('');
+                resultsContainer.innerHTML = allCardsHTML;
             }
 
             function createEventCardHTML(event) {
@@ -250,13 +248,14 @@
                 const track = document.querySelector('.slider-track');
                 if (!track) return;
                 const slides = Array.from(track.children);
-                if (slides.length <= 2) return; // No iniciar si no hay suficientes slides para mover
+                if (slides.length <= 2) return; 
 
                 const slideWidth = slides[0].getBoundingClientRect().width;
                 let currentIndex = 0;
 
                 const moveToNextSlide = () => {
-                    currentIndex = (currentIndex + 1) % (slides.length -1); // Modificado para 2 visibles
+                    const maxIndex = slides.length - 1; 
+                    currentIndex = (currentIndex + 1) % maxIndex; 
                     track.style.transform = 'translateX(-' + slideWidth * currentIndex + 'px)';
                 };
                 sliderInterval = setInterval(moveToNextSlide, 3000);
