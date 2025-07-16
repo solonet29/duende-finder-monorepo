@@ -92,38 +92,47 @@
             transform: translateY(-2px);
         }
         
-        /* --- ESTILOS PARA AMBOS MODOS: SLIDER Y GRID --- */
-        #resultsContainer { text-align: left; }
-        
-        .grid-mode {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            column-gap: 1.5rem;
-            row-gap: 1.5rem;
-        }
+        /* --- ESTILOS PARA AMBOS MODOS: SLIDER Y GRID (CORREGIDO) --- */
+#resultsContainer { text-align: left; }
 
-        .slider-container {
-            width: 90%;
-            max-width: 800px;
-            margin: 2rem auto;
-            overflow: hidden;
-            border-radius: 12px;
-        }
-        .slider-track {
-            display: flex;
-            transition: transform 0.5s ease-in-out;
-        }
-        .slide {
-            min-width: 50%;
-            box-sizing: border-box;
-            padding: 1rem;
-        }
-        @media (max-width: 768px) {
-            .slide {
-                min-width: 100%;
-            }
-        }
-        /* --- FIN ESTILOS --- */
+/* Estilos para el modo GRID */
+.grid-mode {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    column-gap: 1.5rem;
+    row-gap: 1.5rem;
+}
+
+/* Estilos para el modo SLIDER */
+.slider-container {
+    /* Eliminamos el max-width para que ocupe el ancho completo del contenedor principal */
+    margin: 2rem auto;
+    overflow: hidden;
+    border-radius: 12px;
+}
+.slider-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+.slide {
+    min-width: 33.33%; /* Ancho para que quepan 3 diapositivas */
+    box-sizing: border-box;
+    padding: 1rem;
+}
+/* --- Media queries para responsividad del slider --- */
+/* En tablets, mostramos 2 diapositivas */
+@media (max-width: 1024px) {
+    .slide {
+        min-width: 50%;
+    }
+}
+/* En móviles, mostramos 1 diapositiva */
+@media (max-width: 768px) {
+    .slide {
+        min-width: 100%;
+    }
+}
+/* --- FIN ESTILOS --- */
         
         .evento-card {
             background-color: var(--color-superficie);
