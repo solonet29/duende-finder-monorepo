@@ -17,8 +17,7 @@
             --color-fondo: #170837;
             --color-superficie: #1e1e1e;
             --color-borde: #444;
-            --color-primario: #3DDC84;
-            --color-texto-principal: #e0e0e0;
+            --color-primario: #858052;
             --color-texto-secundario: #a0a0a0;
         }
         body {
@@ -73,10 +72,11 @@
         
         /* Estilos para el modo GRID */
         .grid-mode {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
-        }
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    column-gap: 1.5rem; /* Espacio entre columnas */
+    row-gap: 1.5rem;    /* Espacio entre filas (¡Este es el que faltaba!) */
+}
 
         /* Estilos para el modo SLIDER */
         .slider-container {
