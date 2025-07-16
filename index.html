@@ -13,9 +13,8 @@
     <link rel="icon" type="image/png" href="icono-buscador.jpg">
 
     <style>
-        /* --- PALETA DE COLORES FINAL --- */
         :root {
-            --color-fondo: #170807; /* Tu último color de fondo solicitado */
+            --color-fondo: #170807;
             --color-superficie: #1e1e1e;
             --color-borde: #444;
             --color-primario: #858052; 
@@ -27,17 +26,17 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--color-fondo);
             color: var(--color-texto-principal);
-            margin: 0;
-            padding: 1rem; /* Padding reducido para móviles */
+            margin: 0 auto; /* Centra el body en la página */
+            padding: 1rem; 
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            max-width: 1200px; /* Le da un ancho máximo a toda la página */
         }
         .container { 
-            max-width: 1200px; 
-            margin: auto; 
             text-align: center;
             flex-grow: 1;
+            width: 100%; /* Ocupa el ancho del body */
         }
         h1 { 
             font-size: 3rem; 
@@ -66,12 +65,11 @@
             background-color: var(--color-primario); color: #ffffff; border-color: var(--color-primario); transform: translateY(-2px);
         }
         
-        /* --- ESTILOS PARA AMBOS MODOS: SLIDER Y GRID (CORREGIDO) --- */
         #resultsContainer { text-align: left; }
         
         .grid-mode {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Ajustado para móviles */
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             column-gap: 1.5rem;
             row-gap: 1.5rem;
         }
@@ -87,7 +85,6 @@
         }
         @media (max-width: 1024px) { .slide { min-width: 50%; } }
         @media (max-width: 768px) { .slide { min-width: 100%; } }
-        /* --- FIN ESTILOS --- */
         
         .evento-card {
             background-color: var(--color-superficie); border: 1px solid var(--color-borde); padding: 1.5rem;
@@ -226,13 +223,11 @@
                 const track = document.querySelector('.slider-track');
                 if (!track) return;
                 const slides = Array.from(track.children);
-                // El slider solo se activa si hay suficientes diapositivas para mover
                 if (slides.length <= 3) return; 
 
                 const slideWidth = slides[0].getBoundingClientRect().width;
                 let currentIndex = 0;
                 
-                // El número de "pasos" que puede dar el slider
                 const maxSteps = slides.length - 3;
 
                 const moveToNextSlide = () => {
