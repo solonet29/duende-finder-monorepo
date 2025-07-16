@@ -39,17 +39,16 @@
         }
         h1 { font-size: 3rem; font-weight: 900; }
         h1 span { color: var(--color-primario); }
-        .search-wrapper { position: relative; max-width: 500px; margin: 2rem auto; } /* Reducido el margen inferior */
+        .search-wrapper { position: relative; max-width: 500px; margin: 2rem auto; }
         #searchInput { width: 100%; padding: 1rem 3.5rem 1rem 1.5rem; font-size: 1rem; border-radius: 50px; border: 1px solid var(--color-borde); background-color: var(--color-superficie); color: var(--color-texto-principal); box-sizing: border-box; }
         #searchButton { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: none; background-color: var(--color-primario); color: var(--color-fondo); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
         
-        /* --- NUEVOS ESTILOS PARA LOS BOTONES DE FILTRO --- */
         .filtros-ciudades {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
             gap: 10px;
-            margin-bottom: 4rem; /* Margen inferior que antes tenía el search-wrapper */
+            margin-bottom: 4rem;
         }
         .filtro-ciudad {
             background-color: var(--color-superficie);
@@ -68,21 +67,36 @@
             border-color: var(--color-primario);
             transform: translateY(-2px);
         }
-        /* --- FIN DE NUEVOS ESTILOS --- */
-
-        #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; text-align: left; }
+        
+        /* --- ESTILOS DEL SLIDER --- */
+        .slider-container {
+            width: 90%;
+            max-width: 800px;
+            margin: 2rem auto;
+            overflow: hidden; /* Oculta las diapositivas que están fuera */
+            border-radius: 12px;
+        }
+        .slider-track {
+            display: flex; /* Pone las diapositivas en línea */
+            transition: transform 0.5s ease-in-out; /* Animación suave */
+        }
+        .slide {
+            min-width: 100%; /* Cada diapositiva ocupa el 100% del contenedor */
+            box-sizing: border-box;
+        }
+        /* --- FIN ESTILOS SLIDER --- */
         
         .evento-card {
             background-color: var(--color-superficie);
             border: 1px solid var(--color-borde);
-            border-radius: 12px;
+            /* border-radius y padding ahora están en .slide para un mejor ajuste */
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            text-align: left;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeIn 0.5s ease-in-out;
         }
         .evento-card:hover {
             transform: translateY(-5px);
@@ -95,15 +109,8 @@
         .evento-detalle { display: flex; align-items: center; gap: 0.75rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); padding-top: 1rem; }
         .evento-detalle i { color: var(--color-primario); width: 20px; text-align: center; }
         
-        .evento-detalle a {
-            color: inherit;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-        .evento-detalle a:hover {
-            color: var(--color-primario);
-            text-decoration: underline;
-        }
+        .evento-detalle a { color: inherit; text-decoration: none; transition: color 0.3s ease; }
+        .evento-detalle a:hover { color: var(--color-primario); text-decoration: underline; }
         
         .card-header { padding-bottom: 0.5rem; }
         .verificado-badge { display: inline-block; background-color: rgba(61, 220, 132, 0.1); color: var(--color-primario); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; border: 1px solid var(--color-primario); margin-left: 0.75rem; vertical-align: middle; }
@@ -141,11 +148,15 @@
             <button class="filtro-ciudad" data-ciudad="Cádiz">Cádiz</button>
             <button class="filtro-ciudad" data-ciudad="Granada">Granada</button>
         </div>
+        
         <div id="loadingMessage" style="display: none;">
             <p>Buscando...</p>
         </div>
 
-        <div id="resultsContainer"></div>
+        <div id="resultsContainer" class="slider-container">
+            <div class="slider-track">
+                </div>
+        </div>
     </div>
 
     <footer>
@@ -156,22 +167,50 @@
         document.addEventListener('DOMContentLoaded', () => {
             const searchButton = document.getElementById('searchButton');
             const searchInput = document.getElementById('searchInput');
-            const resultsContainer = document.getElementById('resultsContainer');
             const loadingMessage = document.getElementById('loadingMessage');
             const API_URL_BASE = 'https://duende-api.onrender.com/events';
 
-            // Función para cargar los eventos de la semana
+            // --- LÓGICA DEL SLIDER ---
+            let sliderInterval = null; // Variable para controlar el intervalo del slider
+
+            function initSlider() {
+                // Si ya hay un slider funcionando, lo detenemos antes de crear uno nuevo
+                if (sliderInterval) {
+                    clearInterval(sliderInterval);
+                }
+                
+                const track = document.querySelector('.slider-track');
+                if (!track) return;
+
+                const slides = Array.from(track.children);
+                // No iniciar el slider si hay 1 o ninguna diapositiva
+                if (slides.length <= 1) return;
+
+                const slideWidth = slides[0].getBoundingClientRect().width;
+                let currentIndex = 0;
+
+                const moveToNextSlide = () => {
+                    currentIndex = (currentIndex + 1) % slides.length; // Bucle infinito
+                    track.style.transform = 'translateX(-' + slideWidth * currentIndex + 'px)';
+                };
+                
+                // Iniciar el movimiento automático
+                sliderInterval = setInterval(moveToNextSlide, 5000); // Cambia de diapositiva cada 5 segundos
+            }
+            
+            // --- FUNCIÓN PARA CARGAR EVENTOS ---
             async function loadUpcomingEvents() {
                 console.log("Cargando eventos de los próximos 7 días...");
                 loadingMessage.style.display = 'block';
-                resultsContainer.innerHTML = '';
+                document.querySelector('.slider-track').innerHTML = ''; // Limpiar el slider
+                
                 try {
                     const response = await fetch(`${API_URL_BASE}?timeframe=week`);
                     if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
                     const events = await response.json();
                     displayEvents(events);
                 } catch (error) {
-                    resultsContainer.innerHTML = '<p>No se pudieron cargar los eventos próximos.</p>';
+                    document.getElementById('resultsContainer').innerHTML = '<p>No se pudieron cargar los eventos próximos.</p>';
                     console.error('Error al cargar eventos próximos:', error);
                 } finally {
                     loadingMessage.style.display = 'none';
@@ -181,14 +220,13 @@
             // Carga inicial de eventos
             loadUpcomingEvents();
 
-            // Búsqueda con la tecla "Enter"
+            // --- LÓGICA DE BÚSQUEDA ---
             searchInput.addEventListener('keyup', function(event) {
                 if (event.key === "Enter") {
                     searchButton.click();
                 }
             });
 
-            // Búsqueda con el botón principal
             searchButton.addEventListener('click', async () => {
                 const query = searchInput.value.trim();
                 if (!query) {
@@ -196,7 +234,8 @@
                     return;
                 }
                 loadingMessage.style.display = 'block';
-                resultsContainer.innerHTML = '';
+                document.querySelector('.slider-track').innerHTML = '';
+                
                 try {
                     const fullUrl = `${API_URL_BASE}?search=${encodeURIComponent(query)}`;
                     const response = await fetch(fullUrl);
@@ -204,43 +243,55 @@
                     const events = await response.json();
                     displayEvents(events);
                 } catch (error) {
-                    resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda. Inténtalo de nuevo.</p>';
+                    document.getElementById('resultsContainer').innerHTML = '<p>Hubo un error al realizar la búsqueda.</p>';
                     console.error('Error al buscar eventos:', error);
                 } finally {
                     loadingMessage.style.display = 'none';
                 }
             });
             
-            // --- NUEVO JAVASCRIPT PARA LOS BOTONES DE FILTRO ---
             const botonesFiltro = document.querySelectorAll('.filtro-ciudad');
-
             botonesFiltro.forEach(boton => {
                 boton.addEventListener('click', () => {
-                    // 1. Obtiene la ciudad del atributo data-ciudad
                     const ciudad = boton.dataset.ciudad;
-                    // 2. Pone la ciudad en la barra de búsqueda
                     searchInput.value = ciudad;
-                    // 3. Simula un clic en el botón de búsqueda para lanzar la búsqueda
                     searchButton.click();
                 });
             });
-            // --- FIN DE NUEVO JAVASCRIPT ---
 
-            // Función para mostrar los eventos en tarjetas
+            // --- FUNCIÓN MODIFICADA PARA MOSTRAR EVENTOS EN EL SLIDER ---
             function displayEvents(events) {
+                const track = document.querySelector('.slider-track');
+                const resultsContainer = document.getElementById('resultsContainer');
+
+                if (!track || !resultsContainer) return;
+                track.innerHTML = ''; // Limpiar diapositivas anteriores
+
                 if (events.length === 0) {
-                    resultsContainer.innerHTML = '<p>No se encontraron eventos.</p>';
+                    // Si no hay eventos, muestra el mensaje dentro del contenedor principal
+                    resultsContainer.innerHTML = '<p style="padding: 2rem;">No se encontraron eventos.</p>';
+                    if (sliderInterval) clearInterval(sliderInterval); // Detener el slider si está activo
                     return;
                 }
+                
+                // Asegurarse de que el track esté dentro del resultsContainer si fue borrado
                 resultsContainer.innerHTML = '';
+                resultsContainer.appendChild(track);
+
                 events.forEach(event => {
+                    // 1. Crear el contenedor de la diapositiva
+                    const slideElement = document.createElement('div');
+                    slideElement.className = 'slide';
+                    
+                    // 2. Crear la tarjeta del evento (tu lógica original)
                     const eventCard = document.createElement('div');
                     eventCard.className = 'evento-card';
                     const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                     const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
                     const mapsQuery = encodeURIComponent(fullLocation);
-                    // Corregido un pequeño error en la URL de Google Maps
+                    // URL de Google Maps corregida y funcional
                     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+
                     eventCard.innerHTML = `
                         <div class="card-header"><h3>${event.name}</h3></div>
                         <div class="artista"><i class="fas fa-user"></i><span>${event.artist}</span>${event.verified ? '<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>' : ''}</div>
@@ -249,8 +300,14 @@
                         <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
                         <div class="evento-detalle"><i class="fas fa-map-marker-alt"></i><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><strong>Lugar:</strong> ${fullLocation}</a></div>
                     `;
-                    resultsContainer.appendChild(eventCard);
+
+                    // 3. Añadir la tarjeta a la diapositiva, y la diapositiva a la pista del slider
+                    slideElement.appendChild(eventCard);
+                    track.appendChild(slideElement);
                 });
+
+                // 4. (Re)iniciar el slider con las nuevas diapositivas
+                initSlider();
             }
         });
     </script>
