@@ -81,15 +81,22 @@
             transition: transform 0.5s ease-in-out; /* Animación suave */
         }
         .slide {
-            min-width: 100%; /* Cada diapositiva ocupa el 100% del contenedor */
+            min-width: 50%; /* Cambiado a 50% para mostrar dos a la vez */
             box-sizing: border-box;
+            padding: 1rem; /* Ajustamos un poco el padding */
+            color: #e0e0e0;
+        }
+        /* Hacemos que en pantallas de móvil (menos de 768px) se vea solo un slide */
+        @media (max-width: 768px) {
+            .slide {
+                min-width: 100%;
+            }
         }
         /* --- FIN ESTILOS SLIDER --- */
         
         .evento-card {
             background-color: var(--color-superficie);
             border: 1px solid var(--color-borde);
-            /* border-radius y padding ahora están en .slide para un mejor ajuste */
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
@@ -97,6 +104,7 @@
             text-align: left;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%; /* Para que todas las tarjetas en una fila tengan la misma altura */
         }
         .evento-card:hover {
             transform: translateY(-5px);
@@ -195,7 +203,7 @@
                 };
                 
                 // Iniciar el movimiento automático
-                sliderInterval = setInterval(moveToNextSlide, 5000); // Cambia de diapositiva cada 5 segundos
+                sliderInterval = setInterval(moveToNextSlide, 3000); // Cambiado a 3 segundos
             }
             
             // --- FUNCIÓN PARA CARGAR EVENTOS ---
@@ -289,7 +297,6 @@
                     const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                     const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
                     const mapsQuery = encodeURIComponent(fullLocation);
-                    // URL de Google Maps corregida y funcional
                     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
 
                     eventCard.innerHTML = `
