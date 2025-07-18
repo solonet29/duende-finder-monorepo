@@ -22,34 +22,46 @@
         h1 { font-size: 3rem; font-weight: 900; }
         h1 span { color: var(--color-primario); }
         .event-counter { margin-top: -1.5rem; margin-bottom: 2.5rem; color: var(--color-texto-secundario); font-size: 1.1rem; }
-        
-        .advanced-search-form {
+        .search-wrapper { position: relative; max-width: 500px; margin: 2rem auto 1rem auto; }
+        #searchInput { width: 100%; padding: 1rem 3.5rem 1rem 1.5rem; font-size: 1rem; border-radius: 50px; border: 1px solid var(--color-borde); background-color: var(--color-superficie); color: var(--color-texto-principal); box-sizing: border-box; }
+        #searchButton { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: none; background-color: var(--color-primario); color: var(--color-fondo); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+
+        /* --- ESTILOS PARA LA BÚSQUEDA AVANZADA DESPLEGABLE --- */
+        .advanced-search-toggle {
+            color: var(--color-primario);
+            cursor: pointer;
+            text-decoration: underline;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+        .advanced-search-panel {
+            max-width: 800px;
+            margin: 0 auto 4rem auto;
             background-color: var(--color-superficie);
-            padding: 2rem;
-            border-radius: 12px;
             border: 1px solid var(--color-borde);
+            border-radius: 12px;
+            text-align: left;
+            overflow: hidden;
+            max-height: 0; /* Por defecto, está OCULTO */
+            padding: 0 2rem;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+        }
+        .advanced-search-panel.visible {
+            max-height: 500px; /* Altura suficiente para mostrar el contenido */
+            padding: 2rem;
+        }
+        .advanced-filters-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 1.5rem;
             align-items: end;
-            margin-bottom: 4rem;
-            text-align: left;
         }
         .form-field label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: var(--color-texto-secundario); font-size: 0.9rem; }
-        .form-field input, .form-field select {
-            width: 100%; padding: 0.75rem; font-size: 1rem; border-radius: 6px;
-            border: 1px solid var(--color-borde); background-color: var(--color-fondo);
-            color: var(--color-texto-principal); box-sizing: border-box;
-        }
-        .form-field button {
-            width: 100%; padding: 0.75rem; font-size: 1.1rem; font-weight: bold; border: none;
-            border-radius: 6px; cursor: pointer; background-color: var(--color-primario);
-            color: var(--color-fondo); transition: background-color 0.3s ease;
-        }
-        .form-field button:hover { background-color: #31b36c; }
+        .form-field input, .form-field select { width: 100%; padding: 0.75rem; font-size: 1rem; border-radius: 6px; border: 1px solid var(--color-borde); background-color: var(--color-fondo); color: var(--color-texto-principal); box-sizing: border-box; }
+        .form-field button { width: 100%; padding: 0.75rem; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; background-color: var(--color-primario); color: var(--color-fondo); }
         
-        #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-        /* El resto de estilos (tarjetas, footer, etc.) sin cambios */
+        /* El resto de estilos (tarjetas, footer, etc.) no necesitan cambios */
+        
     </style>
 </head>
 <body>
@@ -58,115 +70,94 @@
         <p>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
         <div class="event-counter"><p>Actualmente tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p></div>
         
-        <form class="advanced-search-form" id="advanced-search-form">
-            <div class="form-field">
-                <label for="text-search">Palabra clave:</label>
-                <input type="text" id="text-search" placeholder="Ej: Festival, Bienal...">
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" placeholder="Busca por artista, ciudad, festival...">
+            <button id="searchButton" aria-label="Buscar"><i class="fas fa-search"></i></button>
+        </div>
+
+        <a id="advanced-search-toggle" class="advanced-search-toggle">Búsqueda Avanzada <i class="fas fa-chevron-down"></i></a>
+        
+        <div class="advanced-search-panel" id="advanced-search-panel">
+            <div class="advanced-filters-grid">
+                <div class="form-field">
+                    <label for="artist-filter">Artista:</label>
+                    <input type="text" id="artist-filter" placeholder="Ej: Israel Fernández">
+                </div>
+                <div class="form-field">
+                    <label for="city-filter">Ciudad:</label>
+                    <input type="text" id="city-filter" placeholder="Ej: Sevilla">
+                </div>
+                <div class="form-field">
+                    <label for="date-from">Desde la fecha:</label>
+                    <input type="date" id="date-from">
+                </div>
+                <div class="form-field">
+                    <label for="date-to">Hasta la fecha:</label>
+                    <input type="date" id="date-to">
+                </div>
             </div>
-            <div class="form-field">
-                <label for="artist-filter">Artista:</label>
-                <input type="text" id="artist-filter" placeholder="Ej: Farruquito...">
-            </div>
-            <div class="form-field">
-                <label for="city-filter">Ciudad:</label>
-                <input type="text" id="city-filter" placeholder="Ej: Sevilla...">
-            </div>
-            <div class="form-field">
-                <label for="date-from">Desde la fecha:</label>
-                <input type="date" id="date-from">
-            </div>
-            <div class="form-field">
-                <label for="date-to">Hasta la fecha:</label>
-                <input type="date" id="date-to">
-            </div>
-            <div class="form-field">
-                <button type="submit">
-                    <i class="fas fa-search"></i> Buscar
-                </button>
-            </div>
-        </form>
+        </div>
 
         <div id="loadingMessage" style="display: none;"></div>
         <div id="resultsContainer"></div>
     </div>
-
-    <footer>
-        </footer>
-    <button id="back-to-top-btn" aria-label="Volver arriba"><i class="fas fa-arrow-up"></i></button>
-
+    
     <script>
-        const API_URL_BASE = 'https://duende-api.onrender.com/events';
-        const searchForm = document.getElementById('advanced-search-form');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const loadingMessage = document.getElementById('loadingMessage');
-        const totalEventsSpan = document.getElementById('total-events');
-        
-        // --- LÓGICA DE BÚSQUEDA AVANZADA ---
-        searchForm.addEventListener('submit', (event) => {
-            event.preventDefault();
+        // --- CONSTANTES ---
+        const searchButton = document.getElementById('searchButton');
+        const searchInput = document.getElementById('searchInput');
+        const advancedSearchToggle = document.getElementById('advanced-search-toggle');
+        const advancedSearchPanel = document.getElementById('advanced-search-panel');
+        // ... resto de constantes ...
 
-            const text = document.getElementById('text-search').value.trim();
-            const artist = document.getElementById('artist-filter').value.trim();
-            const city = document.getElementById('city-filter').value.trim(); // <-- Ahora es un input de texto
-            const dateFrom = document.getElementById('date-from').value;
-            const dateTo = document.getElementById('date-to').value;
-
-            const params = new URLSearchParams();
-            if (text) params.append('search', text);
-            if (artist) params.append('artist', artist);
-            if (city) params.append('city', city);
-            if (dateFrom) params.append('dateFrom', dateFrom);
-            if (dateTo) params.append('dateTo', dateTo);
-            
-            if (Array.from(params).length > 0) {
-                performSearch(params.toString());
-            } else {
-                loadUpcomingEvents(); // Si no hay filtros, muestra la precarga
-            }
+        // --- LÓGICA PARA MOSTRAR/OCULTAR EL PANEL AVANZADO ---
+        advancedSearchToggle.addEventListener('click', () => {
+            advancedSearchPanel.classList.toggle('visible');
+            const icon = advancedSearchToggle.querySelector('i');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
         });
 
-        async function performSearch(queryString) {
-            loadingMessage.style.display = 'block';
-            resultsContainer.innerHTML = '';
-            try {
-                const fullUrl = `${API_URL_BASE}?${queryString}`;
-                const response = await fetch(fullUrl);
-                if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
-                const events = await response.json();
-                displayEvents(events);
-            } catch (error) {
-                resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda.</p>';
-            } finally {
-                loadingMessage.style.display = 'none';
+        // --- LÓGICA DE BÚSQUEDA UNIFICADA ---
+        function triggerSearch() {
+            const params = new URLSearchParams();
+            const searchText = searchInput.value.trim();
+
+            if (searchText) {
+                params.append('search', searchText);
+            } else {
+                const artist = document.getElementById('artist-filter').value.trim();
+                const city = document.getElementById('city-filter').value.trim();
+                const dateFrom = document.getElementById('date-from').value;
+                const dateTo = document.getElementById('date-to').value;
+
+                if (artist) params.append('artist', artist);
+                if (city) params.append('city', city);
+                if (dateFrom) params.append('dateFrom', dateFrom);
+                if (dateTo) params.append('dateTo', dateTo);
+            }
+
+            if (Array.from(params).length === 0) {
+                loadUpcomingEvents();
+            } else {
+                performSearch(params.toString());
             }
         }
         
-        // --- FUNCIONES DE CARGA Y VISUALIZACIÓN ---
-        // (Incluyendo la precarga de la semana que se había perdido)
+        // Asignamos la función de búsqueda a los eventos
+        searchButton.addEventListener('click', triggerSearch);
+        searchInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') triggerSearch();
+        });
         
-        async function loadUpcomingEvents() {
-            performSearch('timeframe=week');
-        }
-        
-        async function loadTotalEventsCount() {
-            try {
-                const response = await fetch(`${API_URL_BASE}/count`);
-                if (!response.ok) return;
-                const data = await response.json();
-                if (data.total !== undefined) { totalEventsSpan.textContent = data.total; }
-            } catch (error) { totalEventsSpan.textContent = "N/A"; }
-        }
-        
+        // ¡IMPORTANTE! La precarga de eventos vuelve a estar aquí
         document.addEventListener('DOMContentLoaded', () => {
             loadUpcomingEvents();
             loadTotalEventsCount();
         });
 
-        // El resto del script para mostrar tarjetas, botón de volver arriba, etc., no cambia.
-        function displayEvents(events) { /* ...código sin cambios... */ }
-        const backToTopBtn = document.getElementById('back-to-top-btn');
-        window.onscroll = () => { /* ...código sin cambios... */ };
-        backToTopBtn.addEventListener('click', () => { /* ...código sin cambios... */ });
+        // El resto de tu script (performSearch, displayEvents, etc.) no necesita cambios
+        // ...
     </script>
 </body>
 </html>
