@@ -16,7 +16,7 @@
             --color-fondo: #121212; --color-superficie: #1e1e1e; --color-borde: #444;
             --color-primario: #3DDC84; --color-texto-principal: #e0e0e0; --color-texto-secundario: #a0a0a0;
         }
-        html { scroll-behavior: smooth; /* Para que el scroll sea suave */ }
+        html { scroll-behavior: smooth; }
         body { font-family: 'Inter', sans-serif; background-color: var(--color-fondo); color: var(--color-texto-principal); margin: 0; padding: 2rem; display: flex; flex-direction: column; min-height: 100vh; }
         .container { max-width: 1200px; margin: auto; text-align: center; flex-grow: 1; }
         h1 { font-size: 3rem; font-weight: 900; }
@@ -29,29 +29,42 @@
         .quick-search-container { margin-bottom: 4rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
         .quick-search-btn { background-color: var(--color-superficie); color: var(--color-texto-secundario); border: 1px solid var(--color-borde); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease; }
         .quick-search-btn:hover { background-color: var(--color-primario); color: var(--color-fondo); }
-        
-        /* --- ESTILOS PARA MENSAJE DE "NO HAY RESULTADOS" --- */
-        .no-results {
-            padding: 2rem;
-            color: var(--color-texto-secundario);
-        }
-        .no-results a {
-            color: var(--color-primario);
-            text-decoration: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .no-results a:hover {
-            text-decoration: underline;
-        }
+        .no-results { padding: 2rem; color: var(--color-texto-secundario); }
+        .no-results a { color: var(--color-primario); text-decoration: none; font-weight: bold; cursor: pointer; }
+        .no-results a:hover { text-decoration: underline; }
         
         #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; text-align: left; }
-        .evento-card { background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeIn 0.5s ease-in-out; }
+
+        /* --- CÓDIGO PARA TARJETAS HOMOGÉNEAS --- */
+        .evento-card {
+            background-color: var(--color-superficie);
+            border: 1px solid var(--color-borde);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex; /* <-- 1. Convertimos la tarjeta en un contenedor flex */
+            flex-direction: column; /* <-- Alineamos sus hijos en columna */
+            gap: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 0.5s ease-in-out;
+        }
         .evento-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); }
-        /* El resto de estilos (tarjetas, footer, etc.) sin cambios */
+        
         .evento-card h3 { margin: 0; font-size: 1.5rem; font-weight: 700; }
         .evento-card .artista { color: var(--color-primario); font-weight: 700; display: flex; align-items: center; }
-        .evento-card .descripcion { color: var(--color-texto-secundario); line-height: 1.6; }
+        
+        .evento-card .descripcion {
+            color: var(--color-texto-secundario);
+            line-height: 1.6;
+            flex-grow: 1; /* <-- 2. Hacemos que la descripción ocupe el espacio sobrante */
+
+            /* 3. Truncamos el texto si es muy largo */
+            display: -webkit-box;
+            -webkit-line-clamp: 4; /* Máximo de 4 líneas */
+            -webkit-box-orient: vertical;  
+            overflow: hidden;
+        }
+
         .evento-detalle { display: flex; align-items: center; gap: 0.75rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); padding-top: 1rem; }
         .evento-detalle i { color: var(--color-primario); width: 20px; text-align: center; }
         .evento-detalle a { color: inherit; text-decoration: none; transition: color 0.3s ease; }
@@ -60,37 +73,13 @@
         .verificado-badge { display: inline-block; background-color: rgba(61, 220, 132, 0.1); color: var(--color-primario); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; border: 1px solid var(--color-primario); margin-left: 0.75rem; vertical-align: middle; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* --- ESTILOS PARA EL BOTÓN DE "VOLVER ARRIBA" --- */
-        #back-to-top-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--color-primario);
-            color: var(--color-fondo);
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 1.5rem;
-            display: none; /* Inicialmente oculto */
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            z-index: 1000;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        #back-to-top-btn:hover {
-            opacity: 0.8;
-            transform: scale(1.1);
-        }
-
+        #back-to-top-btn { position: fixed; bottom: 20px; right: 20px; background-color: var(--color-primario); color: var(--color-fondo); border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 1.5rem; display: none; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; transition: opacity 0.3s ease, transform 0.3s ease; }
+        #back-to-top-btn:hover { opacity: 0.8; transform: scale(1.1); }
         footer { text-align: center; padding: 2rem; margin-top: 4rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); }
         footer a { color: var(--color-primario); text-decoration: none; font-weight: 700; }
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>Duende <span>Finder</span></h1>
         <p>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
@@ -109,28 +98,19 @@
         <div id="loadingMessage" style="display: none;"></div>
         <div id="resultsContainer"></div>
     </div>
-
     <footer>
         <p>Un proyecto de <a href="https://afland.es" target="_blank" rel="noopener noreferrer">Afland.es</a></p>
     </footer>
-
-    <button id="back-to-top-btn" aria-label="Volver arriba">
-        <i class="fas fa-arrow-up"></i>
-    </button>
-
-
+    <button id="back-to-top-btn" aria-label="Volver arriba"><i class="fas fa-arrow-up"></i></button>
     <script>
-        // Declaraciones de constantes (se añade la del nuevo botón)
         const searchButton = document.getElementById('searchButton');
         const searchInput = document.getElementById('searchInput');
         const resultsContainer = document.getElementById('resultsContainer');
         const loadingMessage = document.getElementById('loadingMessage');
         const totalEventsSpan = document.getElementById('total-events');
-        const backToTopBtn = document.getElementById('back-to-top-btn'); // Nuevo botón
+        const backToTopBtn = document.getElementById('back-to-top-btn');
         const API_URL_BASE = 'https://duende-api.onrender.com/events';
 
-        // --- ¡NUEVO! LÓGICA PARA EL BOTÓN DE "VOLVER ARRIBA" ---
-        // Muestra el botón si el scroll baja más de 300px
         window.onscroll = () => {
             if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
                 backToTopBtn.style.display = "flex";
@@ -138,14 +118,11 @@
                 backToTopBtn.style.display = "none";
             }
         };
-        // Al hacer clic, vuelve al inicio de la página
         backToTopBtn.addEventListener('click', () => {
             window.scrollTo({top: 0, behavior: 'smooth'});
         });
         
-        // --- FUNCIÓN displayEvents MODIFICADA ---
         function displayEvents(events) {
-            // Si no hay eventos, mostramos el nuevo mensaje con enlace para recargar
             if (events.length === 0) {
                 resultsContainer.innerHTML = `
                     <div class="no-results">
@@ -157,12 +134,10 @@
                 `;
                 return;
             }
-            // El resto de la función no cambia
             resultsContainer.innerHTML = '';
             events.forEach(event => {
                 const eventCard = document.createElement('div');
                 eventCard.className = 'evento-card';
-                // ... (el resto del código que genera las tarjetas es el mismo)
                 const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                 const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
                 const mapsQuery = encodeURIComponent(fullLocation);
@@ -179,45 +154,65 @@
             });
         }
 
-        // El resto del script (listeners y otras funciones) no necesita cambios...
-        document.addEventListener('DOMContentLoaded', () => { loadUpcomingEvents(); loadTotalEventsCount(); });
-        async function loadTotalEventsCount() { /* ... */ }
-        async function loadUpcomingEvents() { /* ... */ }
-        searchInput.addEventListener('keyup', (event) => { if (event.key === "Enter") { searchButton.click(); } });
-        searchButton.addEventListener('click', () => performSearch(searchInput.value.trim()));
-        document.querySelectorAll('.quick-search-btn').forEach(button => { button.addEventListener('click', () => { performSearch(button.dataset.search); }); });
-        async function performSearch(query) { /* ... */ }
-
-        // Pego aquí el resto de las funciones para que lo tengas todo junto
+        async function performSearch(query) {
+            if (!query) { loadUpcomingEvents(); return; }
+            loadingMessage.style.display = 'block';
+            resultsContainer.innerHTML = '';
+            try {
+                const fullUrl = `${API_URL_BASE}?search=${encodeURIComponent(query)}`;
+                const response = await fetch(fullUrl);
+                if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
+                const events = await response.json();
+                displayEvents(events);
+            } catch (error) {
+                resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda.</p>';
+            } finally {
+                loadingMessage.style.display = 'none';
+            }
+        }
+        
+        document.querySelectorAll('.quick-search-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                performSearch(button.dataset.search);
+            });
+        });
+        
         async function loadTotalEventsCount() {
             try {
-                const response = await fetch(`${API_URL_BASE}/count`); if (!response.ok) return;
+                const response = await fetch(`${API_URL_BASE}/count`);
+                if (!response.ok) return;
                 const data = await response.json();
                 if (data.total !== undefined) { totalEventsSpan.textContent = data.total; }
             } catch (error) { totalEventsSpan.textContent = "N/A"; }
         }
+        
         async function loadUpcomingEvents() {
-            loadingMessage.style.display = 'block'; resultsContainer.innerHTML = '';
+            loadingMessage.style.display = 'block';
+            resultsContainer.innerHTML = '';
             try {
                 const response = await fetch(`${API_URL_BASE}?timeframe=week`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const events = await response.json();
                 displayEvents(events);
-            } catch (error) { resultsContainer.innerHTML = '<p>No se pudieron cargar los eventos próximos.</p>'; } 
-            finally { loadingMessage.style.display = 'none'; }
+            } catch (error) {
+                resultsContainer.innerHTML = '<p>No se pudieron cargar los eventos próximos.</p>';
+            } finally {
+                loadingMessage.style.display = 'none';
+            }
         }
-        async function performSearch(query) {
-            if (!query) { loadUpcomingEvents(); return; }
-            loadingMessage.style.display = 'block'; resultsContainer.innerHTML = '';
-            try {
-                const fullUrl = `${API_URL_BASE}?search=${encodeURIComponent(query)}`;
-                const response = await fetch(fullUrl);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const events = await response.json();
-                displayEvents(events);
-            } catch (error) { resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda.</p>'; } 
-            finally { loadingMessage.style.display = 'none'; }
-        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUpcomingEvents();
+            loadTotalEventsCount();
+        });
+        
+        searchInput.addEventListener('keyup', (event) => {
+            if (event.key === "Enter") {
+                searchButton.click();
+            }
+        });
+        
+        searchButton.addEventListener('click', () => performSearch(searchInput.value.trim()));
     </script>
 </body>
 </html>
