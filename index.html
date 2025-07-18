@@ -12,6 +12,7 @@
     <link rel="icon" type="image/png" href="favicon.png">
 
     <style>
+        /* --- ESTILOS GENERALES Y TEMA OSCURO (CORREGIDO) --- */
         :root {
             --color-fondo: #121212; --color-superficie: #1e1e1e; --color-borde: #444;
             --color-primario: #3DDC84; --color-texto-principal: #e0e0e0; --color-texto-secundario: #a0a0a0;
@@ -20,26 +21,38 @@
         .container { max-width: 1200px; margin: auto; text-align: center; flex-grow: 1; }
         h1 { font-size: 3rem; font-weight: 900; }
         h1 span { color: var(--color-primario); }
-        
-        /* --- NUEVO ESTILO PARA EL CONTADOR --- */
-        .event-counter {
-            margin-top: -1.5rem;
-            margin-bottom: 2.5rem;
-            color: var(--color-texto-secundario);
-            font-size: 1.1rem;
-        }
-        .event-counter strong {
-            color: var(--color-primario);
-            font-size: 1.2rem;
-        }
-
-        .search-wrapper { position: relative; max-width: 500px; margin: 2rem auto 4rem auto; }
+        .event-counter { margin-top: -1.5rem; margin-bottom: 2.5rem; color: var(--color-texto-secundario); font-size: 1.1rem; }
+        .event-counter strong { color: var(--color-primario); font-size: 1.2rem; }
+        .search-wrapper { position: relative; max-width: 500px; margin: 2rem auto 1rem auto; }
         #searchInput { width: 100%; padding: 1rem 3.5rem 1rem 1.5rem; font-size: 1rem; border-radius: 50px; border: 1px solid var(--color-borde); background-color: var(--color-superficie); color: var(--color-texto-principal); box-sizing: border-box; }
         #searchButton { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: none; background-color: var(--color-primario); color: var(--color-fondo); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
-        #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; text-align: left; }
         
+        /* --- ¡NUEVO! ESTILOS PARA LOS BOTONES DE BÚSQUEDA RÁPIDA --- */
+        .quick-search-container {
+            margin-bottom: 4rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+        .quick-search-btn {
+            background-color: var(--color-superficie);
+            color: var(--color-texto-secundario);
+            border: 1px solid var(--color-borde);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .quick-search-btn:hover {
+            background-color: var(--color-primario);
+            color: var(--color-fondo);
+        }
+        
+        #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; text-align: left; }
         .evento-card { background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeIn 0.5s ease-in-out; }
         .evento-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); }
+        /* El resto de estilos (tarjetas, footer, etc.) sin cambios */
         .evento-card h3 { margin: 0; font-size: 1.5rem; font-weight: 700; }
         .evento-card .artista { color: var(--color-primario); font-weight: 700; display: flex; align-items: center; }
         .evento-card .descripcion { color: var(--color-texto-secundario); line-height: 1.6; }
@@ -55,18 +68,22 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>Duende <span>Finder</span></h1>
         <p>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
-        
-        <div class="event-counter">
-            <p>Actualmente tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p>
-        </div>
+        <div class="event-counter"><p>Actualmente tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p></div>
         
         <div class="search-wrapper">
             <input type="text" id="searchInput" placeholder="Busca por artista, ciudad, festival...">
             <button id="searchButton" aria-label="Buscar"><i class="fas fa-search"></i></button>
+        </div>
+        
+        <div class="quick-search-container">
+            <button class="quick-search-btn" data-search="Madrid">Madrid</button>
+            <button class="quick-search-btn" data-search="Sevilla">Sevilla</button>
+            <button class="quick-search-btn" data-search="Jerez">Jerez</button>
+            <button class="quick-search-btn" data-search="Barcelona">Barcelona</button>
+            <button class="quick-search-btn" data-search="Festival">Festival</button>
         </div>
 
         <div id="loadingMessage" style="display: none;"></div>
@@ -82,56 +99,13 @@
         const searchInput = document.getElementById('searchInput');
         const resultsContainer = document.getElementById('resultsContainer');
         const loadingMessage = document.getElementById('loadingMessage');
-        const API_URL_BASE = 'https://duende-api.onrender.com/events';
-        // Nueva constante para el contador
         const totalEventsSpan = document.getElementById('total-events');
+        const API_URL_BASE = 'https://duende-api.onrender.com/events';
 
-        // NUEVA FUNCIÓN PARA OBTENER EL TOTAL DE EVENTOS
-        async function loadTotalEventsCount() {
-            try {
-                const response = await fetch(`${API_URL_BASE}/count`);
-                if (!response.ok) return;
-                const data = await response.json();
-                if (data.total !== undefined) {
-                    totalEventsSpan.textContent = data.total;
-                }
-            } catch (error) {
-                console.error("Error al obtener el total de eventos:", error);
-                totalEventsSpan.textContent = "N/A";
-            }
-        }
-        
-        async function loadUpcomingEvents() {
-            // (Esta función no cambia)
-            loadingMessage.style.display = 'block';
-            resultsContainer.innerHTML = '';
-            try {
-                const response = await fetch(`${API_URL_BASE}?timeframe=week`);
-                if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
-                const events = await response.json();
-                displayEvents(events);
-            } catch (error) {
-                resultsContainer.innerHTML = '<p>No se pudieron cargar los eventos próximos.</p>';
-            } finally {
-                loadingMessage.style.display = 'none';
-            }
-        }
-
-        // Modificamos el "escuchador" de carga para que llame a ambas funciones
-        document.addEventListener('DOMContentLoaded', () => {
-            loadUpcomingEvents();
-            loadTotalEventsCount();
-        });
-
-        // El resto de tu script (listeners de búsqueda y displayEvents) no cambia...
-        searchInput.addEventListener('keyup', function(event) { if (event.key === "Enter") { searchButton.click(); } });
-        searchButton.addEventListener('click', async () => { /* ... */ });
-        function displayEvents(events) { /* ... */ }
-
-        // Pego aquí de nuevo el resto del script para que lo tengas completo
-        searchButton.onclick = async () => {
-            const query = searchInput.value.trim();
-            if (!query) { loadUpcomingEvents(); return; }
+        // Función para ejecutar una búsqueda
+        async function performSearch(query) {
+            if (!query) return;
+            searchInput.value = query; // Actualizamos el input con el término de búsqueda
             loadingMessage.style.display = 'block';
             resultsContainer.innerHTML = '';
             try {
@@ -145,13 +119,48 @@
             } finally {
                 loadingMessage.style.display = 'none';
             }
-        };
+        }
+        
+        // ¡NUEVO! LÓGICA PARA LOS BOTONES DE BÚSQUEDA RÁPIDA
+        document.querySelectorAll('.quick-search-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const searchTerm = button.dataset.search;
+                performSearch(searchTerm);
+            });
+        });
+
+        // El resto del script que ya teníamos...
+        async function loadTotalEventsCount() { /* ... */ }
+        async function loadUpcomingEvents() { /* ... */ }
+        document.addEventListener('DOMContentLoaded', () => { loadUpcomingEvents(); loadTotalEventsCount(); });
+        searchInput.addEventListener('keyup', (event) => { if (event.key === "Enter") { searchButton.click(); } });
+        searchButton.addEventListener('click', () => performSearch(searchInput.value.trim()));
+        function displayEvents(events) { /* ... */ }
+
+        // Pego aquí el resto de las funciones para que lo tengas completo
+        async function loadTotalEventsCount() {
+            try {
+                const response = await fetch(`${API_URL_BASE}/count`);
+                if (!response.ok) return;
+                const data = await response.json();
+                if (data.total !== undefined) { totalEventsSpan.textContent = data.total; }
+            } catch (error) { totalEventsSpan.textContent = "N/A"; }
+        }
+        
+        async function loadUpcomingEvents() {
+            loadingMessage.style.display = 'block';
+            resultsContainer.innerHTML = '';
+            try {
+                const response = await fetch(`${API_URL_BASE}?timeframe=week`);
+                if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
+                const events = await response.json();
+                displayEvents(events);
+            } catch (error) { resultsContainer.innerHTML = '<p>No se pudieron cargar los eventos próximos.</p>'; } 
+            finally { loadingMessage.style.display = 'none'; }
+        }
 
         function displayEvents(events) {
-            if (events.length === 0) {
-                resultsContainer.innerHTML = '<p>No se encontraron eventos.</p>';
-                return;
-            }
+            if (events.length === 0) { resultsContainer.innerHTML = '<p>No se encontraron eventos.</p>'; return; }
             resultsContainer.innerHTML = '';
             events.forEach(event => {
                 const eventCard = document.createElement('div');
