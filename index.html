@@ -12,11 +12,11 @@
     <link rel="icon" type="image/png" href="favicon.png">
 
     <style>
-        /* --- ESTILOS GENERALES Y TEMA OSCURO (CORREGIDO) --- */
         :root {
             --color-fondo: #121212; --color-superficie: #1e1e1e; --color-borde: #444;
             --color-primario: #3DDC84; --color-texto-principal: #e0e0e0; --color-texto-secundario: #a0a0a0;
         }
+        html { scroll-behavior: smooth; /* Para que el scroll sea suave */ }
         body { font-family: 'Inter', sans-serif; background-color: var(--color-fondo); color: var(--color-texto-principal); margin: 0; padding: 2rem; display: flex; flex-direction: column; min-height: 100vh; }
         .container { max-width: 1200px; margin: auto; text-align: center; flex-grow: 1; }
         h1 { font-size: 3rem; font-weight: 900; }
@@ -26,27 +26,23 @@
         .search-wrapper { position: relative; max-width: 500px; margin: 2rem auto 1rem auto; }
         #searchInput { width: 100%; padding: 1rem 3.5rem 1rem 1.5rem; font-size: 1rem; border-radius: 50px; border: 1px solid var(--color-borde); background-color: var(--color-superficie); color: var(--color-texto-principal); box-sizing: border-box; }
         #searchButton { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: none; background-color: var(--color-primario); color: var(--color-fondo); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+        .quick-search-container { margin-bottom: 4rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+        .quick-search-btn { background-color: var(--color-superficie); color: var(--color-texto-secundario); border: 1px solid var(--color-borde); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease; }
+        .quick-search-btn:hover { background-color: var(--color-primario); color: var(--color-fondo); }
         
-        /* --- ¡NUEVO! ESTILOS PARA LOS BOTONES DE BÚSQUEDA RÁPIDA --- */
-        .quick-search-container {
-            margin-bottom: 4rem;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.75rem;
-        }
-        .quick-search-btn {
-            background-color: var(--color-superficie);
+        /* --- ESTILOS PARA MENSAJE DE "NO HAY RESULTADOS" --- */
+        .no-results {
+            padding: 2rem;
             color: var(--color-texto-secundario);
-            border: 1px solid var(--color-borde);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
-        .quick-search-btn:hover {
-            background-color: var(--color-primario);
-            color: var(--color-fondo);
+        .no-results a {
+            color: var(--color-primario);
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .no-results a:hover {
+            text-decoration: underline;
         }
         
         #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; text-align: left; }
@@ -63,21 +59,46 @@
         .card-header { padding-bottom: 0.5rem; }
         .verificado-badge { display: inline-block; background-color: rgba(61, 220, 132, 0.1); color: var(--color-primario); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; border: 1px solid var(--color-primario); margin-left: 0.75rem; vertical-align: middle; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* --- ESTILOS PARA EL BOTÓN DE "VOLVER ARRIBA" --- */
+        #back-to-top-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--color-primario);
+            color: var(--color-fondo);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            display: none; /* Inicialmente oculto */
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #back-to-top-btn:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
         footer { text-align: center; padding: 2rem; margin-top: 4rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); }
         footer a { color: var(--color-primario); text-decoration: none; font-weight: 700; }
     </style>
 </head>
 <body>
+
     <div class="container">
         <h1>Duende <span>Finder</span></h1>
         <p>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
         <div class="event-counter"><p>Actualmente tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p></div>
-        
         <div class="search-wrapper">
             <input type="text" id="searchInput" placeholder="Busca por artista, ciudad, festival...">
             <button id="searchButton" aria-label="Buscar"><i class="fas fa-search"></i></button>
         </div>
-        
         <div class="quick-search-container">
             <button class="quick-search-btn" data-search="Madrid">Madrid</button>
             <button class="quick-search-btn" data-search="Sevilla">Sevilla</button>
@@ -85,7 +106,6 @@
             <button class="quick-search-btn" data-search="Barcelona">Barcelona</button>
             <button class="quick-search-btn" data-search="Festival">Festival</button>
         </div>
-
         <div id="loadingMessage" style="display: none;"></div>
         <div id="resultsContainer"></div>
     </div>
@@ -94,77 +114,55 @@
         <p>Un proyecto de <a href="https://afland.es" target="_blank" rel="noopener noreferrer">Afland.es</a></p>
     </footer>
 
+    <button id="back-to-top-btn" aria-label="Volver arriba">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+
     <script>
+        // Declaraciones de constantes (se añade la del nuevo botón)
         const searchButton = document.getElementById('searchButton');
         const searchInput = document.getElementById('searchInput');
         const resultsContainer = document.getElementById('resultsContainer');
         const loadingMessage = document.getElementById('loadingMessage');
         const totalEventsSpan = document.getElementById('total-events');
+        const backToTopBtn = document.getElementById('back-to-top-btn'); // Nuevo botón
         const API_URL_BASE = 'https://duende-api.onrender.com/events';
 
-        // Función para ejecutar una búsqueda
-        async function performSearch(query) {
-            if (!query) return;
-            searchInput.value = query; // Actualizamos el input con el término de búsqueda
-            loadingMessage.style.display = 'block';
-            resultsContainer.innerHTML = '';
-            try {
-                const fullUrl = `${API_URL_BASE}?search=${encodeURIComponent(query)}`;
-                const response = await fetch(fullUrl);
-                if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
-                const events = await response.json();
-                displayEvents(events);
-            } catch (error) {
-                resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda.</p>';
-            } finally {
-                loadingMessage.style.display = 'none';
+        // --- ¡NUEVO! LÓGICA PARA EL BOTÓN DE "VOLVER ARRIBA" ---
+        // Muestra el botón si el scroll baja más de 300px
+        window.onscroll = () => {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                backToTopBtn.style.display = "flex";
+            } else {
+                backToTopBtn.style.display = "none";
             }
-        }
-        
-        // ¡NUEVO! LÓGICA PARA LOS BOTONES DE BÚSQUEDA RÁPIDA
-        document.querySelectorAll('.quick-search-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                const searchTerm = button.dataset.search;
-                performSearch(searchTerm);
-            });
+        };
+        // Al hacer clic, vuelve al inicio de la página
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({top: 0, behavior: 'smooth'});
         });
-
-        // El resto del script que ya teníamos...
-        async function loadTotalEventsCount() { /* ... */ }
-        async function loadUpcomingEvents() { /* ... */ }
-        document.addEventListener('DOMContentLoaded', () => { loadUpcomingEvents(); loadTotalEventsCount(); });
-        searchInput.addEventListener('keyup', (event) => { if (event.key === "Enter") { searchButton.click(); } });
-        searchButton.addEventListener('click', () => performSearch(searchInput.value.trim()));
-        function displayEvents(events) { /* ... */ }
-
-        // Pego aquí el resto de las funciones para que lo tengas completo
-        async function loadTotalEventsCount() {
-            try {
-                const response = await fetch(`${API_URL_BASE}/count`);
-                if (!response.ok) return;
-                const data = await response.json();
-                if (data.total !== undefined) { totalEventsSpan.textContent = data.total; }
-            } catch (error) { totalEventsSpan.textContent = "N/A"; }
-        }
         
-        async function loadUpcomingEvents() {
-            loadingMessage.style.display = 'block';
-            resultsContainer.innerHTML = '';
-            try {
-                const response = await fetch(`${API_URL_BASE}?timeframe=week`);
-                if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
-                const events = await response.json();
-                displayEvents(events);
-            } catch (error) { resultsContainer.innerHTML = '<p>No se pudieron cargar los eventos próximos.</p>'; } 
-            finally { loadingMessage.style.display = 'none'; }
-        }
-
+        // --- FUNCIÓN displayEvents MODIFICADA ---
         function displayEvents(events) {
-            if (events.length === 0) { resultsContainer.innerHTML = '<p>No se encontraron eventos.</p>'; return; }
+            // Si no hay eventos, mostramos el nuevo mensaje con enlace para recargar
+            if (events.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <p>No se encontraron eventos para tu búsqueda.</p>
+                        <p><a onclick="location.reload()">
+                            <i class="fas fa-sync-alt"></i> Recargar la página
+                        </a></p>
+                    </div>
+                `;
+                return;
+            }
+            // El resto de la función no cambia
             resultsContainer.innerHTML = '';
             events.forEach(event => {
                 const eventCard = document.createElement('div');
                 eventCard.className = 'evento-card';
+                // ... (el resto del código que genera las tarjetas es el mismo)
                 const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                 const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
                 const mapsQuery = encodeURIComponent(fullLocation);
@@ -179,6 +177,46 @@
                 `;
                 resultsContainer.appendChild(eventCard);
             });
+        }
+
+        // El resto del script (listeners y otras funciones) no necesita cambios...
+        document.addEventListener('DOMContentLoaded', () => { loadUpcomingEvents(); loadTotalEventsCount(); });
+        async function loadTotalEventsCount() { /* ... */ }
+        async function loadUpcomingEvents() { /* ... */ }
+        searchInput.addEventListener('keyup', (event) => { if (event.key === "Enter") { searchButton.click(); } });
+        searchButton.addEventListener('click', () => performSearch(searchInput.value.trim()));
+        document.querySelectorAll('.quick-search-btn').forEach(button => { button.addEventListener('click', () => { performSearch(button.dataset.search); }); });
+        async function performSearch(query) { /* ... */ }
+
+        // Pego aquí el resto de las funciones para que lo tengas todo junto
+        async function loadTotalEventsCount() {
+            try {
+                const response = await fetch(`${API_URL_BASE}/count`); if (!response.ok) return;
+                const data = await response.json();
+                if (data.total !== undefined) { totalEventsSpan.textContent = data.total; }
+            } catch (error) { totalEventsSpan.textContent = "N/A"; }
+        }
+        async function loadUpcomingEvents() {
+            loadingMessage.style.display = 'block'; resultsContainer.innerHTML = '';
+            try {
+                const response = await fetch(`${API_URL_BASE}?timeframe=week`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const events = await response.json();
+                displayEvents(events);
+            } catch (error) { resultsContainer.innerHTML = '<p>No se pudieron cargar los eventos próximos.</p>'; } 
+            finally { loadingMessage.style.display = 'none'; }
+        }
+        async function performSearch(query) {
+            if (!query) { loadUpcomingEvents(); return; }
+            loadingMessage.style.display = 'block'; resultsContainer.innerHTML = '';
+            try {
+                const fullUrl = `${API_URL_BASE}?search=${encodeURIComponent(query)}`;
+                const response = await fetch(fullUrl);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const events = await response.json();
+                displayEvents(events);
+            } catch (error) { resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda.</p>'; } 
+            finally { loadingMessage.style.display = 'none'; }
         }
     </script>
 </body>
