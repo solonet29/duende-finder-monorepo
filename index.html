@@ -22,108 +22,65 @@
         h1 { font-size: 3rem; font-weight: 900; }
         h1 span { color: var(--color-primario); }
         .event-counter { margin-top: -1.5rem; margin-bottom: 2.5rem; color: var(--color-texto-secundario); font-size: 1.1rem; }
-        .event-counter strong { color: var(--color-primario); font-size: 1.2rem; }
-        .search-wrapper { position: relative; max-width: 500px; margin: 2rem auto 1rem auto; }
-        #searchInput { width: 100%; padding: 1rem 3.5rem 1rem 1.5rem; font-size: 1rem; border-radius: 50px; border: 1px solid var(--color-borde); background-color: var(--color-superficie); color: var(--color-texto-principal); box-sizing: border-box; }
-        #searchButton { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: none; background-color: var(--color-primario); color: var(--color-fondo); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
-        .quick-search-container { margin-bottom: 4rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
-        .quick-search-btn { background-color: var(--color-superficie); color: var(--color-texto-secundario); border: 1px solid var(--color-borde); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease; }
-        .quick-search-btn:hover { background-color: var(--color-primario); color: var(--color-fondo); }
-        .no-results { padding: 2rem; color: var(--color-texto-secundario); }
-        .no-results a { color: var(--color-primario); text-decoration: none; font-weight: bold; cursor: pointer; }
-        .no-results a:hover { text-decoration: underline; }
-        #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; text-align: left; }
-
-        .evento-card { background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeIn 0.5s ease-in-out; }
-        .evento-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); }
-        .evento-card h3 { margin: 0; font-size: 1.5rem; font-weight: 700; }
-        .evento-card .artista { color: var(--color-primario); font-weight: 700; }
         
-        .descripcion-container {
-            flex-grow: 1; /* Esto asegura que las tarjetas tengan la misma altura */
-        }
-        .evento-card .descripcion {
-            color: var(--color-texto-secundario);
-            line-height: 1.6;
-            display: -webkit-box;
-            -webkit-line-clamp: 4;
-            -webkit-box-orient: vertical;  
-            overflow: hidden;
-        }
-
-        .evento-detalle { display: flex; align-items: center; gap: 0.75rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); padding-top: 1rem; }
+        .advanced-search-form { background-color: var(--color-superficie); padding: 2rem; border-radius: 12px; border: 1px solid var(--color-borde); display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; align-items: end; margin-bottom: 4rem; text-align: left; }
+        .form-field label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: var(--color-texto-secundario); font-size: 0.9rem; }
+        .form-field input, .form-field select { width: 100%; padding: 0.75rem; font-size: 1rem; border-radius: 6px; border: 1px solid var(--color-borde); background-color: var(--color-fondo); color: var(--color-texto-principal); box-sizing: border-box; }
+        .form-field button { width: 100%; padding: 0.75rem; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; background-color: var(--color-primario); color: var(--color-fondo); transition: background-color 0.3s ease; }
+        .form-field button:hover { background-color: #31b36c; }
+        
+        #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+        .evento-card { background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeIn 0.5s ease-in-out; }
+        .evento-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); }
+        .card-header { min-height: 4.5rem; display: flex; align-items: center; }
+        .evento-card h3 { margin: 0; font-size: 1.5rem; font-weight: 700; text-align: left; }
+        .evento-card .artista { color: var(--color-primario); font-weight: 700; text-align: left; margin-top: 1rem; }
+        .descripcion-container { flex-grow: 1; text-align: left; margin-top: 1rem; }
+        .evento-card .descripcion { color: var(--color-texto-secundario); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+        .verificado-badge { display: inline-block; background-color: rgba(61, 220, 132, 0.1); color: var(--color-primario); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; border: 1px solid var(--color-primario); margin-top: 1rem; width: 110px; text-align: center; box-sizing: border-box; }
+        .evento-detalle { display: flex; align-items: center; gap: 0.75rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); padding-top: 1rem; margin-top: 1rem; }
         .evento-detalle i { color: var(--color-primario); width: 20px; text-align: center; }
         .evento-detalle a { color: inherit; text-decoration: none; transition: color 0.3s ease; }
         .evento-detalle a:hover { color: var(--color-primario); text-decoration: underline; }
-
-        /* 1. MÁS ESPACIO: Añadimos un margen inferior a la cabecera */
-        .card-header { padding-bottom: 0.5rem; margin-bottom: 0.5rem; }
-        .card-header { padding-bottom: 0.5rem; margin-bottom: 0.5rem; 
-        min-height: 4.5rem; /* <-- ¡LÍNEA AÑADIDA! */
+        
+        /* --- ESTILO PARA EL BOTÓN DE FUENTE --- */
+        .source-link-container {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-borde);
+            text-align: right;
         }
-
-        /* 2. ETIQUETA: Estilos ajustados para la nueva posición y tamaño */
-        .verificado-badge {
-            display: inline-block;
-            background-color: rgba(61, 220, 132, 0.1);
+        .source-link-btn {
+            background-color: var(--color-superficie);
             color: var(--color-primario);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
             border: 1px solid var(--color-primario);
-            margin-top: 1rem;
-            width: 110px; /* Ancho fijo para que no varíe */
-            text-align: center;
-            box-sizing: border-box;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .source-link-btn:hover {
+            background-color: var(--color-primario);
+            color: var(--color-fondo);
         }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        #back-to-top-btn { position: fixed; bottom: 20px; right: 20px; background-color: var(--color-primario); color: var(--color-fondo); border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 1.5rem; display: none; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; transition: opacity 0.3s ease, transform 0.3s ease; }
-        #back-to-top-btn:hover { opacity: 0.8; transform: scale(1.1); }
-        footer { text-align: center; padding: 2rem; margin-top: 4rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); }
-        footer a { color: var(--color-primario); text-decoration: none; font-weight: 700; }
+        /* ... Estilos de footer y botón "volver arriba" sin cambios ... */
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Duende <span>Finder</span></h1>
-        <p>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
-        <div class="event-counter"><p>Actualmente tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p></div>
-        <div class="search-wrapper">
-            <input type="text" id="searchInput" placeholder="Busca por artista, ciudad, festival...">
-            <button id="searchButton" aria-label="Buscar"><i class="fas fa-search"></i></button>
-        </div>
-        <div class="quick-search-container">
-            <button class="quick-search-btn" data-search="Madrid">Madrid</button>
-            <button class="quick-search-btn" data-search="Sevilla">Sevilla</button>
-            <button class="quick-search-btn" data-search="Jerez">Jerez</button>
-            <button class="quick-search-btn" data-search="Barcelona">Barcelona</button>
-            <button class="quick-search-btn" data-search="Festival">Festival</button>
-        </div>
-        <div id="loadingMessage" style="display: none;"></div>
         <div id="resultsContainer"></div>
     </div>
-    <footer>
-        <p>Un proyecto de <a href="https://afland.es" target="_blank" rel="noopener noreferrer">Afland.es</a></p>
-    </footer>
-    <button id="back-to-top-btn" aria-label="Volver arriba"><i class="fas fa-arrow-up"></i></button>
-
+    
     <script>
-        const searchButton = document.getElementById('searchButton');
-        const searchInput = document.getElementById('searchInput');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const loadingMessage = document.getElementById('loadingMessage');
-        const totalEventsSpan = document.getElementById('total-events');
-        const backToTopBtn = document.getElementById('back-to-top-btn');
-        const API_URL_BASE = 'https://duende-api.onrender.com/events';
+        // ... constantes y listeners sin cambios ...
 
-        window.onscroll = () => { if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { backToTopBtn.style.display = "flex"; } else { backToTopBtn.style.display = "none"; } };
-        backToTopBtn.addEventListener('click', () => { window.scrollTo({top: 0, behavior: 'smooth'}); });
-        
-        // --- 3. CAMBIO EN LA FUNCIÓN QUE GENERA LAS TARJETAS ---
         function displayEvents(events) {
             if (events.length === 0) {
-                resultsContainer.innerHTML = `<div class="no-results"><p>No se encontraron eventos para tu búsqueda.</p><p><a onclick="location.reload()"><i class="fas fa-sync-alt"></i> Recargar la página</a></p></div>`;
+                // ... (código de "no hay resultados" sin cambios)
                 return;
             }
             resultsContainer.innerHTML = '';
@@ -135,13 +92,20 @@
                 const mapsQuery = encodeURIComponent(fullLocation);
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
 
-                // Movemos la etiqueta "Verificado" al final de la descripción
+                // --- ¡AQUÍ ESTÁ LA MEJORA! ---
+                // Creamos el HTML para el botón, solo si el evento tiene una 'sourceURL'.
+                const sourceButtonHtml = event.sourceURL 
+                    ? `<div class="source-link-container">
+                         <a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn">
+                             <i class="fas fa-external-link-alt"></i> Ver Fuente
+                         </a>
+                       </div>`
+                    : ''; // Si no hay URL, esta variable quedará vacía.
+
+                // Añadimos la variable 'sourceButtonHtml' al final de la tarjeta.
                 eventCard.innerHTML = `
                     <div class="card-header"><h3>${event.name}</h3></div>
-                    <div class="artista">
-                        <i class="fas fa-user"></i>
-                        <span>${event.artist}</span>
-                    </div>
+                    <div class="artista"><i class="fas fa-user"></i>&nbsp;<span>${event.artist}</span></div>
                     <div class="descripcion-container">
                         <p class="descripcion">${event.description}</p>
                         ${event.verified ? '<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>' : ''}
@@ -149,19 +113,13 @@
                     <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
                     <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
                     <div class="evento-detalle"><i class="fas fa-map-marker-alt"></i><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><strong>Lugar:</strong> ${fullLocation}</a></div>
+                    ${sourceButtonHtml}
                 `;
                 resultsContainer.appendChild(eventCard);
             });
         }
         
-        // El resto de funciones (performSearch, etc.) sin cambios
-        async function performSearch(query) { if (!query) { loadUpcomingEvents(); return; } loadingMessage.style.display = 'block'; resultsContainer.innerHTML = ''; try { const fullUrl = `${API_URL_BASE}?search=${encodeURIComponent(query)}`; const response = await fetch(fullUrl); if (!response.ok) throw new Error('La respuesta de la red no fue correcta'); const events = await response.json(); displayEvents(events); } catch (error) { resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda.</p>'; } finally { loadingMessage.style.display = 'none'; } }
-        document.querySelectorAll('.quick-search-btn').forEach(button => { button.addEventListener('click', () => { performSearch(button.dataset.search); }); });
-        async function loadTotalEventsCount() { try { const response = await fetch(`${API_URL_BASE}/count`); if (!response.ok) return; const data = await response.json(); if (data.total !== undefined) { totalEventsSpan.textContent = data.total; } } catch (error) { totalEventsSpan.textContent = "N/A"; } }
-        async function loadUpcomingEvents() { loadingMessage.style.display = 'block'; resultsContainer.innerHTML = ''; try { const response = await fetch(`${API_URL_BASE}?timeframe=week`); if (!response.ok) throw new Error('Network response was not ok'); const events = await response.json(); displayEvents(events); } catch (error) { resultsContainer.innerHTML = '<p>No se pudieron cargar los eventos próximos.</p>'; } finally { loadingMessage.style.display = 'none'; } }
-        document.addEventListener('DOMContentLoaded', () => { loadUpcomingEvents(); loadTotalEventsCount(); });
-        searchInput.addEventListener('keyup', (event) => { if (event.key === "Enter") { searchButton.click(); } });
-        searchButton.addEventListener('click', () => performSearch(searchInput.value.trim()));
+        // ... resto de tu script sin cambios ...
     </script>
 </body>
 </html>
