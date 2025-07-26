@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
 
     <style>
         :root {
@@ -22,16 +24,15 @@
         h1 { font-size: 3rem; font-weight: 900; }
         h1 span { color: var(--color-primario); }
         .event-counter { margin-top: -1.5rem; margin-bottom: 2.5rem; color: var(--color-texto-secundario); font-size: 1.1rem; }
-        
-        .advanced-search-form { background-color: var(--color-superficie); padding: 2rem; border-radius: 12px; border: 1px solid var(--color-borde); display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; align-items: end; margin-bottom: 4rem; text-align: left; }
+        .advanced-search-toggle { color: var(--color-primario); cursor: pointer; text-decoration: underline; margin-bottom: 1.5rem; display: inline-block; }
+        .advanced-search-panel { max-width: 800px; margin: 0 auto 4rem auto; background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; text-align: left; overflow: hidden; max-height: 0; padding: 0 2rem; transition: max-height 0.5s ease-out, padding 0.5s ease-out; }
+        .advanced-search-panel.visible { max-height: 500px; padding: 2rem; }
+        .advanced-filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; align-items: end; }
         .form-field label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: var(--color-texto-secundario); font-size: 0.9rem; }
         .form-field input, .form-field select { width: 100%; padding: 0.75rem; font-size: 1rem; border-radius: 6px; border: 1px solid var(--color-borde); background-color: var(--color-fondo); color: var(--color-texto-principal); box-sizing: border-box; }
-        .form-field button { width: 100%; padding: 0.75rem; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; background-color: var(--color-primario); color: var(--color-fondo); transition: background-color 0.3s ease; }
-        .form-field button:hover { background-color: #31b36c; }
-        
+        .form-field button { width: 100%; padding: 0.75rem; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; background-color: var(--color-primario); color: var(--color-fondo); }
         #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-        .evento-card { background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeIn 0.5s ease-in-out; }
-        .evento-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); }
+        .evento-card { background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); animation: fadeIn 0.5s ease-in-out; }
         .card-header { min-height: 4.5rem; display: flex; align-items: center; }
         .evento-card h3 { margin: 0; font-size: 1.5rem; font-weight: 700; text-align: left; }
         .evento-card .artista { color: var(--color-primario); font-weight: 700; text-align: left; margin-top: 1rem; }
@@ -40,47 +41,111 @@
         .verificado-badge { display: inline-block; background-color: rgba(61, 220, 132, 0.1); color: var(--color-primario); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; border: 1px solid var(--color-primario); margin-top: 1rem; width: 110px; text-align: center; box-sizing: border-box; }
         .evento-detalle { display: flex; align-items: center; gap: 0.75rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); padding-top: 1rem; margin-top: 1rem; }
         .evento-detalle i { color: var(--color-primario); width: 20px; text-align: center; }
-        .evento-detalle a { color: inherit; text-decoration: none; transition: color 0.3s ease; }
-        .evento-detalle a:hover { color: var(--color-primario); text-decoration: underline; }
-        
-        /* --- ESTILO PARA EL BOTÓN DE FUENTE --- */
-        .source-link-container {
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--color-borde);
-            text-align: right;
-        }
-        .source-link-btn {
-            background-color: var(--color-superficie);
-            color: var(--color-primario);
-            border: 1px solid var(--color-primario);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-        .source-link-btn:hover {
-            background-color: var(--color-primario);
-            color: var(--color-fondo);
-        }
-
+        .evento-detalle a { color: inherit; text-decoration: none; }
+        .source-link-container { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--color-borde); text-align: right; }
+        .source-link-btn { background-color: var(--color-superficie); color: var(--color-primario); border: 1px solid var(--color-primario); text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* ... Estilos de footer y botón "volver arriba" sin cambios ... */
     </style>
 </head>
 <body>
     <div class="container">
+        <h1>Duende <span>Finder</span></h1>
+        <p>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
+        <div class="event-counter"><p>Actualmente tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p></div>
+        
+        <a id="advanced-search-toggle" class="advanced-search-toggle">Búsqueda Avanzada <i class="fas fa-chevron-down"></i></a>
+        
+        <div class="advanced-search-panel" id="advanced-search-panel">
+            <div class="advanced-filters-grid">
+                <div class="form-field">
+                    <label for="text-search">Palabra clave:</label>
+                    <input type="text" id="text-search" placeholder="Ej: Festival...">
+                </div>
+                <div class="form-field">
+                    <label for="artist-filter">Artista:</label>
+                    <input type="text" id="artist-filter" placeholder="Ej: Farruquito...">
+                </div>
+                <div class="form-field">
+                    <label for="city-filter">Ciudad:</label>
+                    <input type="text" id="city-filter" placeholder="Ej: Sevilla...">
+                </div>
+                <div class="form-field">
+                    <label for="date-from">Desde la fecha:</label>
+                    <input type="date" id="date-from">
+                </div>
+                <div class="form-field">
+                    <label for="date-to">Hasta la fecha:</label>
+                    <input type="date" id="date-to">
+                </div>
+                <div class="form-field">
+                    <button type="button" id="advanced-search-button">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="loadingMessage" style="display: none;"></div>
         <div id="resultsContainer"></div>
     </div>
     
     <script>
-        // ... constantes y listeners sin cambios ...
+        // --- CONSTANTES ---
+        const API_URL_BASE = 'https://duende-api.onrender.com/events';
+        const advancedSearchToggle = document.getElementById('advanced-search-toggle');
+        const advancedSearchPanel = document.getElementById('advanced-search-panel');
+        const advancedSearchButton = document.getElementById('advanced-search-button');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const totalEventsSpan = document.getElementById('total-events');
+        
+        // --- LÓGICA DE BÚSQUEDA ---
+        async function performSearch(params) {
+            loadingMessage.style.display = 'block';
+            resultsContainer.innerHTML = '';
+            const queryString = new URLSearchParams(params).toString();
+            try {
+                const response = await fetch(`${API_URL_BASE}?${queryString}`);
+                if (!response.ok) throw new Error('Error de red');
+                const events = await response.json();
+                displayEvents(events);
+            } catch (error) {
+                resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda.</p>';
+            } finally {
+                loadingMessage.style.display = 'none';
+            }
+        }
 
+        function triggerAdvancedSearch() {
+            const params = {
+                search: document.getElementById('text-search').value.trim(),
+                artist: document.getElementById('artist-filter').value.trim(),
+                city: document.getElementById('city-filter').value.trim(),
+                dateFrom: document.getElementById('date-from').value,
+                dateTo: document.getElementById('date-to').value,
+            };
+            const filteredParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v));
+            
+            if (Object.keys(filteredParams).length > 0) {
+                performSearch(filteredParams);
+            } else {
+                loadUpcomingEvents();
+            }
+        }
+
+        // --- LISTENERS ---
+        advancedSearchToggle.addEventListener('click', () => {
+            advancedSearchPanel.classList.toggle('visible');
+            const icon = advancedSearchToggle.querySelector('i');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
+        });
+        
+        advancedSearchButton.addEventListener('click', triggerAdvancedSearch);
+        
+        // --- FUNCIONES DE CARGA Y VISUALIZACIÓN ---
         function displayEvents(events) {
             if (events.length === 0) {
-                // ... (código de "no hay resultados" sin cambios)
+                resultsContainer.innerHTML = '<h2>No se encontraron eventos.</h2>';
                 return;
             }
             resultsContainer.innerHTML = '';
@@ -89,20 +154,10 @@
                 eventCard.className = 'evento-card';
                 const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                 const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
-                const mapsQuery = encodeURIComponent(fullLocation);
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(fullLocation)}`;
+                
+                const sourceButtonHtml = event.sourceURL ? `<div class="source-link-container"><a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a></div>` : '';
 
-                // --- ¡AQUÍ ESTÁ LA MEJORA! ---
-                // Creamos el HTML para el botón, solo si el evento tiene una 'sourceURL'.
-                const sourceButtonHtml = event.sourceURL 
-                    ? `<div class="source-link-container">
-                         <a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn">
-                             <i class="fas fa-external-link-alt"></i> Ver Fuente
-                         </a>
-                       </div>`
-                    : ''; // Si no hay URL, esta variable quedará vacía.
-
-                // Añadimos la variable 'sourceButtonHtml' al final de la tarjeta.
                 eventCard.innerHTML = `
                     <div class="card-header"><h3>${event.name}</h3></div>
                     <div class="artista"><i class="fas fa-user"></i>&nbsp;<span>${event.artist}</span></div>
@@ -119,7 +174,23 @@
             });
         }
         
-        // ... resto de tu script sin cambios ...
+        async function loadTotalEventsCount() {
+            try {
+                const response = await fetch(`${API_URL_BASE}/count`);
+                if (!response.ok) return;
+                const data = await response.json();
+                if (data.total !== undefined) { totalEventsSpan.textContent = `Actualmente tenemos ${data.total} eventos en nuestra agenda.`; }
+            } catch (error) { /* No hacemos nada si falla */ }
+        }
+        
+        async function loadUpcomingEvents() {
+            performSearch({ timeframe: 'week' });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUpcomingEvents();
+            loadTotalEventsCount();
+        });
     </script>
 </body>
 </html>
