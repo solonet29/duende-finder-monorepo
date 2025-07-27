@@ -10,105 +10,208 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
 
     <style>
-        /* 1. DEFINIMOS LAS PALETAS DE COLORES PARA AMBOS TEMAS */
-        :root { /* TEMA OSCURO (POR DEFECTO) */
-            --color-fondo: #121212;
-            --color-superficie: #1e1e1e;
-            --color-borde: #444;
-            --color-primario: #3DDC84;
-            --color-texto-principal: #e0e0e0;
-            --color-texto-secundario: #a0a0a0;
+        :root {
+            --color-fondo: #121212; --color-superficie: #1e1e1e; --color-borde: #444;
+            --color-primario: #3DDC84; --color-texto-principal: #e0e0e0; --color-texto-secundario: #a0a0a0;
         }
-
-        body.light-theme { /* TEMA CLARO */
-            --color-fondo: #f8f9fa;
-            --color-superficie: #ffffff;
-            --color-borde: #dee2e6;
-            --color-primario: #0d6efd; /* Cambiamos el verde por un azul para mejor contraste */
-            --color-texto-principal: #212529;
-            --color-texto-secundario: #6c757d;
-        }
-
-        /* El resto de los estilos usan estas variables, por lo que cambiarán automáticamente */
         html { scroll-behavior: smooth; }
-        body { 
-            font-family: 'Inter', sans-serif;
-            background-color: var(--color-fondo);
-            color: var(--color-texto-principal);
-            margin: 0; padding: 2rem;
-            transition: background-color 0.3s ease, color 0.3s ease; /* Transición suave entre temas */
-        }
-        .container { max-width: 1200px; margin: auto; text-align: center; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--color-fondo); color: var(--color-texto-principal); margin: 0; padding: 2rem; display: flex; flex-direction: column; min-height: 100vh; }
+        .container { max-width: 1200px; margin: auto; text-align: center; flex-grow: 1; }
+        h1 { font-size: 3rem; font-weight: 900; }
+        h1 span { color: var(--color-primario); }
+        .event-counter { margin-top: -1.5rem; margin-bottom: 2.5rem; color: var(--color-texto-secundario); font-size: 1.1rem; }
         
-        /* 2. ESTILO PARA EL BOTÓN DEL SELECTOR DE TEMA */
-        .theme-switcher {
-            position: absolute;
-            top: 1.5rem;
-            right: 1.5rem;
-            background: var(--color-superficie);
-            border: 1px solid var(--color-borde);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            font-size: 1.5rem;
-            color: var(--color-texto-secundario);
-        }
+        .advanced-search-form { background-color: var(--color-superficie); padding: 2rem; border-radius: 12px; border: 1px solid var(--color-borde); display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; align-items: end; margin-bottom: 1.5rem; text-align: left; }
+        .form-field label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: var(--color-texto-secundario); font-size: 0.9rem; }
+        .form-field input, .form-field select { width: 100%; padding: 0.75rem; font-size: 1rem; border-radius: 6px; border: 1px solid var(--color-borde); background-color: var(--color-fondo); color: var(--color-texto-principal); box-sizing: border-box; }
+        .form-field button { width: 100%; padding: 0.75rem; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; background-color: var(--color-primario); color: var(--color-fondo); transition: background-color 0.3s ease; }
+        .form-field button:hover { background-color: #31b36c; }
+        
+        .quick-search-container { margin-bottom: 4rem; padding: 1rem 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+        .quick-search-btn { background-color: var(--color-superficie); color: var(--color-texto-secundario); border: 1px solid var(--color-borde); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: background-color 0.3s ease, color 0.3s ease; }
+        .quick-search-btn:hover { background-color: var(--color-primario); color: var(--color-fondo); }
 
-        /* ...el resto de tus estilos (h1, cards, etc.) no necesitan cambios... */
+        #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+        .evento-card { background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); animation: fadeIn 0.5s ease-in-out; }
+        .card-header { min-height: 4.5rem; display: flex; align-items: center; }
+        .evento-card h3 { margin: 0; font-size: 1.5rem; font-weight: 700; text-align: left; }
+        .evento-card .artista { color: var(--color-primario); font-weight: 700; text-align: left; margin-top: 1rem; }
+        .descripcion-container { flex-grow: 1; text-align: left; margin-top: 1rem; }
+        .evento-card .descripcion { color: var(--color-texto-secundario); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+        .verificado-badge { display: inline-block; background-color: rgba(61, 220, 132, 0.1); color: var(--color-primario); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; border: 1px solid var(--color-primario); margin-top: 1rem; width: 110px; text-align: center; box-sizing: border-box; }
+        .evento-detalle { display: flex; align-items: center; gap: 0.75rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); padding-top: 1rem; margin-top: 1rem; }
+        .evento-detalle i { color: var(--color-primario); width: 20px; text-align: center; }
+        .evento-detalle a { color: inherit; text-decoration: none; }
+        .source-link-container { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--color-borde); text-align: right; }
+        .source-link-btn { background-color: var(--color-superficie); color: var(--color-primario); border: 1px solid var(--color-primario); text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #back-to-top-btn { position: fixed; bottom: 20px; right: 20px; background-color: var(--color-primario); color: var(--color-fondo); border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 1.5rem; display: none; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; }
+        footer { text-align: center; padding: 2rem; margin-top: 4rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); }
+        footer a { color: var(--color-primario); text-decoration: none; font-weight: 700; }
     </style>
 </head>
 <body>
-    <div id="theme-switcher" class="theme-switcher" title="Cambiar tema">
-        <i class="fas fa-sun"></i> </div>
-
     <div class="container">
+        <h1>Duende <span>Finder</span></h1>
+        <p>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
+        <div class="event-counter"><p>Actualmente tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p></div>
+        
+        <form class="advanced-search-form" id="advanced-search-form">
+            <div class="form-field"><label for="text-search">Palabra clave:</label><input type="text" id="text-search" placeholder="Ej: Festival..."></div>
+            <div class="form-field"><label for="artist-filter">Artista:</label><input type="text" id="artist-filter" placeholder="Ej: Farruquito..."></div>
+            <div class="form-field"><label for="city-filter">Ciudad:</label><input type="text" id="city-filter" placeholder="Ej: Sevilla..."></div>
+            <div class="form-field"><label for="date-from">Desde la fecha:</label><input type="date" id="date-from"></div>
+            <div class="form-field"><label for="date-to">Hasta la fecha:</label><input type="date" id="date-to"></div>
+            <div class="form-field"><button type="submit"><i class="fas fa-search"></i> Buscar</button></div>
+        </form>
+
+        <div class="quick-search-container">
+             <button class="quick-search-btn" data-search="Sevilla">Sevilla</button>
+             <button class="quick-search-btn" data-search="Jerez">Jerez</button>
+             <button class="quick-search-btn" data-search="Cádiz">Cádiz</button>
+             <button class="quick-search-btn" data-search="Huelva">Huelva</button>
+             <button class="quick-search-btn" data-search="Córdoba">Córdoba</button>
+             <button class="quick-search-btn" data-search="Granada">Granada</button>
+             <button class="quick-search-btn" data-search="Málaga">Málaga</button>
+             <button class="quick-search-btn" data-search="Almería">Almería</button>
         </div>
+
+        <div id="loadingMessage" style="display: none;"></div>
+        <div id="resultsContainer"></div>
+    </div>
     
+    <footer>
+        <p>Un proyecto de <a href="https://afland.es" target="_blank" rel="noopener noreferrer">Afland.es</a></p>
+    </footer>
+    <button id="back-to-top-btn" aria-label="Volver arriba"><i class="fas fa-arrow-up"></i></button>
+
     <script>
-        // ... todo tu script de búsqueda sin cambios ...
+        const API_URL_BASE = 'https://duende-api.onrender.com/events';
+        const searchForm = document.getElementById('advanced-search-form');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const totalEventsSpan = document.getElementById('total-events');
+        const backToTopBtn = document.getElementById('back-to-top-btn');
+        const textSearchInput = document.getElementById('text-search');
 
-        // --- 4. SCRIPT PARA EL SELECTOR DE TEMA ---
-        const themeSwitcher = document.getElementById('theme-switcher');
-        const themeIcon = themeSwitcher.querySelector('i');
-        const body = document.body;
-
-        // Función para aplicar un tema
-        function applyTheme(theme) {
-            if (theme === 'light') {
-                body.classList.add('light-theme');
-                themeIcon.classList.remove('fa-sun');
-                themeIcon.classList.add('fa-moon');
-            } else {
-                body.classList.remove('light-theme');
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun');
+        async function performSearch(params) {
+            loadingMessage.style.display = 'block';
+            resultsContainer.innerHTML = '';
+            const queryString = new URLSearchParams(params).toString();
+            try {
+                const response = await fetch(`${API_URL_BASE}?${queryString}`);
+                if (!response.ok) throw new Error('Error de red');
+                const events = await response.json();
+                displayEvents(events);
+            } catch (error) {
+                resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda.</p>';
+            } finally {
+                loadingMessage.style.display = 'none';
             }
         }
 
-        // Al hacer clic, cambia el tema y lo guarda
-        themeSwitcher.addEventListener('click', () => {
-            const isLight = body.classList.contains('light-theme');
-            const newTheme = isLight ? 'dark' : 'light';
-            applyTheme(newTheme);
-            localStorage.setItem('theme', newTheme); // Guarda la preferencia
-        });
+        function setupEventListeners() {
+            searchForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const params = {
+                    search: document.getElementById('text-search').value.trim(),
+                    artist: document.getElementById('artist-filter').value.trim(),
+                    city: document.getElementById('city-filter').value.trim(),
+                    dateFrom: document.getElementById('date-from').value,
+                    dateTo: document.getElementById('date-to').value,
+                };
+                const filteredParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v));
+                
+                if (Object.keys(filteredParams).length > 0) {
+                    performSearch(filteredParams);
+                } else {
+                    loadUpcomingEvents();
+                }
+            });
 
-        // Al cargar la página, comprueba si hay un tema guardado
+            document.querySelectorAll('.quick-search-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    textSearchInput.value = button.dataset.search;
+                    searchForm.dispatchEvent(new Event('submit', { bubbles: true }));
+                });
+            });
+
+            window.onscroll = () => {
+                if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                    backToTopBtn.style.display = "flex";
+                } else {
+                    backToTopBtn.style.display = "none";
+                }
+            };
+
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            });
+        }
+
+        function displayEvents(events) {
+            if (events.length === 0) {
+                resultsContainer.innerHTML = '<h2>No se encontraron eventos.</h2>';
+                return;
+            }
+            resultsContainer.innerHTML = '';
+            events.forEach(event => {
+                const eventCard = document.createElement('div');
+                eventCard.className = 'evento-card';
+                const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+                const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(fullLocation)}`;
+                const sourceButtonHtml = event.sourceURL ? `<div class="source-link-container"><a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a></div>` : '';
+
+                // --- ¡AQUÍ ESTABA EL ERROR! CORREGIDO ---
+                // Faltaba el icono del artista y había un '$' de más.
+                eventCard.innerHTML = `
+                    <div class="card-header"><h3>${event.name}</h3></div>
+                    <div class="artista"><i class="fas fa-user"></i>&nbsp;<span>${event.artist}</span></div>
+                    <div class="descripcion-container">
+                        <p class="descripcion">${event.description}</p>
+                        ${event.verified ? '<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>' : ''}
+                    </div>
+                    <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
+                    <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
+                    <div class="evento-detalle"><i class="fas fa-map-marker-alt"></i><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><strong>Lugar:</strong> ${fullLocation}</a></div>
+                    ${sourceButtonHtml}
+                `;
+                resultsContainer.appendChild(eventCard);
+            });
+        }
+        
+        async function loadTotalEventsCount() {
+            try {
+                const response = await fetch(`${API_URL_BASE}/count`);
+                if (!response.ok) return;
+                const data = await response.json();
+                if (data.total !== undefined) { 
+                    totalEventsSpan.parentElement.innerHTML = `Actualmente tenemos <strong>${data.total}</strong> eventos en nuestra agenda.`;
+                }
+            } catch (error) { /* Silently fail */ }
+        }
+        
+        async function loadUpcomingEvents() {
+            performSearch({ timeframe: 'week' });
+        }
+        
         document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme') || 'dark'; // Oscuro por defecto
-            applyTheme(savedTheme);
-            
-            // Tus otras funciones de carga
             loadUpcomingEvents();
             loadTotalEventsCount();
             setupEventListeners();
         });
+
+        // Este script para la PWA lo dejamos aquí para el futuro
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW registrado.')).catch(err => console.log('Error en registro de SW:', err));
+            });
+        }
     </script>
 </body>
 </html>
