@@ -9,38 +9,32 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212" id="theme-color-meta">
 
     <style>
-        /* --- Definición de Variables de Color para Temas --- */
         :root {
-            /* Tema Oscuro (Por defecto) */
             --color-fondo-dark: #121212;
             --color-superficie-dark: #1e1e1e;
             --color-borde-dark: #444;
             --color-primario-dark: #3DDC84;
             --color-texto-principal-dark: #e0e0e0;
             --color-texto-secundario-dark: #a0a0a0;
-            --color-gemini-btn-dark: #3498db; /* Nuevo color azul */
+            --color-gemini-btn-dark: #3498db;
             --color-gemini-btn-hover-dark: #5dade2;
-
-
-            /* Tema Claro */
             --color-fondo-light: #f4f4f5;
             --color-superficie-light: #ffffff;
             --color-borde-light: #d4d4d8;
-            --color-primario-light: #16a34a; 
+            --color-primario-light: #16a34a;
             --color-texto-principal-light: #18181b;
             --color-texto-secundario-light: #71717a;
-            --color-gemini-btn-light: #2980b9; /* Nuevo color azul */
+            --color-gemini-btn-light: #2980b9;
             --color-gemini-btn-hover-light: #3498db;
         }
 
-        /* --- Asignación de variables según el tema --- */
         [data-theme="dark"] {
             --color-fondo: var(--color-fondo-dark);
             --color-superficie: var(--color-superficie-dark);
@@ -198,7 +192,7 @@
             line-height: 1.6;
             display: -webkit-box;
             -webkit-line-clamp: 4;
-            line-clamp: 4; /* Propiedad estándar añadida */
+            line-clamp: 4;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -303,7 +297,6 @@
             transform: translateY(0);
         }
 
-        /* --- Estilos del Modal de Gemini --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -403,15 +396,13 @@
 
     <div id="gemini-modal-overlay" class="modal-overlay">
         <div class="modal">
-            <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
-            <div id="modal-content" class="modal-content">
-                </div>
+            <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">&times;</button>
+            <div id="modal-content" class="modal-content"></div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- LÓGICA DEL TEMA (CLARO/OSCURO) ---
             const themeToggle = document.getElementById('theme-toggle');
             const toggleIcon = themeToggle.querySelector('i');
             const themeMeta = document.getElementById('theme-color-meta');
@@ -419,6 +410,7 @@
 
             function setTheme(theme) {
                 root.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
                 if (theme === 'dark') {
                     toggleIcon.classList.remove('fa-moon');
                     toggleIcon.classList.add('fa-sun');
@@ -428,83 +420,42 @@
                     toggleIcon.classList.add('fa-moon');
                     themeMeta.setAttribute('content', getComputedStyle(root).getPropertyValue('--color-fondo-light').trim());
                 }
-                localStorage.setItem('theme', theme);
             }
 
             themeToggle.addEventListener('click', () => {
-                const currentTheme = root.getAttribute('data-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                const newTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
                 setTheme(newTheme);
             });
 
             const savedTheme = localStorage.getItem('theme');
             const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            if (savedTheme) {
-                setTheme(savedTheme);
-            } else if (prefersDark) {
-                setTheme('dark');
-            } else {
-                setTheme('dark');
-            }
+            setTheme(savedTheme || (prefersDark ? 'dark' : 'dark'));
 
-            // --- LÓGICA DEL BOTÓN DE VOLVER ARRIBA ---
             const backToTopBtn = document.getElementById('back-to-top-btn');
             window.addEventListener('scroll', () => {
-                if (window.scrollY > 300) {
-                    backToTopBtn.classList.add('visible');
-                } else {
-                    backToTopBtn.classList.remove('visible');
-                }
+                backToTopBtn.classList.toggle('visible', window.scrollY > 300);
             });
 
-            // --- LÓGICA DEL MODAL DE GEMINI ---
             const modalOverlay = document.getElementById('gemini-modal-overlay');
             const modalContent = document.getElementById('modal-content');
             const modalCloseBtn = document.getElementById('modal-close-btn');
 
-            function showModal() {
-                modalOverlay.classList.add('visible');
-            }
-            function hideModal() {
-                modalOverlay.classList.remove('visible');
-            }
+            function showModal() { modalOverlay.classList.add('visible'); }
+            function hideModal() { modalOverlay.classList.remove('visible'); }
             modalCloseBtn.addEventListener('click', hideModal);
             modalOverlay.addEventListener('click', (e) => {
-                if (e.target === modalOverlay) {
-                    hideModal();
-                }
+                if (e.target === modalOverlay) hideModal();
             });
 
-            // --- LÓGICA DE GEMINI API ---
             async function getFlamencoPlan(event) {
                 showModal();
-                modalContent.innerHTML = '<div class="loader"></div>'; // Show loader
+                modalContent.innerHTML = '<div class="loader"></div>';
 
-                const prompt = `Eres un aficionado experto en flamenco y un guía turístico de Andalucía. Tu tarea es crear un plan para una noche de flamenco inolvidable en ${event.city} para alguien que va a ver a ${event.artist} en ${event.venue} el ${new Date(event.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
-
-El plan debe estar en español, ser evocador y útil. Estructura tu respuesta en las siguientes secciones, usando Markdown para los títulos (por ejemplo, '### Título'):
-
-### Calentando Motores: Tapas y Vinos
-Recomienda uno o dos bares de tapas auténticos cerca de '${event.venue}, ${event.city}' para ir antes del espectáculo. Describe brevemente el ambiente y qué tapas típicas probar.
-
-### Conociendo al Maestro/a: Sobre ${event.artist}
-Escribe una breve biografía de ${event.artist}, destacando su estilo, los palos flamencos que suele interpretar y por qué es una figura importante. Mantén un tono apasionado.
-
-### El Templo del Duende: Sobre el ${event.venue}
-Describe qué tipo de experiencia se puede esperar en '${event.venue}'. ¿Es un tablao íntimo, un gran teatro, una peña flamenca?
-
-### Para Alargar la Magia: Una Copa Después
-Sugiere un lugar cercano para tomar una copa después del espectáculo y comentar la actuación.
-
-Aquí tienes la descripción original del evento para más contexto: '${event.description}'
-
-Genera una respuesta completa y bien redactada.`;
+                const prompt = `Eres un aficionado experto en flamenco y un guía turístico de Andalucía. Tu tarea es crear un plan para una noche de flamenco inolvidable en ${event.city} para alguien que va a ver a ${event.artist} en ${event.venue} el ${new Date(event.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. El plan debe estar en español, ser evocador y útil. Estructura tu respuesta en las siguientes secciones, usando Markdown para los títulos (por ejemplo, '### Título'): ### Calentando Motores: Tapas y Vinos, ### Conociendo al Maestro/a: Sobre ${event.artist}, ### El Templo del Duende: Sobre el ${event.venue}, ### Para Alargar la Magia: Una Copa Después. Para cada sección, da recomendaciones y descripciones. Para el artista, destaca su estilo y palos. Para el local, describe el ambiente. Para las tapas y copas, sugiere sitios cercanos. Contexto adicional del evento: '${event.description}'. Genera una respuesta completa y bien redactada.`;
 
                 try {
-                    let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-                    const payload = { contents: chatHistory };
-                    const apiKey = ""; // API key will be provided by the environment
+                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                    const apiKey = ""; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
                     const response = await fetch(apiUrl, {
@@ -514,28 +465,28 @@ Genera una respuesta completa y bien redactada.`;
                     });
 
                     if (!response.ok) {
-                        throw new Error(`API Error: ${response.statusText}`);
+                        const errorBody = await response.json().catch(() => ({ error: { message: 'No se pudo leer el cuerpo del error.' }}));
+                        console.error('Error de la API de Gemini:', response.status, errorBody);
+                        const errorMessage = errorBody.error?.message || 'Respuesta de error desconocida del servidor.';
+                        throw new Error(`Error de la API: ${errorMessage}`);
                     }
 
                     const result = await response.json();
-                    
-                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
-                        let text = result.candidates[0].content.parts[0].text;
-                        // Basic Markdown to HTML conversion
-                        text = text.replace(/### (.*)/g, '<h3>$1</h3>');
-                        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                        text = text.replace(/\n/g, '<br>');
-                        modalContent.innerHTML = text;
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                    if (text) {
+                        let htmlText = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                        modalContent.innerHTML = htmlText;
                     } else {
-                        throw new Error("Respuesta inesperada de la API.");
+                        console.error("Respuesta inesperada de la API:", JSON.stringify(result, null, 2));
+                        throw new Error("La respuesta de la API no contiene el texto esperado.");
                     }
                 } catch (error) {
-                    console.error("Error al llamar a la API de Gemini:", error);
-                    modalContent.innerHTML = '<h3>Error</h3><p>No se pudo generar el plan. Por favor, inténtalo de nuevo más tarde.</p>';
+                    console.error("Error final en getFlamencoPlan:", error);
+                    modalContent.innerHTML = `<h3>Error</h3><p>No se pudo generar el plan.</p><p style="font-size: 0.8em; color: var(--color-texto-secundario);">Detalle: ${error.message}</p>`;
                 }
             }
 
-            // --- CONSTANTES Y LÓGICA DEL BUSCADOR ---
             const API_URL_BASE = 'https://duende-api.onrender.com/events';
             const resultsContainer = document.getElementById('resultsContainer');
             const statusMessage = document.getElementById('statusMessage');
@@ -586,8 +537,7 @@ Genera una respuesta completa y bien redactada.`;
                 
                 const artistDiv = document.createElement('div');
                 artistDiv.className = 'artista';
-                artistDiv.innerHTML = `<i class="fas fa-user"></i> <span></span>`;
-                artistDiv.querySelector('span').textContent = event.artist;
+                artistDiv.innerHTML = `<i class="fas fa-user"></i> <span>${event.artist}</span>`;
                 
                 const descContainer = document.createElement('div');
                 descContainer.className = 'descripcion-container';
