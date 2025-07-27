@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="manifest" href="manifest.json">
@@ -348,6 +348,19 @@
         .modal-content p {
             line-height: 1.6;
         }
+        .loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem 0;
+        }
+        .loader-container p {
+            margin-top: 1.5rem;
+            font-style: italic;
+            color: var(--color-texto-secundario);
+        }
         .loader {
             width: 48px;
             height: 48px;
@@ -357,7 +370,6 @@
             display: inline-block;
             box-sizing: border-box;
             animation: rotation 1s linear infinite;
-            margin: 2rem;
         }
         @keyframes rotation {
             0% { transform: rotate(0deg); }
@@ -396,7 +408,7 @@
 
     <div id="gemini-modal-overlay" class="modal-overlay">
         <div class="modal">
-            <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
+            <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">&times;</button>
             <div id="modal-content" class="modal-content"></div>
         </div>
     </div>
@@ -449,15 +461,18 @@
 
             async function getFlamencoPlan(event) {
                 showModal();
-                modalContent.innerHTML = '<div class="loader"></div>';
-                
-                // ✅ CLAVE DE API INSERTADA
-                const apiKey = "AIzaSyBCWwdg_936jExHjx1azCgDdk4lxbgCc1A";
+                modalContent.innerHTML = `
+                    <div class="loader-container">
+                        <div class="loader"></div>
+                        <p>Un momento, el duende está afinando la guitarra...</p>
+                    </div>
+                `;
 
                 const prompt = `Eres un aficionado experto en flamenco y un guía turístico de Andalucía. Tu tarea es crear un plan para una noche de flamenco inolvidable en ${event.city} para alguien que va a ver a ${event.artist} en ${event.venue} el ${new Date(event.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. El plan debe estar en español, ser evocador y útil. Estructura tu respuesta en las siguientes secciones, usando Markdown para los títulos (por ejemplo, '### Título'): ### Calentando Motores: Tapas y Vinos, ### Conociendo al Maestro/a: Sobre ${event.artist}, ### El Templo del Duende: Sobre el ${event.venue}, ### Para Alargar la Magia: Una Copa Después. Para cada sección, da recomendaciones y descripciones. Para el artista, destaca su estilo y palos. Para el local, describe el ambiente. Para las tapas y copas, sugiere sitios cercanos. Contexto adicional del evento: '${event.description}'. Genera una respuesta completa y bien redactada.`;
 
                 try {
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                    const apiKey = ""; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
                     const response = await fetch(apiUrl, {
@@ -614,20 +629,4 @@
                     totalEventsSpan.textContent = 'N/A';
                 }
             }
-
-            function initialize() {
-                loadTotalEventsCount();
-                const urlParams = new URLSearchParams(window.location.search);
-                const city = urlParams.get('city');
-                if (city) {
-                    performSearch({ city: city });
-                } else {
-                    performSearch({ timeframe: 'week' });
-                }
-            }
             
-            initialize();
-        });
-    </script>
-</body>
-</html>
