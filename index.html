@@ -629,4 +629,20 @@
                     totalEventsSpan.textContent = 'N/A';
                 }
             }
+
+            function initialize() {
+                loadTotalEventsCount();
+                const urlParams = new URLSearchParams(window.location.search);
+                const city = urlParams.get('city');
+                if (city) {
+                    performSearch({ city: city });
+                } else {
+                    performSearch({ timeframe: 'week' });
+                }
+            }
             
+            initialize();
+        });
+    </script>
+</body>
+</html>
