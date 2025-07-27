@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -528,7 +528,6 @@
                 if (e.target === modalOverlay) hideModal();
             });
 
-            // Lógica para mostrar/ocultar filtros
             function setupFilterToggle(toggleId, containerId) {
                 const toggleButton = document.getElementById(toggleId);
                 const container = document.getElementById(containerId);
@@ -731,7 +730,7 @@
                 loadTotalEventsCount();
                 const urlParams = new URLSearchParams(window.location.search);
                 const city = urlParams.get('city');
-                const country = urlParams.get('country'); // Check for country param
+                const country = urlParams.get('country');
                 
                 let searchParams = {};
                 if (city) {
