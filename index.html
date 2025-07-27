@@ -9,20 +9,49 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#121212">
+    <meta name="theme-color" content="#121212" id="theme-color-meta">
 
     <style>
+        /* --- Definición de Variables de Color para Temas --- */
         :root {
-            --color-fondo: #121212;
-            --color-superficie: #1e1e1e;
-            --color-borde: #444;
-            --color-primario: #3DDC84;
-            --color-texto-principal: #e0e0e0;
-            --color-texto-secundario: #a0a0a0;
+            /* Tema Oscuro (Por defecto) */
+            --color-fondo-dark: #121212;
+            --color-superficie-dark: #1e1e1e;
+            --color-borde-dark: #444;
+            --color-primario-dark: #3DDC84;
+            --color-texto-principal-dark: #e0e0e0;
+            --color-texto-secundario-dark: #a0a0a0;
+
+            /* Tema Claro */
+            --color-fondo-light: #f4f4f5;
+            --color-superficie-light: #ffffff;
+            --color-borde-light: #d4d4d8;
+            --color-primario-light: #16a34a; /* Un verde más oscuro para contraste */
+            --color-texto-principal-light: #18181b;
+            --color-texto-secundario-light: #71717a;
+        }
+
+        /* --- Asignación de variables según el tema --- */
+        [data-theme="dark"] {
+            --color-fondo: var(--color-fondo-dark);
+            --color-superficie: var(--color-superficie-dark);
+            --color-borde: var(--color-borde-dark);
+            --color-primario: var(--color-primario-dark);
+            --color-texto-principal: var(--color-texto-principal-dark);
+            --color-texto-secundario: var(--color-texto-secundario-dark);
+        }
+
+        [data-theme="light"] {
+            --color-fondo: var(--color-fondo-light);
+            --color-superficie: var(--color-superficie-light);
+            --color-borde: var(--color-borde-light);
+            --color-primario: var(--color-primario-light);
+            --color-texto-principal: var(--color-texto-principal-light);
+            --color-texto-secundario: var(--color-texto-secundario-light);
         }
 
         html {
@@ -42,6 +71,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         main.container {
@@ -50,6 +80,7 @@
             margin: 0 auto;
             text-align: center;
             flex-grow: 1;
+            position: relative;
         }
 
         h1 {
@@ -60,6 +91,31 @@
             color: var(--color-primario);
         }
 
+        /* --- Botón de cambio de tema --- */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: none;
+            border: 2px solid var(--color-borde);
+            color: var(--color-texto-secundario);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+        .theme-toggle-btn:hover,
+        .theme-toggle-btn:focus-visible {
+            color: var(--color-primario);
+            border-color: var(--color-primario);
+            outline: none;
+        }
+
         .event-counter {
             margin-top: 1.5rem;
             margin-bottom: 2.5rem;
@@ -67,7 +123,6 @@
             font-size: 1.1rem;
         }
 
-        /* --- Estilos para los nuevos botones de búsqueda rápida --- */
         .quick-filters-container {
             display: flex;
             flex-wrap: wrap;
@@ -115,7 +170,8 @@
             display: flex;
             flex-direction: column;
             text-align: left;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
             animation: fadeIn 0.5s ease-in-out;
         }
 
@@ -124,35 +180,11 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .card-header {
-            min-height: 4.5rem;
-        }
-
-        .evento-card h3 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .evento-card .artista {
-            color: var(--color-primario);
-            font-weight: 700;
-            margin-top: 1rem;
-        }
-
-        .descripcion-container {
-            flex-grow: 1;
-            margin-top: 1rem;
-        }
-
-        .evento-card .descripcion {
-            color: var(--color-texto-secundario);
-            line-height: 1.6;
-            display: -webkit-box;
-            -webkit-line-clamp: 4;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
+        .card-header { min-height: 4.5rem; }
+        .evento-card h3 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+        .evento-card .artista { color: var(--color-primario); font-weight: 700; margin-top: 1rem; }
+        .descripcion-container { flex-grow: 1; margin-top: 1rem; }
+        .evento-card .descripcion { color: var(--color-texto-secundario); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 
         .verificado-badge {
             display: inline-flex;
@@ -175,27 +207,19 @@
             border-top: 1px solid var(--color-borde);
             padding-top: 1rem;
             margin-top: 1rem;
+            transition: border-color 0.3s ease;
         }
 
-        .evento-detalle i {
-            color: var(--color-primario);
-            width: 20px;
-            text-align: center;
-        }
-
-        .evento-detalle a {
-            color: inherit;
-            text-decoration: none;
-        }
-        .evento-detalle a:hover {
-            color: var(--color-primario);
-        }
+        .evento-detalle i { color: var(--color-primario); width: 20px; text-align: center; }
+        .evento-detalle a { color: inherit; text-decoration: none; }
+        .evento-detalle a:hover { color: var(--color-primario); }
 
         .source-link-container {
             margin-top: 1.5rem;
             padding-top: 1rem;
             border-top: 1px solid var(--color-borde);
             text-align: right;
+            transition: border-color 0.3s ease;
         }
 
         .source-link-btn {
@@ -217,6 +241,10 @@
 </head>
 <body>
     <main class="container">
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Cambiar tema">
+            <i class="fas fa-sun"></i>
+        </button>
+
         <h1>Duende <span>Finder</span></h1>
         <p>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
         <p class="event-counter">Tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p>
@@ -238,13 +266,50 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- CONSTANTES ---
+            // --- LÓGICA DEL TEMA (CLARO/OSCURO) ---
+            const themeToggle = document.getElementById('theme-toggle');
+            const toggleIcon = themeToggle.querySelector('i');
+            const themeMeta = document.getElementById('theme-color-meta');
+            const root = document.documentElement;
+
+            function setTheme(theme) {
+                root.setAttribute('data-theme', theme);
+                if (theme === 'dark') {
+                    toggleIcon.classList.remove('fa-moon');
+                    toggleIcon.classList.add('fa-sun');
+                    themeMeta.setAttribute('content', getComputedStyle(root).getPropertyValue('--color-fondo-dark').trim());
+                } else {
+                    toggleIcon.classList.remove('fa-sun');
+                    toggleIcon.classList.add('fa-moon');
+                    themeMeta.setAttribute('content', getComputedStyle(root).getPropertyValue('--color-fondo-light').trim());
+                }
+                localStorage.setItem('theme', theme);
+            }
+
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = root.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                setTheme(newTheme);
+            });
+
+            // Cargar tema al iniciar
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else if (prefersDark) {
+                setTheme('dark');
+            } else {
+                setTheme('dark'); // Por defecto es oscuro
+            }
+
+            // --- CONSTANTES Y LÓGICA DEL BUSCADOR ---
             const API_URL_BASE = 'https://duende-api.onrender.com/events';
             const resultsContainer = document.getElementById('resultsContainer');
             const statusMessage = document.getElementById('statusMessage');
             const totalEventsSpan = document.getElementById('total-events');
 
-            // --- FUNCIÓN DE BÚSQUEDA ---
             async function performSearch(params) {
                 statusMessage.textContent = 'Buscando eventos...';
                 resultsContainer.innerHTML = '';
@@ -252,9 +317,7 @@
                 
                 try {
                     const response = await fetch(`${API_URL_BASE}?${queryString}`);
-                    if (!response.ok) {
-                        throw new Error(`Error de red: ${response.statusText}`);
-                    }
+                    if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
                     const events = await response.json();
                     displayEvents(events);
                 } catch (error) {
@@ -263,64 +326,51 @@
                 }
             }
 
-            // --- FUNCIÓN DE RENDERIZADO (SEGURA) ---
             function displayEvents(events) {
                 statusMessage.textContent = '';
                 if (events.length === 0) {
                     statusMessage.textContent = 'No se encontraron eventos que coincidan con tu búsqueda.';
                     return;
                 }
-
                 resultsContainer.innerHTML = '';
                 const fragment = document.createDocumentFragment();
-
                 events.forEach(event => {
-                    const eventCard = createEventCard(event);
-                    fragment.appendChild(eventCard);
+                    fragment.appendChild(createEventCard(event));
                 });
-
                 resultsContainer.appendChild(fragment);
             }
             
             function createEventCard(event) {
                 const eventCard = document.createElement('article');
                 eventCard.className = 'evento-card';
-
                 const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                 const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
-
                 const header = document.createElement('div');
                 header.className = 'card-header';
                 const nameH3 = document.createElement('h3');
                 nameH3.textContent = event.name;
                 header.appendChild(nameH3);
-                
                 const artistDiv = document.createElement('div');
                 artistDiv.className = 'artista';
                 artistDiv.innerHTML = `<i class="fas fa-user"></i> <span></span>`;
                 artistDiv.querySelector('span').textContent = event.artist;
-
                 const descContainer = document.createElement('div');
                 descContainer.className = 'descripcion-container';
                 const descP = document.createElement('p');
                 descP.className = 'descripcion';
                 descP.textContent = event.description;
                 descContainer.appendChild(descP);
-
                 if (event.verified) {
                     const verifiedBadge = document.createElement('div');
                     verifiedBadge.className = 'verificado-badge';
                     verifiedBadge.innerHTML = `<i class="fas fa-check"></i> Verificado`;
                     descContainer.appendChild(verifiedBadge);
                 }
-
                 const dateDetail = createDetailItem('calendar-alt', `Fecha: ${eventDate}`);
                 const timeDetail = createDetailItem('clock', `Hora: ${event.time}`);
                 const locationDetail = createDetailItem('map-marker-alt', `Lugar: ${fullLocation}`, mapsUrl);
-
                 eventCard.append(header, artistDiv, descContainer, dateDetail, timeDetail, locationDetail);
-                
                 if (event.sourceURL) {
                     const sourceContainer = document.createElement('div');
                     sourceContainer.className = 'source-link-container';
@@ -333,7 +383,6 @@
                     sourceContainer.appendChild(sourceLink);
                     eventCard.appendChild(sourceContainer);
                 }
-
                 return eventCard;
             }
 
@@ -342,9 +391,7 @@
                 detailDiv.className = 'evento-detalle';
                 const [label, ...valueParts] = text.split(':');
                 const value = valueParts.join(':').trim();
-
                 const content = `<i class="fas fa-${icon}"></i><span><strong>${label}:</strong> ${value}</span>`;
-                
                 if (link) {
                     const anchor = document.createElement('a');
                     anchor.href = link;
@@ -358,7 +405,6 @@
                 return detailDiv;
             }
 
-            // --- CARGA DE DATOS ---
             async function loadTotalEventsCount() {
                 try {
                     const response = await fetch(`${API_URL_BASE}/count`);
@@ -373,13 +419,10 @@
                 }
             }
 
-            // --- LÓGICA DE INICIALIZACIÓN ---
             function initialize() {
                 loadTotalEventsCount();
-
                 const urlParams = new URLSearchParams(window.location.search);
                 const city = urlParams.get('city');
-
                 if (city) {
                     performSearch({ city: city });
                 } else {
