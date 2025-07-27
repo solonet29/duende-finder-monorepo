@@ -601,7 +601,8 @@
                 e.preventDefault();
                 const searchTerm = searchInput.value.trim();
                 if (searchTerm) {
-                    performSearch({ search: searchTerm });
+                    // Redirigir a una URL con el parámetro de búsqueda
+                    window.location.search = `?search=${encodeURIComponent(searchTerm)}`;
                 }
             });
 
@@ -731,15 +732,21 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const city = urlParams.get('city');
                 const country = urlParams.get('country');
+                const search = urlParams.get('search');
                 
                 let searchParams = {};
+
                 if (city) {
                     searchParams.city = city;
                 } else if (country) {
                     searchParams.country = country;
+                } else if (search) {
+                    searchParams.search = search;
+                    searchInput.value = search;
                 } else {
                     searchParams.timeframe = 'week';
                 }
+                
                 performSearch(searchParams);
             }
             
