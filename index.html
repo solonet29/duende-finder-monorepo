@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="manifest" href="manifest.json">
@@ -25,19 +25,19 @@
             --color-primario-dark: #3DDC84;
             --color-texto-principal-dark: #e0e0e0;
             --color-texto-secundario-dark: #a0a0a0;
-            --color-gemini-btn-dark: #8e44ad;
-            --color-gemini-btn-hover-dark: #9b59b6;
+            --color-gemini-btn-dark: #3498db; /* Nuevo color azul */
+            --color-gemini-btn-hover-dark: #5dade2;
 
 
             /* Tema Claro */
             --color-fondo-light: #f4f4f5;
             --color-superficie-light: #ffffff;
             --color-borde-light: #d4d4d8;
-            --color-primario-light: #16a34a; /* Un verde más oscuro para contraste */
+            --color-primario-light: #16a34a; 
             --color-texto-principal-light: #18181b;
             --color-texto-secundario-light: #71717a;
-            --color-gemini-btn-light: #8e44ad;
-            --color-gemini-btn-hover-light: #9b59b6;
+            --color-gemini-btn-light: #2980b9; /* Nuevo color azul */
+            --color-gemini-btn-hover-light: #3498db;
         }
 
         /* --- Asignación de variables según el tema --- */
@@ -192,7 +192,16 @@
         .evento-card h3 { margin: 0; font-size: 1.5rem; font-weight: 700; }
         .evento-card .artista { color: var(--color-primario); font-weight: 700; margin-top: 1rem; }
         .descripcion-container { flex-grow: 1; margin-top: 1rem; }
-        .evento-card .descripcion { color: var(--color-texto-secundario); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .evento-card .descripcion {
+            color: var(--color-texto-secundario);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            line-clamp: 4; /* Propiedad estándar añadida */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
         .verificado-badge {
             display: inline-flex;
@@ -392,13 +401,11 @@
         <i class="fas fa-arrow-up"></i>
     </a>
 
-    <!-- Modal para el plan de Gemini -->
     <div id="gemini-modal-overlay" class="modal-overlay">
         <div class="modal">
-            <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">&times;</button>
+            <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
             <div id="modal-content" class="modal-content">
-                <!-- El contenido de Gemini se insertará aquí -->
-            </div>
+                </div>
         </div>
     </div>
 
