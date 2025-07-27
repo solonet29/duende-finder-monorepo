@@ -601,7 +601,6 @@
                 e.preventDefault();
                 const searchTerm = searchInput.value.trim();
                 if (searchTerm) {
-                    // Redirigir a una URL con el parámetro de búsqueda
                     window.location.search = `?search=${encodeURIComponent(searchTerm)}`;
                 }
             });
