@@ -25,6 +25,9 @@
             --color-primario-dark: #3DDC84;
             --color-texto-principal-dark: #e0e0e0;
             --color-texto-secundario-dark: #a0a0a0;
+            --color-gemini-btn-dark: #8e44ad;
+            --color-gemini-btn-hover-dark: #9b59b6;
+
 
             /* Tema Claro */
             --color-fondo-light: #f4f4f5;
@@ -33,6 +36,8 @@
             --color-primario-light: #16a34a; /* Un verde más oscuro para contraste */
             --color-texto-principal-light: #18181b;
             --color-texto-secundario-light: #71717a;
+            --color-gemini-btn-light: #8e44ad;
+            --color-gemini-btn-hover-light: #9b59b6;
         }
 
         /* --- Asignación de variables según el tema --- */
@@ -43,6 +48,8 @@
             --color-primario: var(--color-primario-dark);
             --color-texto-principal: var(--color-texto-principal-dark);
             --color-texto-secundario: var(--color-texto-secundario-dark);
+            --color-gemini-btn: var(--color-gemini-btn-dark);
+            --color-gemini-btn-hover: var(--color-gemini-btn-hover-dark);
         }
 
         [data-theme="light"] {
@@ -52,6 +59,8 @@
             --color-primario: var(--color-primario-light);
             --color-texto-principal: var(--color-texto-principal-light);
             --color-texto-secundario: var(--color-texto-secundario-light);
+            --color-gemini-btn: var(--color-gemini-btn-light);
+            --color-gemini-btn-hover: var(--color-gemini-btn-hover-light);
         }
 
         html {
@@ -91,7 +100,6 @@
             color: var(--color-primario);
         }
 
-        /* --- Botón de cambio de tema --- */
         .theme-toggle-btn {
             position: absolute;
             top: 0;
@@ -214,12 +222,33 @@
         .evento-detalle a { color: inherit; text-decoration: none; }
         .evento-detalle a:hover { color: var(--color-primario); }
 
-        .source-link-container {
+        .card-actions {
             margin-top: 1.5rem;
             padding-top: 1rem;
             border-top: 1px solid var(--color-borde);
-            text-align: right;
-            transition: border-color 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .gemini-btn {
+            background-color: var(--color-gemini-btn);
+            color: white;
+            border: none;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .gemini-btn:hover {
+            background-color: var(--color-gemini-btn-hover);
         }
 
         .source-link-btn {
@@ -237,9 +266,104 @@
             background-color: var(--color-primario);
             color: var(--color-fondo);
         }
+
+        .back-to-top-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--color-primario);
+            color: var(--color-fondo) !important;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            text-decoration: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(100px);
+            z-index: 1000;
+        }
+        .back-to-top-btn.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* --- Estilos del Modal de Gemini --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal {
+            background-color: var(--color-superficie);
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.visible .modal {
+            transform: scale(1);
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--color-texto-secundario);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .modal-content h3 {
+            color: var(--color-primario);
+            margin-top: 0;
+        }
+        .modal-content p {
+            line-height: 1.6;
+        }
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--color-texto-principal);
+            border-bottom-color: var(--color-primario);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            margin: 2rem;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body>
+<body id="top">
     <main class="container">
         <button id="theme-toggle" class="theme-toggle-btn" aria-label="Cambiar tema">
             <i class="fas fa-sun"></i>
@@ -263,6 +387,20 @@
         <div id="statusMessage" class="status-message" aria-live="polite" role="status"></div>
         <div id="resultsContainer"></div>
     </main>
+
+    <a href="#top" id="back-to-top-btn" class="back-to-top-btn" aria-label="Volver arriba">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <!-- Modal para el plan de Gemini -->
+    <div id="gemini-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">&times;</button>
+            <div id="modal-content" class="modal-content">
+                <!-- El contenido de Gemini se insertará aquí -->
+            </div>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -292,7 +430,6 @@
                 setTheme(newTheme);
             });
 
-            // Cargar tema al iniciar
             const savedTheme = localStorage.getItem('theme');
             const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             
@@ -301,7 +438,94 @@
             } else if (prefersDark) {
                 setTheme('dark');
             } else {
-                setTheme('dark'); // Por defecto es oscuro
+                setTheme('dark');
+            }
+
+            // --- LÓGICA DEL BOTÓN DE VOLVER ARRIBA ---
+            const backToTopBtn = document.getElementById('back-to-top-btn');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backToTopBtn.classList.add('visible');
+                } else {
+                    backToTopBtn.classList.remove('visible');
+                }
+            });
+
+            // --- LÓGICA DEL MODAL DE GEMINI ---
+            const modalOverlay = document.getElementById('gemini-modal-overlay');
+            const modalContent = document.getElementById('modal-content');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+
+            function showModal() {
+                modalOverlay.classList.add('visible');
+            }
+            function hideModal() {
+                modalOverlay.classList.remove('visible');
+            }
+            modalCloseBtn.addEventListener('click', hideModal);
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    hideModal();
+                }
+            });
+
+            // --- LÓGICA DE GEMINI API ---
+            async function getFlamencoPlan(event) {
+                showModal();
+                modalContent.innerHTML = '<div class="loader"></div>'; // Show loader
+
+                const prompt = `Eres un aficionado experto en flamenco y un guía turístico de Andalucía. Tu tarea es crear un plan para una noche de flamenco inolvidable en ${event.city} para alguien que va a ver a ${event.artist} en ${event.venue} el ${new Date(event.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
+
+El plan debe estar en español, ser evocador y útil. Estructura tu respuesta en las siguientes secciones, usando Markdown para los títulos (por ejemplo, '### Título'):
+
+### Calentando Motores: Tapas y Vinos
+Recomienda uno o dos bares de tapas auténticos cerca de '${event.venue}, ${event.city}' para ir antes del espectáculo. Describe brevemente el ambiente y qué tapas típicas probar.
+
+### Conociendo al Maestro/a: Sobre ${event.artist}
+Escribe una breve biografía de ${event.artist}, destacando su estilo, los palos flamencos que suele interpretar y por qué es una figura importante. Mantén un tono apasionado.
+
+### El Templo del Duende: Sobre el ${event.venue}
+Describe qué tipo de experiencia se puede esperar en '${event.venue}'. ¿Es un tablao íntimo, un gran teatro, una peña flamenca?
+
+### Para Alargar la Magia: Una Copa Después
+Sugiere un lugar cercano para tomar una copa después del espectáculo y comentar la actuación.
+
+Aquí tienes la descripción original del evento para más contexto: '${event.description}'
+
+Genera una respuesta completa y bien redactada.`;
+
+                try {
+                    let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // API key will be provided by the environment
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API Error: ${response.statusText}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
+                        let text = result.candidates[0].content.parts[0].text;
+                        // Basic Markdown to HTML conversion
+                        text = text.replace(/### (.*)/g, '<h3>$1</h3>');
+                        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        text = text.replace(/\n/g, '<br>');
+                        modalContent.innerHTML = text;
+                    } else {
+                        throw new Error("Respuesta inesperada de la API.");
+                    }
+                } catch (error) {
+                    console.error("Error al llamar a la API de Gemini:", error);
+                    modalContent.innerHTML = '<h3>Error</h3><p>No se pudo generar el plan. Por favor, inténtalo de nuevo más tarde.</p>';
+                }
             }
 
             // --- CONSTANTES Y LÓGICA DEL BUSCADOR ---
@@ -346,15 +570,18 @@
                 const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                 const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
+                
                 const header = document.createElement('div');
                 header.className = 'card-header';
                 const nameH3 = document.createElement('h3');
                 nameH3.textContent = event.name;
                 header.appendChild(nameH3);
+                
                 const artistDiv = document.createElement('div');
                 artistDiv.className = 'artista';
                 artistDiv.innerHTML = `<i class="fas fa-user"></i> <span></span>`;
                 artistDiv.querySelector('span').textContent = event.artist;
+                
                 const descContainer = document.createElement('div');
                 descContainer.className = 'descripcion-container';
                 const descP = document.createElement('p');
@@ -367,22 +594,32 @@
                     verifiedBadge.innerHTML = `<i class="fas fa-check"></i> Verificado`;
                     descContainer.appendChild(verifiedBadge);
                 }
+                
                 const dateDetail = createDetailItem('calendar-alt', `Fecha: ${eventDate}`);
                 const timeDetail = createDetailItem('clock', `Hora: ${event.time}`);
                 const locationDetail = createDetailItem('map-marker-alt', `Lugar: ${fullLocation}`, mapsUrl);
-                eventCard.append(header, artistDiv, descContainer, dateDetail, timeDetail, locationDetail);
+                
+                const actionsContainer = document.createElement('div');
+                actionsContainer.className = 'card-actions';
+
+                const geminiButton = document.createElement('button');
+                geminiButton.className = 'gemini-btn';
+                geminiButton.innerHTML = '✨ Planear Noche';
+                geminiButton.onclick = () => getFlamencoPlan(event);
+                
+                actionsContainer.appendChild(geminiButton);
+
                 if (event.sourceURL) {
-                    const sourceContainer = document.createElement('div');
-                    sourceContainer.className = 'source-link-container';
                     const sourceLink = document.createElement('a');
                     sourceLink.href = event.sourceURL;
                     sourceLink.target = '_blank';
                     sourceLink.rel = 'noopener noreferrer';
                     sourceLink.className = 'source-link-btn';
                     sourceLink.innerHTML = `<i class="fas fa-external-link-alt"></i> Ver Fuente`;
-                    sourceContainer.appendChild(sourceLink);
-                    eventCard.appendChild(sourceContainer);
+                    actionsContainer.appendChild(sourceLink);
                 }
+                
+                eventCard.append(header, artistDiv, descContainer, dateDetail, timeDetail, locationDetail, actionsContainer);
                 return eventCard;
             }
 
