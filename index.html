@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="manifest" href="manifest.json">
@@ -125,7 +125,6 @@
             font-size: 1.1rem;
         }
 
-        /* --- Estilos Barra de Búsqueda --- */
         .search-form {
             max-width: 600px;
             margin: 0 auto 2.5rem auto;
@@ -152,12 +151,33 @@
             color: var(--color-fondo);
         }
 
+        .quick-filters-toggle {
+            background: none;
+            border: none;
+            color: var(--color-primario);
+            cursor: pointer;
+            text-decoration: underline;
+            margin-bottom: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: inherit;
+            font-size: 1.1rem;
+            padding: 0;
+        }
+
         .quick-filters-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             gap: 1rem;
             margin-bottom: 3rem;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.5s ease-out, margin-bottom 0.5s ease-out;
+        }
+        .quick-filters-container.visible {
+            max-height: 200px;
         }
 
         .quick-filter-btn {
@@ -419,7 +439,11 @@
             <button type="submit" class="search-button">Buscar</button>
         </form>
 
-        <div class="quick-filters-container">
+        <button id="province-filters-toggle" class="quick-filters-toggle">
+            Búsqueda por Provincia <i class="fas fa-chevron-down"></i>
+        </button>
+
+        <div id="province-filters-container" class="quick-filters-container">
             <a href="?city=Sevilla" class="quick-filter-btn">Sevilla</a>
             <a href="?city=Málaga" class="quick-filter-btn">Málaga</a>
             <a href="?city=Granada" class="quick-filter-btn">Granada</a>
@@ -428,6 +452,17 @@
             <a href="?city=Jerez de la Frontera" class="quick-filter-btn">Jerez</a>
             <a href="?city=Huelva" class="quick-filter-btn">Huelva</a>
             <a href="?city=Almería" class="quick-filter-btn">Almería</a>
+            <a href="?city=Jaén" class="quick-filter-btn">Jaén</a>
+        </div>
+        
+        <button id="country-filters-toggle" class="quick-filters-toggle">
+            Búsqueda por País <i class="fas fa-chevron-down"></i>
+        </button>
+
+        <div id="country-filters-container" class="quick-filters-container">
+            <a href="?country=Francia" class="quick-filter-btn">Francia</a>
+            <a href="?country=Japón" class="quick-filter-btn">Japón</a>
+            <a href="?country=EEUU" class="quick-filter-btn">EEUU</a>
         </div>
 
         <div id="statusMessage" class="status-message" aria-live="polite" role="status"></div>
@@ -491,6 +526,23 @@
                 if (e.target === modalOverlay) hideModal();
             });
 
+            // Lógica para mostrar/ocultar filtros
+            function setupFilterToggle(toggleId, containerId) {
+                const toggleButton = document.getElementById(toggleId);
+                const container = document.getElementById(containerId);
+                if (toggleButton && container) {
+                    toggleButton.addEventListener('click', () => {
+                        const isVisible = container.classList.toggle('visible');
+                        const icon = toggleButton.querySelector('i');
+                        icon.classList.toggle('fa-chevron-down', !isVisible);
+                        icon.classList.toggle('fa-chevron-up', isVisible);
+                    });
+                }
+            }
+            setupFilterToggle('province-filters-toggle', 'province-filters-container');
+            setupFilterToggle('country-filters-toggle', 'country-filters-container');
+
+
             async function getFlamencoPlan(event) {
                 showModal();
                 modalContent.innerHTML = `
@@ -541,7 +593,6 @@
             const statusMessage = document.getElementById('statusMessage');
             const totalEventsSpan = document.getElementById('total-events');
             
-            // Lógica para la nueva barra de búsqueda
             const searchForm = document.getElementById('search-form');
             const searchInput = document.getElementById('search-input');
 
@@ -678,11 +729,17 @@
                 loadTotalEventsCount();
                 const urlParams = new URLSearchParams(window.location.search);
                 const city = urlParams.get('city');
+                const country = urlParams.get('country'); // Check for country param
+                
+                let searchParams = {};
                 if (city) {
-                    performSearch({ city: city });
+                    searchParams.city = city;
+                } else if (country) {
+                    searchParams.country = country;
                 } else {
-                    performSearch({ timeframe: 'week' });
+                    searchParams.timeframe = 'week';
                 }
+                performSearch(searchParams);
             }
             
             initialize();
