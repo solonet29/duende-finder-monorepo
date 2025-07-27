@@ -3,197 +3,391 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscador de Conciertos Flamencos</title>
-   
+    <title>Buscador de Conciertos Flamencos - Duende Finder</title>
+    <meta name="description" content="Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
 
-
     <style>
         :root {
-            --color-fondo: #121212; --color-superficie: #1e1e1e; --color-borde: #444;
-            --color-primario: #3DDC84; --color-texto-principal: #e0e0e0; --color-texto-secundario: #a0a0a0;
+            --color-fondo: #121212;
+            --color-superficie: #1e1e1e;
+            --color-borde: #444;
+            --color-primario: #3DDC84;
+            --color-texto-principal: #e0e0e0;
+            --color-texto-secundario: #a0a0a0;
         }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--color-fondo); color: var(--color-texto-principal); margin: 0; padding: 2rem; display: flex; flex-direction: column; min-height: 100vh; }
-        .container { max-width: 1200px; margin: auto; text-align: center; flex-grow: 1; }
-        h1 { font-size: 3rem; font-weight: 900; }
-        h1 span { color: var(--color-primario); }
-        .event-counter { margin-top: -1.5rem; margin-bottom: 2.5rem; color: var(--color-texto-secundario); font-size: 1.1rem; }
-        .advanced-search-toggle { color: var(--color-primario); cursor: pointer; text-decoration: underline; margin-bottom: 1.5rem; display: inline-block; }
-        .advanced-search-panel { max-width: 800px; margin: 0 auto 4rem auto; background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; text-align: left; overflow: hidden; max-height: 0; padding: 0 2rem; transition: max-height 0.5s ease-out, padding 0.5s ease-out; }
-        .advanced-search-panel.visible { max-height: 500px; padding: 2rem; }
-        .advanced-filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; align-items: end; }
-        .form-field label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: var(--color-texto-secundario); font-size: 0.9rem; }
-        .form-field input, .form-field select { width: 100%; padding: 0.75rem; font-size: 1rem; border-radius: 6px; border: 1px solid var(--color-borde); background-color: var(--color-fondo); color: var(--color-texto-principal); box-sizing: border-box; }
-        .form-field button { width: 100%; padding: 0.75rem; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; background-color: var(--color-primario); color: var(--color-fondo); }
-        #resultsContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-        .evento-card { background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); animation: fadeIn 0.5s ease-in-out; }
-        .card-header { min-height: 4.5rem; display: flex; align-items: center; }
-        .evento-card h3 { margin: 0; font-size: 1.5rem; font-weight: 700; text-align: left; }
-        .evento-card .artista { color: var(--color-primario); font-weight: 700; text-align: left; margin-top: 1rem; }
-        .descripcion-container { flex-grow: 1; text-align: left; margin-top: 1rem; }
-        .evento-card .descripcion { color: var(--color-texto-secundario); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-        .verificado-badge { display: inline-block; background-color: rgba(61, 220, 132, 0.1); color: var(--color-primario); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; border: 1px solid var(--color-primario); margin-top: 1rem; width: 110px; text-align: center; box-sizing: border-box; }
-        .evento-detalle { display: flex; align-items: center; gap: 0.75rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); padding-top: 1rem; margin-top: 1rem; }
-        .evento-detalle i { color: var(--color-primario); width: 20px; text-align: center; }
-        .evento-detalle a { color: inherit; text-decoration: none; }
-        .source-link-container { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--color-borde); text-align: right; }
-        .source-link-btn { background-color: var(--color-superficie); color: var(--color-primario); border: 1px solid var(--color-primario); text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        html {
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-fondo);
+            color: var(--color-texto-principal);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main.container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 900;
+        }
+        h1 span {
+            color: var(--color-primario);
+        }
+
+        .event-counter {
+            margin-top: -1.5rem;
+            margin-bottom: 2.5rem;
+            color: var(--color-texto-secundario);
+            font-size: 1.1rem;
+        }
+
+        /* --- Estilos para los nuevos botones de búsqueda rápida --- */
+        .quick-filters-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .quick-filter-btn {
+            background-color: var(--color-superficie);
+            color: var(--color-texto-principal);
+            border: 1px solid var(--color-borde);
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .quick-filter-btn:hover,
+        .quick-filter-btn:focus-visible {
+            background-color: var(--color-primario);
+            color: var(--color-fondo);
+            border-color: var(--color-primario);
+            outline: none;
+        }
+        
+        .status-message {
+            padding: 2rem;
+            font-size: 1.2rem;
+        }
+
+        #resultsContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .evento-card {
+            background-color: var(--color-superficie);
+            border: 1px solid var(--color-borde);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            min-height: 4.5rem;
+        }
+
+        .evento-card h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .evento-card .artista {
+            color: var(--color-primario);
+            font-weight: 700;
+            margin-top: 1rem;
+        }
+
+        .descripcion-container {
+            flex-grow: 1;
+            margin-top: 1rem;
+        }
+
+        .evento-card .descripcion {
+            color: var(--color-texto-secundario);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .verificado-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: rgba(61, 220, 132, 0.1);
+            color: var(--color-primario);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--color-primario);
+            margin-top: 1rem;
+        }
+
+        .evento-detalle {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--color-texto-secundario);
+            border-top: 1px solid var(--color-borde);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .evento-detalle i {
+            color: var(--color-primario);
+            width: 20px;
+            text-align: center;
+        }
+
+        .evento-detalle a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .evento-detalle a:hover {
+            color: var(--color-primario);
+        }
+
+        .source-link-container {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-borde);
+            text-align: right;
+        }
+
+        .source-link-btn {
+            background-color: var(--color-superficie);
+            color: var(--color-primario);
+            border: 1px solid var(--color-primario);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .source-link-btn:hover {
+            background-color: var(--color-primario);
+            color: var(--color-fondo);
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <main class="container">
         <h1>Duende <span>Finder</span></h1>
         <p>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
-        <div class="event-counter"><p>Actualmente tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p></div>
-       
-        <a id="advanced-search-toggle" class="advanced-search-toggle">Búsqueda Avanzada <i class="fas fa-chevron-down"></i></a>
-       
-        <div class="advanced-search-panel" id="advanced-search-panel">
-            <div class="advanced-filters-grid">
-                <div class="form-field">
-                    <label for="text-search">Palabra clave:</label>
-                    <input type="text" id="text-search" placeholder="Ej: Festival...">
-                </div>
-                <div class="form-field">
-                    <label for="artist-filter">Artista:</label>
-                    <input type="text" id="artist-filter" placeholder="Ej: Farruquito...">
-                </div>
-                <div class="form-field">
-                    <label for="city-filter">Ciudad:</label>
-                    <input type="text" id="city-filter" placeholder="Ej: Sevilla...">
-                </div>
-                <div class="form-field">
-                    <label for="date-from">Desde la fecha:</label>
-                    <input type="date" id="date-from">
-                </div>
-                <div class="form-field">
-                    <label for="date-to">Hasta la fecha:</label>
-                    <input type="date" id="date-to">
-                </div>
-                <div class="form-field">
-                    <button type="button" id="advanced-search-button">
-                        <i class="fas fa-search"></i> Buscar
-                    </button>
-                </div>
-            </div>
+        <p class="event-counter">Tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p>
+        
+        <div class="quick-filters-container">
+            <a href="?city=Sevilla" class="quick-filter-btn">Sevilla</a>
+            <a href="?city=Málaga" class="quick-filter-btn">Málaga</a>
+            <a href="?city=Granada" class="quick-filter-btn">Granada</a>
+            <a href="?city=Cádiz" class="quick-filter-btn">Cádiz</a>
+            <a href="?city=Córdoba" class="quick-filter-btn">Córdoba</a>
+            <a href="?city=Jerez de la Frontera" class="quick-filter-btn">Jerez</a>
+            <a href="?city=Huelva" class="quick-filter-btn">Huelva</a>
+            <a href="?city=Almería" class="quick-filter-btn">Almería</a>
         </div>
-        <div id="loadingMessage" style="display: none;"></div>
+
+        <div id="statusMessage" class="status-message" aria-live="polite" role="status"></div>
         <div id="resultsContainer"></div>
-    </div>
-   
+    </main>
+
     <script>
-        // --- CONSTANTES ---
-        const API_URL_BASE = 'https://duende-api.onrender.com/events';
-        const advancedSearchToggle = document.getElementById('advanced-search-toggle');
-        const advancedSearchPanel = document.getElementById('advanced-search-panel');
-        const advancedSearchButton = document.getElementById('advanced-search-button');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const loadingMessage = document.getElementById('loadingMessage');
-        const totalEventsSpan = document.getElementById('total-events');
-       
-        // --- LÓGICA DE BÚSQUEDA ---
-        async function performSearch(params) {
-            loadingMessage.style.display = 'block';
-            resultsContainer.innerHTML = '';
-            const queryString = new URLSearchParams(params).toString();
-            try {
-                const response = await fetch(`${API_URL_BASE}?${queryString}`);
-                if (!response.ok) throw new Error('Error de red');
-                const events = await response.json();
-                displayEvents(events);
-            } catch (error) {
-                resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda.</p>';
-            } finally {
-                loadingMessage.style.display = 'none';
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONSTANTES ---
+            const API_URL_BASE = 'https://duende-api.onrender.com/events';
+            const resultsContainer = document.getElementById('resultsContainer');
+            const statusMessage = document.getElementById('statusMessage');
+            const totalEventsSpan = document.getElementById('total-events');
+
+            // --- FUNCIÓN DE BÚSQUEDA ---
+            async function performSearch(params) {
+                statusMessage.textContent = 'Buscando eventos...';
+                resultsContainer.innerHTML = '';
+                const queryString = new URLSearchParams(params).toString();
+                
+                try {
+                    const response = await fetch(`${API_URL_BASE}?${queryString}`);
+                    if (!response.ok) {
+                        throw new Error(`Error de red: ${response.statusText}`);
+                    }
+                    const events = await response.json();
+                    displayEvents(events);
+                } catch (error) {
+                    console.error('Error al realizar la búsqueda:', error);
+                    statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
+                }
             }
-        }
 
+            // --- FUNCIÓN DE RENDERIZADO (SEGURA) ---
+            function displayEvents(events) {
+                statusMessage.textContent = '';
+                if (events.length === 0) {
+                    statusMessage.textContent = 'No se encontraron eventos que coincidan con tu búsqueda.';
+                    return;
+                }
 
-        function triggerAdvancedSearch() {
-            const params = {
-                search: document.getElementById('text-search').value.trim(),
-                artist: document.getElementById('artist-filter').value.trim(),
-                city: document.getElementById('city-filter').value.trim(),
-                dateFrom: document.getElementById('date-from').value,
-                dateTo: document.getElementById('date-to').value,
-            };
-            const filteredParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v));
-           
-            if (Object.keys(filteredParams).length > 0) {
-                performSearch(filteredParams);
-            } else {
-                loadUpcomingEvents();
+                resultsContainer.innerHTML = '';
+                const fragment = document.createDocumentFragment();
+
+                events.forEach(event => {
+                    const eventCard = createEventCard(event);
+                    fragment.appendChild(eventCard);
+                });
+
+                resultsContainer.appendChild(fragment);
             }
-        }
-
-
-        // --- LISTENERS ---
-        advancedSearchToggle.addEventListener('click', () => {
-            advancedSearchPanel.classList.toggle('visible');
-            const icon = advancedSearchToggle.querySelector('i');
-            icon.classList.toggle('fa-chevron-down');
-            icon.classList.toggle('fa-chevron-up');
-        });
-       
-        advancedSearchButton.addEventListener('click', triggerAdvancedSearch);
-       
-        // --- FUNCIONES DE CARGA Y VISUALIZACIÓN ---
-        function displayEvents(events) {
-            if (events.length === 0) {
-                resultsContainer.innerHTML = '<h2>No se encontraron eventos.</h2>';
-                return;
-            }
-            resultsContainer.innerHTML = '';
-            events.forEach(event => {
-                const eventCard = document.createElement('div');
+            
+            function createEventCard(event) {
+                const eventCard = document.createElement('article');
                 eventCard.className = 'evento-card';
+
                 const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                 const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(fullLocation)}`;
-               
-                const sourceButtonHtml = event.sourceURL ? `<div class="source-link-container"><a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a></div>` : '';
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
 
+                const header = document.createElement('div');
+                header.className = 'card-header';
+                const nameH3 = document.createElement('h3');
+                nameH3.textContent = event.name;
+                header.appendChild(nameH3);
+                
+                const artistDiv = document.createElement('div');
+                artistDiv.className = 'artista';
+                artistDiv.innerHTML = `<i class="fas fa-user"></i> <span></span>`;
+                artistDiv.querySelector('span').textContent = event.artist;
 
-                eventCard.innerHTML = `
-                    <div class="card-header"><h3>${event.name}</h3></div>
-                    <div class="artista"><i class="fas fa-user"></i>&nbsp;<span>${event.artist}</span></div>
-                    <div class="descripcion-container">
-                        <p class="descripcion">${event.description}</p>
-                        ${event.verified ? '<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>' : ''}
-                    </div>
-                    <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
-                    <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
-                    <div class="evento-detalle"><i class="fas fa-map-marker-alt"></i><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><strong>Lugar:</strong> ${fullLocation}</a></div>
-                    ${sourceButtonHtml}
-                `;
-                resultsContainer.appendChild(eventCard);
-            });
-        }
-       
-        async function loadTotalEventsCount() {
-            try {
-                const response = await fetch(`${API_URL_BASE}/count`);
-                if (!response.ok) return;
-                const data = await response.json();
-                if (data.total !== undefined) { totalEventsSpan.textContent = `Actualmente tenemos ${data.total} eventos en nuestra agenda.`; }
-            } catch (error) { /* No hacemos nada si falla */ }
-        }
-       
-        async function loadUpcomingEvents() {
-            performSearch({ timeframe: 'week' });
-        }
-       
-        document.addEventListener('DOMContentLoaded', () => {
-            loadUpcomingEvents();
-            loadTotalEventsCount();
+                const descContainer = document.createElement('div');
+                descContainer.className = 'descripcion-container';
+                const descP = document.createElement('p');
+                descP.className = 'descripcion';
+                descP.textContent = event.description;
+                descContainer.appendChild(descP);
+
+                if (event.verified) {
+                    const verifiedBadge = document.createElement('div');
+                    verifiedBadge.className = 'verificado-badge';
+                    verifiedBadge.innerHTML = `<i class="fas fa-check"></i> Verificado`;
+                    descContainer.appendChild(verifiedBadge);
+                }
+
+                const dateDetail = createDetailItem('calendar-alt', `Fecha: ${eventDate}`);
+                const timeDetail = createDetailItem('clock', `Hora: ${event.time}`);
+                const locationDetail = createDetailItem('map-marker-alt', `Lugar: ${fullLocation}`, mapsUrl);
+
+                eventCard.append(header, artistDiv, descContainer, dateDetail, timeDetail, locationDetail);
+                
+                if (event.sourceURL) {
+                    const sourceContainer = document.createElement('div');
+                    sourceContainer.className = 'source-link-container';
+                    const sourceLink = document.createElement('a');
+                    sourceLink.href = event.sourceURL;
+                    sourceLink.target = '_blank';
+                    sourceLink.rel = 'noopener noreferrer';
+                    sourceLink.className = 'source-link-btn';
+                    sourceLink.innerHTML = `<i class="fas fa-external-link-alt"></i> Ver Fuente`;
+                    sourceContainer.appendChild(sourceLink);
+                    eventCard.appendChild(sourceContainer);
+                }
+
+                return eventCard;
+            }
+
+            function createDetailItem(icon, text, link = null) {
+                const detailDiv = document.createElement('div');
+                detailDiv.className = 'evento-detalle';
+                const [label, ...valueParts] = text.split(':');
+                const value = valueParts.join(':').trim();
+
+                const content = `<i class="fas fa-${icon}"></i><span><strong>${label}:</strong> ${value}</span>`;
+                
+                if (link) {
+                    const anchor = document.createElement('a');
+                    anchor.href = link;
+                    anchor.target = '_blank';
+                    anchor.rel = 'noopener noreferrer';
+                    anchor.innerHTML = content;
+                    detailDiv.appendChild(anchor);
+                } else {
+                    detailDiv.innerHTML = content;
+                }
+                return detailDiv;
+            }
+
+            // --- CARGA DE DATOS ---
+            async function loadTotalEventsCount() {
+                try {
+                    const response = await fetch(`${API_URL_BASE}/count`);
+                    if (!response.ok) return;
+                    const data = await response.json();
+                    if (data.total !== undefined) {
+                        totalEventsSpan.textContent = data.total;
+                    }
+                } catch (error) {
+                    console.warn('No se pudo cargar el contador total de eventos.');
+                    totalEventsSpan.textContent = 'N/A';
+                }
+            }
+
+            // --- LÓGICA DE INICIALIZACIÓN ---
+            function initialize() {
+                loadTotalEventsCount();
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const city = urlParams.get('city');
+
+                if (city) {
+                    performSearch({ city: city });
+                } else {
+                    performSearch({ timeframe: 'week' });
+                }
+            }
+            
+            initialize();
         });
     </script>
 </body>
