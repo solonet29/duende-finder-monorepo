@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador de Conciertos Flamencos</title>
-    
+   
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
@@ -13,28 +13,21 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
 
+
     <style>
         :root {
             --color-fondo: #121212; --color-superficie: #1e1e1e; --color-borde: #444;
             --color-primario: #3DDC84; --color-texto-principal: #e0e0e0; --color-texto-secundario: #a0a0a0;
         }
-        body.light-theme {
-            --color-fondo: #f8f9fa; --color-superficie: #ffffff; --color-borde: #dee2e6;
-            --color-primario: #0d6efd; --color-texto-principal: #212529; --color-texto-secundario: #6c757d;
-        }
         html { scroll-behavior: smooth; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--color-fondo); color: var(--color-texto-principal); margin: 0; padding: 2rem; display: flex; flex-direction: column; min-height: 100vh; transition: background-color 0.3s ease, color 0.3s ease; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--color-fondo); color: var(--color-texto-principal); margin: 0; padding: 2rem; display: flex; flex-direction: column; min-height: 100vh; }
         .container { max-width: 1200px; margin: auto; text-align: center; flex-grow: 1; }
         h1 { font-size: 3rem; font-weight: 900; }
         h1 span { color: var(--color-primario); }
-        .theme-switcher { position: absolute; top: 1.5rem; right: 1.5rem; background: var(--color-superficie); border: 1px solid var(--color-borde); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1.5rem; color: var(--color-texto-secundario); }
         .event-counter { margin-top: -1.5rem; margin-bottom: 2.5rem; color: var(--color-texto-secundario); font-size: 1.1rem; }
-        .search-wrapper { position: relative; max-width: 500px; margin: 2rem auto 1rem auto; }
-        #searchInput { width: 100%; padding: 1rem 3.5rem 1rem 1.5rem; font-size: 1rem; border-radius: 50px; border: 1px solid var(--color-borde); background-color: var(--color-superficie); color: var(--color-texto-principal); box-sizing: border-box; }
-        #searchButton { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: none; background-color: var(--color-primario); color: var(--color-fondo); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
         .advanced-search-toggle { color: var(--color-primario); cursor: pointer; text-decoration: underline; margin-bottom: 1.5rem; display: inline-block; }
-        .advanced-search-panel { max-width: 800px; margin: 0 auto 4rem auto; background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; text-align: left; overflow: hidden; max-height: 0; padding: 0 2rem; transition: max-height 0.5s ease-out, padding 0.5s ease-out, margin-top 0.5s ease-out; }
-        .advanced-search-panel.visible { max-height: 500px; padding: 2rem; margin-top: 1.5rem; }
+        .advanced-search-panel { max-width: 800px; margin: 0 auto 4rem auto; background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; text-align: left; overflow: hidden; max-height: 0; padding: 0 2rem; transition: max-height 0.5s ease-out, padding 0.5s ease-out; }
+        .advanced-search-panel.visible { max-height: 500px; padding: 2rem; }
         .advanced-filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; align-items: end; }
         .form-field label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: var(--color-texto-secundario); font-size: 0.9rem; }
         .form-field input, .form-field select { width: 100%; padding: 0.75rem; font-size: 1rem; border-radius: 6px; border: 1px solid var(--color-borde); background-color: var(--color-fondo); color: var(--color-texto-principal); box-sizing: border-box; }
@@ -53,60 +46,60 @@
         .source-link-container { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--color-borde); text-align: right; }
         .source-link-btn { background-color: var(--color-superficie); color: var(--color-primario); border: 1px solid var(--color-primario); text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        #back-to-top-btn { position: fixed; bottom: 20px; right: 20px; background-color: var(--color-primario); color: var(--color-fondo); border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 1.5rem; display: none; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; }
-        footer { text-align: center; padding: 2rem; margin-top: 4rem; color: var(--color-texto-secundario); border-top: 1px solid var(--color-borde); }
-        footer a { color: var(--color-primario); text-decoration: none; font-weight: 700; }
     </style>
 </head>
 <body>
-    <div id="theme-switcher" class="theme-switcher" title="Cambiar tema"><i class="fas fa-sun"></i></div>
-
     <div class="container">
         <h1>Duende <span>Finder</span></h1>
         <p>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
         <div class="event-counter"><p>Actualmente tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p></div>
-        
-        <div class="search-wrapper">
-            <input type="text" id="searchInput" placeholder="Búsqueda rápida...">
-            <button id="searchButton" aria-label="Buscar"><i class="fas fa-search"></i></button>
-        </div>
-
+       
         <a id="advanced-search-toggle" class="advanced-search-toggle">Búsqueda Avanzada <i class="fas fa-chevron-down"></i></a>
-        
+       
         <div class="advanced-search-panel" id="advanced-search-panel">
-            <form class="advanced-filters-grid" id="advanced-search-form">
-                <div class="form-field"><label for="artist-filter">Artista:</label><input type="text" id="artist-filter" placeholder="Ej: Farruquito..."></div>
-                <div class="form-field"><label for="city-filter">Ciudad:</label><input type="text" id="city-filter" placeholder="Ej: Sevilla..."></div>
-                <div class="form-field"><label for="date-from">Desde la fecha:</label><input type="date" id="date-from"></div>
-                <div class="form-field"><label for="date-to">Hasta la fecha:</label><input type="date" id="date-to"></div>
-                <div class="form-field"><button type="submit"><i class="fas fa-search"></i> Filtrar</button></div>
-            </form>
+            <div class="advanced-filters-grid">
+                <div class="form-field">
+                    <label for="text-search">Palabra clave:</label>
+                    <input type="text" id="text-search" placeholder="Ej: Festival...">
+                </div>
+                <div class="form-field">
+                    <label for="artist-filter">Artista:</label>
+                    <input type="text" id="artist-filter" placeholder="Ej: Farruquito...">
+                </div>
+                <div class="form-field">
+                    <label for="city-filter">Ciudad:</label>
+                    <input type="text" id="city-filter" placeholder="Ej: Sevilla...">
+                </div>
+                <div class="form-field">
+                    <label for="date-from">Desde la fecha:</label>
+                    <input type="date" id="date-from">
+                </div>
+                <div class="form-field">
+                    <label for="date-to">Hasta la fecha:</label>
+                    <input type="date" id="date-to">
+                </div>
+                <div class="form-field">
+                    <button type="button" id="advanced-search-button">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
         </div>
-
         <div id="loadingMessage" style="display: none;"></div>
         <div id="resultsContainer"></div>
     </div>
-    
-    <footer>
-        <p>Un proyecto de <a href="https://afland.es" target="_blank" rel="noopener noreferrer">Afland.es</a></p>
-    </footer>
-    <button id="back-to-top-btn" aria-label="Volver arriba"><i class="fas fa-arrow-up"></i></button>
-
+   
     <script>
+        // --- CONSTANTES ---
         const API_URL_BASE = 'https://duende-api.onrender.com/events';
-        const searchButton = document.getElementById('searchButton');
-        const searchInput = document.getElementById('searchInput');
-        const searchForm = document.getElementById('advanced-search-form');
+        const advancedSearchToggle = document.getElementById('advanced-search-toggle');
+        const advancedSearchPanel = document.getElementById('advanced-search-panel');
+        const advancedSearchButton = document.getElementById('advanced-search-button');
         const resultsContainer = document.getElementById('resultsContainer');
         const loadingMessage = document.getElementById('loadingMessage');
         const totalEventsSpan = document.getElementById('total-events');
-        const backToTopBtn = document.getElementById('back-to-top-btn');
-        const advancedSearchToggle = document.getElementById('advanced-search-toggle');
-        const advancedSearchPanel = document.getElementById('advanced-search-panel');
-        const themeSwitcher = document.getElementById('theme-switcher');
-        const themeIcon = themeSwitcher.querySelector('i');
-        const body = document.body;
-
+       
+        // --- LÓGICA DE BÚSQUEDA ---
         async function performSearch(params) {
             loadingMessage.style.display = 'block';
             resultsContainer.innerHTML = '';
@@ -117,77 +110,42 @@
                 const events = await response.json();
                 displayEvents(events);
             } catch (error) {
-                resultsContainer.innerHTML = '<h2>Hubo un error al realizar la búsqueda.</h2>';
+                resultsContainer.innerHTML = '<p>Hubo un error al realizar la búsqueda.</p>';
             } finally {
                 loadingMessage.style.display = 'none';
             }
         }
-        
-        function setupEventListeners() {
-            advancedSearchToggle.addEventListener('click', () => {
-                advancedSearchPanel.classList.toggle('visible');
-                const icon = advancedSearchToggle.querySelector('i');
-                icon.classList.toggle('fa-chevron-down');
-                icon.classList.toggle('fa-chevron-up');
-            });
 
-            searchForm.addEventListener('submit', (event) => {
-                event.preventDefault();
-                const params = {
-                    artist: document.getElementById('artist-filter').value.trim(),
-                    city: document.getElementById('city-filter').value.trim(),
-                    dateFrom: document.getElementById('date-from').value,
-                    dateTo: document.getElementById('date-to').value,
-                };
-                const filteredParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v && v.length > 0));
-                
-                if (Object.keys(filteredParams).length > 0) {
-                    searchInput.value = ''; // Limpia la búsqueda rápida si se usa la avanzada
-                    performSearch(filteredParams);
-                }
-            });
-            
-            const performQuickSearch = () => {
-                const query = searchInput.value.trim();
-                if (!query) return;
-                searchForm.reset(); // Limpia el formulario avanzado si se usa la búsqueda rápida
-                performSearch({ search: query });
+
+        function triggerAdvancedSearch() {
+            const params = {
+                search: document.getElementById('text-search').value.trim(),
+                artist: document.getElementById('artist-filter').value.trim(),
+                city: document.getElementById('city-filter').value.trim(),
+                dateFrom: document.getElementById('date-from').value,
+                dateTo: document.getElementById('date-to').value,
             };
-            searchButton.addEventListener('click', performQuickSearch);
-            searchInput.addEventListener('keyup', (event) => { if (event.key === 'Enter') performQuickSearch(); });
-
-            window.onscroll = () => {
-                if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-                    backToTopBtn.style.display = "flex";
-                } else {
-                    backToTopBtn.style.display = "none";
-                }
-            };
-
-            backToTopBtn.addEventListener('click', () => {
-                window.scrollTo({top: 0, behavior: 'smooth'});
-            });
-        
-            function applyTheme(theme) {
-                if (theme === 'light') {
-                    body.classList.add('light-theme');
-                    themeIcon.classList.remove('fa-sun');
-                    themeIcon.classList.add('fa-moon');
-                } else {
-                    body.classList.remove('light-theme');
-                    themeIcon.classList.remove('fa-moon');
-                    themeIcon.classList.add('fa-sun');
-                }
+            const filteredParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v));
+           
+            if (Object.keys(filteredParams).length > 0) {
+                performSearch(filteredParams);
+            } else {
+                loadUpcomingEvents();
             }
-            themeSwitcher.addEventListener('click', () => {
-                const newTheme = body.classList.contains('light-theme') ? 'dark' : 'light';
-                applyTheme(newTheme);
-                localStorage.setItem('theme', newTheme);
-            });
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            applyTheme(savedTheme);
         }
 
+
+        // --- LISTENERS ---
+        advancedSearchToggle.addEventListener('click', () => {
+            advancedSearchPanel.classList.toggle('visible');
+            const icon = advancedSearchToggle.querySelector('i');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
+        });
+       
+        advancedSearchButton.addEventListener('click', triggerAdvancedSearch);
+       
+        // --- FUNCIONES DE CARGA Y VISUALIZACIÓN ---
         function displayEvents(events) {
             if (events.length === 0) {
                 resultsContainer.innerHTML = '<h2>No se encontraron eventos.</h2>';
@@ -200,11 +158,13 @@
                 const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                 const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(fullLocation)}`;
+               
                 const sourceButtonHtml = event.sourceURL ? `<div class="source-link-container"><a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a></div>` : '';
+
 
                 eventCard.innerHTML = `
                     <div class="card-header"><h3>${event.name}</h3></div>
-                    <div class="artista"><i class="fas fa-user"></i> <span>${event.artist}</span></div>
+                    <div class="artista"><i class="fas fa-user"></i>&nbsp;<span>${event.artist}</span></div>
                     <div class="descripcion-container">
                         <p class="descripcion">${event.description}</p>
                         ${event.verified ? '<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>' : ''}
@@ -217,33 +177,24 @@
                 resultsContainer.appendChild(eventCard);
             });
         }
-        
+       
         async function loadTotalEventsCount() {
             try {
                 const response = await fetch(`${API_URL_BASE}/count`);
                 if (!response.ok) return;
                 const data = await response.json();
-                if (data.total !== undefined) { 
-                    totalEventsSpan.parentElement.innerHTML = `<p>Actualmente tenemos <strong>${data.total}</strong> eventos en nuestra agenda.</p>`;
-                }
-            } catch (error) { /* Silently fail */ }
+                if (data.total !== undefined) { totalEventsSpan.textContent = `Actualmente tenemos ${data.total} eventos en nuestra agenda.`; }
+            } catch (error) { /* No hacemos nada si falla */ }
         }
-        
+       
         async function loadUpcomingEvents() {
             performSearch({ timeframe: 'week' });
         }
-        
+       
         document.addEventListener('DOMContentLoaded', () => {
             loadUpcomingEvents();
             loadTotalEventsCount();
-            setupEventListeners();
         });
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW registrado.')).catch(err => console.log('Error en registro de SW:', err));
-            });
-        }
     </script>
 </body>
 </html>
