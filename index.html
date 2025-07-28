@@ -649,7 +649,7 @@
                     </div>
                 `;
 
-                const prompt = `Eres un aficionado experto en flamenco y un guía turístico de Andalucía. Tu tarea es crear un plan para una noche de flamenco inolvidable en ${event.city} para alguien que va a ver a ${event.artist} en ${event.venue} el ${new Date(event.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. El plan debe estar en español, ser evocador y útil. Estructura tu respuesta en las siguientes secciones, usando Markdown para los títulos (por ejemplo, '### Título'): ### Calentando Motores: Tapas y Vinos, ### Conociendo al Maestro/a: Sobre ${event.artist}, ### El Templo del Duende: Sobre el ${event.venue}, ### Para Alargar la Magia: Una Copa Después. Para cada sección, da recomendaciones y descripciones. Para el artista, destaca su estilo y palos. Para el local, describe el ambiente. Para las tapas y copas, sugiere sitios cercanos. Contexto adicional del evento: '${event.description}'. Genera una respuesta completa y bien redactada.`;
+                const prompt = `Eres un aficionado experto en flamenco y un guía turístico. Tu tarea es crear un plan para una noche de flamenco inolvidable en ${event.city}. El plan debe ser evocador y útil. Para cada recomendación de un lugar (un bar, un tablao, un restaurante), envuelve su nombre entre corchetes, así: [Nombre del Lugar]. Estructura tu respuesta en las siguientes secciones, usando Markdown para los títulos (por ejemplo, '### Título'): ### Calentando Motores: Tapas y Vinos, ### Conociendo al Maestro/a: Sobre ${event.artist}, ### El Templo del Duende: Sobre el ${event.venue}, ### Para Alargar la Magia: Una Copa Después. Para cada sección, da recomendaciones y descripciones. Para el artista, destaca su estilo y palos. Para el local, describe el ambiente. Para las tapas y copas, sugiere sitios cercanos. Contexto adicional del evento: '${event.description}'. Genera una respuesta completa y bien redactada.`;
 
                 try {
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
@@ -670,16 +670,25 @@
                     }
 
                     const result = await response.json();
-                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
                     if (text) {
-                        let htmlText = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                        // Convertir Markdown a HTML
+                        text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        
+                        // Convertir [Nombre del Lugar] a un enlace de Google Maps
+                        text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
+                            const query = encodeURIComponent(`${placeName}, ${event.city}`);
+                            return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+                        });
+
+                        text = text.replace(/\n/g, '<br>');
                         
                         modalContent.innerHTML = `
                             <div class="modal-header">
                                 <h2>✨ Tu Noche Flamenca ✨</h2>
                             </div>
-                            <div id="plan-text">${htmlText}</div>
+                            <div id="plan-text">${text}</div>
                             <div class="modal-footer">
                                 <button id="copy-plan-btn" class="copy-plan-btn">Copiar Plan</button>
                                 <p class="ai-disclaimer">Contenido generado por IA. La información puede no ser precisa.</p>
