@@ -25,7 +25,7 @@
             --color-texto-secundario-dark: #a0a0a0;
             --color-gemini-btn-dark: #3498db;
             --color-gemini-btn-hover-dark: #5dade2;
-            --color-enlace-dark: #82e0aa;
+            --color-enlace-dark: #5dade2; /* Color de enlace mejorado */
             --color-fondo-light: #f4f4f5;
             --color-superficie-light: #ffffff;
             --color-borde-light: #d4d4d8;
@@ -34,7 +34,7 @@
             --color-texto-secundario-light: #71717a;
             --color-gemini-btn-light: #2980b9;
             --color-gemini-btn-hover-light: #3498db;
-            --color-enlace-light: #0b844b;
+            --color-enlace-light: #2980b9; /* Color de enlace mejorado */
         }
 
         [data-theme="dark"] {
@@ -188,6 +188,10 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+        }
+
+        .filter-toggles-wrapper {
+            margin-bottom: 1.5rem;
         }
 
         .quick-filters-toggle {
@@ -552,7 +556,6 @@
             background-size: 2000px 104px;
         }
 
-        /* --- Estilos para el Modal del Planificador de Viajes --- */
         #trip-planner-form {
             display: flex;
             flex-direction: column;
@@ -608,9 +611,14 @@
             <i class="fas fa-route"></i> Planear mi Viaje Flamenco
         </button>
 
-        <button id="province-filters-toggle" class="quick-filters-toggle">
-            Búsqueda por Provincia <i class="fas fa-chevron-down"></i>
-        </button>
+        <div class="filter-toggles-wrapper">
+            <button id="province-filters-toggle" class="quick-filters-toggle">
+                Búsqueda por Provincia <i class="fas fa-chevron-down"></i>
+            </button>
+            <button id="country-filters-toggle" class="quick-filters-toggle" style="margin-left: 1.5rem;">
+                Búsqueda por País <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
 
         <div id="province-filters-container" class="quick-filters-container">
             <a href="?city=Sevilla" class="quick-filter-btn">Sevilla</a>
@@ -624,10 +632,6 @@
             <a href="?city=Jaén" class="quick-filter-btn">Jaén</a>
         </div>
         
-        <button id="country-filters-toggle" class="quick-filters-toggle">
-            Búsqueda por País <i class="fas fa-chevron-down"></i>
-        </button>
-
         <div id="country-filters-container" class="quick-filters-container">
             <a href="?country=Francia" class="quick-filter-btn">Francia</a>
             <a href="?country=Japón" class="quick-filter-btn">Japón</a>
@@ -652,7 +656,6 @@
         </div>
     </div>
 
-    <!-- Modal para el Planificador de Viajes -->
     <div id="trip-planner-modal-overlay" class="modal-overlay">
         <div class="modal">
             <button id="trip-modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
@@ -1024,7 +1027,6 @@
                 }
             }
             
-            // --- LÓGICA DEL PLANIFICADOR DE VIAJES ---
             const tripPlannerBtn = document.getElementById('trip-planner-btn');
             const tripModalOverlay = document.getElementById('trip-planner-modal-overlay');
             const tripModalCloseBtn = document.getElementById('trip-modal-close-btn');
