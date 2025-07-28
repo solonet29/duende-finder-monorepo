@@ -819,55 +819,55 @@
                 resultsContainer.appendChild(fragment);
             }
             
-            function createEventCard(event) {
-                const eventCard = document.createElement('article');
-                eventCard.className = 'evento-card';
-                const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-                const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
-                const header = document.createElement('div');
-                header.className = 'card-header';
-                const nameH3 = document.createElement('h3');
-                nameH3.textContent = event.name;
-                header.appendChild(nameH3);
-                const artistDiv = document.createElement('div');
-                artistDiv.className = 'artista';
-                artistDiv.innerHTML = `<i class="fas fa-user"></i> <span>${event.artist}</span>`;
-                const descContainer = document.createElement('div');
-                descContainer.className = 'descripcion-container';
-                const descP = document.createElement('p');
-                descP.className = 'descripcion';
-                descP.textContent = event.description;
-                descContainer.appendChild(descP);
-                if (event.verified) {
-                    const verifiedBadge = document.createElement('div');
-                    verifiedBadge.className = 'verificado-badge';
-                    verifiedBadge.innerHTML = `<i class="fas fa-check"></i> Verificado`;
-                    descContainer.appendChild(verifiedBadge);
-                }
-                const dateDetail = createDetailItem('calendar-alt', `Fecha: ${eventDate}`);
-                const timeDetail = createDetailItem('clock', `Hora: ${event.time}`);
-                const locationDetail = createDetailItem('map-marker-alt', `Lugar: ${fullLocation}`, mapsUrl);
-                const actionsContainer = document.createElement('div');
-                actionsContainer.className = 'card-actions';
-                const geminiButton = document.createElement('button');
-                geminiButton.className = 'gemini-btn';
-                geminiButton.innerHTML = '✨ Planear Noche';
-                geminiButton.onclick = () => getFlamencoPlan(event);
-                actionsContainer.appendChild(geminiButton);
-                if (event.sourceURL) {
-                    const sourceLink = document.createElement('a');
-                    sourceLink.href = event.sourceURL;
-                    sourceLink.target = '_blank';
-                    sourceLink.rel = 'noopener noreferrer';
-                    sourceLink.className = 'source-link-btn';
-                    sourceLink.innerHTML = `<i class="fas fa-external-link-alt"></i> Ver Fuente`;
-                    actionsContainer.appendChild(sourceLink);
-                }
-                eventCard.append(header, artistDiv, descContainer, dateDetail, timeDetail, locationDetail, actionsContainer);
-                return eventCard;
-            }
+            // Reemplaza tu función createEventCard actual por esta versión actualizada
 
+function createEventCard(event) {
+    const eventCard = document.createElement('article');
+    eventCard.className = 'evento-card';
+    const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+    const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
+    
+    // Usamos JSON.stringify para pasar todos los datos del evento al botón
+    const eventDataString = JSON.stringify(event).replace(/'/g, "&apos;");
+
+    eventCard.innerHTML = `
+        <div class="card-header"><h3>${event.name}</h3></div>
+        <div class="artista"><i class="fas fa-user"></i> <span>${event.artist}</span></div>
+        <div class="descripcion-container">
+            <p class="descripcion">${event.description}</p>
+            ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
+        </div>
+        <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
+        <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
+        <div class="evento-detalle">
+            <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span>
+            </a>
+        </div>
+        <div class="card-actions">
+            <div>
+                <button class="gemini-btn" data-event='${eventDataString}'>✨ Planear Noche</button>
+                 <button class="calendar-btn" data-event='${eventDataString}' style="margin-left: 0.5rem;"><i class="fas fa-calendar-plus"></i> Añadir</button>
+            </div>
+            ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
+        </div>
+    `;
+    
+    // Mantenemos los listeners para los botones que ya teníamos
+    eventCard.querySelector('.gemini-btn').addEventListener('click', (e) => {
+        const eventData = JSON.parse(e.currentTarget.dataset.event.replace(/&apos;/g, "'"));
+        getFlamencoPlan(eventData);
+    });
+
+    // AÑADIMOS EL NUEVO LISTENER PARA EL BOTÓN DE CALENDARIO
+    eventCard.querySelector('.calendar-btn').addEventListener('click', (e) => {
+        const eventData = JSON.parse(e.currentTarget.dataset.event.replace(/&apos;/g, "'"));
+        showCalendarLinks(eventData);
+    });
+
+    return eventCard;
+}
             function createDetailItem(icon, text, link = null) {
                 const detailDiv = document.createElement('div');
                 detailDiv.className = 'evento-detalle';
