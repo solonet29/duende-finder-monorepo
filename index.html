@@ -663,61 +663,93 @@
             setupFilterToggle('country-filters-toggle', 'country-filters-container');
             
             async function getFlamencoPlan(event) {
-                showModal();
-                modalContent.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Un momento, el duende está afinando la guitarra...</p></div>`;
-                const prompt = `Eres un aficionado experto en flamenco y un guía turístico. Tu tarea es crear un plan para una noche de flamenco inolvidable en ${event.city}. El plan debe ser evocador y útil. Para cada recomendación de un lugar (un bar, un tablao, un restaurante), envuelve su nombre entre corchetes, así: [Nombre del Lugar]. Estructura tu respuesta en las siguientes secciones, usando Markdown para los títulos (por ejemplo, '### Título'): ### Calentando Motores: Tapas y Vinos, ### Conociendo al Maestro/a: Sobre ${event.artist}, ### El Templo del Duende: Sobre el ${event.venue}, ### Para Alargar la Magia: Una Copa Después. Para cada sección, da recomendaciones y descripciones. Para el artista, destaca su estilo y palos. Para el local, describe el ambiente. Para las tapas y copas, sugiere sitios cercanos. Contexto adicional del evento: '${event.description}'. Genera una respuesta completa y bien redactada.`;
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 segundos
-                    const response = await fetch('/api/gemini', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ prompt: prompt }),
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-                    if (!response.ok) {
-                        throw new Error(`Error del servidor: ${response.statusText}`);
-                    }
-                    const result = await response.json();
-                    if (result && result.text) {
-                        let text = result.text;
-                        text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                        text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
-                            const query = encodeURIComponent(`${placeName}, ${event.city}`);
-                            return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
-                        });
-                        text = text.replace(/\n/g, '<br>');
-                        modalContent.innerHTML = `
-                            <div class="modal-header"><h2>✨ Tu Noche Flamenca ✨</h2></div>
-                            <div id="plan-text">${text}</div>
-                            <div class="modal-footer">
-                                <div class="modal-footer-buttons">
-                                    <button id="listen-plan-btn" class="listen-plan-btn"><i class="fas fa-volume-up"></i> Escuchar</button>
-                                    <button id="copy-plan-btn" class="copy-plan-btn">Copiar Plan</button>
-                                </div>
-                                <p class="ai-disclaimer">Contenido generado por IA. La información puede no ser precisa.</p>
-                            </div>`;
-                        document.getElementById('copy-plan-btn').addEventListener('click', (e) => {
-                            const planText = document.getElementById('plan-text').innerText;
-                            const copyButton = e.currentTarget;
-                            navigator.clipboard.writeText(planText).then(() => {
-                                copyButton.textContent = '¡Copiado!';
-                                setTimeout(() => { copyButton.textContent = 'Copiar Plan'; }, 2000);
-                            }).catch(err => { console.error('Error al copiar el texto: ', err); });
-                        });
-                    } else {
-                        throw new Error("La IA no devolvió una respuesta válida.");
-                    }
-                } catch (error) {
-                    console.error("Error en getFlamencoPlan:", error);
-                    if (error.name === 'AbortError') {
-                        modalContent.innerHTML = `<h3>Error</h3><p>La petición ha tardado demasiado en responder. Por favor, inténtalo de nuevo.</p>`;
-                    } else {
-                        modalContent.innerHTML = `<h3>Error</h3><p>No se pudo generar el plan.</p>`;
-                    }
+    showModal();
+    modalContent.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Un momento, el duende está afinando la guitarra...</p></div>`;
+    
+    const prompt = `Eres un aficionado experto en flamenco y un guía turístico. Tu tarea es crear un plan para una noche de flamenco inolvidable en ${event.city}. El plan debe ser evocador y útil. Para cada recomendación de un lugar (un bar, un tablao, un restaurante), envuelve su nombre entre corchetes, así: [Nombre del Lugar]. Estructura tu respuesta en las siguientes secciones, usando Markdown para los títulos (por ejemplo, '### Título'): ### Calentando Motores: Tapas y Vinos, ### Conociendo al Maestro/a: Sobre ${event.artist}, ### El Templo del Duende: Sobre el ${event.venue}, ### Para Alargar la Magia: Una Copa Después. Para cada sección, da recomendaciones y descripciones. Para el artista, destaca su estilo y palos. Para el local, describe el ambiente. Para las tapas y copas, sugiere sitios cercanos. Contexto adicional del evento: '${event.description}'. Genera una respuesta completa y bien redactada.`;
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 segundos
+        const response = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: prompt }),
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        if (!response.ok) {
+            throw new Error(`Error del servidor: ${response.statusText}`);
+        }
+        const result = await response.json();
+        if (result && result.text) {
+            let text = result.text;
+            text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
+                const query = encodeURIComponent(`${placeName}, ${event.city}`);
+                return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+            });
+            text = text.replace(/\n/g, '<br>');
+            modalContent.innerHTML = `
+                <div class="modal-header"><h2>✨ Tu Noche Flamenca ✨</h2></div>
+                <div id="plan-text">${text}</div>
+                <div class="modal-footer">
+                    <div class="modal-footer-buttons">
+                        <button id="listen-plan-btn" class="listen-plan-btn"><i class="fas fa-volume-up"></i> Escuchar</button>
+                        <button id="copy-plan-btn" class="copy-plan-btn">Copiar Plan</button>
+                    </div>
+                    <p class="ai-disclaimer">Contenido generado por IA. La información puede no ser precisa.</p>
+                </div>`;
+
+            // Lógica para el botón de copiar
+            document.getElementById('copy-plan-btn').addEventListener('click', (e) => {
+                const planText = document.getElementById('plan-text').innerText;
+                const copyButton = e.currentTarget;
+                navigator.clipboard.writeText(planText).then(() => {
+                    copyButton.textContent = '¡Copiado!';
+                    setTimeout(() => { copyButton.textContent = 'Copiar Plan'; }, 2000);
+                }).catch(err => { console.error('Error al copiar el texto: ', err); });
+            });
+
+            // --- CÓDIGO AÑADIDO PARA EL BOTÓN DE ESCUCHAR ---
+            const listenButton = document.getElementById('listen-plan-btn');
+            const listenIcon = listenButton.querySelector('i');
+            const utterance = new SpeechSynthesisUtterance();
+            utterance.lang = 'es-ES';
+
+            utterance.onstart = () => {
+                listenIcon.classList.remove('fa-volume-up');
+                listenIcon.classList.add('fa-stop');
+                listenButton.childNodes[1].textContent = ' Detener';
+            };
+            utterance.onend = () => {
+                listenIcon.classList.remove('fa-stop');
+                listenIcon.classList.add('fa-volume-up');
+                listenButton.childNodes[1].textContent = ' Escuchar';
+            };
+
+            listenButton.addEventListener('click', () => {
+                if (synth.speaking) {
+                    synth.cancel();
+                } else {
+                    utterance.text = document.getElementById('plan-text').innerText;
+                    synth.speak(utterance);
                 }
-            }
+            });
+            // --- FIN DEL CÓDIGO AÑADIDO ---
+
+        } else {
+            throw new Error("La IA no devolvió una respuesta válida.");
+        }
+    } catch (error) {
+        console.error("Error en getFlamencoPlan:", error);
+        if (error.name === 'AbortError') {
+            modalContent.innerHTML = `<h3>Error</h3><p>La petición ha tardado demasiado en responder. Por favor, inténtalo de nuevo.</p>`;
+        } else {
+            modalContent.innerHTML = `<h3>Error</h3><p>No se pudo generar el plan.</p>`;
+        }
+    }
+}
 
             const resultsContainer = document.getElementById('resultsContainer');
             const skeletonContainer = document.getElementById('skeleton-container');
