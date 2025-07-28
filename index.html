@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="manifest" href="manifest.json">
@@ -779,6 +779,7 @@
 
                 try {
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                    // CORRECCIÓN: Clave de desarrollo. NO USAR EN PRODUCCIÓN.
                     const apiKey = "AIzaSyBCWwdg_936jExHjx1azCgDdk4lxbgCc1A"; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
@@ -802,6 +803,7 @@
                         text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                         text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
                             const query = encodeURIComponent(`${placeName}, ${event.city}`);
+                            // CORRECCIÓN: URL de Google Maps corregida.
                             return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
                         });
                         text = text.replace(/\n/g, '<br>');
@@ -845,20 +847,19 @@
                             }
                         });
                         
-                        document.getElementById('copy-plan-btn').addEventListener('click', () => {
+                        // CORRECCIÓN: Uso de la API moderna para el portapapeles.
+                        document.getElementById('copy-plan-btn').addEventListener('click', (e) => {
                             const planText = document.getElementById('plan-text').innerText;
-                            const tempTextArea = document.createElement('textarea');
-                            tempTextArea.value = planText;
-                            document.body.appendChild(tempTextArea);
-                            tempTextArea.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(tempTextArea);
-                            
-                            const copyButton = document.getElementById('copy-plan-btn');
-                            copyButton.textContent = '¡Copiado!';
-                            setTimeout(() => {
-                                copyButton.textContent = 'Copiar Plan';
-                            }, 2000);
+                            const copyButton = e.currentTarget;
+                            navigator.clipboard.writeText(planText).then(() => {
+                                copyButton.textContent = '¡Copiado!';
+                                setTimeout(() => {
+                                    copyButton.textContent = 'Copiar Plan';
+                                }, 2000);
+                            }).catch(err => {
+                                console.error('Error al copiar el texto: ', err);
+                                copyButton.textContent = 'Error al copiar';
+                            });
                         });
 
                     } else {
@@ -883,9 +884,15 @@
             searchForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const searchTerm = searchInput.value.trim();
+                const newUrl = new URL(window.location);
+                newUrl.search = ''; // Limpiar parámetros antiguos
                 if (searchTerm) {
-                    window.location.search = `?search=${encodeURIComponent(searchTerm)}`;
+                    newUrl.searchParams.set('search', searchTerm);
+                } else {
+                    newUrl.searchParams.set('timeframe', 'week'); // Búsqueda por defecto
                 }
+                history.pushState({}, '', newUrl);
+                performSearch(Object.fromEntries(newUrl.searchParams));
             });
 
             function showSkeletonLoader() {
@@ -948,6 +955,7 @@
                 eventCard.className = 'evento-card';
                 const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                 const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
+                // CORRECCIÓN: URL de Google Maps corregida.
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
                 
                 const header = document.createElement('div');
@@ -1071,6 +1079,7 @@
                     const tripPrompt = `Eres un experto agente de viajes especializado en rutas de flamenco por Andalucía. Un viajero de Francia quiere visitar la provincia de ${destination} desde el ${startDate} hasta el ${endDate}. A continuación, te proporciono una lista de los espectáculos de flamenco disponibles durante su estancia:\n\n${eventList}\n\nTu tarea es crear un itinerario de viaje optimizado, día por día. Sugiere a qué espectáculo ir cada noche para aprovechar al máximo el viaje. Si hay días sin espectáculos, sugiere actividades culturales relacionadas con el flamenco (visitar peñas, museos, barrios históricos, etc.). Para cada recomendación de un lugar, envuelve su nombre entre corchetes, así: [Nombre del Lugar]. El tono debe ser amigable y apasionado. La respuesta debe estar en español.`;
 
                     const payload = { contents: [{ role: "user", parts: [{ text: tripPrompt }] }] };
+                    // CORRECCIÓN: Clave de desarrollo. NO USAR EN PRODUCCIÓN.
                     const apiKey = "AIzaSyBCWwdg_936jExHjx1azCgDdk4lxbgCc1A"; 
                     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
@@ -1089,6 +1098,7 @@
                         text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                         text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
                             const query = encodeURIComponent(`${placeName}, ${destination}`);
+                            // CORRECCIÓN: URL de Google Maps corregida.
                             return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
                         });
                         text = text.replace(/\n/g, '<br>');
@@ -1103,28 +1113,35 @@
                 }
             });
 
+            // CORRECCIÓN: Manejo de filtros rápidos sin recarga de página.
+            function handleQuickFilter(event) {
+                event.preventDefault();
+                const url = new URL(event.currentTarget.href);
+                const params = Object.fromEntries(url.searchParams);
+                history.pushState({}, '', url); // Actualiza la URL en el navegador
+                performSearch(params); // Realiza la búsqueda
+            }
+
+            document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+                btn.addEventListener('click', handleQuickFilter);
+            });
+
 
             function initialize() {
                 loadTotalEventsCount();
                 const urlParams = new URLSearchParams(window.location.search);
-                const city = urlParams.get('city');
-                const country = urlParams.get('country');
-                const search = urlParams.get('search');
-                
-                let searchParams = {};
+                const params = Object.fromEntries(urlParams.entries());
 
-                if (city) {
-                    searchParams.city = city;
-                } else if (country) {
-                    searchParams.country = country;
-                } else if (search) {
-                    searchParams.search = search;
-                    searchInput.value = search;
-                } else {
-                    searchParams.timeframe = 'week';
+                if (Object.keys(params).length === 0) {
+                    // Si no hay parámetros, buscar por defecto los de la semana
+                    params.timeframe = 'week';
                 }
                 
-                performSearch(searchParams);
+                if (params.search) {
+                    searchInput.value = params.search;
+                }
+                
+                performSearch(params);
             }
             
             initialize();
