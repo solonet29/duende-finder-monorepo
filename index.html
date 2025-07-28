@@ -8,7 +8,6 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- AÑADIDA FUENTE 'Cinzel' PARA EL TÍTULO -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
@@ -76,7 +75,6 @@
             flex-direction: column;
             min-height: 100vh;
             transition: background-color 0.3s ease, color 0.3s ease;
-            /* MEJORA: Gradiente sutil en el fondo */
             background-image: radial-gradient(circle at top, color-mix(in srgb, var(--color-fondo) 80%, white) 0%, var(--color-fondo) 40%);
         }
 
@@ -95,7 +93,6 @@
             font-weight: 900;
             margin-bottom: 0.5rem;
         }
-        /* MEJORA: Estilo para la palabra "Duende" */
         h1 .duende-word {
             font-family: 'Cinzel', serif;
             font-weight: 700;
@@ -222,7 +219,6 @@
             border-color: var(--color-primario);
             outline: none;
         }
-        /* MEJORA: Animación al hacer clic */
         .quick-filter-btn:active {
             transform: scale(0.95);
         }
@@ -247,11 +243,9 @@
             flex-direction: column;
             text-align: left;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            /* MEJORA: Transición para el efecto hover */
             transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
             animation: fadeIn 0.5s ease-in-out;
         }
-        /* MEJORA: Efecto hover en tarjetas */
         .evento-card:hover {
             transform: translateY(-8px);
             border-color: var(--color-primario);
@@ -422,12 +416,40 @@
             font-size: 1.5rem;
             cursor: pointer;
         }
+        .modal-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-header h2 {
+            margin: 0;
+            color: var(--color-texto-principal);
+        }
         .modal-content h3 {
             color: var(--color-primario);
-            margin-top: 0;
+            margin-top: 1.5rem;
         }
         .modal-content p {
             line-height: 1.6;
+        }
+        .modal-footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-borde);
+            text-align: center;
+        }
+        .copy-plan-btn {
+            background-color: var(--color-gemini-btn);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .ai-disclaimer {
+            font-size: 0.8rem;
+            color: var(--color-texto-secundario);
+            margin-top: 1rem;
         }
         .loader-container {
             display: flex;
@@ -457,7 +479,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* --- Estilos para Skeleton Loading --- */
         .skeleton-card {
             background-color: var(--color-superficie);
             border: 1px solid var(--color-borde);
@@ -653,7 +674,34 @@
 
                     if (text) {
                         let htmlText = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
-                        modalContent.innerHTML = htmlText;
+                        
+                        modalContent.innerHTML = `
+                            <div class="modal-header">
+                                <h2>✨ Tu Noche Flamenca ✨</h2>
+                            </div>
+                            <div id="plan-text">${htmlText}</div>
+                            <div class="modal-footer">
+                                <button id="copy-plan-btn" class="copy-plan-btn">Copiar Plan</button>
+                                <p class="ai-disclaimer">Contenido generado por IA. La información puede no ser precisa.</p>
+                            </div>
+                        `;
+                        
+                        document.getElementById('copy-plan-btn').addEventListener('click', () => {
+                            const planText = document.getElementById('plan-text').innerText;
+                            const tempTextArea = document.createElement('textarea');
+                            tempTextArea.value = planText;
+                            document.body.appendChild(tempTextArea);
+                            tempTextArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(tempTextArea);
+                            
+                            const copyButton = document.getElementById('copy-plan-btn');
+                            copyButton.textContent = '¡Copiado!';
+                            setTimeout(() => {
+                                copyButton.textContent = 'Copiar Plan';
+                            }, 2000);
+                        });
+
                     } else {
                         console.error("Respuesta inesperada de la API:", JSON.stringify(result, null, 2));
                         throw new Error("La respuesta de la API no contiene el texto esperado.");
