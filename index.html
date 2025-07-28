@@ -661,29 +661,61 @@
             }
             setupFilterToggle('province-filters-toggle', 'province-filters-container');
             setupFilterToggle('country-filters-toggle', 'country-filters-container');
-
+            
             async function getFlamencoPlan(event) {
                 showModal();
                 modalContent.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Un momento, el duende está afinando la guitarra...</p></div>`;
-                const prompt = `Eres un aficionado experto en flamenco y un guía turístico...`; // Tu prompt
+                const prompt = `Eres un aficionado experto en flamenco y un guía turístico. Tu tarea es crear un plan para una noche de flamenco inolvidable en ${event.city}. El plan debe ser evocador y útil. Para cada recomendación de un lugar (un bar, un tablao, un restaurante), envuelve su nombre entre corchetes, así: [Nombre del Lugar]. Estructura tu respuesta en las siguientes secciones, usando Markdown para los títulos (por ejemplo, '### Título'): ### Calentando Motores: Tapas y Vinos, ### Conociendo al Maestro/a: Sobre ${event.artist}, ### El Templo del Duende: Sobre el ${event.venue}, ### Para Alargar la Magia: Una Copa Después. Para cada sección, da recomendaciones y descripciones. Para el artista, destaca su estilo y palos. Para el local, describe el ambiente. Para las tapas y copas, sugiere sitios cercanos. Contexto adicional del evento: '${event.description}'. Genera una respuesta completa y bien redactada.`;
                 try {
-                    // CORRECCIÓN: Apunta a tu función de backend para Gemini, no a la API de Google
-                    const response = await fetch('/api/gemini', { // Asumiendo que creas api/gemini.js
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 segundos
+                    const response = await fetch('/api/gemini', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ prompt: prompt })
+                        body: JSON.stringify({ prompt: prompt }),
+                        signal: controller.signal
                     });
-                    if (!response.ok) throw new Error(`Error de la API: ${response.statusText}`);
+                    clearTimeout(timeoutId);
+                    if (!response.ok) {
+                        throw new Error(`Error del servidor: ${response.statusText}`);
+                    }
                     const result = await response.json();
-                    let text = result.text; // Tu backend devuelve { text: "..." }
-                    if (text) {
-                        // ... (código para procesar y mostrar el texto en el modal)
+                    if (result && result.text) {
+                        let text = result.text;
+                        text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
+                            const query = encodeURIComponent(`${placeName}, ${event.city}`);
+                            return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+                        });
+                        text = text.replace(/\n/g, '<br>');
+                        modalContent.innerHTML = `
+                            <div class="modal-header"><h2>✨ Tu Noche Flamenca ✨</h2></div>
+                            <div id="plan-text">${text}</div>
+                            <div class="modal-footer">
+                                <div class="modal-footer-buttons">
+                                    <button id="listen-plan-btn" class="listen-plan-btn"><i class="fas fa-volume-up"></i> Escuchar</button>
+                                    <button id="copy-plan-btn" class="copy-plan-btn">Copiar Plan</button>
+                                </div>
+                                <p class="ai-disclaimer">Contenido generado por IA. La información puede no ser precisa.</p>
+                            </div>`;
+                        document.getElementById('copy-plan-btn').addEventListener('click', (e) => {
+                            const planText = document.getElementById('plan-text').innerText;
+                            const copyButton = e.currentTarget;
+                            navigator.clipboard.writeText(planText).then(() => {
+                                copyButton.textContent = '¡Copiado!';
+                                setTimeout(() => { copyButton.textContent = 'Copiar Plan'; }, 2000);
+                            }).catch(err => { console.error('Error al copiar el texto: ', err); });
+                        });
                     } else {
-                        throw new Error("La respuesta de la API no contiene el texto esperado.");
+                        throw new Error("La IA no devolvió una respuesta válida.");
                     }
                 } catch (error) {
                     console.error("Error en getFlamencoPlan:", error);
-                    modalContent.innerHTML = `<h3>Error</h3><p>No se pudo generar el plan.</p>`;
+                    if (error.name === 'AbortError') {
+                        modalContent.innerHTML = `<h3>Error</h3><p>La petición ha tardado demasiado en responder. Por favor, inténtalo de nuevo.</p>`;
+                    } else {
+                        modalContent.innerHTML = `<h3>Error</h3><p>No se pudo generar el plan.</p>`;
+                    }
                 }
             }
 
@@ -693,13 +725,14 @@
             const totalEventsSpan = document.getElementById('total-events');
             const searchForm = document.getElementById('search-form');
             const searchInput = document.getElementById('search-input');
-
             searchForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const searchTerm = searchInput.value.trim();
                 const newUrl = new URL(window.location.origin + window.location.pathname);
                 if (searchTerm) {
                     newUrl.searchParams.set('search', searchTerm);
+                } else {
+                    newUrl.searchParams.delete('search');
                 }
                 history.pushState({}, '', newUrl);
                 performSearch(Object.fromEntries(newUrl.searchParams));
@@ -727,7 +760,6 @@
                 showSkeletonLoader();
                 const queryString = new URLSearchParams(params).toString();
                 try {
-                    // CORRECCIÓN: La URL ahora apunta a tu propia API en Vercel
                     const response = await fetch(`/api/events?${queryString}`);
                     if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
                     const events = await response.json();
@@ -833,7 +865,6 @@
                     }
                 } catch (error) {
                     console.warn('No se pudo cargar el contador total de eventos.');
-                    totalEventsSpan.textContent = 'N/A';
                 }
             }
             
