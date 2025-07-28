@@ -8,8 +8,9 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- AÑADIDA FUENTE 'Cinzel' PARA EL TÍTULO -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="manifest" href="manifest.json">
@@ -75,6 +76,8 @@
             flex-direction: column;
             min-height: 100vh;
             transition: background-color 0.3s ease, color 0.3s ease;
+            /* MEJORA: Gradiente sutil en el fondo */
+            background-image: radial-gradient(circle at top, color-mix(in srgb, var(--color-fondo) 80%, white) 0%, var(--color-fondo) 40%);
         }
 
         main.container {
@@ -87,11 +90,25 @@
         }
 
         h1 {
-            font-size: 3rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 3.5rem;
             font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+        /* MEJORA: Estilo para la palabra "Duende" */
+        h1 .duende-word {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            color: var(--color-texto-principal);
         }
         h1 span {
             color: var(--color-primario);
+        }
+
+        .subtitle {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
         }
 
         .theme-toggle-btn {
@@ -151,7 +168,6 @@
             color: var(--color-fondo);
         }
 
-        /* --- MEJORA VISTA MÓVIL --- */
         @media (max-width: 600px) {
             .search-form {
                 flex-direction: column;
@@ -196,7 +212,7 @@
             border-radius: 20px;
             font-weight: 700;
             font-size: 1rem;
-            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s ease;
         }
 
         .quick-filter-btn:hover,
@@ -206,13 +222,17 @@
             border-color: var(--color-primario);
             outline: none;
         }
+        /* MEJORA: Animación al hacer clic */
+        .quick-filter-btn:active {
+            transform: scale(0.95);
+        }
         
         .status-message {
             padding: 2rem;
             font-size: 1.2rem;
         }
 
-        #resultsContainer {
+        #resultsContainer, #skeleton-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 1.5rem;
@@ -227,8 +247,15 @@
             flex-direction: column;
             text-align: left;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease, border-color 0.3s ease;
+            /* MEJORA: Transición para el efecto hover */
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
             animation: fadeIn 0.5s ease-in-out;
+        }
+        /* MEJORA: Efecto hover en tarjetas */
+        .evento-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--color-primario);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         @keyframes fadeIn {
@@ -429,6 +456,46 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* --- Estilos para Skeleton Loading --- */
+        .skeleton-card {
+            background-color: var(--color-superficie);
+            border: 1px solid var(--color-borde);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        .skeleton {
+            background-color: color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde));
+            border-radius: 4px;
+            animation: shimmer 1.5s infinite linear;
+        }
+        .skeleton.title {
+            height: 24px;
+            width: 70%;
+            margin-bottom: 1rem;
+        }
+        .skeleton.text {
+            height: 16px;
+            margin-bottom: 0.5rem;
+        }
+        .skeleton.text-short { width: 40%; }
+        .skeleton.text-long { width: 90%; }
+        
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        .skeleton {
+            background-image: linear-gradient(to right, 
+                color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde)) 0%, 
+                color-mix(in srgb, var(--color-superficie) 20%, var(--color-borde)) 20%, 
+                color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde)) 40%, 
+                color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde)) 100%
+            );
+            background-repeat: no-repeat;
+            background-size: 2000px 104px;
+        }
+
     </style>
 </head>
 <body id="top">
@@ -437,8 +504,8 @@
             <i class="fas fa-sun"></i>
         </button>
 
-        <h1>Duende <span>Finder</span></h1>
-        <p>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
+        <h1><span class="duende-word">Duende</span> <span>Finder</span></h1>
+        <p class="subtitle"><i class="fas fa-guitar" style="margin-right: 8px; color: var(--color-primario);"></i>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
         <p class="event-counter">Tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p>
         
         <form id="search-form" class="search-form">
@@ -475,7 +542,8 @@
         </div>
 
         <div id="statusMessage" class="status-message" aria-live="polite" role="status"></div>
-        <div id="resultsContainer"></div>
+        <div id="skeleton-container"></div>
+        <div id="resultsContainer" style="display: none;"></div>
     </main>
 
     <a href="#top" id="back-to-top-btn" class="back-to-top-btn" aria-label="Volver arriba">
@@ -598,6 +666,7 @@
 
             const API_URL_BASE = 'https://duende-api.onrender.com/events';
             const resultsContainer = document.getElementById('resultsContainer');
+            const skeletonContainer = document.getElementById('skeleton-container');
             const statusMessage = document.getElementById('statusMessage');
             const totalEventsSpan = document.getElementById('total-events');
             
@@ -612,9 +681,32 @@
                 }
             });
 
+            function showSkeletonLoader() {
+                skeletonContainer.innerHTML = '';
+                resultsContainer.style.display = 'none';
+                skeletonContainer.style.display = 'grid';
+                statusMessage.textContent = '';
+                
+                for (let i = 0; i < 6; i++) {
+                    const skeletonCard = document.createElement('div');
+                    skeletonCard.className = 'skeleton-card';
+                    skeletonCard.innerHTML = `
+                        <div class="skeleton title"></div>
+                        <div class="skeleton text text-short"></div>
+                        <div class="skeleton text text-long"></div>
+                        <div class="skeleton text"></div>
+                    `;
+                    skeletonContainer.appendChild(skeletonCard);
+                }
+            }
+
+            function hideSkeletonLoader() {
+                skeletonContainer.style.display = 'none';
+                resultsContainer.style.display = 'grid';
+            }
+
             async function performSearch(params) {
-                statusMessage.textContent = 'Buscando eventos...';
-                resultsContainer.innerHTML = '';
+                showSkeletonLoader();
                 const queryString = new URLSearchParams(params).toString();
                 
                 try {
@@ -625,10 +717,12 @@
                 } catch (error) {
                     console.error('Error al realizar la búsqueda:', error);
                     statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
+                    hideSkeletonLoader();
                 }
             }
 
             function displayEvents(events) {
+                hideSkeletonLoader();
                 statusMessage.textContent = '';
                 if (events.length === 0) {
                     statusMessage.textContent = 'No se encontraron eventos que coincidan con tu búsqueda.';
