@@ -25,6 +25,7 @@
             --color-texto-secundario-dark: #a0a0a0;
             --color-gemini-btn-dark: #3498db;
             --color-gemini-btn-hover-dark: #5dade2;
+            --color-enlace-dark: #82e0aa;
             --color-fondo-light: #f4f4f5;
             --color-superficie-light: #ffffff;
             --color-borde-light: #d4d4d8;
@@ -33,6 +34,7 @@
             --color-texto-secundario-light: #71717a;
             --color-gemini-btn-light: #2980b9;
             --color-gemini-btn-hover-light: #3498db;
+            --color-enlace-light: #0b844b;
         }
 
         [data-theme="dark"] {
@@ -44,6 +46,7 @@
             --color-texto-secundario: var(--color-texto-secundario-dark);
             --color-gemini-btn: var(--color-gemini-btn-dark);
             --color-gemini-btn-hover: var(--color-gemini-btn-hover-dark);
+            --color-enlace: var(--color-enlace-dark);
         }
 
         [data-theme="light"] {
@@ -55,6 +58,7 @@
             --color-texto-secundario: var(--color-texto-secundario-light);
             --color-gemini-btn: var(--color-gemini-btn-light);
             --color-gemini-btn-hover: var(--color-gemini-btn-hover-light);
+            --color-enlace: var(--color-enlace-light);
         }
 
         html {
@@ -431,6 +435,12 @@
         .modal-content p {
             line-height: 1.6;
         }
+        /* MEJORA: Estilo para los enlaces dentro del modal */
+        .modal-content a {
+            color: var(--color-enlace);
+            text-decoration: underline;
+            font-weight: bold;
+        }
         .modal-footer {
             margin-top: 2rem;
             padding-top: 1rem;
@@ -673,15 +683,11 @@
                     let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
                     if (text) {
-                        // Convertir Markdown a HTML
                         text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                        
-                        // Convertir [Nombre del Lugar] a un enlace de Google Maps
                         text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
                             const query = encodeURIComponent(`${placeName}, ${event.city}`);
                             return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
                         });
-
                         text = text.replace(/\n/g, '<br>');
                         
                         modalContent.innerHTML = `
