@@ -435,7 +435,6 @@
         .modal-content p {
             line-height: 1.6;
         }
-        /* MEJORA: Estilo para los enlaces dentro del modal */
         .modal-content a {
             color: var(--color-enlace);
             text-decoration: underline;
@@ -446,8 +445,16 @@
             padding-top: 1rem;
             border-top: 1px solid var(--color-borde);
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
         }
-        .copy-plan-btn {
+        .modal-footer-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        .copy-plan-btn, .listen-plan-btn {
             background-color: var(--color-gemini-btn);
             color: white;
             border: none;
@@ -455,6 +462,9 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         .ai-disclaimer {
             font-size: 0.8rem;
@@ -626,9 +636,15 @@
             const modalOverlay = document.getElementById('gemini-modal-overlay');
             const modalContent = document.getElementById('modal-content');
             const modalCloseBtn = document.getElementById('modal-close-btn');
+            const synth = window.speechSynthesis;
 
             function showModal() { modalOverlay.classList.add('visible'); }
-            function hideModal() { modalOverlay.classList.remove('visible'); }
+            function hideModal() { 
+                if (synth.speaking) {
+                    synth.cancel();
+                }
+                modalOverlay.classList.remove('visible'); 
+            }
             modalCloseBtn.addEventListener('click', hideModal);
             modalOverlay.addEventListener('click', (e) => {
                 if (e.target === modalOverlay) hideModal();
@@ -696,10 +712,38 @@
                             </div>
                             <div id="plan-text">${text}</div>
                             <div class="modal-footer">
-                                <button id="copy-plan-btn" class="copy-plan-btn">Copiar Plan</button>
+                                <div class="modal-footer-buttons">
+                                    <button id="listen-plan-btn" class="listen-plan-btn"><i class="fas fa-volume-up"></i> Escuchar</button>
+                                    <button id="copy-plan-btn" class="copy-plan-btn">Copiar Plan</button>
+                                </div>
                                 <p class="ai-disclaimer">Contenido generado por IA. La información puede no ser precisa.</p>
                             </div>
                         `;
+                        
+                        const listenButton = document.getElementById('listen-plan-btn');
+                        const listenIcon = listenButton.querySelector('i');
+                        const utterance = new SpeechSynthesisUtterance();
+                        utterance.lang = 'es-ES';
+
+                        utterance.onstart = () => {
+                            listenIcon.classList.remove('fa-volume-up');
+                            listenIcon.classList.add('fa-stop');
+                            listenButton.childNodes[1].textContent = ' Detener';
+                        };
+                        utterance.onend = () => {
+                            listenIcon.classList.remove('fa-stop');
+                            listenIcon.classList.add('fa-volume-up');
+                            listenButton.childNodes[1].textContent = ' Escuchar';
+                        };
+
+                        listenButton.addEventListener('click', () => {
+                            if (synth.speaking) {
+                                synth.cancel();
+                            } else {
+                                utterance.text = document.getElementById('plan-text').innerText;
+                                synth.speak(utterance);
+                            }
+                        });
                         
                         document.getElementById('copy-plan-btn').addEventListener('click', () => {
                             const planText = document.getElementById('plan-text').innerText;
