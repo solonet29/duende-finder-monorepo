@@ -145,7 +145,7 @@
 
         .search-form {
             max-width: 600px;
-            margin: 0 auto 2.5rem auto;
+            margin: 0 auto 1.5rem auto;
             display: flex;
             gap: 0.5rem;
         }
@@ -173,6 +173,21 @@
             .search-form {
                 flex-direction: column;
             }
+        }
+        
+        .trip-planner-btn {
+            background-color: var(--color-gemini-btn);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-bottom: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .quick-filters-toggle {
@@ -537,6 +552,41 @@
             background-size: 2000px 104px;
         }
 
+        /* --- Estilos para el Modal del Planificador de Viajes --- */
+        #trip-planner-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            text-align: left;
+        }
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        .form-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: var(--color-texto-secundario);
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--color-borde);
+            background-color: var(--color-fondo);
+            color: var(--color-texto-principal);
+        }
+        #trip-planner-result {
+            margin-top: 1.5rem;
+            text-align: left;
+        }
+
     </style>
 </head>
 <body id="top">
@@ -553,6 +603,10 @@
             <input type="text" id="search-input" class="search-input" placeholder="Buscar por artista, evento o ciudad...">
             <button type="submit" class="search-button">Buscar</button>
         </form>
+
+        <button id="trip-planner-btn" class="trip-planner-btn">
+            <i class="fas fa-route"></i> Planear mi Viaje Flamenco
+        </button>
 
         <button id="province-filters-toggle" class="quick-filters-toggle">
             Búsqueda por Provincia <i class="fas fa-chevron-down"></i>
@@ -595,6 +649,42 @@
         <div class="modal">
             <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
             <div id="modal-content" class="modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Modal para el Planificador de Viajes -->
+    <div id="trip-planner-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <button id="trip-modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
+            <div class="modal-header">
+                <h2><i class="fas fa-route"></i> Planificador de Viaje Flamenco</h2>
+            </div>
+            <form id="trip-planner-form">
+                <div class="form-group">
+                    <label for="trip-destination">Destino</label>
+                    <select id="trip-destination" required>
+                        <option value="Cádiz">Cádiz</option>
+                        <option value="Córdoba">Córdoba</option>
+                        <option value="Granada">Granada</option>
+                        <option value="Huelva">Huelva</option>
+                        <option value="Jaén">Jaén</option>
+                        <option value="Málaga">Málaga</option>
+                        <option value="Sevilla">Sevilla</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="trip-start-date">Fecha de Inicio</label>
+                        <input type="date" id="trip-start-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="trip-end-date">Fecha de Fin</label>
+                        <input type="date" id="trip-end-date" required>
+                    </div>
+                </div>
+                <button type="submit" class="gemini-btn" style="width: 100%; justify-content: center;">Generar Plan de Viaje</button>
+            </form>
+            <div id="trip-planner-result"></div>
         </div>
     </div>
 
@@ -933,6 +1023,77 @@
                     totalEventsSpan.textContent = 'N/A';
                 }
             }
+            
+            // --- LÓGICA DEL PLANIFICADOR DE VIAJES ---
+            const tripPlannerBtn = document.getElementById('trip-planner-btn');
+            const tripModalOverlay = document.getElementById('trip-planner-modal-overlay');
+            const tripModalCloseBtn = document.getElementById('trip-modal-close-btn');
+            const tripPlannerForm = document.getElementById('trip-planner-form');
+            const tripPlannerResult = document.getElementById('trip-planner-result');
+
+            tripPlannerBtn.addEventListener('click', () => tripModalOverlay.classList.add('visible'));
+            tripModalCloseBtn.addEventListener('click', () => tripModalOverlay.classList.remove('visible'));
+            tripModalOverlay.addEventListener('click', (e) => {
+                if (e.target === tripModalOverlay) tripModalOverlay.classList.remove('visible');
+            });
+
+            tripPlannerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const destination = document.getElementById('trip-destination').value;
+                const startDate = document.getElementById('trip-start-date').value;
+                const endDate = document.getElementById('trip-end-date').value;
+
+                tripPlannerResult.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Buscando eventos y creando tu ruta flamenca...</p></div>`;
+
+                try {
+                    const params = new URLSearchParams({ city: destination, dateFrom: startDate, dateTo: endDate });
+                    const response = await fetch(`${API_URL_BASE}?${params}`);
+                    if (!response.ok) throw new Error('No se pudieron obtener los eventos.');
+                    
+                    const events = await response.json();
+
+                    if (events.length === 0) {
+                        tripPlannerResult.innerHTML = `<p>No se han encontrado eventos para estas fechas y destino. Prueba con otro rango.</p>`;
+                        return;
+                    }
+
+                    const eventList = events.map(ev => `- ${new Date(ev.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}: "${ev.name}" con ${ev.artist} en ${ev.venue}, ${ev.city}.`).join('\n');
+
+                    const tripPrompt = `Eres un experto agente de viajes especializado en rutas de flamenco por Andalucía. Un viajero de Francia quiere visitar la provincia de ${destination} desde el ${startDate} hasta el ${endDate}. A continuación, te proporciono una lista de los espectáculos de flamenco disponibles durante su estancia:\n\n${eventList}\n\nTu tarea es crear un itinerario de viaje optimizado, día por día. Sugiere a qué espectáculo ir cada noche para aprovechar al máximo el viaje. Si hay días sin espectáculos, sugiere actividades culturales relacionadas con el flamenco (visitar peñas, museos, barrios históricos, etc.). Para cada recomendación de un lugar, envuelve su nombre entre corchetes, así: [Nombre del Lugar]. El tono debe ser amigable y apasionado. La respuesta debe estar en español.`;
+
+                    const payload = { contents: [{ role: "user", parts: [{ text: tripPrompt }] }] };
+                    const apiKey = "AIzaSyBCWwdg_936jExHjx1azCgDdk4lxbgCc1A"; 
+                    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const geminiResponse = await fetch(geminiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!geminiResponse.ok) throw new Error('No se pudo generar el plan de viaje con la IA.');
+
+                    const result = await geminiResponse.json();
+                    let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                    if (text) {
+                        text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
+                            const query = encodeURIComponent(`${placeName}, ${destination}`);
+                            return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+                        });
+                        text = text.replace(/\n/g, '<br>');
+                        tripPlannerResult.innerHTML = text;
+                    } else {
+                        throw new Error("La IA no devolvió un plan válido.");
+                    }
+
+                } catch (error) {
+                    console.error("Error en el planificador de viajes:", error);
+                    tripPlannerResult.innerHTML = `<p>Ha ocurrido un error al generar tu plan: ${error.message}</p>`;
+                }
+            });
+
 
             function initialize() {
                 loadTotalEventsCount();
