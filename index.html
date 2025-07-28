@@ -25,7 +25,7 @@
             --color-texto-secundario-dark: #a0a0a0;
             --color-gemini-btn-dark: #3498db;
             --color-gemini-btn-hover-dark: #5dade2;
-            --color-enlace-dark: var(--color-primario-dark); /* CORREGIDO */
+            --color-enlace-dark: var(--color-primario-dark);
             --color-fondo-light: #f4f4f5;
             --color-superficie-light: #ffffff;
             --color-borde-light: #d4d4d8;
@@ -34,7 +34,7 @@
             --color-texto-secundario-light: #71717a;
             --color-gemini-btn-light: #2980b9;
             --color-gemini-btn-hover-light: #3498db;
-            --color-enlace-light: var(--color-primario-light); /* CORREGIDO */
+            --color-enlace-light: var(--color-primario-light);
         }
 
         [data-theme="dark"] {
@@ -415,7 +415,8 @@
             visibility: visible;
         }
         .modal {
-            background-color: var(--color-superficie);
+            background-color: var(--color-superficie-light);
+            color: var(--color-texto-principal-light);
             padding: 2rem;
             border-radius: 12px;
             max-width: 600px;
@@ -435,7 +436,7 @@
             right: 1rem;
             background: none;
             border: none;
-            color: var(--color-texto-secundario);
+            color: var(--color-texto-secundario-light);
             font-size: 1.5rem;
             cursor: pointer;
         }
@@ -445,24 +446,24 @@
         }
         .modal-header h2 {
             margin: 0;
-            color: var(--color-texto-principal);
+            color: var(--color-texto-principal-light);
         }
         .modal-content h3 {
-            color: var(--color-primario);
+            color: var(--color-primario-light);
             margin-top: 1.5rem;
         }
         .modal-content p {
             line-height: 1.6;
         }
         .modal-content a {
-            color: var(--color-enlace);
+            color: var(--color-enlace-light);
             text-decoration: underline;
             font-weight: bold;
         }
         .modal-footer {
             margin-top: 2rem;
             padding-top: 1rem;
-            border-top: 1px solid var(--color-borde);
+            border-top: 1px solid var(--color-borde-light);
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -474,7 +475,7 @@
             gap: 1rem;
         }
         .copy-plan-btn, .listen-plan-btn {
-            background-color: var(--color-gemini-btn);
+            background-color: var(--color-gemini-btn-light);
             color: white;
             border: none;
             padding: 0.5rem 1rem;
@@ -487,7 +488,7 @@
         }
         .ai-disclaimer {
             font-size: 0.8rem;
-            color: var(--color-texto-secundario);
+            color: var(--color-texto-secundario-light);
             margin-top: 1rem;
         }
         .loader-container {
@@ -501,13 +502,13 @@
         .loader-container p {
             margin-top: 1.5rem;
             font-style: italic;
-            color: var(--color-texto-secundario);
+            color: var(--color-texto-secundario-light);
         }
         .loader {
             width: 48px;
             height: 48px;
-            border: 5px solid var(--color-texto-principal);
-            border-bottom-color: var(--color-primario);
+            border: 5px solid var(--color-texto-principal-light);
+            border-bottom-color: var(--color-primario-light);
             border-radius: 50%;
             display: inline-block;
             box-sizing: border-box;
@@ -574,16 +575,16 @@
         .form-group label {
             margin-bottom: 0.5rem;
             font-weight: bold;
-            color: var(--color-texto-secundario);
+            color: var(--color-texto-secundario-light);
         }
         .form-group input, .form-group select {
             width: 100%;
             padding: 0.75rem;
             font-size: 1rem;
             border-radius: 6px;
-            border: 1px solid var(--color-borde);
-            background-color: var(--color-fondo);
-            color: var(--color-texto-principal);
+            border: 1px solid var(--color-borde-light);
+            background-color: var(--color-fondo-light);
+            color: var(--color-texto-principal-light);
         }
         #trip-planner-result {
             margin-top: 1.5rem;
@@ -1125,4 +1126,3 @@
     </script>
 </body>
 </html>
-/Prueba
