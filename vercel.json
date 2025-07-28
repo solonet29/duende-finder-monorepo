@@ -1,0 +1,9 @@
+// Contenido del archivo: duende-frontend/vercel.json
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://URL-DE-TU-BACKEND.vercel.app/:path*"
+    }
+  ]
+}
