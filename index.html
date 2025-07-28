@@ -333,7 +333,7 @@
             gap: 1rem;
         }
 
-        .gemini-btn {
+        .gemini-btn, .calendar-btn {
             background-color: var(--color-gemini-btn);
             color: white;
             border: none;
@@ -474,7 +474,7 @@
             display: flex;
             gap: 1rem;
         }
-        .copy-plan-btn, .listen-plan-btn, .calendar-btn {
+        .copy-plan-btn, .listen-plan-btn {
             background-color: var(--color-gemini-btn-light);
             color: white;
             border: none;
@@ -663,94 +663,91 @@
             setupFilterToggle('country-filters-toggle', 'country-filters-container');
             
             async function getFlamencoPlan(event) {
-    showModal();
-    modalContent.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Un momento, el duende está afinando la guitarra...</p></div>`;
-    
-    const prompt = `Eres un aficionado experto en flamenco y un guía turístico. Tu tarea es crear un plan para una noche de flamenco inolvidable en ${event.city}. El plan debe ser evocador y útil. Para cada recomendación de un lugar (un bar, un tablao, un restaurante), envuelve su nombre entre corchetes, así: [Nombre del Lugar]. Estructura tu respuesta en las siguientes secciones, usando Markdown para los títulos (por ejemplo, '### Título'): ### Calentando Motores: Tapas y Vinos, ### Conociendo al Maestro/a: Sobre ${event.artist}, ### El Templo del Duende: Sobre el ${event.venue}, ### Para Alargar la Magia: Una Copa Después. Para cada sección, da recomendaciones y descripciones. Para el artista, destaca su estilo y palos. Para el local, describe el ambiente. Para las tapas y copas, sugiere sitios cercanos. Contexto adicional del evento: '${event.description}'. Genera una respuesta completa y bien redactada.`;
-
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 segundos
-        const response = await fetch('/api/gemini', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: prompt }),
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        if (!response.ok) {
-            throw new Error(`Error del servidor: ${response.statusText}`);
-        }
-        const result = await response.json();
-        if (result && result.text) {
-            let text = result.text;
-            text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
-                const query = encodeURIComponent(`${placeName}, ${event.city}`);
-                return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
-            });
-            text = text.replace(/\n/g, '<br>');
-            modalContent.innerHTML = `
-                <div class="modal-header"><h2>✨ Tu Noche Flamenca ✨</h2></div>
-                <div id="plan-text">${text}</div>
-                <div class="modal-footer">
-                    <div class="modal-footer-buttons">
-                        <button id="listen-plan-btn" class="listen-plan-btn"><i class="fas fa-volume-up"></i> Escuchar</button>
-                        <button id="copy-plan-btn" class="copy-plan-btn">Copiar Plan</button>
-                    </div>
-                    <p class="ai-disclaimer">Contenido generado por IA. La información puede no ser precisa.</p>
-                </div>`;
-
-            // Lógica para el botón de copiar
-            document.getElementById('copy-plan-btn').addEventListener('click', (e) => {
-                const planText = document.getElementById('plan-text').innerText;
-                const copyButton = e.currentTarget;
-                navigator.clipboard.writeText(planText).then(() => {
-                    copyButton.textContent = '¡Copiado!';
-                    setTimeout(() => { copyButton.textContent = 'Copiar Plan'; }, 2000);
-                }).catch(err => { console.error('Error al copiar el texto: ', err); });
-            });
-
-            // --- CÓDIGO AÑADIDO PARA EL BOTÓN DE ESCUCHAR ---
-            const listenButton = document.getElementById('listen-plan-btn');
-            const listenIcon = listenButton.querySelector('i');
-            const utterance = new SpeechSynthesisUtterance();
-            utterance.lang = 'es-ES';
-
-            utterance.onstart = () => {
-                listenIcon.classList.remove('fa-volume-up');
-                listenIcon.classList.add('fa-stop');
-                listenButton.childNodes[1].textContent = ' Detener';
-            };
-            utterance.onend = () => {
-                listenIcon.classList.remove('fa-stop');
-                listenIcon.classList.add('fa-volume-up');
-                listenButton.childNodes[1].textContent = ' Escuchar';
-            };
-
-            listenButton.addEventListener('click', () => {
-                if (synth.speaking) {
-                    synth.cancel();
-                } else {
-                    utterance.text = document.getElementById('plan-text').innerText;
-                    synth.speak(utterance);
+                showModal();
+                modalContent.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Un momento, el duende está afinando la guitarra...</p></div>`;
+                const prompt = `Eres un aficionado experto en flamenco y un guía turístico. Tu tarea es crear un plan para una noche de flamenco inolvidable en ${event.city}. El plan debe ser evocador y útil. Para cada recomendación de un lugar (un bar, un tablao, un restaurante), envuelve su nombre entre corchetes, así: [Nombre del Lugar]. Estructura tu respuesta en las siguientes secciones, usando Markdown para los títulos (por ejemplo, '### Título'): ### Calentando Motores: Tapas y Vinos, ### Conociendo al Maestro/a: Sobre ${event.artist}, ### El Templo del Duende: Sobre el ${event.venue}, ### Para Alargar la Magia: Una Copa Después. Para cada sección, da recomendaciones y descripciones. Para el artista, destaca su estilo y palos. Para el local, describe el ambiente. Para las tapas y copas, sugiere sitios cercanos. Contexto adicional del evento: '${event.description}'. Genera una respuesta completa y bien redactada.`;
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 segundos
+                    const response = await fetch('/api/gemini', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt: prompt }),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    if (!response.ok) {
+                        throw new Error(`Error del servidor: ${response.statusText}`);
+                    }
+                    const result = await response.json();
+                    if (result && result.text) {
+                        let text = result.text;
+                        text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
+                            const query = encodeURIComponent(`${placeName}, ${event.city}`);
+                            return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+                        });
+                        text = text.replace(/\n/g, '<br>');
+                        const calendarLinks = generateCalendarLinks(event);
+                        modalContent.innerHTML = `
+                            <div class="modal-header"><h2>✨ Tu Noche Flamenca ✨</h2></div>
+                            <div id="plan-text">${text}</div>
+                            <div class="modal-footer" style="border-top: 1px solid var(--color-borde-light); margin-top: 1.5rem; padding-top: 1.5rem;">
+                                <h3 style="margin:0; margin-bottom: 1rem; color: var(--color-texto-principal-light);">Añadir el evento principal al calendario</h3>
+                                <div style="display:flex; justify-content:center; gap:1rem;">
+                                    <a href="${calendarLinks.google}" target="_blank" rel="noopener noreferrer" class="gemini-btn"><i class="fab fa-google"></i> Google</a>
+                                    <a href="${calendarLinks.outlook}" target="_blank" rel="noopener noreferrer" class="gemini-btn" style="background-color: #0072c6;"><i class="fab fa-microsoft"></i> Outlook</a>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <div class="modal-footer-buttons">
+                                    <button id="listen-plan-btn" class="listen-plan-btn"><i class="fas fa-volume-up"></i> Escuchar Plan</button>
+                                    <button id="copy-plan-btn" class="copy-plan-btn">Copiar Plan</button>
+                                </div>
+                                <p class="ai-disclaimer">Contenido generado por IA. La información puede no ser precisa.</p>
+                            </div>`;
+                        document.getElementById('copy-plan-btn').addEventListener('click', (e) => {
+                            const planText = document.getElementById('plan-text').innerText;
+                            const copyButton = e.currentTarget;
+                            navigator.clipboard.writeText(planText).then(() => {
+                                copyButton.textContent = '¡Copiado!';
+                                setTimeout(() => { copyButton.textContent = 'Copiar Plan'; }, 2000);
+                            }).catch(err => { console.error('Error al copiar el texto: ', err); });
+                        });
+                        const listenButton = document.getElementById('listen-plan-btn');
+                        const listenIcon = listenButton.querySelector('i');
+                        const utterance = new SpeechSynthesisUtterance();
+                        utterance.lang = 'es-ES';
+                        utterance.onstart = () => {
+                            listenIcon.classList.remove('fa-volume-up');
+                            listenIcon.classList.add('fa-stop');
+                            listenButton.childNodes[1].textContent = ' Detener';
+                        };
+                        utterance.onend = () => {
+                            listenIcon.classList.remove('fa-stop');
+                            listenIcon.classList.add('fa-volume-up');
+                            listenButton.childNodes[1].textContent = ' Escuchar Plan';
+                        };
+                        listenButton.addEventListener('click', () => {
+                            if (synth.speaking) {
+                                synth.cancel();
+                            } else {
+                                utterance.text = document.getElementById('plan-text').innerText;
+                                synth.speak(utterance);
+                            }
+                        });
+                    } else {
+                        throw new Error("La IA no devolvió una respuesta válida.");
+                    }
+                } catch (error) {
+                    console.error("Error en getFlamencoPlan:", error);
+                    if (error.name === 'AbortError') {
+                        modalContent.innerHTML = `<h3>Error</h3><p>La petición ha tardado demasiado en responder. Por favor, inténtalo de nuevo.</p>`;
+                    } else {
+                        modalContent.innerHTML = `<h3>Error</h3><p>No se pudo generar el plan.</p>`;
+                    }
                 }
-            });
-            // --- FIN DEL CÓDIGO AÑADIDO ---
-
-        } else {
-            throw new Error("La IA no devolvió una respuesta válida.");
-        }
-    } catch (error) {
-        console.error("Error en getFlamencoPlan:", error);
-        if (error.name === 'AbortError') {
-            modalContent.innerHTML = `<h3>Error</h3><p>La petición ha tardado demasiado en responder. Por favor, inténtalo de nuevo.</p>`;
-        } else {
-            modalContent.innerHTML = `<h3>Error</h3><p>No se pudo generar el plan.</p>`;
-        }
-    }
-}
-
+            }
             const resultsContainer = document.getElementById('resultsContainer');
             const skeletonContainer = document.getElementById('skeleton-container');
             const statusMessage = document.getElementById('statusMessage');
@@ -764,12 +761,11 @@
                 if (searchTerm) {
                     newUrl.searchParams.set('search', searchTerm);
                 } else {
-                    newUrl.searchParams.delete('search');
+                    newUrl.searchParams.set('timeframe', 'week');
                 }
                 history.pushState({}, '', newUrl);
                 performSearch(Object.fromEntries(newUrl.searchParams));
             });
-
             function showSkeletonLoader() {
                 skeletonContainer.innerHTML = '';
                 resultsContainer.style.display = 'none';
@@ -782,12 +778,10 @@
                     skeletonContainer.appendChild(skeletonCard);
                 }
             }
-
             function hideSkeletonLoader() {
                 skeletonContainer.style.display = 'none';
                 resultsContainer.style.display = 'grid';
             }
-
             async function performSearch(params) {
                 showSkeletonLoader();
                 const queryString = new URLSearchParams(params).toString();
@@ -802,7 +796,6 @@
                     hideSkeletonLoader();
                 }
             }
-
             function displayEvents(events) {
                 hideSkeletonLoader();
                 statusMessage.textContent = '';
@@ -818,56 +811,41 @@
                 });
                 resultsContainer.appendChild(fragment);
             }
-            
-            // Reemplaza tu función createEventCard actual por esta versión actualizada
-
-function createEventCard(event) {
-    const eventCard = document.createElement('article');
-    eventCard.className = 'evento-card';
-    const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-    const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
-    
-    // Usamos JSON.stringify para pasar todos los datos del evento al botón
-    const eventDataString = JSON.stringify(event).replace(/'/g, "&apos;");
-
-    eventCard.innerHTML = `
-        <div class="card-header"><h3>${event.name}</h3></div>
-        <div class="artista"><i class="fas fa-user"></i> <span>${event.artist}</span></div>
-        <div class="descripcion-container">
-            <p class="descripcion">${event.description}</p>
-            ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
-        </div>
-        <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
-        <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
-        <div class="evento-detalle">
-            <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span>
-            </a>
-        </div>
-        <div class="card-actions">
-            <div>
-                <button class="gemini-btn" data-event='${eventDataString}'>✨ Planear Noche</button>
-                 <button class="calendar-btn" data-event='${eventDataString}' style="margin-left: 0.5rem;"><i class="fas fa-calendar-plus"></i> Añadir</button>
-            </div>
-            ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
-        </div>
-    `;
-    
-    // Mantenemos los listeners para los botones que ya teníamos
-    eventCard.querySelector('.gemini-btn').addEventListener('click', (e) => {
-        const eventData = JSON.parse(e.currentTarget.dataset.event.replace(/&apos;/g, "'"));
-        getFlamencoPlan(eventData);
-    });
-
-    // AÑADIMOS EL NUEVO LISTENER PARA EL BOTÓN DE CALENDARIO
-    eventCard.querySelector('.calendar-btn').addEventListener('click', (e) => {
-        const eventData = JSON.parse(e.currentTarget.dataset.event.replace(/&apos;/g, "'"));
-        showCalendarLinks(eventData);
-    });
-
-    return eventCard;
-}
+            function createEventCard(event) {
+                const eventCard = document.createElement('article');
+                eventCard.className = 'evento-card';
+                const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+                const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
+                const eventDataString = JSON.stringify(event).replace(/'/g, "&apos;");
+                eventCard.innerHTML = `
+                    <div class="card-header"><h3>${event.name}</h3></div>
+                    <div class="artista"><i class="fas fa-user"></i> <span>${event.artist}</span></div>
+                    <div class="descripcion-container">
+                        <p class="descripcion">${event.description}</p>
+                        ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
+                    </div>
+                    <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
+                    <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
+                    <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span></a></div>
+                    <div class="card-actions">
+                        <div>
+                            <button class="gemini-btn" data-event='${eventDataString}'>✨ Planear Noche</button>
+                            <button class="calendar-btn" data-event='${eventDataString}' style="margin-left: 0.5rem;"><i class="fas fa-calendar-plus"></i> Añadir</button>
+                        </div>
+                        ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
+                    </div>
+                `;
+                eventCard.querySelector('.gemini-btn').addEventListener('click', (e) => {
+                    const eventData = JSON.parse(e.currentTarget.dataset.event.replace(/&apos;/g, "'"));
+                    getFlamencoPlan(eventData);
+                });
+                eventCard.querySelector('.calendar-btn').addEventListener('click', (e) => {
+                    const eventData = JSON.parse(e.currentTarget.dataset.event.replace(/&apos;/g, "'"));
+                    showCalendarLinks(eventData);
+                });
+                return eventCard;
+            }
             function createDetailItem(icon, text, link = null) {
                 const detailDiv = document.createElement('div');
                 detailDiv.className = 'evento-detalle';
@@ -886,7 +864,6 @@ function createEventCard(event) {
                 }
                 return detailDiv;
             }
-
             async function loadTotalEventsCount() {
                 try {
                     const response = await fetch(`/api/events/count`);
@@ -899,61 +876,83 @@ function createEventCard(event) {
                     console.warn('No se pudo cargar el contador total de eventos.');
                 }
             }
-            
             const tripPlannerBtn = document.getElementById('trip-planner-btn');
             const tripModalOverlay = document.getElementById('trip-planner-modal-overlay');
             const tripModalCloseBtn = document.getElementById('trip-modal-close-btn');
             const tripPlannerForm = document.getElementById('trip-planner-form');
-
             tripPlannerBtn.addEventListener('click', () => tripModalOverlay.classList.add('visible'));
             tripModalCloseBtn.addEventListener('click', () => tripModalOverlay.classList.remove('visible'));
             tripModalOverlay.addEventListener('click', (e) => {
                 if (e.target === tripModalOverlay) tripModalOverlay.classList.remove('visible');
             });
-
-           tripPlannerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const destination = document.getElementById('trip-destination').value;
-    const startDate = document.getElementById('trip-start-date').value;
-    const endDate = document.getElementById('trip-end-date').value;
-    const tripPlannerResult = document.getElementById('trip-planner-result');
-
-    tripPlannerResult.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Buscando eventos y creando tu ruta flamenca...</p></div>`;
-
-    try {
-        const response = await fetch('/api/trip-planner', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ destination, startDate, endDate })
-        });
-
-        if (!response.ok) {
-            throw new Error('No se pudo generar el plan de viaje.');
-        }
-        
-        const result = await response.json();
-        
-        if (result && result.text) {
-            let text = result.text;
-            text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
-                const query = encodeURIComponent(`${placeName}, ${destination}`);
-                return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+            tripPlannerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const destination = document.getElementById('trip-destination').value;
+                const startDate = document.getElementById('trip-start-date').value;
+                const endDate = document.getElementById('trip-end-date').value;
+                const tripPlannerResult = document.getElementById('trip-planner-result');
+                tripPlannerResult.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Buscando eventos y creando tu ruta flamenca...</p></div>`;
+                try {
+                    const response = await fetch('/api/trip-planner', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ destination, startDate, endDate })
+                    });
+                    if (!response.ok) {
+                        throw new Error('No se pudo generar el plan de viaje.');
+                    }
+                    const result = await response.json();
+                    if (result && result.text) {
+                        let text = result.text;
+                        text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
+                            const query = encodeURIComponent(`${placeName}, ${destination}`);
+                            return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+                        });
+                        text = text.replace(/\n/g, '<br>');
+                        tripPlannerResult.innerHTML = text;
+                    } else {
+                        throw new Error("La IA no devolvió un plan válido.");
+                    }
+                } catch (error) {
+                    console.error("Error en el planificador de viajes:", error);
+                    tripPlannerResult.innerHTML = `<p style="color: red;">Ha ocurrido un error al generar tu plan: ${error.message}</p>`;
+                }
             });
-            text = text.replace(/\n/g, '<br>');
-            tripPlannerResult.innerHTML = text;
-        } else {
-            throw new Error("La IA no devolvió un plan válido.");
-        }
-
-    } catch (error) {
-        console.error("Error en el planificador de viajes:", error);
-        tripPlannerResult.innerHTML = `<p style="color: red;">Ha ocurrido un error al generar tu plan: ${error.message}</p>`;
-    }
-}); 
-
-
-
+            function generateCalendarLinks(event) {
+                const startTime = new Date(`${event.date}T${event.time}`);
+                const endTime = new Date(startTime.getTime() + (2 * 60 * 60 * 1000));
+                const formatTime = (date) => date.toISOString().replace(/-|:|\.\d+/g, '');
+                const startTimeFormatted = formatTime(startTime);
+                const endTimeFormatted = formatTime(endTime);
+                const eventDetails = {
+                    title: encodeURIComponent(event.name),
+                    details: encodeURIComponent(`Ver a ${event.artist}.\n\n${event.description}`),
+                    location: encodeURIComponent(`${event.venue}, ${event.city}`),
+                    startTime: startTimeFormatted,
+                    endTime: endTimeFormatted
+                };
+                const googleLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${eventDetails.title}&dates=${eventDetails.startTime}/${eventDetails.endTime}&details=${eventDetails.details}&location=${eventDetails.location}`;
+                const outlookLink = `https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${eventDetails.title}&startdt=${startTime.toISOString()}&enddt=${endTime.toISOString()}&body=${eventDetails.details}&location=${eventDetails.location}`;
+                return { google: googleLink, outlook: outlookLink };
+            }
+            function showCalendarLinks(event) {
+                const links = generateCalendarLinks(event);
+                modalContent.innerHTML = `
+                    <div class="modal-header">
+                        <h2>Añadir "${event.name}" a tu calendario</h2>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:1rem; margin-top:1.5rem;">
+                        <a href="${links.google}" target="_blank" rel="noopener noreferrer" class="gemini-btn" style="width:80%; justify-content:center;">
+                            <i class="fab fa-google"></i> Google Calendar
+                        </a>
+                        <a href="${links.outlook}" target="_blank" rel="noopener noreferrer" class="gemini-btn" style="width:80%; justify-content:center; background-color: #0072c6;">
+                            <i class="fab fa-microsoft"></i> Outlook Calendar
+                        </a>
+                    </div>
+                `;
+                showModal();
+            }
             function handleQuickFilter(event) {
                 event.preventDefault();
                 const url = new URL(event.currentTarget.href);
@@ -964,11 +963,10 @@ function createEventCard(event) {
             document.querySelectorAll('.quick-filter-btn').forEach(btn => {
                 btn.addEventListener('click', handleQuickFilter);
             });
-
             function initialize() {
                 loadTotalEventsCount();
                 const urlParams = new URLSearchParams(window.location.search);
-                const params = Object.fromEntries(urlParams.entries());
+                const params = Object.fromEntries(urlParams.entries);
                 if (Object.keys(params).length === 0) {
                     params.timeframe = 'week';
                 }
