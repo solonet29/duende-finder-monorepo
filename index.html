@@ -911,10 +911,47 @@
                 if (e.target === tripModalOverlay) tripModalOverlay.classList.remove('visible');
             });
 
-            tripPlannerForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                // ... Aquí también deberías llamar a un endpoint seguro de tu backend ...
+           tripPlannerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const destination = document.getElementById('trip-destination').value;
+    const startDate = document.getElementById('trip-start-date').value;
+    const endDate = document.getElementById('trip-end-date').value;
+    const tripPlannerResult = document.getElementById('trip-planner-result');
+
+    tripPlannerResult.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Buscando eventos y creando tu ruta flamenca...</p></div>`;
+
+    try {
+        const response = await fetch('/api/trip-planner', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ destination, startDate, endDate })
+        });
+
+        if (!response.ok) {
+            throw new Error('No se pudo generar el plan de viaje.');
+        }
+        
+        const result = await response.json();
+        
+        if (result && result.text) {
+            let text = result.text;
+            text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
+                const query = encodeURIComponent(`${placeName}, ${destination}`);
+                return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
             });
+            text = text.replace(/\n/g, '<br>');
+            tripPlannerResult.innerHTML = text;
+        } else {
+            throw new Error("La IA no devolvió un plan válido.");
+        }
+
+    } catch (error) {
+        console.error("Error en el planificador de viajes:", error);
+        tripPlannerResult.innerHTML = `<p style="color: red;">Ha ocurrido un error al generar tu plan: ${error.message}</p>`;
+    }
+});
+
 
             function handleQuickFilter(event) {
                 event.preventDefault();
