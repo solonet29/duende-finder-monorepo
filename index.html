@@ -215,25 +215,32 @@
         }
 
         /* --- CAMBIO PARA EL SLIDER HORIZONTAL --- */
-        .quick-filters-container {
-            display: flex;
-            flex-wrap: nowrap; /* Evita que los botones salten a la siguiente línea */
-            overflow-x: auto;  /* Permite el scroll horizontal */
-            justify-content: flex-start; /* Alinea los botones a la izquierda */
-            gap: 1rem;
-            padding-bottom: 1rem; /* Añade espacio para la barra de scroll si aparece */
-            margin-bottom: 2rem;
-            overflow-y: hidden; /* Oculta el scroll vertical innecesario */
-            max-height: 0;
-            transition: max-height 0.5s ease-out, margin-bottom 0.5s ease-out;
+     .quick-filters-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 1rem;
+    margin-bottom: 0; /* Se quita el margen cuando está cerrado */
+    overflow-y: hidden;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0; /* Sin padding cuando está cerrado */
+    transition: all 0.5s ease-out; /* Transición suave para todas las propiedades */
 
-            /* Opcional: Oculta la barra de scroll para un look más limpio */
-            -ms-overflow-style: none;  /* IE y Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-        .quick-filters-container::-webkit-scrollbar {
-            display: none; /* Chrome, Safari y Opera */
-        }
+    /* Estilos para ocultar la barra de scroll */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.quick-filters-container::-webkit-scrollbar {
+    display: none;
+}
+
+.quick-filters-container.visible {
+    max-height: 80px; /* Ajustado para una sola fila de botones */
+    margin-bottom: 2rem; /* Se aplica solo cuando es visible */
+    padding-bottom: 1rem; /* Se aplica solo cuando es visible */
+}
         /* --- FIN DEL CAMBIO --- */
         
         .quick-filters-container.visible {
