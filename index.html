@@ -194,12 +194,13 @@
             margin-bottom: 1.5rem;
         }
 
+        /* CAMBIO 3: Estilo de filtros a texto */
         .quick-filters-toggle {
             background: none;
             border: none;
-            color: var(--color-primario);
+            color: var(--color-texto-secundario);
             cursor: pointer;
-            text-decoration: underline;
+            text-decoration: none;
             margin-bottom: 1.5rem;
             display: inline-flex;
             align-items: center;
@@ -207,6 +208,11 @@
             font-family: inherit;
             font-size: 1.1rem;
             padding: 0;
+            transition: color 0.2s ease;
+        }
+        .quick-filters-toggle:hover {
+            color: var(--color-primario);
+            text-decoration: underline;
         }
 
         .quick-filters-container {
@@ -332,7 +338,7 @@
             align-items: center;
             gap: 1rem;
         }
-   
+
         .gemini-btn, .calendar-btn {
             background-color: var(--color-gemini-btn);
             color: white;
@@ -550,6 +556,30 @@
         .form-group label { margin-bottom: 0.5rem; font-weight: bold; color: var(--color-texto-secundario-light); }
         .form-group input, .form-group select { width: 100%; padding: 0.75rem; font-size: 1rem; border-radius: 6px; border: 1px solid var(--color-borde-light); background-color: var(--color-fondo-light); color: var(--color-texto-principal-light); }
         #trip-planner-result { margin-top: 1.5rem; text-align: left; }
+
+        /* CAMBIO 1: Estilo nuevo para los botones del calendario */
+        .calendar-link-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: 1px solid var(--color-borde-light);
+            background-color: transparent;
+            color: var(--color-texto-principal-light);
+        }
+        .calendar-link-btn:hover {
+            background-color: var(--color-fondo-light);
+            transform: translateY(-2px);
+        }
+        .calendar-link-btn i {
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body id="top">
@@ -817,7 +847,7 @@
                 const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                 const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
-                const eventDataString = JSON.stringify(event).replace(/'/g, "&apos;");
+                const eventDataString = JSON.stringify(event).replace(/'/g, "'");
                 eventCard.innerHTML = `
                     <div class="card-header"><h3>${event.name}</h3></div>
                     <div class="artista"><i class="fas fa-user"></i> <span>${event.artist}</span></div>
@@ -837,32 +867,14 @@
                     </div>
                 `;
                 eventCard.querySelector('.gemini-btn').addEventListener('click', (e) => {
-                    const eventData = JSON.parse(e.currentTarget.dataset.event.replace(/&apos;/g, "'"));
+                    const eventData = JSON.parse(e.currentTarget.dataset.event.replace(/'/g, "'"));
                     getFlamencoPlan(eventData);
                 });
                 eventCard.querySelector('.calendar-btn').addEventListener('click', (e) => {
-                    const eventData = JSON.parse(e.currentTarget.dataset.event.replace(/&apos;/g, "'"));
+                    const eventData = JSON.parse(e.currentTarget.dataset.event.replace(/'/g, "'"));
                     showCalendarLinks(eventData);
                 });
                 return eventCard;
-            }
-            function createDetailItem(icon, text, link = null) {
-                const detailDiv = document.createElement('div');
-                detailDiv.className = 'evento-detalle';
-                const [label, ...valueParts] = text.split(':');
-                const value = valueParts.join(':').trim();
-                const content = `<i class="fas fa-${icon}"></i><span><strong>${label}:</strong> ${value}</span>`;
-                if (link) {
-                    const anchor = document.createElement('a');
-                    anchor.href = link;
-                    anchor.target = '_blank';
-                    anchor.rel = 'noopener noreferrer';
-                    anchor.innerHTML = content;
-                    detailDiv.appendChild(anchor);
-                } else {
-                    detailDiv.innerHTML = content;
-                }
-                return detailDiv;
             }
             async function loadTotalEventsCount() {
                 try {
@@ -933,8 +945,9 @@
                     endTime: endTimeFormatted
                 };
                 const googleLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${eventDetails.title}&dates=${eventDetails.startTime}/${eventDetails.endTime}&details=${eventDetails.details}&location=${eventDetails.location}`;
-                const outlookLink = `https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${eventDetails.title}&startdt=${startTime.toISOString()}&enddt=${endTime.toISOString()}&body=${eventDetails.details}&location=${eventDetails.location}`;
-                return { google: googleLink, outlook: outlookLink };
+                const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startTimeFormatted}\nDTEND:${endTimeFormatted}\nSUMMARY:${event.name}\nDESCRIPTION:Ver a ${event.artist}.\\n\\n${event.description}\nLOCATION:${event.venue}, ${event.city}\nEND:VEVENT\nEND:VCALENDAR`;
+                const icsLink = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
+                return { google: googleLink, ical: icsLink };
             }
             function showCalendarLinks(event) {
                 const links = generateCalendarLinks(event);
@@ -943,11 +956,11 @@
                         <h2>Añadir "${event.name}" a tu calendario</h2>
                     </div>
                     <div style="display:flex; flex-direction:column; align-items:center; gap:1rem; margin-top:1.5rem;">
-                        <a href="${links.google}" target="_blank" rel="noopener noreferrer" class="gemini-btn" style="width:80%; justify-content:center;">
-                            <i class="fab fa-google"></i> Google Calendar
+                        <a href="${links.google}" target="_blank" rel="noopener noreferrer" class="calendar-link-btn">
+                            <i class="fab fa-google" style="color:#4285F4;"></i> Google Calendar
                         </a>
-                        <a href="${links.outlook}" target="_blank" rel="noopener noreferrer" class="gemini-btn" style="width:80%; justify-content:center; background-color: #0072c6;">
-                            <i class="fab fa-microsoft"></i> Outlook Calendar
+                        <a href="${links.ical}" download="${event.name}.ics" class="calendar-link-btn">
+                            <i class="fab fa-apple" style="color:#000;"></i> Apple / iCal
                         </a>
                     </div>
                 `;
@@ -966,7 +979,7 @@
             function initialize() {
                 loadTotalEventsCount();
                 const urlParams = new URLSearchParams(window.location.search);
-                const params = Object.fromEntries(urlParams.entries);
+                const params = Object.fromEntries(urlParams.entries());
                 if (Object.keys(params).length === 0) {
                     params.timeframe = 'week';
                 }
