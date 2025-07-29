@@ -213,38 +213,29 @@
             color: var(--color-primario);
             text-decoration: underline;
         }
-
-        /* --- CAMBIO PARA EL SLIDER HORIZONTAL --- */
-     .quick-filters-container {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    justify-content: flex-start;
-    gap: 1rem;
-    margin-bottom: 0; /* Se quita el margen cuando está cerrado */
-    overflow-y: hidden;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0; /* Sin padding cuando está cerrado */
-    transition: all 0.5s ease-out; /* Transición suave para todas las propiedades */
-
-    /* Estilos para ocultar la barra de scroll */
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-.quick-filters-container::-webkit-scrollbar {
-    display: none;
-}
-
-.quick-filters-container.visible {
-    max-height: 80px; /* Ajustado para una sola fila de botones */
-    margin-bottom: 2rem; /* Se aplica solo cuando es visible */
-    padding-bottom: 1rem; /* Se aplica solo cuando es visible */
-}
-        /* --- FIN DEL CAMBIO --- */
         
+        .quick-filters-container {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            justify-content: flex-start;
+            gap: 1rem;
+            margin-bottom: 0;
+            overflow-y: hidden;
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            transition: all 0.5s ease-out;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .quick-filters-container::-webkit-scrollbar {
+            display: none;
+        }
         .quick-filters-container.visible {
-            max-height: 200px;
+            max-height: 80px;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
         }
 
         .quick-filter-btn {
@@ -256,7 +247,7 @@
             border-radius: 20px;
             font-weight: 700;
             font-size: 1rem;
-            white-space: nowrap; /* Evita que el texto del botón se rompa */
+            white-space: nowrap;
             transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s ease;
         }
 
@@ -598,28 +589,47 @@
         .calendar-link-btn i {
             font-size: 1.2rem;
         }
+
+        /* --- NUEVO CSS PARA OCULTAR/MOSTRAR CONTROLES --- */
+        #search-controls {
+            max-height: 1000px; /* Suficientemente grande para que quepa todo */
+            transition: all 0.5s ease-in-out;
+            overflow: hidden;
+            opacity: 1;
+            visibility: visible;
+        }
+        main.container.results-active #search-controls {
+            max-height: 0;
+            opacity: 0;
+            visibility: hidden;
+            margin-bottom: 0;
+        }
+        /* --- FIN DEL NUEVO CSS --- */
     </style>
 </head>
 <body id="top">
     <main class="container">
         <button id="theme-toggle" class="theme-toggle-btn" aria-label="Cambiar tema"><i class="fas fa-sun"></i></button>
         <h1><span class="duende-word">Duende</span> <span>Finder</span></h1>
-        <p class="subtitle"><i class="fas fa-guitar" style="margin-right: 8px; color: var(--color-primario);"></i>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
-        <p class="event-counter">Tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p>
-        <form id="search-form" class="search-form">
-            <input type="text" id="search-input" class="search-input" placeholder="Buscar por artista, evento o ciudad...">
-            <button type="submit" class="search-button">Buscar</button>
-        </form>
-        <button id="trip-planner-btn" class="trip-planner-btn"><i class="fas fa-route"></i> Planear mi Viaje Flamenco</button>
-        <div class="filter-toggles-wrapper">
-            <button id="province-filters-toggle" class="quick-filters-toggle">Búsqueda por Provincia <i class="fas fa-chevron-down"></i></button>
-            <button id="country-filters-toggle" class="quick-filters-toggle" style="margin-left: 1.5rem;">Búsqueda por País <i class="fas fa-chevron-down"></i></button>
-        </div>
-        <div id="province-filters-container" class="quick-filters-container">
-            <a href="?city=Sevilla" class="quick-filter-btn">Sevilla</a><a href="?city=Málaga" class="quick-filter-btn">Málaga</a><a href="?city=Granada" class="quick-filter-btn">Granada</a><a href="?city=Cádiz" class="quick-filter-btn">Cádiz</a><a href="?city=Córdoba" class="quick-filter-btn">Córdoba</a><a href="?city=Jerez de la Frontera" class="quick-filter-btn">Jerez</a><a href="?city=Huelva" class="quick-filter-btn">Huelva</a><a href="?city=Almería" class="quick-filter-btn">Almería</a><a href="?city=Jaén" class="quick-filter-btn">Jaén</a>
-        </div>
-        <div id="country-filters-container" class="quick-filters-container">
-            <a href="?country=Francia" class="quick-filter-btn">Francia</a><a href="?country=Japón" class="quick-filter-btn">Japón</a><a href="?country=EEUU" class="quick-filter-btn">EEUU</a><a href="?country=Reino Unido" class="quick-filter-btn">Reino Unido</a><a href="?country=Argentina" class="quick-filter-btn">Argentina</a>
+
+        <div id="search-controls">
+            <p class="subtitle"><i class="fas fa-guitar" style="margin-right: 8px; color: var(--color-primario);"></i>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
+            <p class="event-counter">Tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p>
+            <form id="search-form" class="search-form">
+                <input type="text" id="search-input" class="search-input" placeholder="Buscar por artista, evento o ciudad...">
+                <button type="submit" class="search-button">Buscar</button>
+            </form>
+            <button id="trip-planner-btn" class="trip-planner-btn"><i class="fas fa-route"></i> Planear mi Viaje Flamenco</button>
+            <div class="filter-toggles-wrapper">
+                <button id="province-filters-toggle" class="quick-filters-toggle">Búsqueda por Provincia <i class="fas fa-chevron-down"></i></button>
+                <button id="country-filters-toggle" class="quick-filters-toggle" style="margin-left: 1.5rem;">Búsqueda por País <i class="fas fa-chevron-down"></i></button>
+            </div>
+            <div id="province-filters-container" class="quick-filters-container">
+                <a href="?city=Sevilla" class="quick-filter-btn">Sevilla</a><a href="?city=Málaga" class="quick-filter-btn">Málaga</a><a href="?city=Granada" class="quick-filter-btn">Granada</a><a href="?city=Cádiz" class="quick-filter-btn">Cádiz</a><a href="?city=Córdoba" class="quick-filter-btn">Córdoba</a><a href="?city=Jerez de la Frontera" class="quick-filter-btn">Jerez</a><a href="?city=Huelva" class="quick-filter-btn">Huelva</a><a href="?city=Almería" class="quick-filter-btn">Almería</a><a href="?city=Jaén" class="quick-filter-btn">Jaén</a>
+            </div>
+            <div id="country-filters-container" class="quick-filters-container">
+                <a href="?country=Francia" class="quick-filter-btn">Francia</a><a href="?country=Japón" class="quick-filter-btn">Japón</a><a href="?country=EEUU" class="quick-filter-btn">EEUU</a><a href="?country=Reino Unido" class="quick-filter-btn">Reino Unido</a><a href="?country=Argentina" class="quick-filter-btn">Argentina</a>
+            </div>
         </div>
         <div id="statusMessage" class="status-message" aria-live="polite" role="status"></div>
         <div id="skeleton-container"></div>
@@ -806,6 +816,9 @@
             const totalEventsSpan = document.getElementById('total-events');
             const searchForm = document.getElementById('search-form');
             const searchInput = document.getElementById('search-input');
+            const mainContainer = document.querySelector('main.container'); // Contenedor principal
+            let isResultsView = false; // Variable de estado
+
             searchForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const searchTerm = searchInput.value.trim();
@@ -836,6 +849,13 @@
             }
             async function performSearch(params) {
                 showSkeletonLoader();
+                // Ocultar controles y activar la vista de resultados
+                mainContainer.classList.add('results-active');
+                isResultsView = true;
+                setTimeout(() => {
+                    statusMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+
                 const queryString = new URLSearchParams(params).toString();
                 try {
                     const response = await fetch(`/api/events?${queryString}`);
@@ -854,6 +874,9 @@
                 if (events.length === 0) {
                     statusMessage.textContent = 'No se encontraron eventos que coincidan con tu búsqueda.';
                     resultsContainer.innerHTML = '';
+                    // Si no hay resultados, mostramos los controles de nuevo
+                    mainContainer.classList.remove('results-active');
+                    isResultsView = false;
                     return;
                 }
                 resultsContainer.innerHTML = '';
@@ -1010,6 +1033,16 @@
                 }
                 performSearch(params);
             }
+            
+            // --- NUEVO LISTENER PARA EL SCROLL ---
+            window.addEventListener('scroll', () => {
+                // Si estamos en la vista de resultados y el usuario sube
+                if (isResultsView && window.scrollY < 150) {
+                    mainContainer.classList.remove('results-active');
+                    isResultsView = false; // Desactivar para que no se ejecute continuamente
+                }
+            });
+            
             initialize();
         });
     </script>
