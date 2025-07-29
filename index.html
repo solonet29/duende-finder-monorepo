@@ -340,29 +340,35 @@
         .evento-detalle a:hover { color: var(--color-primario); }
 
       .card-actions {
-    margin-top: 1.5rem;
+    margin-top: auto; 
     padding-top: 1rem;
     border-top: 1px solid var(--color-borde);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column; /* Apilados por defecto (móvil) */
+    gap: 0.75rem; 
+    align-items: stretch; /* Estira los hijos al 100% del ancho */
+}
+
+/* Contenedor para los dos botones de acción principales */
+.card-actions-primary {
+    display: flex;
+    flex-direction: column; /* Apilados por defecto (móvil) */
     gap: 0.75rem;
-    flex-wrap: wrap; /* Permite que los botones se reorganicen si no caben */
 }
 
-/* Estilos para que los botones se estiren y centren su contenido */
-.card-actions > .gemini-btn,
-.card-actions > .calendar-btn,
-.card-actions > .source-link-btn {
-    flex-grow: 1; /* Permite que los botones crezcan y ocupen el espacio */
+/* Estilo común para todos los botones dentro de las acciones */
+.card-actions > .source-link-btn,
+.card-actions-primary > .gemini-btn,
+.card-actions-primary > .calendar-btn {
     justify-content: center; /* Centra el texto y el icono */
+    margin: 0; 
+    width: 100%; 
 }
 
-/* Media Query para pantallas pequeñas (móviles) */
-@media (max-width: 480px) {
-    .card-actions {
-        flex-direction: column; /* Apila los botones verticalmente */
-        align-items: stretch; /* Estira los botones para que ocupen todo el ancho */
+/* Media Query para pantallas más grandes (tablets, escritorio) */
+@media (min-width: 500px) {
+    .card-actions-primary {
+        flex-direction: row; /* En pantallas grandes, los ponemos en fila */
     }
 }
 
@@ -923,7 +929,6 @@
     const mapsUrl = `http://googleusercontent.com/maps/google.com/0{encodeURIComponent(fullLocation)}`;
     const eventDataString = JSON.stringify(event).replace(/'/g, "'");
     
-    // Simplificamos la sección de .card-actions en el HTML
     eventCard.innerHTML = `
         <div class="card-header"><h3>${event.name}</h3></div>
         <div class="artista"><i class="fas fa-user"></i> <span>${event.artist}</span></div>
@@ -934,10 +939,13 @@
         <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
         <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
         <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span></a></div>
+        
         <div class="card-actions">
-            <button class="gemini-btn" data-event='${eventDataString}'>✨ Planear Noche</button>
-            <button class="calendar-btn" data-event='${eventDataString}'><i class="fas fa-calendar-plus"></i> Añadir</button>
             ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
+            <div class="card-actions-primary">
+                <button class="gemini-btn" data-event='${eventDataString}'>✨ Planear Noche</button>
+                <button class="calendar-btn" data-event='${eventDataString}'><i class="fas fa-calendar-plus"></i> Añadir</button>
+            </div>
         </div>
     `;
     
@@ -952,6 +960,7 @@
     });
     
     return eventCard;
+}
 }
             async function loadTotalEventsCount() {
                 try {
