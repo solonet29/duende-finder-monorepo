@@ -194,7 +194,6 @@
             margin-bottom: 1.5rem;
         }
 
-        /* CAMBIO 3: Estilo de filtros a texto */
         .quick-filters-toggle {
             background: none;
             border: none;
@@ -557,7 +556,6 @@
         .form-group input, .form-group select { width: 100%; padding: 0.75rem; font-size: 1rem; border-radius: 6px; border: 1px solid var(--color-borde-light); background-color: var(--color-fondo-light); color: var(--color-texto-principal-light); }
         #trip-planner-result { margin-top: 1.5rem; text-align: left; }
 
-        /* CAMBIO 1: Estilo nuevo para los botones del calendario */
         .calendar-link-btn {
             display: flex;
             justify-content: center;
@@ -724,9 +722,13 @@
                             <div id="plan-text">${text}</div>
                             <div class="modal-footer" style="border-top: 1px solid var(--color-borde-light); margin-top: 1.5rem; padding-top: 1.5rem;">
                                 <h3 style="margin:0; margin-bottom: 1rem; color: var(--color-texto-principal-light);">Añadir el evento principal al calendario</h3>
-                                <div style="display:flex; justify-content:center; gap:1rem;">
-                                    <a href="${calendarLinks.google}" target="_blank" rel="noopener noreferrer" class="gemini-btn"><i class="fab fa-google"></i> Google</a>
-                                    <a href="${calendarLinks.outlook}" target="_blank" rel="noopener noreferrer" class="gemini-btn" style="background-color: #0072c6;"><i class="fab fa-microsoft"></i> Outlook</a>
+                                <div style="display:flex; flex-direction:column; align-items:center; gap:1rem;">
+                                    <a href="${calendarLinks.google}" target="_blank" rel="noopener noreferrer" class="calendar-link-btn">
+                                        <i class="fab fa-google" style="color:#4285F4;"></i> Google Calendar
+                                    </a>
+                                    <a href="${calendarLinks.ical}" download="${event.name}.ics" class="calendar-link-btn">
+                                        <i class="fab fa-apple" style="color:#000;"></i> Apple / iCal
+                                    </a>
                                 </div>
                             </div>
                             <div class="modal-footer">
