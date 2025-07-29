@@ -590,9 +590,8 @@
             font-size: 1.2rem;
         }
 
-        /* --- NUEVO CSS PARA OCULTAR/MOSTRAR CONTROLES --- */
         #search-controls {
-            max-height: 1000px; /* Suficientemente grande para que quepa todo */
+            max-height: 1000px;
             transition: all 0.5s ease-in-out;
             overflow: hidden;
             opacity: 1;
@@ -604,7 +603,6 @@
             visibility: hidden;
             margin-bottom: 0;
         }
-        /* --- FIN DEL NUEVO CSS --- */
     </style>
 </head>
 <body id="top">
@@ -631,6 +629,7 @@
                 <a href="?country=Francia" class="quick-filter-btn">Francia</a><a href="?country=Japón" class="quick-filter-btn">Japón</a><a href="?country=EEUU" class="quick-filter-btn">EEUU</a><a href="?country=Reino Unido" class="quick-filter-btn">Reino Unido</a><a href="?country=Argentina" class="quick-filter-btn">Argentina</a>
             </div>
         </div>
+
         <div id="statusMessage" class="status-message" aria-live="polite" role="status"></div>
         <div id="skeleton-container"></div>
         <div id="resultsContainer" style="display: none;"></div>
@@ -816,9 +815,8 @@
             const totalEventsSpan = document.getElementById('total-events');
             const searchForm = document.getElementById('search-form');
             const searchInput = document.getElementById('search-input');
-            const mainContainer = document.querySelector('main.container'); // Contenedor principal
-            let isResultsView = false; // Variable de estado
-
+            const mainContainer = document.querySelector('main.container');
+            let isResultsView = false;
             searchForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const searchTerm = searchInput.value.trim();
@@ -829,7 +827,7 @@
                     newUrl.searchParams.set('timeframe', 'week');
                 }
                 history.pushState({}, '', newUrl);
-                performSearch(Object.fromEntries(newUrl.searchParams));
+                performSearch(Object.fromEntries(newUrl.searchParams), true);
             });
             function showSkeletonLoader() {
                 skeletonContainer.innerHTML = '';
@@ -847,15 +845,15 @@
                 skeletonContainer.style.display = 'none';
                 resultsContainer.style.display = 'grid';
             }
-            async function performSearch(params) {
+            async function performSearch(params, isUserSearch = false) {
                 showSkeletonLoader();
-                // Ocultar controles y activar la vista de resultados
-                mainContainer.classList.add('results-active');
-                isResultsView = true;
-                setTimeout(() => {
-                    statusMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-
+                if (isUserSearch) {
+                    mainContainer.classList.add('results-active');
+                    isResultsView = true;
+                    setTimeout(() => {
+                        statusMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                }
                 const queryString = new URLSearchParams(params).toString();
                 try {
                     const response = await fetch(`/api/events?${queryString}`);
@@ -874,7 +872,6 @@
                 if (events.length === 0) {
                     statusMessage.textContent = 'No se encontraron eventos que coincidan con tu búsqueda.';
                     resultsContainer.innerHTML = '';
-                    // Si no hay resultados, mostramos los controles de nuevo
                     mainContainer.classList.remove('results-active');
                     isResultsView = false;
                     return;
@@ -1016,7 +1013,7 @@
                 const url = new URL(event.currentTarget.href);
                 const params = Object.fromEntries(url.searchParams);
                 history.pushState({}, '', url);
-                performSearch(params);
+                performSearch(params, true);
             }
             document.querySelectorAll('.quick-filter-btn').forEach(btn => {
                 btn.addEventListener('click', handleQuickFilter);
@@ -1031,15 +1028,13 @@
                 if (params.search) {
                     searchInput.value = params.search;
                 }
-                performSearch(params);
+                performSearch(params, false); // Carga inicial, no es una búsqueda del usuario
             }
             
-            // --- NUEVO LISTENER PARA EL SCROLL ---
             window.addEventListener('scroll', () => {
-                // Si estamos en la vista de resultados y el usuario sube
                 if (isResultsView && window.scrollY < 150) {
                     mainContainer.classList.remove('results-active');
-                    isResultsView = false; // Desactivar para que no se ejecute continuamente
+                    isResultsView = false;
                 }
             });
             
