@@ -214,16 +214,28 @@
             text-decoration: underline;
         }
 
+        /* --- CAMBIO PARA EL SLIDER HORIZONTAL --- */
         .quick-filters-container {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-wrap: nowrap; /* Evita que los botones salten a la siguiente línea */
+            overflow-x: auto;  /* Permite el scroll horizontal */
+            justify-content: flex-start; /* Alinea los botones a la izquierda */
             gap: 1rem;
-            margin-bottom: 3rem;
-            overflow: hidden;
+            padding-bottom: 1rem; /* Añade espacio para la barra de scroll si aparece */
+            margin-bottom: 2rem;
+            overflow-y: hidden; /* Oculta el scroll vertical innecesario */
             max-height: 0;
             transition: max-height 0.5s ease-out, margin-bottom 0.5s ease-out;
+
+            /* Opcional: Oculta la barra de scroll para un look más limpio */
+            -ms-overflow-style: none;  /* IE y Edge */
+            scrollbar-width: none;  /* Firefox */
         }
+        .quick-filters-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari y Opera */
+        }
+        /* --- FIN DEL CAMBIO --- */
+        
         .quick-filters-container.visible {
             max-height: 200px;
         }
@@ -237,6 +249,7 @@
             border-radius: 20px;
             font-weight: 700;
             font-size: 1rem;
+            white-space: nowrap; /* Evita que el texto del botón se rompa */
             transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s ease;
         }
 
