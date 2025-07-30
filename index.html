@@ -680,7 +680,7 @@
         </div>
     </div>
     <script>
-         const LOG_API_ENDPOINT = 'https://<TU_URL_DE_VERCEL>/api/log-search';
+         const LOG_API_ENDPOINT = 'https://duende-analytics.vercel.app/api/log-search';
 
         function getSessionId() {
           let sessionId = sessionStorage.getItem('duendeSessionId');
@@ -902,6 +902,11 @@
                     const response = await fetch(`/api/events?${queryString}`);
                     if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
                     const events = await response.json();
+                    logSearchEvent({
+                        searchTerm: params.search || null,
+                        filtersApplied: params,
+                        resultsCount: events.length
+                    });
                     displayEvents(events);
                 } catch (error) {
                     console.error('Error al realizar la búsqueda:', error);
