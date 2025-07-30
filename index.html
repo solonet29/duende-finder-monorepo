@@ -680,6 +680,30 @@
         </div>
     </div>
     <script>
+         const LOG_API_ENDPOINT = 'https://<TU_URL_DE_VERCEL>/api/log-search';
+
+        function getSessionId() {
+          let sessionId = sessionStorage.getItem('duendeSessionId');
+          if (!sessionId) {
+            sessionId = self.crypto.randomUUID();
+            sessionStorage.setItem('duendeSessionId', sessionId);
+          }
+          return sessionId;
+        }
+
+        async function logSearchEvent(searchData) {
+          try {
+            searchData.sessionId = getSessionId();
+
+            await fetch(LOG_API_ENDPOINT, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(searchData),
+            });
+          } catch (error) {
+            console.error('Error logging search event:', error);
+          }
+        }
         document.addEventListener('DOMContentLoaded', () => {
             const themeToggle = document.getElementById('theme-toggle');
             const toggleIcon = themeToggle.querySelector('i');
