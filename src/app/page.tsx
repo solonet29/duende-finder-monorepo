@@ -60,3 +60,4 @@ export default function HomePage() {
     );
   
   }
+// --- RENDERIZADO DEL COMPONENTE ---
