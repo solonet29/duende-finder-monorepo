@@ -80,7 +80,7 @@ export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col items-center p-8 bg-gray-900 text-white">
       <header className="w-full max-w-5xl text-center mb-12">
-        <h1 className="text-4xl font-bold">Panel de análisis</h1>
+        <h1 className="text-4xl font-bold">Panel de Analíticas V2</h1>
         <p className="text-lg text-gray-400">Buscador Duende Finder</p>
       </header>
 
