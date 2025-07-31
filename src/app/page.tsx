@@ -1,4 +1,4 @@
-// Versión final y verificada
+//Reforzando la conexión con Verce
 
 "use client";
 
