@@ -1,4 +1,4 @@
-// src/app/page.tsx - VERSIÓN COMPLETA Y CORREGIDA
+// Versión final y verificada
 
 "use client";
 
