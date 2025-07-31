@@ -51,44 +51,12 @@ export default function HomePage() {
         <button
           key={days}
           onClick={() => setTimeRange(days)}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-            timeRange === days
-              ? 'bg-indigo-600 text-white'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-          }`}
+          className="px-4 py-2 text-sm font-medium rounded"
         >
           Últimos {days} días
         </button>
       ))}
     </div>
-  );
-
-  // --- RENDERIZADO DE LA PÁGINA ---
-  return (
-    <main className="flex min-h-screen flex-col items-center p-8 bg-gray-900 text-white">
-      <header className="w-full max-w-5xl text-center mb-12">
-        <h1 className="text-4xl font-bold">Panel de Analíticas V2</h1>
-        <p className="text-lg text-gray-400">Buscador Duende Finder</p>
-      </header>
-
-      <div className="w-full max-w-5xl">
-        <TimeRangeButtons />
-      </div>
-
-      <div className="w-full max-w-5xl">
-        {isLoading ? (
-          <div className="text-center">Cargando datos...</div>
-        ) : error ? (
-          <div className="text-center text-red-500">Error: {error}</div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-1">
-              <h2 className="text-gray-400 text-sm font-medium mb-2">Búsquedas Totales</h2>
-              <p className="text-3xl font-semibold">
-                {totalSearches !== null ? totalSearches.toLocaleString('es-ES') : 'N/A'}
-              </p>
-            </div>
-            <div className="lg:col-span-2">
-              {/* Cabecera sincronizada dinámicamente */}
-              <h2 className="text-xl font-bold mb-4">
-                Búsquedas por
+    );
+  
+  }
