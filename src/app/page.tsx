@@ -17,7 +17,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [dailyData, setDailyData] = useState<DailySearchData[]>([]);
   const [timeRange, setTimeRange] = useState<number>(7);
-
+//forzando cambio de código
   useEffect(() => {
     const fetchData = async () => {
       try {
