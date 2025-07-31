@@ -44,7 +44,7 @@ export default function HomePage() {
             setError("Ocurrió un error inesperado");
           }
           console.error("Error fetching data:", err);
-      // ---------------------------------
+      // ----------------------------------
       } finally {
         setIsLoading(false);
       }
