@@ -1,4 +1,4 @@
-//Reforzando la conexión con Verce
+//Reforzando  la conexión con Verce
 
 "use client";
 
