@@ -18,15 +18,20 @@ interface ChartData {
   search_count: number;
 }
 
+// MODIFICACIÓN: Añadimos 'timeRange' a las props que recibe el componente
 interface SearchesByDayChartProps {
   data: ChartData[];
+  timeRange: number; // <-- NUEVA PROP
 }
 
 // El componente de React para nuestro gráfico
-export default function SearchesByDayChart({ data }: SearchesByDayChartProps) {
+export default function SearchesByDayChart({ data, timeRange }: SearchesByDayChartProps) { // <-- AÑADIMOS timeRange AQUÍ
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h2 className="text-gray-400 text-sm font-medium mb-4">Búsquedas por Día (Últimos 7 días)</h2>
+      {/* MODIFICACIÓN: El título ahora usa la prop 'timeRange' para ser dinámico */}
+      <h2 className="text-gray-400 text-sm font-medium mb-4">
+        Búsquedas por Día (Últimos {timeRange} días)
+      </h2>
       <div style={{ width: '100%', height: 300 }}>
         <ResponsiveContainer>
           <BarChart

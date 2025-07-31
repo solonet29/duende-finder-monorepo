@@ -102,7 +102,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="lg:col-span-2">
-              <SearchesByDayChart data={dailyData} />
+              <SearchesByDayChart data={dailyData} timeRange={timeRange} />
             </div>
           </div>
         )}
