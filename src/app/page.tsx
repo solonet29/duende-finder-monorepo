@@ -1,5 +1,3 @@
-//Reforzando  la conexión con Verce
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -25,37 +23,26 @@ export default function HomePage() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        setError(null); // Limpiar errores de peticiones anteriores
-        
+        setError(null);
         // Ejecutamos ambas consultas en paralelo para mayor eficiencia
         const [totalResult, dailyResult] = await Promise.all([
           supabase.from('search_events').select('*', { count: 'exact', head: true }),
           supabase.rpc('get_daily_search_counts', { days_limit: timeRange })
         ]);
-
-        // Procesamos el resultado del conteo total
         if (totalResult.error) throw totalResult.error;
         setTotalSearches(totalResult.count);
-
-        // Procesamos el resultado de los datos diarios para el gráfico
         if (dailyResult.error) throw dailyResult.error;
         setDailyData(dailyResult.data || []);
-
       } catch (err) {
-        // Manejo de errores seguro, sin usar ': any'
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Ocurrió un error inesperado al obtener los datos");
-        }
+        if (err instanceof Error) setError(err.message);
+        else setError("Ocurrió un error inesperado al obtener los datos");
         console.error("Error fetching data:", err);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchData();
-  }, [timeRange]); // La lista de dependencias hace que se vuelva a ejecutar si 'timeRange' cambia
+  }, [timeRange]);
 
   // --- COMPONENTE PARA LOS BOTONES DE FILTRADO ---
   const TimeRangeButtons = () => (
@@ -66,8 +53,8 @@ export default function HomePage() {
           onClick={() => setTimeRange(days)}
           className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
             timeRange === days
-              ? 'bg-indigo-600 text-white' // Estilo activo
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600' // Estilo inactivo
+              ? 'bg-indigo-600 text-white'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
           }`}
         >
           Últimos {days} días
@@ -87,7 +74,7 @@ export default function HomePage() {
       <div className="w-full max-w-5xl">
         <TimeRangeButtons />
       </div>
-      
+
       <div className="w-full max-w-5xl">
         {isLoading ? (
           <div className="text-center">Cargando datos...</div>
@@ -102,11 +89,6 @@ export default function HomePage() {
               </p>
             </div>
             <div className="lg:col-span-2">
-              <SearchesByDayChart data={dailyData} timeRange={timeRange} />
-            </div>
-          </div>
-        )}
-      </div>
-    </main>
-  );
-}
+              {/* Cabecera sincronizada dinámicamente */}
+              <h2 className="text-xl font-bold mb-4">
+                Búsquedas por
