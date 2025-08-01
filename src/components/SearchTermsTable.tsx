@@ -125,7 +125,7 @@ export default function SearchTermsTable({ data }: SearchTermsTableProps) {
             ) : (
               <tr>
                 <td colSpan={4} className="text-center py-8 text-gray-500">
-                  No hay datos de términos de búsqueda para este período.
+                  No hay datos de términos de búsqueda para este período seleccionado.
                 </td>
               </tr>
             )}
