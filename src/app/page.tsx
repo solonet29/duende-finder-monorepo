@@ -8,6 +8,8 @@ import SearchesByDayChart from '@/components/SearchesByDayChart';
 import SearchTermsTable from '@/components/SearchTermsTable';
 import TopCitiesChart from '@/components/TopCitiesChart';
 import TopArtistsChart from '@/components/TopArtistsChart';
+import DeviceDistributionChart from '@/components/DeviceDistributionChart';
+
 
 // Definimos las estructuras de datos que vamos a manejar
 interface DailySearchData { day: string; search_count: number; }
