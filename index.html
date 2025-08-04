@@ -892,7 +892,7 @@
                 if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
                 const events = await response.json();
                 
-                logSearch(params, events.length);
+                //logSearch(params, events.length);
                 
                 displayEvents(events);
             } catch (error) {
@@ -921,49 +921,68 @@
         }
         
         // --- FUNCIÓN DE CREACIÓN DE LAS TARJETAS (NÚCLEO DE LA CORRECCIÓN) ---
-        function createEventCard(event) {
-            const eventCard = document.createElement('article');
-            eventCard.className = 'evento-card';
+function createEventCard(event) {
+    const eventCard = document.createElement('article');
+    eventCard.className = 'evento-card';
 
-            const eventDate = new Date(event.fecha).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-            
-            const venue = event.evento || event.lugar_texto || 'Lugar por confirmar';
-            const city = event.ciudad || '';
-            const country = event.pais || '';
+    // CORRECCIÓN: Usar 'event.date' y manejar fechas inválidas.
+    const eventDateObj = new Date(event.date);
+    const eventDate = !isNaN(eventDateObj) 
+        ? eventDateObj.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
+        : 'Fecha no disponible';
 
-            const fullLocation = [venue, city, country].filter(Boolean).join(', ');
-            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
+    // CORRECCIÓN: Usar los nombres de propiedad correctos de la API.
+    const title = event.name || 'Evento sin título';
+    const artist = event.artist || 'Artista por confirmar';
+    const description = event.description || '';
+    const time = event.time || 'N/A';
+    const isVerified = event.isVerified || false;
+    const sourceURL = event.sourceUrl || '';
+    
+    // CORRECCIÓN: Estructura de ubicación más robusta.
+    const locationName = event.location?.name || 'Lugar por confirmar';
+    const city = event.location?.city || '';
+    const country = event.location?.country || '';
 
-            eventCard.innerHTML = `
-                <div class="card-header"><h3>${event.titulo || 'Evento sin título'}</h3></div>
-                <div class="artista"><i class="fas fa-user"></i> <span>${event.artista || 'Artista por confirmar'}</span></div>
-                <div class="descripcion-container">
-                    <p class="descripcion">${event.descripcion || ''}</p>
-                    ${event.verificado ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
-                </div>
-                <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
-                <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.hora || 'N/A'}</span></div>
-                <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span></a></div>
-                <div class="card-actions">
-                    ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
-                    <div class="card-actions-primary">
-                        <button class="gemini-btn">✨ Planear Noche</button>
-                        <button class="calendar-btn"><i class="fas fa-calendar-plus"></i> Añadir</button>
-                    </div>
-                </div>
-            `;
-            
-            eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
-                logInteraction('plan_night_click', event);
-                getFlamencoPlan(event);
-            });
-            eventCard.querySelector('.calendar-btn').addEventListener('click', () => {
-                logInteraction('add_to_calendar_click', event);
-                showCalendarLinks(event);
-            });
-            
-            return eventCard;
-        }
+    const fullLocation = [locationName, city, country].filter(Boolean).join(', ');
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
+
+    // Se actualiza el HTML con las propiedades corregidas
+    eventCard.innerHTML = `
+        <div class="card-header"><h3>${title}</h3></div>
+        <div class="artista"><i class="fas fa-user"></i> <span>${artist}</span></div>
+        <div class="descripcion-container">
+            <p class="descripcion">${description}</p>
+            ${isVerified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
+        </div>
+        <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
+        <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${time}</span></div>
+        <div class="evento-detalle">
+            <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span>
+            </a>
+        </div>
+        <div class="card-actions">
+            ${sourceURL ? `<a href="${sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
+            <div class="card-actions-primary">
+                <button class="gemini-btn">✨ Planear Noche</button>
+                <button class="calendar-btn"><i class="fas fa-calendar-plus"></i> Añadir</button>
+            </div>
+        </div>
+    `;
+    
+    // El resto de la lógica para los botones no necesita cambios
+    eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
+        // logInteraction('plan_night_click', event); // Comentado para evitar errores 404
+        getFlamencoPlan(event);
+    });
+    eventCard.querySelector('.calendar-btn').addEventListener('click', () => {
+        // logInteraction('add_to_calendar_click', event); // Comentado para evitar errores 404
+        showCalendarLinks(event);
+    });
+    
+    return eventCard;
+}
         
         async function loadTotalEventsCount() {
             try {
