@@ -997,15 +997,29 @@ function createEventCard(event) {
             }
         }
         
-        const tripPlannerBtn = document.getElementById('trip-planner-btn');
-        const tripModalOverlay = document.getElementById('trip-planner-modal-overlay');
-        const tripModalCloseBtn = document.getElementById('trip-modal-close-btn');
-        const tripPlannerForm = document.getElementById('trip-planner-form');
-        tripPlannerBtn.addEventListener('click', () => tripModalOverlay.classList.add('visible'));
-        tripModalCloseBtn.addEventListener('click', () => tripModalOverlay.classList.remove('visible'));
-        tripModalOverlay.addEventListener('click', (e) => {
-            if (e.target === tripModalOverlay) tripModalOverlay.classList.remove('visible');
-        });
+        // 1. Seleccionamos los elementos necesarios del HTML
+const tripPlannerBtn = document.getElementById('trip-planner-btn');
+const tripModalOverlay = document.getElementById('trip-planner-modal-overlay');
+const tripModalCloseBtn = document.getElementById('trip-modal-close-btn');
+
+// 2. Evento para MOSTRAR el modal al hacer clic en el botón principal
+tripPlannerBtn.addEventListener('click', () => {
+    tripModalOverlay.classList.add('visible');
+});
+
+// 3. Evento para OCULTAR el modal con su botón de cerrar (la 'X')
+tripModalCloseBtn.addEventListener('click', () => {
+    tripModalOverlay.classList.remove('visible');
+});
+
+// 4. Evento para OCULTAR el modal al hacer clic FUERA de él (en el fondo oscuro)
+tripModalOverlay.addEventListener('click', (e) => {
+    // Solo se cierra si el clic es directamente en el overlay (el fondo) 
+    // y no en sus elementos hijos (el modal blanco).
+    if (e.target === tripModalOverlay) {
+        tripModalOverlay.classList.remove('visible');
+    }
+});
         
         tripPlannerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
