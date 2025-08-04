@@ -430,7 +430,6 @@
             visibility: visible;
             transform: translateY(0);
         }
-//forzando push
 
         .modal-overlay {
             position: fixed;
@@ -581,7 +580,7 @@
             background-repeat: no-repeat;
             background-size: 2000px 104px;
         }
-        #trip-planner-form { display: flex; flex-direction: column; gap: 1.5rem; text-align: left; }
+        #trip-planner-form { display: flex; flex-direction: column; gap: 1rem; text-align: left; }
         .form-row { display: flex; gap: 1rem; }
         .form-group { flex: 1; display: flex; flex-direction: column; }
         .form-group label { margin-bottom: 0.5rem; font-weight: bold; color: var(--color-texto-secundario-light); }
@@ -655,36 +654,52 @@
         <div id="skeleton-container"></div>
         <div id="resultsContainer" style="display: none;"></div>
     </main>
+    
     <a href="#top" id="back-to-top-btn" class="back-to-top-btn" aria-label="Volver arriba"><i class="fas fa-arrow-up"></i></a>
+    
     <div id="gemini-modal-overlay" class="modal-overlay">
         <div class="modal">
             <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
             <div id="modal-content" class="modal-content"></div>
         </div>
     </div>
+    
     <div id="trip-planner-modal-overlay" class="modal-overlay">
         <div class="modal">
             <button id="trip-modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
-            <div class="modal-header"><h2><i class="fas fa-route"></i> Planificador de Viaje Flamenco</h2></div>
+            <div class="modal-header">
+                <h2><i class="fas fa-route"></i> Planificador de Viaje Flamenco</h2>
+            </div>
             <form id="trip-planner-form">
                 <div class="form-group">
                     <label for="trip-destination">Destino</label>
-                    <select id="trip-destination" required><option value="Cádiz">Cádiz</option><option value="Córdoba">Córdoba</option><option value="Granada">Granada</option><option value="Huelva">Huelva</option><option value="Jaén">Jaén</option><option value="Málaga">Málaga</option><option value="Sevilla">Sevilla</option></select>
+                    <select id="trip-destination" required>
+                        <option value="Cádiz">Cádiz</option>
+                        <option value="Córdoba">Córdoba</option>
+                        <option value="Granada">Granada</option>
+                        <option value="Huelva">Huelva</option>
+                        <option value="Jaén">Jaén</option>
+                        <option value="Málaga">Málaga</option>
+                        <option value="Sevilla">Sevilla</option>
+                    </select>
                 </div>
                 <div class="form-row">
-                    <div class="form-group"><label for="trip-start-date">Fecha de Inicio</label><input type="date" id="trip-start-date" required></div>
-                    <div class="form-group"><label for="trip-end-date">Fecha de Fin</label><input type="date" id="trip-end-date" required></div>
+                    <div class="form-group">
+                        <label for="trip-start-date">Fecha de Inicio</label>
+                        <input type="date" id="trip-start-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="trip-end-date">Fecha de Fin</label>
+                        <input type="date" id="trip-end-date" required>
+                    </div>
                 </div>
-                <button type="submit" class="gemini-btn" style="width: 100%; justify-content: center;">Generar Plan de Viaje</button>
+                <button type="submit" class="gemini-btn" style="width: 100%; justify-content: center; margin-top: 1rem;">Generar Plan de Viaje</button>
             </form>
-            <div id="trip-planner-result"></div>
+            <div id="trip-planner-result" style="margin-top: 1.5rem; text-align: left;"></div>
         </div>
     </div>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- BASE DE CÓDIGO PROPORCIONADA POR EL USUARIO ---
-        // Se aplicarán las correcciones necesarias sobre esta base
-
         const API_BASE_URL = 'https://duende-api.vercel.app';
         const resultsContainer = document.getElementById('resultsContainer');
         const skeletonContainer = document.getElementById('skeleton-container');
@@ -695,7 +710,6 @@
         const mainContainer = document.querySelector('main.container');
         let isResultsView = false;
         
-        // --- FUNCIONES DE ANALÍTICA (CORREGIDAS) ---
         function getSessionId() {
             let sessionId = sessionStorage.getItem('duendeSessionId');
             if (!sessionId) {
@@ -706,41 +720,11 @@
         }
 
         async function logInteraction(type, eventData) {
-            try {
-                await fetch(`${API_BASE_URL}/log-interaction`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        interaction_type: type,
-                        session_id: getSessionId(),
-                        event_details: {
-                            name: eventData.titulo,
-                            artist: eventData.artista,
-                            city: eventData.ciudad,
-                            date: eventData.fecha
-                        }
-                    }),
-                });
-            } catch (error) {
-                console.error('Failed to log interaction:', error);
-            }
+            // Desactivado para evitar errores 404
         }
 
         async function logSearch(params, resultsCount) {
-             try {
-                await fetch(`${API_BASE_URL}/log-search`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        searchTerm: params.search || null,
-                        filtersApplied: params,
-                        resultsCount: resultsCount,
-                        sessionId: getSessionId()
-                    }),
-                });
-            } catch (error) {
-                console.error('Failed to log search:', error);
-            }
+            // Desactivado para evitar errores 404
         }
 
         const themeToggle = document.getElementById('theme-toggle');
@@ -797,7 +781,7 @@
                 const response = await fetch(`${API_BASE_URL}/gemini`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ event: event }), // Se envía el objeto evento completo
+                    body: JSON.stringify({ event: event }),
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
@@ -806,11 +790,10 @@
                 }
                 const result = await response.json();
                 if (result && result.text) {
-                    let text = result.text;
-                    text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    let text = result.text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                     text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
-                        const query = encodeURIComponent(`${placeName}, ${event.ciudad}`);
-                        return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+                        const query = encodeURIComponent(`${placeName}, ${event.location.city}`);
+                        return `<a href="https://maps.google.com/?q=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
                     });
                     text = text.replace(/\n/g, '<br>');
                     const calendarLinks = generateCalendarLinks(event);
@@ -821,7 +804,7 @@
                             <h3 style="margin:0; margin-bottom: 1rem; color: var(--color-texto-principal-light);">Añadir el evento principal al calendario</h3>
                             <div style="display:flex; flex-direction:column; align-items:center; gap:1rem;">
                                 <a href="${calendarLinks.google}" target="_blank" rel="noopener noreferrer" class="calendar-link-btn"><i class="fab fa-google" style="color:#4285F4;"></i> Google Calendar</a>
-                                <a href="${calendarLinks.ical}" download="${event.titulo}.ics" class="calendar-link-btn"><i class="fab fa-apple" style="color:#000;"></i> Apple / iCal</a>
+                                <a href="${calendarLinks.ical}" download="${event.name}.ics" class="calendar-link-btn"><i class="fab fa-apple" style="color:#000;"></i> Apple / iCal</a>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -892,7 +875,7 @@
                 if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
                 const events = await response.json();
                 
-                //logSearch(params, events.length);
+                // logSearch(params, events.length); // Desactivado
                 
                 displayEvents(events);
             } catch (error) {
@@ -905,14 +888,13 @@
         function displayEvents(events) {
             hideSkeletonLoader();
             statusMessage.textContent = '';
+            resultsContainer.innerHTML = '';
             if (events.length === 0) {
                 statusMessage.textContent = 'No se encontraron eventos que coincidan con tu búsqueda.';
-                resultsContainer.innerHTML = '';
                 mainContainer.classList.remove('results-active');
                 isResultsView = false;
                 return;
             }
-            resultsContainer.innerHTML = '';
             const fragment = document.createDocumentFragment();
             events.forEach(event => {
                 fragment.appendChild(createEventCard(event));
@@ -920,69 +902,64 @@
             resultsContainer.appendChild(fragment);
         }
         
-        // --- FUNCIÓN DE CREACIÓN DE LAS TARJETAS (NÚCLEO DE LA CORRECCIÓN) ---
-function createEventCard(event) {
-    const eventCard = document.createElement('article');
-    eventCard.className = 'evento-card';
+        // --- FUNCIÓN DE CREACIÓN DE LAS TARJETAS (CORREGIDA) ---
+        function createEventCard(event) {
+            const eventCard = document.createElement('article');
+            eventCard.className = 'evento-card';
 
-    // CORRECCIÓN: Usar 'event.date' y manejar fechas inválidas.
-    const eventDateObj = new Date(event.date);
-    const eventDate = !isNaN(eventDateObj) 
-        ? eventDateObj.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
-        : 'Fecha no disponible';
+            const eventDateObj = new Date(event.date);
+            const eventDate = !isNaN(eventDateObj) 
+                ? eventDateObj.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
+                : 'Fecha no disponible';
 
-    // CORRECCIÓN: Usar los nombres de propiedad correctos de la API.
-    const title = event.name || 'Evento sin título';
-    const artist = event.artist || 'Artista por confirmar';
-    const description = event.description || '';
-    const time = event.time || 'N/A';
-    const isVerified = event.isVerified || false;
-    const sourceURL = event.sourceUrl || '';
-    
-    // CORRECCIÓN: Estructura de ubicación más robusta.
-    const locationName = event.location?.name || 'Lugar por confirmar';
-    const city = event.location?.city || '';
-    const country = event.location?.country || '';
+            const title = event.name || 'Evento sin título';
+            const artist = event.artist || 'Artista por confirmar';
+            const description = event.description || '';
+            const time = event.time || 'N/A';
+            const isVerified = event.isVerified || false;
+            const sourceURL = event.sourceUrl || '';
+            
+            const locationName = event.location?.name || 'Lugar por confirmar';
+            const city = event.location?.city || '';
+            const country = event.location?.country || '';
 
-    const fullLocation = [locationName, city, country].filter(Boolean).join(', ');
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
+            const fullLocation = [locationName, city, country].filter(Boolean).join(', ');
+            const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(fullLocation)}`;
 
-    // Se actualiza el HTML con las propiedades corregidas
-    eventCard.innerHTML = `
-        <div class="card-header"><h3>${title}</h3></div>
-        <div class="artista"><i class="fas fa-user"></i> <span>${artist}</span></div>
-        <div class="descripcion-container">
-            <p class="descripcion">${description}</p>
-            ${isVerified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
-        </div>
-        <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
-        <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${time}</span></div>
-        <div class="evento-detalle">
-            <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span>
-            </a>
-        </div>
-        <div class="card-actions">
-            ${sourceURL ? `<a href="${sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
-            <div class="card-actions-primary">
-                <button class="gemini-btn">✨ Planear Noche</button>
-                <button class="calendar-btn"><i class="fas fa-calendar-plus"></i> Añadir</button>
-            </div>
-        </div>
-    `;
-    
-    // El resto de la lógica para los botones no necesita cambios
-    eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
-        // logInteraction('plan_night_click', event); // Comentado para evitar errores 404
-        getFlamencoPlan(event);
-    });
-    eventCard.querySelector('.calendar-btn').addEventListener('click', () => {
-        // logInteraction('add_to_calendar_click', event); // Comentado para evitar errores 404
-        showCalendarLinks(event);
-    });
-    
-    return eventCard;
-}
+            eventCard.innerHTML = `
+                <div class="card-header"><h3>${title}</h3></div>
+                <div class="artista"><i class="fas fa-user"></i> <span>${artist}</span></div>
+                <div class="descripcion-container">
+                    <p class="descripcion">${description}</p>
+                    ${isVerified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
+                </div>
+                <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
+                <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${time}</span></div>
+                <div class="evento-detalle">
+                    <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span>
+                    </a>
+                </div>
+                <div class="card-actions">
+                    ${sourceURL ? `<a href="${sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
+                    <div class="card-actions-primary">
+                        <button class="gemini-btn">✨ Planear Noche</button>
+                        <button class="calendar-btn"><i class="fas fa-calendar-plus"></i> Añadir</button>
+                    </div>
+                </div>
+            `;
+            
+            eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
+                // logInteraction('plan_night_click', event); // Desactivado
+                getFlamencoPlan(event);
+            });
+            eventCard.querySelector('.calendar-btn').addEventListener('click', () => {
+                // logInteraction('add_to_calendar_click', event); // Desactivado
+                showCalendarLinks(event);
+            });
+            
+            return eventCard;
+        }
         
         async function loadTotalEventsCount() {
             try {
@@ -997,53 +974,53 @@ function createEventCard(event) {
             }
         }
         
-        // 1. Seleccionamos los elementos necesarios del HTML
-const tripPlannerBtn = document.getElementById('trip-planner-btn');
-const tripModalOverlay = document.getElementById('trip-planner-modal-overlay');
-const tripModalCloseBtn = document.getElementById('trip-modal-close-btn');
+        // --- CÓDIGO PARA CONTROLAR EL MODAL DEL PLANIFICADOR DE VIAJE (CORREGIDO) ---
+        const tripPlannerBtn = document.getElementById('trip-planner-btn');
+        const tripModalOverlay = document.getElementById('trip-planner-modal-overlay');
+        const tripModalCloseBtn = document.getElementById('trip-modal-close-btn');
+        const tripPlannerForm = document.getElementById('trip-planner-form');
 
-// 2. Evento para MOSTRAR el modal al hacer clic en el botón principal
-tripPlannerBtn.addEventListener('click', () => {
-    tripModalOverlay.classList.add('visible');
-});
+        tripPlannerBtn.addEventListener('click', () => {
+            tripModalOverlay.classList.add('visible');
+        });
 
-// 3. Evento para OCULTAR el modal con su botón de cerrar (la 'X')
-tripModalCloseBtn.addEventListener('click', () => {
-    tripModalOverlay.classList.remove('visible');
-});
+        function hideTripModal() {
+            tripModalOverlay.classList.remove('visible');
+        }
+        tripModalCloseBtn.addEventListener('click', hideTripModal);
+        tripModalOverlay.addEventListener('click', (e) => {
+            if (e.target === tripModalOverlay) {
+                hideTripModal();
+            }
+        });
 
-// 4. Evento para OCULTAR el modal al hacer clic FUERA de él (en el fondo oscuro)
-tripModalOverlay.addEventListener('click', (e) => {
-    // Solo se cierra si el clic es directamente en el overlay (el fondo) 
-    // y no en sus elementos hijos (el modal blanco).
-    if (e.target === tripModalOverlay) {
-        tripModalOverlay.classList.remove('visible');
-    }
-});
-        
         tripPlannerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const destination = document.getElementById('trip-destination').value;
             const startDate = document.getElementById('trip-start-date').value;
             const endDate = document.getElementById('trip-end-date').value;
             const tripPlannerResult = document.getElementById('trip-planner-result');
+            
             tripPlannerResult.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Buscando eventos y creando tu ruta flamenca...</p></div>`;
+            
             try {
                 const response = await fetch(`${API_BASE_URL}/trip-planner`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ destination, startDate, endDate })
                 });
+                
                 if (!response.ok) {
                     throw new Error('No se pudo generar el plan de viaje.');
                 }
+                
                 const result = await response.json();
+                
                 if (result && result.text) {
-                    let text = result.text;
-                    text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
+                    let text = result.text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                     text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
                         const query = encodeURIComponent(`${placeName}, ${destination}`);
-                        return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+                        return `<a href="https://maps.google.com/?q=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
                     });
                     text = text.replace(/\n/g, '<br>');
                     tripPlannerResult.innerHTML = text;
@@ -1057,35 +1034,43 @@ tripModalOverlay.addEventListener('click', (e) => {
         });
         
         function generateCalendarLinks(event) {
-            const startTime = new Date(`${event.fecha}T${event.hora || '00:00:00'}`);
+            const startTime = new Date(`${event.date}T${event.time || '00:00:00'}`);
+            if (isNaN(startTime)) return null;
+
             const endTime = new Date(startTime.getTime() + (2 * 60 * 60 * 1000));
             const formatTime = (date) => date.toISOString().replace(/-|:|\.\d+/g, '');
             const startTimeFormatted = formatTime(startTime);
             const endTimeFormatted = formatTime(endTime);
+            
             const eventDetails = {
-                title: encodeURIComponent(event.titulo),
-                details: encodeURIComponent(`Ver a ${event.artista}.\n\n${event.descripcion || ''}`),
-                location: encodeURIComponent(event.evento || event.lugar_texto),
+                title: encodeURIComponent(event.name),
+                details: encodeURIComponent(`Ver a ${event.artist}.\n\n${event.description || ''}`),
+                location: encodeURIComponent(event.location?.name || ''),
                 startTime: startTimeFormatted,
                 endTime: endTimeFormatted
             };
             const googleLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${eventDetails.title}&dates=${eventDetails.startTime}/${eventDetails.endTime}&details=${eventDetails.details}&location=${eventDetails.location}`;
-            const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startTimeFormatted}\nDTEND:${endTimeFormatted}\nSUMMARY:${event.titulo}\nDESCRIPTION:Ver a ${event.artista}.\\n\\n${event.descripcion || ''}\nLOCATION:${event.evento || event.lugar_texto}\nEND:VEVENT\nEND:VCALENDAR`;
+            const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startTimeFormatted}\nDTEND:${endTimeFormatted}\nSUMMARY:${event.name}\nDESCRIPTION:Ver a ${event.artist}.\\n\\n${event.description || ''}\nLOCATION:${event.location?.name || ''}\nEND:VEVENT\nEND:VCALENDAR`;
             const icsLink = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
             return { google: googleLink, ical: icsLink };
         }
         
         function showCalendarLinks(event) {
             const links = generateCalendarLinks(event);
+            if (!links) {
+                modalContent.innerHTML = `<h3>Error</h3><p>La fecha del evento no es válida y no se puede añadir al calendario.</p>`;
+                showModal();
+                return;
+            }
             modalContent.innerHTML = `
                 <div class="modal-header">
-                    <h2>Añadir "${event.titulo}" a tu calendario</h2>
+                    <h2>Añadir "${event.name}" a tu calendario</h2>
                 </div>
                 <div style="display:flex; flex-direction:column; align-items:center; gap:1rem; margin-top:1.5rem;">
                     <a href="${links.google}" target="_blank" rel="noopener noreferrer" class="calendar-link-btn">
                         <i class="fab fa-google" style="color:#4285F4;"></i> Google Calendar
                     </a>
-                    <a href="${links.ical}" download="${event.titulo}.ics" class="calendar-link-btn">
+                    <a href="${links.ical}" download="${event.name}.ics" class="calendar-link-btn">
                         <i class="fab fa-apple" style="color:#000;"></i> Apple / iCal
                     </a>
                 </div>
@@ -1109,13 +1094,24 @@ tripModalOverlay.addEventListener('click', (e) => {
             loadTotalEventsCount();
             const urlParams = new URLSearchParams(window.location.search);
             const params = Object.fromEntries(urlParams.entries());
-            if (Object.keys(params).length === 0) {
+            
+            let shouldSearch = false;
+            if (Object.keys(params).length > 0) {
+                 if(params.search || params.city || params.country) {
+                    shouldSearch = true;
+                    if(params.search) searchInput.value = params.search;
+                }
+            } else {
                 params.timeframe = 'week';
+                shouldSearch = true;
             }
-            if (params.search) {
-                searchInput.value = params.search;
+
+            if(shouldSearch){
+                 performSearch(params, true);
+            } else {
+                 hideSkeletonLoader();
+                 resultsContainer.innerHTML = '';
             }
-            performSearch(params, Object.keys(params).length > 0 && !!(params.search || params.city || params.country));
         }
         
         themeToggle.addEventListener('click', () => {
@@ -1142,6 +1138,16 @@ tripModalOverlay.addEventListener('click', (e) => {
         setupFilterToggle('province-filters-toggle', 'province-filters-container');
         setupFilterToggle('country-filters-toggle', 'country-filters-container');
         
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const searchTerm = searchInput.value.trim();
+            if(searchTerm) {
+                const params = { search: searchTerm };
+                history.pushState({}, '', `?search=${encodeURIComponent(searchTerm)}`);
+                performSearch(params, true);
+            }
+        });
+
         initialize();
     });
     </script>
