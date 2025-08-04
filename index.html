@@ -681,9 +681,20 @@
     </div>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- INICIO DE LAS MODIFICACIONES ---
+        // --- BASE DE CÓDIGO PROPORCIONADA POR EL USUARIO ---
+        // Se aplicarán las correcciones necesarias sobre esta base
 
-        // Función para obtener/crear un ID de sesión que persiste en la pestaña del navegador
+        const API_BASE_URL = 'https://duende-api.vercel.app';
+        const resultsContainer = document.getElementById('resultsContainer');
+        const skeletonContainer = document.getElementById('skeleton-container');
+        const statusMessage = document.getElementById('statusMessage');
+        const totalEventsSpan = document.getElementById('total-events');
+        const searchForm = document.getElementById('search-form');
+        const searchInput = document.getElementById('search-input');
+        const mainContainer = document.querySelector('main.container');
+        let isResultsView = false;
+        
+        // --- FUNCIONES DE ANALÍTICA (CORREGIDAS) ---
         function getSessionId() {
             let sessionId = sessionStorage.getItem('duendeSessionId');
             if (!sessionId) {
@@ -693,22 +704,19 @@
             return sessionId;
         }
 
-        // Función para registrar Clics en Botones
         async function logInteraction(type, eventData) {
-            const API_URL = 'https://duende-api.vercel.app/log-interaction'; 
-
             try {
-                await fetch(API_URL, {
+                await fetch(`${API_BASE_URL}/log-interaction`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         interaction_type: type,
                         session_id: getSessionId(),
                         event_details: {
-                            name: eventData.name,
-                            artist: eventData.artist,
-                            city: eventData.city,
-                            date: eventData.date
+                            name: eventData.titulo,
+                            artist: eventData.artista,
+                            city: eventData.ciudad,
+                            date: eventData.fecha
                         }
                     }),
                 });
@@ -717,11 +725,9 @@
             }
         }
 
-        // Función para registrar Búsquedas
         async function logSearch(params, resultsCount) {
-             const API_URL = 'https://duende-api.vercel.app/log-search'; 
              try {
-                await fetch(API_URL, {
+                await fetch(`${API_BASE_URL}/log-search`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -735,8 +741,6 @@
                 console.error('Failed to log search:', error);
             }
         }
-        
-        // --- FIN DE LAS MODIFICACIONES ---
 
         const themeToggle = document.getElementById('theme-toggle');
         const toggleIcon = themeToggle.querySelector('i');
@@ -789,10 +793,10 @@
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 20000);
-                const response = await fetch('https://duende-api.vercel.app/gemini', { // URL Absoluta
+                const response = await fetch(`${API_BASE_URL}/gemini`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ event: event }),
+                    body: JSON.stringify({ event: event }), // Se envía el objeto evento completo
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
@@ -804,7 +808,7 @@
                     let text = result.text;
                     text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                     text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
-                        const query = encodeURIComponent(`${placeName}, ${event.city}`);
+                        const query = encodeURIComponent(`${placeName}, ${event.ciudad}`);
                         return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
                     });
                     text = text.replace(/\n/g, '<br>');
@@ -816,7 +820,7 @@
                             <h3 style="margin:0; margin-bottom: 1rem; color: var(--color-texto-principal-light);">Añadir el evento principal al calendario</h3>
                             <div style="display:flex; flex-direction:column; align-items:center; gap:1rem;">
                                 <a href="${calendarLinks.google}" target="_blank" rel="noopener noreferrer" class="calendar-link-btn"><i class="fab fa-google" style="color:#4285F4;"></i> Google Calendar</a>
-                                <a href="${calendarLinks.ical}" download="${event.name}.ics" class="calendar-link-btn"><i class="fab fa-apple" style="color:#000;"></i> Apple / iCal</a>
+                                <a href="${calendarLinks.ical}" download="${event.titulo}.ics" class="calendar-link-btn"><i class="fab fa-apple" style="color:#000;"></i> Apple / iCal</a>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -856,25 +860,6 @@
             }
         }
         
-        const resultsContainer = document.getElementById('resultsContainer');
-        const skeletonContainer = document.getElementById('skeleton-container');
-        const statusMessage = document.getElementById('statusMessage');
-        const totalEventsSpan = document.getElementById('total-events');
-        const searchForm = document.getElementById('search-form');
-        const searchInput = document.getElementById('search-input');
-        const mainContainer = document.querySelector('main.container');
-        let isResultsView = false;
-        
-        searchForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const searchTerm = searchInput.value.trim();
-            const newUrl = new URL(window.location.origin + window.location.pathname);
-            if (searchTerm) { newUrl.searchParams.set('search', searchTerm); }
-            else { newUrl.searchParams.set('timeframe', 'week'); }
-            history.pushState({}, '', newUrl);
-            performSearch(Object.fromEntries(newUrl.searchParams), true);
-        });
-        
         function showSkeletonLoader() {
             skeletonContainer.innerHTML = '';
             resultsContainer.style.display = 'none';
@@ -902,11 +887,10 @@
             }
             const queryString = new URLSearchParams(params).toString();
             try {
-                const response = await fetch(`https://duende-api.vercel.app/events?${queryString}`); // URL Absoluta
+                const response = await fetch(`${API_BASE_URL}/events?${queryString}`);
                 if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
                 const events = await response.json();
-
-                // --- MODIFICADO: Log de la búsqueda ---
+                
                 logSearch(params, events.length);
                 
                 displayEvents(events);
@@ -935,22 +919,29 @@
             resultsContainer.appendChild(fragment);
         }
         
+        // --- FUNCIÓN DE CREACIÓN DE TARJETAS (NÚCLEO DE LA CORRECCIÓN) ---
         function createEventCard(event) {
             const eventCard = document.createElement('article');
             eventCard.className = 'evento-card';
-            const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-            const fullLocation = `${event.venue}, ${event.city}, ${event.country}`;
+
+            const eventDate = new Date(event.fecha).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const venue = event.evento || event.lugar_texto || 'Lugar por confirmar';
+            const city = event.ciudad || '';
+            const country = event.pais || '';
+
+            const fullLocation = [venue, city, country].filter(Boolean).join(', ');
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
 
             eventCard.innerHTML = `
-                <div class="card-header"><h3>${event.name}</h3></div>
-                <div class="artista"><i class="fas fa-user"></i> <span>${event.artist}</span></div>
+                <div class="card-header"><h3>${event.titulo || 'Evento sin título'}</h3></div>
+                <div class="artista"><i class="fas fa-user"></i> <span>${event.artista || 'Artista por confirmar'}</span></div>
                 <div class="descripcion-container">
-                    <p class="descripcion">${event.description}</p>
-                    ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
+                    <p class="descripcion">${event.descripcion || ''}</p>
+                    ${event.verificado ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
                 </div>
                 <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
-                <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time}</span></div>
+                <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.hora || 'N/A'}</span></div>
                 <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span></a></div>
                 <div class="card-actions">
                     ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
@@ -961,7 +952,6 @@
                 </div>
             `;
             
-            // --- MODIFICADO: Listeners con logging de interacciones ---
             eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
                 logInteraction('plan_night_click', event);
                 getFlamencoPlan(event);
@@ -976,7 +966,7 @@
         
         async function loadTotalEventsCount() {
             try {
-                const response = await fetch(`https://duende-api.vercel.app/events/count`); // URL Absoluta
+                const response = await fetch(`${API_BASE_URL}/events/count`);
                 if (!response.ok) return;
                 const data = await response.json();
                 if (data.total !== undefined) {
@@ -1005,7 +995,7 @@
             const tripPlannerResult = document.getElementById('trip-planner-result');
             tripPlannerResult.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Buscando eventos y creando tu ruta flamenca...</p></div>`;
             try {
-                const response = await fetch('https://duende-api.vercel.app/trip-planner', { // URL Absoluta
+                const response = await fetch(`${API_BASE_URL}/trip-planner`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ destination, startDate, endDate })
@@ -1033,20 +1023,20 @@
         });
         
         function generateCalendarLinks(event) {
-            const startTime = new Date(`${event.date}T${event.time}`);
+            const startTime = new Date(`${event.fecha}T${event.hora || '00:00:00'}`);
             const endTime = new Date(startTime.getTime() + (2 * 60 * 60 * 1000));
             const formatTime = (date) => date.toISOString().replace(/-|:|\.\d+/g, '');
             const startTimeFormatted = formatTime(startTime);
             const endTimeFormatted = formatTime(endTime);
             const eventDetails = {
-                title: encodeURIComponent(event.name),
-                details: encodeURIComponent(`Ver a ${event.artist}.\n\n${event.description}`),
-                location: encodeURIComponent(`${event.venue}, ${event.city}`),
+                title: encodeURIComponent(event.titulo),
+                details: encodeURIComponent(`Ver a ${event.artista}.\n\n${event.descripcion || ''}`),
+                location: encodeURIComponent(event.evento || event.lugar_texto),
                 startTime: startTimeFormatted,
                 endTime: endTimeFormatted
             };
             const googleLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${eventDetails.title}&dates=${eventDetails.startTime}/${eventDetails.endTime}&details=${eventDetails.details}&location=${eventDetails.location}`;
-            const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startTimeFormatted}\nDTEND:${endTimeFormatted}\nSUMMARY:${event.name}\nDESCRIPTION:Ver a ${event.artist}.\\n\\n${event.description}\nLOCATION:${event.venue}, ${event.city}\nEND:VEVENT\nEND:VCALENDAR`;
+            const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startTimeFormatted}\nDTEND:${endTimeFormatted}\nSUMMARY:${event.titulo}\nDESCRIPTION:Ver a ${event.artista}.\\n\\n${event.descripcion || ''}\nLOCATION:${event.evento || event.lugar_texto}\nEND:VEVENT\nEND:VCALENDAR`;
             const icsLink = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
             return { google: googleLink, ical: icsLink };
         }
@@ -1055,13 +1045,13 @@
             const links = generateCalendarLinks(event);
             modalContent.innerHTML = `
                 <div class="modal-header">
-                    <h2>Añadir "${event.name}" a tu calendario</h2>
+                    <h2>Añadir "${event.titulo}" a tu calendario</h2>
                 </div>
                 <div style="display:flex; flex-direction:column; align-items:center; gap:1rem; margin-top:1.5rem;">
                     <a href="${links.google}" target="_blank" rel="noopener noreferrer" class="calendar-link-btn">
                         <i class="fab fa-google" style="color:#4285F4;"></i> Google Calendar
                     </a>
-                    <a href="${links.ical}" download="${event.name}.ics" class="calendar-link-btn">
+                    <a href="${links.ical}" download="${event.titulo}.ics" class="calendar-link-btn">
                         <i class="fab fa-apple" style="color:#000;"></i> Apple / iCal
                     </a>
                 </div>
@@ -1091,7 +1081,7 @@
             if (params.search) {
                 searchInput.value = params.search;
             }
-            performSearch(params, false);
+            performSearch(params, Object.keys(params).length > 0 && !!(params.search || params.city || params.country));
         }
         
         themeToggle.addEventListener('click', () => {
@@ -1117,20 +1107,6 @@
 
         setupFilterToggle('province-filters-toggle', 'province-filters-container');
         setupFilterToggle('country-filters-toggle', 'country-filters-container');
-        
-        searchForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const searchTerm = searchInput.value.trim();
-            const newUrl = new URL(window.location.origin + window.location.pathname);
-            if (searchTerm) { newUrl.searchParams.set('search', searchTerm); }
-            else { newUrl.searchParams.set('timeframe', 'week'); }
-            history.pushState({}, '', newUrl);
-            performSearch(Object.fromEntries(newUrl.searchParams), true);
-        });
-
-        document.querySelectorAll('.quick-filter-btn').forEach(btn => {
-            btn.addEventListener('click', handleQuickFilter);
-        });
         
         initialize();
     });
