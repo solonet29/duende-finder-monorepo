@@ -691,6 +691,7 @@
         const mainContainer = document.querySelector('main.container');
         let isResultsView = false;
         
+        // --- FUNCIONES DE ANALÍTICA (DESACTIVADAS TEMPORALMENTE) ---
         function getSessionId() {
             let sessionId = sessionStorage.getItem('duendeSessionId');
             if (!sessionId) {
@@ -699,45 +700,13 @@
             }
             return sessionId;
         }
-
         async function logInteraction(type, eventData) {
-            try {
-                await fetch(`${API_BASE_URL}/log-interaction`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        interaction_type: type,
-                        session_id: getSessionId(),
-                        event_details: {
-                            name: eventData.name, // Corrected from titulo
-                            artist: eventData.artist,
-                            city: eventData.city,
-                            date: eventData.date
-                        }
-                    }),
-                });
-            } catch (error) {
-                console.error('Failed to log interaction:', error);
-            }
+            // console.log('Interacción registrada (desactivada):', type, eventData);
+        }
+        async function logSearch(params, resultsCount) {
+            // console.log('Búsqueda registrada (desactivada):', params, resultsCount);
         }
 
-        async function logSearch(params, resultsCount) {
-             try {
-                await fetch(`${API_BASE_URL}/log-search`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        searchTerm: params.search || null,
-                        filtersApplied: params,
-                        resultsCount: resultsCount,
-                        sessionId: getSessionId()
-                    }),
-                });
-            } catch (error) {
-                console.error('Failed to log search:', error);
-            }
-        }
-        
         const themeToggle = document.getElementById('theme-toggle');
         const toggleIcon = themeToggle.querySelector('i');
         const themeMeta = document.getElementById('theme-color-meta');
@@ -887,7 +856,7 @@
                 if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
                 const events = await response.json();
                 
-                logSearch(params, events.length);
+                //logSearch(params, events.length);
                 
                 displayEvents(events);
             } catch (error) {
@@ -903,7 +872,6 @@
             if (events.length === 0) {
                 statusMessage.textContent = 'No se encontraron eventos que coincidan con tu búsqueda.';
                 resultsContainer.innerHTML = '';
-                // No quitamos la clase 'results-active' para que el usuario vea el mensaje
                 return;
             }
             resultsContainer.innerHTML = '';
@@ -918,7 +886,6 @@
             const eventCard = document.createElement('article');
             eventCard.className = 'evento-card';
             
-            // Usamos los campos en inglés que devuelve la API con $project
             const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
             const fullLocation = [event.venue, event.city, event.country].filter(Boolean).join(', ');
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
@@ -943,11 +910,11 @@
             `;
             
             eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
-                logInteraction('plan_night_click', event);
+                //logInteraction('plan_night_click', event);
                 getFlamencoPlan(event);
             });
             eventCard.querySelector('.calendar-btn').addEventListener('click', () => {
-                logInteraction('add_to_calendar_click', event);
+                //logInteraction('add_to_calendar_click', event);
                 showCalendarLinks(event);
             });
             
