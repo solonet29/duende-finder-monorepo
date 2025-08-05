@@ -691,7 +691,6 @@
         const mainContainer = document.querySelector('main.container');
         let isResultsView = false;
         
-        // --- FUNCIONES DE ANALÍTICA (DESACTIVADAS TEMPORALMENTE) ---
         function getSessionId() {
             let sessionId = sessionStorage.getItem('duendeSessionId');
             if (!sessionId) {
@@ -700,11 +699,13 @@
             }
             return sessionId;
         }
+        
         async function logInteraction(type, eventData) {
-            // console.log('Interacción registrada (desactivada):', type, eventData);
+            // Analíticas desactivadas temporalmente
         }
+
         async function logSearch(params, resultsCount) {
-            // console.log('Búsqueda registrada (desactivada):', params, resultsCount);
+            // Analíticas desactivadas temporalmente
         }
 
         const themeToggle = document.getElementById('theme-toggle');
@@ -856,7 +857,7 @@
                 if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
                 const events = await response.json();
                 
-                //logSearch(params, events.length);
+                // logSearch(params, events.length);
                 
                 displayEvents(events);
             } catch (error) {
@@ -910,11 +911,11 @@
             `;
             
             eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
-                //logInteraction('plan_night_click', event);
+                // logInteraction('plan_night_click', event);
                 getFlamencoPlan(event);
             });
             eventCard.querySelector('.calendar-btn').addEventListener('click', () => {
-                //logInteraction('add_to_calendar_click', event);
+                // logInteraction('add_to_calendar_click', event);
                 showCalendarLinks(event);
             });
             
@@ -1020,8 +1021,7 @@
             event.preventDefault();
             const url = new URL(event.currentTarget.href);
             const params = Object.fromEntries(url.searchParams);
-            history.pushState({}, '', url);
-            performSearch(params, true);
+            window.location.href = url.toString(); // Forzamos recarga con el nuevo filtro
         }
         
         document.querySelectorAll('.quick-filter-btn').forEach(btn => {
@@ -1065,6 +1065,17 @@
         setupFilterToggle('province-filters-toggle', 'province-filters-container');
         setupFilterToggle('country-filters-toggle', 'country-filters-container');
         
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm) {
+                window.location.href = `${window.location.pathname}?search=${encodeURIComponent(searchTerm)}`;
+            } else {
+                // Si la caja está vacía, volvemos a la página principal
+                window.location.href = window.location.pathname;
+            }
+        });
+
         initialize();
     });
     </script>
