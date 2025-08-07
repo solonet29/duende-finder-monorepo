@@ -229,8 +229,31 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         
         eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
-            //logInteraction('plan_night_click', event);
-            getFlamencoPlan(event);
+    // Comprobamos que tenemos los datos esenciales para un buen plan.
+    const esValido = event.artist && event.artist.trim() &&
+                     event.description && event.description.trim() &&
+                     event.venue && event.venue.trim() &&
+                     event.city && event.city.trim() &&
+                     event.artist !== 'Artista por confirmar';
+
+    if (esValido) {
+        // Si la información es completa, llamamos a la IA como siempre.
+        getFlamencoPlan(event);
+    } else {
+        // Si la información está incompleta, mostramos un mensaje amigable.
+        showModal(); // Reutilizamos tu función para abrir el modal
+        const modalContent = document.getElementById('modal-content');
+        
+        modalContent.innerHTML = `
+            <div class="modal-header">
+                <h2>Plan no Disponible</h2>
+            </div>
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <p>Lo sentimos, no tenemos suficiente información sobre este evento para generar un plan de noche completo.</p>
+                <p>Te recomendamos usar el botón "Ver Fuente" si está disponible para obtener más detalles.</p>
+            </div>
+        `;
+    }
         });
         eventCard.querySelector('.calendar-btn').addEventListener('click', () => {
             //logInteraction('add_to_calendar_click', event);
