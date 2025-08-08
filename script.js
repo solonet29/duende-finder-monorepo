@@ -9,6 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainContainer = document.querySelector('main.container');
     let isResultsView = false;
     
+    // --- NUEVAS REFERENCIAS PARA EL MODAL DE AMBIGÜEDAD ---
+    const ambiguityModal = document.getElementById('ambiguity-modal-overlay');
+    const ambiguityModalContent = document.getElementById('ambiguity-modal-content');
+
     function getSessionId() {
         let sessionId = sessionStorage.getItem('duendeSessionId');
         if (!sessionId) {
@@ -93,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
                     const query = encodeURIComponent(`${placeName}, ${event.city}`);
-                    return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+                    return `<a href="https://maps.google.com/maps?q=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
                 });
                 text = text.replace(/\n/g, '<br>');
                 const calendarLinks = generateCalendarLinks(event);
@@ -162,8 +166,12 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.style.display = 'grid';
     }
     
+    // --- LÓGICA DE BÚSQUEDA MODIFICADA ---
     async function performSearch(params, isUserSearch = false) {
         showSkeletonLoader();
+        // Ocultamos el modal de ambigüedad si está visible
+        hideAmbiguityModal();
+    
         if (isUserSearch) {
             mainContainer.classList.add('results-active');
             isResultsView = true;
@@ -172,18 +180,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const queryString = new URLSearchParams(params).toString();
         try {
             const response = await fetch(`${API_BASE_URL}/events?${queryString}`);
-            if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
-            const events = await response.json();
+            if (!response.ok) {
+                // Manejamos el caso de error de red
+                throw new Error(`Error de red: ${response.statusText}`);
+            }
+            const data = await response.json();
             
+            // Verificamos si la respuesta indica ambigüedad
+            if (data.isAmbiguous) {
+                showAmbiguityModal(data.searchTerm, data.options);
+                hideSkeletonLoader();
+                return;
+            }
+            
+            // Si la búsqueda no fue ambigua, mostramos los eventos
+            const events = data.events;
             //logSearch(params, events.length);
-            
             displayEvents(events);
+
         } catch (error) {
             console.error('Error al realizar la búsqueda:', error);
             statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
             hideSkeletonLoader();
         }
     }
+    // --- FIN DE LA LÓGICA DE BÚSQUEDA MODIFICADA ---
     
     function displayEvents(events) {
         hideSkeletonLoader();
@@ -207,8 +228,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
         const fullLocation = [event.venue, event.city, event.country].filter(Boolean).join(', ');
-        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
-
+        const mapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(fullLocation)}`;
+    
         eventCard.innerHTML = `
             <div class="card-header"><h3>${event.name || 'Evento sin título'}</h3></div>
             <div class="artista"><i class="fas fa-user"></i> <span>${event.artist || 'Artista por confirmar'}</span></div>
@@ -229,31 +250,28 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         
         eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
-    // Comprobamos que tenemos los datos esenciales para un buen plan.
-    const esValido = event.artist && event.artist.trim() &&
-                     event.description && event.description.trim() &&
-                     event.venue && event.venue.trim() &&
-                     event.city && event.city.trim() &&
-                     event.artist !== 'Artista por confirmar';
-
-    if (esValido) {
-        // Si la información es completa, llamamos a la IA como siempre.
-        getFlamencoPlan(event);
-    } else {
-        // Si la información está incompleta, mostramos un mensaje amigable.
-        showModal(); // Reutilizamos tu función para abrir el modal
-        const modalContent = document.getElementById('modal-content');
-        
-        modalContent.innerHTML = `
-            <div class="modal-header">
-                <h2>Plan no Disponible</h2>
-            </div>
-            <div style="text-align: center; margin-top: 1.5rem;">
-                <p>Lo sentimos, no tenemos suficiente información sobre este evento para generar un plan de noche completo.</p>
-                <p>Te recomendamos usar el botón "Ver Fuente" si está disponible para obtener más detalles.</p>
-            </div>
-        `;
-    }
+        const esValido = event.artist && event.artist.trim() &&
+                             event.description && event.description.trim() &&
+                             event.venue && event.venue.trim() &&
+                             event.city && event.city.trim() &&
+                             event.artist !== 'Artista por confirmar';
+    
+        if (esValido) {
+            getFlamencoPlan(event);
+        } else {
+            showModal();
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.innerHTML = `
+                <div class="modal-header">
+                    <h2>Plan no Disponible</h2>
+                </div>
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <p>Lo sentimos, no tenemos suficiente información sobre este evento para generar un plan de noche completo.</p>
+                    <p>Te recomendamos usar el botón "Ver Fuente" si está disponible para obtener más detalles.</p>
+                </div>
+            `;
+        }
         });
         eventCard.querySelector('.calendar-btn').addEventListener('click', () => {
             //logInteraction('add_to_calendar_click', event);
@@ -308,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 text = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 text = text.replace(/\[(.*?)\]/g, (match, placeName) => {
                     const query = encodeURIComponent(`${placeName}, ${destination}`);
-                    return `<a href="https://www.google.com/maps/search/?api=1&query=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+                    return `<a href="https://maps.google.com/maps?q=${query}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
                 });
                 text = text.replace(/\n/g, '<br>');
                 tripPlannerResult.innerHTML = text;
@@ -368,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', handleQuickFilter);
     });
     
+    // --- LÓGICA DE INICIALIZACIÓN CON PARÁMETROS DE BÚSQUEDA ---
     function initialize() {
         loadTotalEventsCount();
         const urlParams = new URLSearchParams(window.location.search);
@@ -378,9 +397,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (params.search) {
             searchInput.value = params.search;
         }
+        // Llamamos a performSearch con los parámetros de la URL
         performSearch(params, Object.keys(params).length > 0 && !!(params.search || params.city || params.country));
     }
-    
+    // --- FIN DE LA LÓGICA DE INICIALIZACIÓN ---
+
     themeToggle.addEventListener('click', () => {
         const newTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         setTheme(newTheme);
@@ -408,12 +429,46 @@ document.addEventListener('DOMContentLoaded', () => {
     searchForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const searchTerm = searchInput.value.trim();
-        if (searchTerm) {
-            window.location.href = `${window.location.pathname}?search=${encodeURIComponent(searchTerm)}`;
-        } else {
-            window.location.href = window.location.pathname;
-        }
+        // Llamamos a performSearch en lugar de recargar la página directamente
+        performSearch({ search: searchTerm }, true);
     });
 
+    // --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
+    function showAmbiguityModal(searchTerm, options) {
+        // Configuramos y mostramos el modal
+        ambiguityModal.classList.add('visible');
+        ambiguityModalContent.innerHTML = `
+            <div class="modal-header">
+                <h2>Búsqueda ambigua</h2>
+            </div>
+            <div style="padding: 1.5rem; text-align: center;">
+                <p>El término **"${searchTerm}"** puede referirse a un **${options[0]}** o un **${options[1]}**. ¿Qué estás buscando?</p>
+                <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 1rem;">
+                    <button class="option-btn" onclick="searchForOption('${searchTerm}', '${options[0]}')">
+                        Buscar ${options[0]}
+                    </button>
+                    <button class="option-btn" onclick="searchForOption('${searchTerm}', '${options[1]}')">
+                        Buscar ${options[1]}
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    function hideAmbiguityModal() {
+        ambiguityModal.classList.remove('visible');
+    }
+
+    // Función global para que se pueda llamar desde el HTML del modal
+    window.searchForOption = (searchTerm, preferredOption) => {
+        hideAmbiguityModal();
+        performSearch({ search: searchTerm, preferredOption: preferredOption }, true);
+    };
+
+    // Cerrar el modal de ambigüedad al hacer clic fuera de él
+    ambiguityModal.addEventListener('click', (e) => {
+        if (e.target === ambiguityModal) hideAmbiguityModal();
+    });
+    
     initialize();
 });
