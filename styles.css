@@ -611,3 +611,22 @@ main.container.results-active #search-controls {
 #country-filters-container {
     display: none;
 }
+/* Estilos para el modal de ambigüedad */
+#ambiguity-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.option-btn {
+    background-color: var(--color-principal);
+    color: var(--color-texto-claro);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.option-btn:hover {
+    background-color: var(--color-principal-hover);
+}
