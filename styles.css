@@ -605,3 +605,9 @@ main.container.results-active #search-controls {
     visibility: hidden;
     margin-bottom: 0;
 }
+#province-filters-toggle,
+#province-filters-container,
+#country-filters-toggle,
+#country-filters-container {
+    display: none;
+}
