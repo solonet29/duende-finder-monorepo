@@ -490,25 +490,20 @@ function hideAmbiguityModal() {
 function showAmbiguityModal(searchTerm, options) {
     // Configuramos y mostramos el modal
     ambiguityModal.classList.add('visible');
-
-    // Traducimos las opciones y preparamos el texto con formato Markdown
+    
     const option1Text = options[0] === 'country' ? 'país' : 'artista';
     const option2Text = options[1] === 'country' ? 'país' : 'artista';
-    const modalBodyHtml = marked.parse(`
-        <p style="color: #333;">El término **"${searchTerm}"** puede referirse a un **${option1Text}** o un **${option2Text}**. ¿Qué estás buscando?</p>
-    `);
 
     ambiguityModalContent.innerHTML = `
         <div class="modal-header">
             <h2>Búsqueda ambigua</h2>
         </div>
-        <div style="padding: 1.5rem; text-align: center; background-color: #fff; color: #333; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-            ${modalBodyHtml}
-            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
-                <button class="modal-green-btn" onclick="searchForOption('${searchTerm}', '${options[0]}')">
+        <div class="modal-body-ambiguity-transparent">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                <button class="option-btn modal-green-btn" onclick="searchForOption('${searchTerm}', '${options[0]}')">
                     Buscar ${option1Text}
                 </button>
-                <button class="modal-green-btn" onclick="searchForOption('${searchTerm}', '${options[1]}')">
+                <button class="option-btn modal-green-btn" onclick="searchForOption('${searchTerm}', '${options[1]}')">
                     Buscar ${option2Text}
                 </button>
             </div>
@@ -523,7 +518,13 @@ function showAmbiguityModal(searchTerm, options) {
     // Estilos de los botones
     const styleElement = document.createElement('style');
     styleElement.innerHTML = `
+        .modal-body-ambiguity-transparent {
+            background-color: transparent;
+            box-shadow: none;
+            padding: 2rem 1.5rem; /* Aumentamos el padding para que no se pegue al borde */
+        }
         .modal-green-btn {
+            width: 15rem; /* Un ancho fijo para que se vean más grandes */
             background-color: #00b140;
             color: #fff;
             border: 2px solid #00b140;
