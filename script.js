@@ -85,9 +85,11 @@ function linkifyLocations(text, city) {
     }
     return text.replace(regex, (match, p1) => {
         const placeName = p1.trim();
+        // Construimos una URL de Google Maps más precisa con el nombre del lugar y la ciudad
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName + ', ' + city)}`;
         return `<a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
     });
+}
 }
 
     // CAMBIO 2: La llamada a la IA ahora apunta al nuevo endpoint /api/generate-night-plan y usa event._id
@@ -106,8 +108,8 @@ function linkifyLocations(text, city) {
             }
             const result = await response.json();
             if (result && result.content) {
-                const textWithLinks = linkifyLocations(result.content);
-                const formattedHtml = marked.parse(textWithLinks);
+                const textWithLinks = linkifyLocations(result.content, event.city);
+               const formattedHtml = marked.parse(textWithLinks);
                 const calendarLinks = generateCalendarLinks(event);
                 modalContent.innerHTML = `
                     <div class="modal-header"><h2>✨ Tu Noche Flamenca ✨</h2></div>
