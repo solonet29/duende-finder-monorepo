@@ -218,24 +218,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const fullLocation = [event.venue, event.city, event.country].filter(Boolean).join(', ');
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
    
-        eventCard.innerHTML = `
-            <div class="card-header"><h3>${event.name || 'Evento sin título'}</h3></div>
-            <div class="artista"><i class="fas fa-user"></i> <span>${event.artist || 'Artista por confirmar'}</span></div>
-            <div class="descripcion-container">
-                <p class="descripcion">${event.description || ''}</p>
-                ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
-            </div>
-            <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
-            <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time || 'N/A'}</span></div>
-            <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span></a></div>
-            <div class="card-actions">
-                ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
-                <div class="card-actions-primary">
-                    <button class="gemini-btn">✨ Planear Noche</button>
-                    <button class="calendar-btn"><i class="fas fa-calendar-plus"></i> Añadir</button>
-                </div>
-            </div>
-        `;
+        // ... dentro de la función createEventCard(event)
+
+eventCard.innerHTML = `
+    <div class="card-header"><h3>${event.name || 'Evento sin título'}</h3></div>
+    <div class="artista"><i class="fas fa-user"></i> <span>${event.artist || 'Artista por confirmar'}</span></div>
+    <div class="descripcion-container">
+        <p class="descripcion">${event.description || ''}</p>
+        ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
+    </div>
+    <div class="card-detalles">
+        <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
+        <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time || 'N/A'}</span></div>
+        <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span></a></div>
+    </div>
+    <div class="card-actions">
+        ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
+        <div class="card-actions-primary">
+            <button class="gemini-btn">✨ Planear Noche</button>
+            <button class="calendar-btn"><i class="fas fa-calendar-plus"></i> Añadir</button>
+        </div>
+    </div>
+`;
+
+// ... el resto de la función
         
         eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
             getFlamencoPlan(event);
