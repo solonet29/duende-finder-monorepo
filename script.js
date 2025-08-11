@@ -280,25 +280,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const tripPlannerResult = document.getElementById('trip-planner-result');
         tripPlannerResult.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Buscando eventos y creando tu ruta flamenca...</p></div>`;
         try {
-            const response = await fetch(`${API_BASE_URL}/api/trip-planner`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ destination, startDate, endDate })
-            });
-            if (!response.ok) {
-                throw new Error('No se pudo generar el plan de viaje.');
-           . }
-            const result = await response.json();
-            if (result && result.text) {
-                const text = marked.parse(result.text);
-                tripPlannerResult.innerHTML = text;
-            } else {
-                throw new Error("La IA no devolvió un plan válido.");
-            }
-        } catch (error) {
-            console.error("Error en el planificador de viajes:", error);
-            tripPlannerResult.innerHTML = `<p style="color: red;">Ha ocurrido un error al generar tu plan: ${error.message}</p>`;
-        }
+    const response = await fetch(`${API_BASE_URL}/api/trip-planner`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ destination, startDate, endDate }),
+    });
+
+    if (response.ok) {
+        // Asumimos que si la respuesta es OK, será un JSON válido.
+        const result = await response.json(); 
+        const text = result.text; // `marked.parse` ya no es necesario
+        tripPlannerResult.innerHTML = `<p>${text}</p>`;
+    } else {
+        // Si la respuesta no es OK, leemos el error como texto.
+        const errorText = await response.text();
+        throw new Error(errorText || 'La IA no devolvió un plan válido.');
+    }
+} catch (error) {
+    console.error("Error en el planificador de viajes:", error);
+    // Aseguramos que el error se muestra como texto plano
+    tripPlannerResult.innerHTML = `<p style="color: red;">Ha ocurrido un error al generar tu plan: ${error.message}</p>`;
+}
     });
     
     function generateCalendarLinks(event) {
