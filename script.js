@@ -109,25 +109,29 @@ function linkifyLocations(text, city) {
             const result = await response.json();
             if (result && result.content) {
                 const textWithLinks = linkifyLocations(result.content, event.city);
-               const formattedHtml = marked.parse(textWithLinks);
-                const calendarLinks = generateCalendarLinks(event);
-                modalContent.innerHTML = `
-                    <div class="modal-header"><h2>✨ Tu Noche Flamenca ✨</h2></div>
-                    <div id="plan-text">${formattedHtml}</div>
-                    <div class="modal-footer" style="border-top: 1px solid var(--color-borde-light); margin-top: 1.5rem; padding-top: 1.5rem;">
-                        <h3 style="margin:0; margin-bottom: 1rem; color: var(--color-texto-principal-light);">Añadir el evento principal al calendario</h3>
-                        <div style="display:flex; flex-direction:column; align-items:center; gap:1rem;">
-                            <a href="${calendarLinks.google}" target="_blank" rel="noopener noreferrer" class="calendar-link-btn"><i class="fab fa-google" style="color:#4285F4;"></i> Google Calendar</a>
-                            <a href="${calendarLinks.ical}" download="${event.name}.ics" class="calendar-link-btn"><i class="fab fa-apple" style="color:#000;"></i> Apple / iCal</a>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <div class="modal-footer-buttons">
-                            <button id="listen-plan-btn" class="listen-plan-btn"><i class="fas fa-volume-up"></i> Escuchar Plan</button>
-                            <button id="copy-plan-btn" class="copy-plan-btn">Copiar Plan</button>
-                        </div>
-                        <p class="ai-disclaimer">Contenido generado por IA. La información puede no ser precisa.</p>
-                    </div>`;
+               // ... dentro de la función getFlamencoPlan()
+
+const formattedHtml = marked.parse(textWithLinks);
+const calendarLinks = generateCalendarLinks(event);
+modalContent.innerHTML = `
+    <div class="modal-header"><h2>✨ Tu Noche Flamenca ✨</h2></div>
+    <div id="plan-text">${formattedHtml}</div>
+    <div class="modal-footer" style="border-top: 1px solid var(--color-borde-light); margin-top: 1.5rem; padding-top: 1.5rem;">
+        <h3 style="margin:0; margin-bottom: 1rem; color: var(--color-texto-principal-light);">Añadir el evento principal al calendario</h3>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:1rem;">
+            <a href="${calendarLinks.google}" target="_blank" rel="noopener noreferrer" class="calendar-link-btn"><i class="fab fa-google" style="color:#4285F4;"></i> Google Calendar</a>
+            <a href="${calendarLinks.ical}" download="${event.name}.ics" class="calendar-link-btn"><i class="fab fa-apple" style="color:#000;"></i> Apple / iCal</a>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <div class="modal-footer-buttons">
+            <button id="listen-plan-btn" class="listen-plan-btn"><i class="fas fa-volume-up"></i> Escuchar Plan</button>
+            <button id="copy-plan-btn" class="copy-plan-btn">Copiar Plan</button>
+        </div>
+        <p class="ai-disclaimer">Contenido generado por IA. La información puede no ser precisa.</p>
+    </div>
+`;
+// ...
                 document.getElementById('copy-plan-btn').addEventListener('click', (e) => {
                     const planText = document.getElementById('plan-text').innerText;
                     const copyButton = e.currentTarget;
