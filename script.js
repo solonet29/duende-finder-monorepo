@@ -78,17 +78,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Función para reemplazar nombres de lugares en corchetes con enlaces de Google Maps
-    function linkifyLocations(text) {
-        const regex = /\[([^\]]+)\]/g;
-        if (!text.match(regex)) {
-            return text;
-        }
-        return text.replace(regex, (match, p1) => {
-            const placeName = p1.trim();
-            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName)}`;
-            return `<a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
-        });
+function linkifyLocations(text, city) {
+    const regex = /\[([^\]]+)\]/g;
+    if (!text.match(regex)) {
+        return text;
     }
+    return text.replace(regex, (match, p1) => {
+        const placeName = p1.trim();
+        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName + ', ' + city)}`;
+        return `<a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+    });
+}
 
     // CAMBIO 2: La llamada a la IA ahora apunta al nuevo endpoint /api/generate-night-plan y usa event._id
     async function getFlamencoPlan(event) {
