@@ -289,8 +289,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (response.ok) {
         // Asumimos que si la respuesta es OK, será un JSON válido.
         const result = await response.json(); 
-        const text = result.text; // `marked.parse` ya no es necesario
-        tripPlannerResult.innerHTML = `<p>${text}</p>`;
+       const text = result.text;
+// marked.parse ya es necesario!
+const formattedHtml = marked.parse(text); 
+tripPlannerResult.innerHTML = formattedHtml; // <-- Aquí
     } else {
         // Si la respuesta no es OK, leemos el error como texto.
         const errorText = await response.text();
