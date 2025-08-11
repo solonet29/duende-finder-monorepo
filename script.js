@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     // CAMBIO 1: La URL de la API ahora es flexible para poder hacer pruebas fácilmente.
     // La URL de tu backend en producción
-    const API_BASE_URL = localStorage.getItem('apiUrl') || 'https://duende-api-next.vercel.app';
+    // Aseguramos que la URL local no sea una cadena vacía.
+const localApiUrl = localStorage.getItem('apiUrl');
+const API_BASE_URL = (localApiUrl && localApiUrl.trim() !== '') ? localApiUrl : 'https://duende-api-next.vercel.app';
 
     const resultsContainer = document.getElementById('resultsContainer');
     const skeletonContainer = document.getElementById('skeleton-container');
