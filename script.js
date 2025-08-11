@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // CAMBIO 1: La URL de la API ahora es flexible para poder hacer pruebas fácilmente.
-    // La URL de tu backend en producción
-    // Aseguramos que la URL local no sea una cadena vacía.
-const localApiUrl = localStorage.getItem('apiUrl');
-const API_BASE_URL = (localApiUrl && localApiUrl.trim() !== '') ? localApiUrl : 'https://duende-api-next.vercel.app';
+    const API_BASE_URL = localStorage.getItem('apiUrl') || 'https://duende-api-next.vercel.app';
 
     const resultsContainer = document.getElementById('resultsContainer');
     const skeletonContainer = document.getElementById('skeleton-container');
@@ -79,7 +76,7 @@ const API_BASE_URL = (localApiUrl && localApiUrl.trim() !== '') ? localApiUrl : 
             });
         }
     }
-
+    
     // Función para reemplazar nombres de lugares en corchetes con enlaces de Google Maps
     function linkifyLocations(text) {
         const regex = /\[([^\]]+)\]/g;
@@ -309,7 +306,7 @@ const API_BASE_URL = (localApiUrl && localApiUrl.trim() !== '') ? localApiUrl : 
                 const result = await response.json(); 
                 const text = result.text;
                 const formattedHtml = marked.parse(text); 
-                tripPlannerResult.innerHTML = formattedHtml; // <-- Aquí
+                tripPlannerResult.innerHTML = formattedHtml;
             } else {
                 // Si la respuesta no es OK, leemos el error como texto.
                 const errorText = await response.text();
