@@ -415,6 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
    // ...
+// --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
 function showAmbiguityModal(searchTerm, options) {
     // Configuramos y mostramos el modal
     ambiguityModal.classList.add('visible');
@@ -422,28 +423,69 @@ function showAmbiguityModal(searchTerm, options) {
     // Traducimos las opciones y preparamos el texto con formato Markdown
     const option1Text = options[0] === 'country' ? 'país' : 'artista';
     const option2Text = options[1] === 'country' ? 'país' : 'artista';
-    const modalText = `
-        <p>El término **"${searchTerm}"** puede referirse a un **${option1Text}** o un **${option2Text}**. ¿Qué estás buscando?</p>
-        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 1rem;">
-            <button class="option-btn" onclick="searchForOption('${searchTerm}', '${options[0]}')">
-                Buscar ${option1Text}
-            </button>
-            <button class="option-btn" onclick="searchForOption('${searchTerm}', '${options[1]}')">
-                Buscar ${option2Text}
-            </button>
+    const modalBodyHtml = `
+        <div style="padding: 1.5rem; text-align: center;">
+            <p>El término **"${searchTerm}"** puede referirse a un **${option1Text}** o un **${option2Text}**. ¿Qué estás buscando?</p>
+            <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 1rem;">
+                <button class="option-btn modal-green-btn" onclick="searchForOption('${searchTerm}', '${options[0]}')">
+                    Buscar ${option1Text}
+                </button>
+                <button class="option-btn modal-green-btn" onclick="searchForOption('${searchTerm}', '${options[1]}')">
+                    Buscar ${option2Text}
+                </button>
+            </div>
         </div>
     `;
-    const formattedHtml = marked.parse(modalText);
 
     ambiguityModalContent.innerHTML = `
         <div class="modal-header">
             <h2>Búsqueda ambigua</h2>
         </div>
-        <div style="padding: 1.5rem; text-align: center;">
-            ${formattedHtml}
+        <div class="modal-body-ambiguity">
+            ${modalBodyHtml}
+        </div>
+        <div class="modal-footer-close">
+            <button id="ambiguity-modal-close-btn" onclick="hideAmbiguityModal()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     `;
+
+    // Añade el CSS para que el modal se vea bien
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = `
+        .modal-body-ambiguity {
+            padding: 1.5rem;
+            background-color: var(--color-fondo-light);
+            color: var(--color-texto-principal-dark);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .modal-body-ambiguity p {
+            color: var(--color-texto-principal-dark);
+        }
+        .modal-green-btn {
+            background-color: var(--color-primario);
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .modal-green-btn:hover {
+            background-color: var(--color-primario-hover);
+        }
+    `;
+    ambiguityModalContent.appendChild(styleElement);
 }
+
+function hideAmbiguityModal() {
+    ambiguityModal.classList.remove('visible');
+}
+
 // ...
 
     function hideAmbiguityModal() {
