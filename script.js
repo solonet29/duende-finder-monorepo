@@ -421,26 +421,28 @@ function showAmbiguityModal(searchTerm, options) {
     // Configuramos y mostramos el modal
     ambiguityModal.classList.add('visible');
 
-    // Traducimos las opciones y preparamos el texto con formato Markdown
+    // Traducimos las opciones
     const option1Text = options[0] === 'country' ? 'país' : 'artista';
     const option2Text = options[1] === 'country' ? 'país' : 'artista';
-    const modalBodyHtml = marked.parse(`
-        <p style="color: #333;">El término **"${searchTerm}"** puede referirse a un **${option1Text}** o un **${option2Text}**. ¿Qué estás buscando?</p>
-    `);
 
+    // Usamos marked.parse para dar formato al texto
+    const textHtml = marked.parse(`El término **"${searchTerm}"** puede referirse a un **${option1Text}** o un **${option2Text}**. ¿Qué estás buscando?`);
+    
     ambiguityModalContent.innerHTML = `
         <div class="modal-header">
             <h2>Búsqueda ambigua</h2>
         </div>
-        <div style="padding: 1.5rem; text-align: center; background-color: #fff; color: #333; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-            ${modalBodyHtml}
-            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
-                <button class="modal-green-btn" onclick="searchForOption('${searchTerm}', '${options[0]}')">
-                    Buscar ${option1Text}
-                </button>
-                <button class="modal-green-btn" onclick="searchForOption('${searchTerm}', '${options[1]}')">
-                    Buscar ${option2Text}
-                </button>
+        <div class="modal-body">
+            <div style="padding: 1.5rem; text-align: center;">
+                ${textHtml}
+                <div style="margin-top: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                    <button class="option-btn modal-green-btn" onclick="searchForOption('${searchTerm}', '${options[0]}')">
+                        Buscar ${option1Text}
+                    </button>
+                    <button class="option-btn modal-green-btn" onclick="searchForOption('${searchTerm}', '${options[1]}')">
+                        Buscar ${option2Text}
+                    </button>
+                </div>
             </div>
         </div>
         <div class="modal-footer-close">
@@ -453,22 +455,28 @@ function showAmbiguityModal(searchTerm, options) {
     // Estilos de los botones
     const styleElement = document.createElement('style');
     styleElement.innerHTML = `
+        .modal-body {
+            background-color: #fff;
+            color: #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
         .modal-green-btn {
-            background-color: #00b140; /* Un verde más brillante */
+            background-color: #00b140;
             color: #fff;
-            border: 2px solid #00b140; /* Añadimos un borde sutil */
+            border: 2px solid #00b140;
             padding: 0.75rem 1.5rem;
             border-radius: 50px;
             font-size: 1rem;
-            font-weight: 700; /* Texto más grueso */
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease; /* Transición suave para todos los cambios */
+            transition: all 0.3s ease;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .modal-green-btn:hover {
-            background-color: #008f33; /* Un verde más oscuro al pasar el cursor */
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); /* Sombra más grande */
-            transform: translateY(-2px); /* Un pequeño desplazamiento */
+            background-color: #008f33;
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
         }
     `;
     ambiguityModalContent.appendChild(styleElement);
