@@ -1,6 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     // CAMBIO 1: La URL de la API ahora es flexible para poder hacer pruebas fácilmente.
-    const API_BASE_URL = localStorage.getItem('apiUrl') || 'https://duende-api-next.vercel.app';
+    // Define las URLs base para cada entorno
+    const PRODUCTION_API_URL = 'https://duende-api-next.vercel.app';
+    const DEVELOPMENT_API_URL = 'http://localhost:3000';
+
+    // Decide qué URL usar basándose en el hostname actual del navegador
+    // Si la URL contiene "localhost" o "0.0.0.0", usa la de desarrollo.
+    // De lo contrario, usa la de producción.
+    const API_BASE_URL = window.location.hostname.includes('localhost') || window.location.hostname.includes('0.0.0.0')
+        ? DEVELOPMENT_API_URL
+        : PRODUCTION_API_URL;
 
     const resultsContainer = document.getElementById('resultsContainer');
     const skeletonContainer = document.getElementById('skeleton-container');
