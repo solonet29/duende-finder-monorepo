@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
                     hideSkeletonLoader();
                 } else {
-                    // Esperamos antes de reintentar
+                    // Esperamos antes de reintentar hasta 3 veces
                     await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
                 }
             }
