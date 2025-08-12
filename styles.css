@@ -942,3 +942,62 @@ main.container.results-active #search-controls {
 .descripcion-corta.expanded+.expandir-btn i {
     transform: rotate(180deg);
 }
+
+/* Estilos para el clon de la ficha que se anima */
+.animated-card {
+    position: absolute;
+    /* El JavaScript calculará su posición inicial */
+    z-index: 9999;
+    transform: scale(0.9);
+    /* Empieza un poco más pequeña */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 1.2s ease-in-out;
+    opacity: 1;
+    background-color: var(--color-fondo-card);
+    border: 1px solid var(--color-borde-card);
+    border-radius: 10px;
+    /* La siguiente línea evita que los botones dentro del clon sean interactivos */
+    pointer-events: none;
+}
+
+/* Animación de desplazamiento hacia arriba */
+@keyframes slide-up-and-fade {
+    0% {
+        transform: translateY(0) scale(0.9);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-200px) scale(0.8);
+        opacity: 0;
+    }
+}
+
+/* Clase para iniciar la animación */
+.animated-card.start-animation {
+    animation: slide-up-and-fade 1.2s forwards;
+}
+
+/* Estilo para los botones de compartir */
+.export-button {
+    background: var(--color-primario);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.export-button:hover {
+    background: var(--color-primario-dark);
+}
+
+.export-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}

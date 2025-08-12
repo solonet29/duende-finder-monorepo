@@ -243,8 +243,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // ... (código anterior)
 
     function createEventCard(event) {
+        const uniqueCardId = `event-card-${event._id}`; // Creamos el ID único
+
         const eventCard = document.createElement('article');
         eventCard.className = 'evento-card';
+        eventCard.id = uniqueCardId; // ¡Aquí asignamos el ID!
 
         const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
         const fullLocation = [event.venue, event.city, event.country].filter(Boolean).join(', ');
@@ -279,18 +282,24 @@ document.addEventListener('DOMContentLoaded', () => {
             ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
             <div class="card-actions-primary">
                 <button class="gemini-btn">✨ Planear Noche</button>
-                <button class="calendar-btn"><i class="fas fa-calendar-plus"></i> Añadir</button>
+                
+                <button class="export-button" data-target-card-id="${uniqueCardId}">
+                    <i class="fas fa-solid fa-share-nodes"></i> Compartir
+                </button>
             </div>
         </div>
         ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
     `;
 
-        // ... (restauramos los event listeners, que siguen siendo válidos)
+        // ... (El resto de la lógica para los event listeners que ya tienes)
         eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
             getFlamencoPlan(event);
         });
-        eventCard.querySelector('.calendar-btn').addEventListener('click', () => {
-            showCalendarLinks(event);
+
+        // Nuevo listener para el botón de exportar
+        eventCard.querySelector('.export-button').addEventListener('click', (e) => {
+            // Por ahora no hará nada, pero aquí irá nuestra lógica de animación
+            console.log(`Botón de exportar de la ficha ${uniqueCardId} clicado.`);
         });
 
         return eventCard;

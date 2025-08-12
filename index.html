@@ -1,45 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador de Conciertos Flamencos - Duende Finder</title>
-    <meta name="description" content="Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.">
+    <meta name="description"
+        content="Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212" id="theme-color-meta">
 
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body id="top">
     <main class="container">
         <button id="theme-toggle" class="theme-toggle-btn" aria-label="Cambiar tema"><i class="fas fa-sun"></i></button>
         <h1><span class="duende-word">Duende</span> <span>Finder</span></h1>
 
         <div id="search-controls">
-            <p class="subtitle"><i class="fas fa-guitar" style="margin-right: 8px; color: var(--color-primario);"></i>Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por toda Europa.</p>
+            <p class="subtitle"><i class="fas fa-guitar"
+                    style="margin-right: 8px; color: var(--color-primario);"></i>Descubre la magia del flamenco. Busca
+                conciertos, tablaos y festivales por toda Europa.</p>
             <p class="event-counter">Tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p>
             <form id="search-form" class="search-form">
-                <input type="text" id="search-input" class="search-input" placeholder="Buscar por artista, evento o ciudad...">
+                <input type="text" id="search-input" class="search-input"
+                    placeholder="Buscar por artista, evento o ciudad...">
                 <button type="submit" class="search-button">Buscar</button>
             </form>
-            <button id="trip-planner-btn" class="trip-planner-btn"><i class="fas fa-route"></i> Planear mi Viaje Flamenco</button>
+            <button id="trip-planner-btn" class="trip-planner-btn"><i class="fas fa-route"></i> Planear mi Viaje
+                Flamenco</button>
             <div class="filter-toggles-wrapper">
-                <button id="province-filters-toggle" class="quick-filters-toggle">Búsqueda por Provincia <i class="fas fa-chevron-down"></i></button>
-                <button id="country-filters-toggle" class="quick-filters-toggle" style="margin-left: 1.5rem;">Búsqueda por País <i class="fas fa-chevron-down"></i></button>
+                <button id="province-filters-toggle" class="quick-filters-toggle">Búsqueda por Provincia <i
+                        class="fas fa-chevron-down"></i></button>
+                <button id="country-filters-toggle" class="quick-filters-toggle" style="margin-left: 1.5rem;">Búsqueda
+                    por País <i class="fas fa-chevron-down"></i></button>
             </div>
             <div id="province-filters-container" class="quick-filters-container">
-                <a href="?city=Sevilla" class="quick-filter-btn">Sevilla</a><a href="?city=Málaga" class="quick-filter-btn">Málaga</a><a href="?city=Granada" class="quick-filter-btn">Granada</a><a href="?city=Cádiz" class="quick-filter-btn">Cádiz</a><a href="?city=Córdoba" class="quick-filter-btn">Córdoba</a><a href="?city=Jerez de la Frontera" class="quick-filter-btn">Jerez</a><a href="?city=Huelva" class="quick-filter-btn">Huelva</a><a href="?city=Almería" class="quick-filter-btn">Almería</a><a href="?city=Jaén" class="quick-filter-btn">Jaén</a>
+                <a href="?city=Sevilla" class="quick-filter-btn">Sevilla</a><a href="?city=Málaga"
+                    class="quick-filter-btn">Málaga</a><a href="?city=Granada" class="quick-filter-btn">Granada</a><a
+                    href="?city=Cádiz" class="quick-filter-btn">Cádiz</a><a href="?city=Córdoba"
+                    class="quick-filter-btn">Córdoba</a><a href="?city=Jerez de la Frontera"
+                    class="quick-filter-btn">Jerez</a><a href="?city=Huelva" class="quick-filter-btn">Huelva</a><a
+                    href="?city=Almería" class="quick-filter-btn">Almería</a><a href="?city=Jaén"
+                    class="quick-filter-btn">Jaén</a>
             </div>
             <div id="country-filters-container" class="quick-filters-container">
-                <a href="?country=Francia" class="quick-filter-btn">Francia</a><a href="?country=Japón" class="quick-filter-btn">Japón</a><a href="?country=EEUU" class="quick-filter-btn">EEUU</a><a href="?country=Reino Unido" class="quick-filter-btn">Reino Unido</a><a href="?country=Argentina" class="quick-filter-btn">Argentina</a>
+                <a href="?country=Francia" class="quick-filter-btn">Francia</a><a href="?country=Japón"
+                    class="quick-filter-btn">Japón</a><a href="?country=EEUU" class="quick-filter-btn">EEUU</a><a
+                    href="?country=Reino Unido" class="quick-filter-btn">Reino Unido</a><a href="?country=Argentina"
+                    class="quick-filter-btn">Argentina</a>
             </div>
         </div>
 
@@ -47,7 +68,8 @@
         <div id="skeleton-container"></div>
         <div id="resultsContainer" style="display: none;"></div>
     </main>
-    <a href="#top" id="back-to-top-btn" class="back-to-top-btn" aria-label="Volver arriba"><i class="fas fa-arrow-up"></i></a>
+    <a href="#top" id="back-to-top-btn" class="back-to-top-btn" aria-label="Volver arriba"><i
+            class="fas fa-arrow-up"></i></a>
     <div id="gemini-modal-overlay" class="modal-overlay">
         <div class="modal">
             <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
@@ -57,26 +79,42 @@
     <div id="trip-planner-modal-overlay" class="modal-overlay">
         <div class="modal">
             <button id="trip-modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
-            <div class="modal-header"><h2><i class="fas fa-route"></i> Planificador de Viaje Flamenco</h2></div>
+            <div class="modal-header">
+                <h2><i class="fas fa-route"></i> Planificador de Viaje Flamenco</h2>
+            </div>
             <form id="trip-planner-form">
                 <div class="form-group">
                     <label for="trip-destination">Destino</label>
-                    <select id="trip-destination" required><option value="Cádiz">Cádiz</option><option value="Córdoba">Córdoba</option><option value="Granada">Granada</option><option value="Huelva">Huelva</option><option value="Jaén">Jaén</option><option value="Málaga">Málaga</option><option value="Sevilla">Sevilla</option></select>
+                    <select id="trip-destination" required>
+                        <option value="Cádiz">Cádiz</option>
+                        <option value="Córdoba">Córdoba</option>
+                        <option value="Granada">Granada</option>
+                        <option value="Huelva">Huelva</option>
+                        <option value="Jaén">Jaén</option>
+                        <option value="Málaga">Málaga</option>
+                        <option value="Sevilla">Sevilla</option>
+                    </select>
                 </div>
                 <div class="form-row">
-                    <div class="form-group"><label for="trip-start-date">Fecha de Inicio</label><input type="date" id="trip-start-date" required></div>
-                    <div class="form-group"><label for="trip-end-date">Fecha de Fin</label><input type="date" id="trip-end-date" required></div>
+                    <div class="form-group"><label for="trip-start-date">Fecha de Inicio</label><input type="date"
+                            id="trip-start-date" required></div>
+                    <div class="form-group"><label for="trip-end-date">Fecha de Fin</label><input type="date"
+                            id="trip-end-date" required></div>
                 </div>
-                <button type="submit" class="gemini-btn" style="width: 100%; justify-content: center;">Generar Plan de Viaje</button>
+                <button type="submit" class="gemini-btn" style="width: 100%; justify-content: center;">Generar Plan de
+                    Viaje</button>
             </form>
             <div id="trip-planner-result"></div>
         </div>
     </div>
     <div id="ambiguity-modal-overlay" class="modal-overlay">
-    <div id="ambiguity-modal-content" class="modal-content">
+        <div id="ambiguity-modal-content" class="modal-content">
         </div>
-</div>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="script.js"></script> 
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script src="script.js"></script>
 </body>
+
 </html>
