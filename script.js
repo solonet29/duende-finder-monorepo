@@ -588,6 +588,21 @@ document.addEventListener('DOMContentLoaded', () => {
     ambiguityModal.addEventListener('click', (e) => {
         if (e.target === ambiguityModal) hideAmbiguityModal();
     });
-
+    // Listener para los botones de expansión de título y descripción
+    document.addEventListener('click', (event) => {
+        const button = event.target.closest('.expandir-btn');
+        if (button) {
+            const targetType = button.getAttribute('data-target');
+            let elementoAExpandir;
+            if (targetType === 'titulo') {
+                elementoAExpandir = button.parentElement.querySelector('.titulo-truncado');
+            } else if (targetType === 'descripcion') {
+                elementoAExpandir = button.parentElement.querySelector('.descripcion-corta');
+            }
+            if (elementoAExpandir) {
+                elementoAExpandir.classList.toggle('expanded');
+            }
+        }
+    });
     initialize();
 });
