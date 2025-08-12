@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const mainContainer = document.querySelector('main.container');
     let isResultsView = false;
-    
+
     // --- NUEVAS REFERENCIAS PARA EL MODAL DE AMBIGÜEDAD ---
     const ambiguityModal = document.getElementById('ambiguity-modal-overlay');
     const ambiguityModalContent = document.getElementById('ambiguity-modal-content');
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleIcon = themeToggle.querySelector('i');
     const themeMeta = document.getElementById('theme-color-meta');
     const root = document.documentElement;
-    
+
     function setTheme(theme) {
         root.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
@@ -50,20 +50,20 @@ document.addEventListener('DOMContentLoaded', () => {
             themeMeta.setAttribute('content', getComputedStyle(root).getPropertyValue('--color-fondo-light').trim());
         }
     }
-    
+
     const backToTopBtn = document.getElementById('back-to-top-btn');
     const modalOverlay = document.getElementById('gemini-modal-overlay');
     const modalContent = document.getElementById('modal-content');
     const modalCloseBtn = document.getElementById('modal-close-btn');
     const synth = window.speechSynthesis;
     function showModal() { modalOverlay.classList.add('visible'); }
-    function hideModal() { 
+    function hideModal() {
         if (synth.speaking) {
             synth.cancel();
         }
-        modalOverlay.classList.remove('visible'); 
+        modalOverlay.classList.remove('visible');
     }
-    
+
     function setupFilterToggle(toggleId, containerId) {
         const toggleButton = document.getElementById(toggleId);
         const container = document.getElementById(containerId);
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
-    
+
     // Función para reemplazar nombres de lugares en corchetes con enlaces de Google Maps
     function linkifyLocations(text, city) {
         const regex = /\[([^\]]+)\]/g;
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else { modalContent.innerHTML = `<h3>Error</h3><p>No se pudo generar el plan.</p>`; }
         }
     }
-    
+
     function showSkeletonLoader() {
         skeletonContainer.innerHTML = '';
         resultsContainer.style.display = 'none';
@@ -168,16 +168,16 @@ document.addEventListener('DOMContentLoaded', () => {
             skeletonContainer.appendChild(skeletonCard);
         }
     }
-    
+
     function hideSkeletonLoader() {
         skeletonContainer.style.display = 'none';
         resultsContainer.style.display = 'grid';
     }
-    
+
     async function performSearch(params, isUserSearch = false) {
         showSkeletonLoader();
         hideAmbiguityModal();
-    
+
         if (isUserSearch) {
             mainContainer.classList.add('results-active');
             isResultsView = true;
@@ -191,13 +191,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`Error de red: ${response.statusText}`);
             }
             const data = await response.json();
-            
+
             if (data.isAmbiguous) {
                 showAmbiguityModal(data.searchTerm, data.options);
                 hideSkeletonLoader();
                 return;
             }
-            
+
             const events = data.events;
             displayEvents(events);
 
@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
             hideSkeletonLoader();
         }
     }
-    
+
     function displayEvents(events) {
         hideSkeletonLoader();
         statusMessage.textContent = '';
@@ -223,46 +223,65 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         resultsContainer.appendChild(fragment);
     }
-    
+
+    // ... (código anterior)
+
     function createEventCard(event) {
         const eventCard = document.createElement('article');
         eventCard.className = 'evento-card';
-        
+
         const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
         const fullLocation = [event.venue, event.city, event.country].filter(Boolean).join(', ');
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
- 
+
         eventCard.innerHTML = `
-            <div class="card-header"><h3>${event.name || 'Evento sin título'}</h3></div>
-            <div class="artista"><i class="fas fa-user"></i> <span>${event.artist || 'Artista por confirmar'}</span></div>
-            <div class="descripcion-container">
-                <p class="descripcion">${event.description || ''}</p>
-                ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
+        <div class="card-header">
+            <div class="header-evento">
+                <h3 class="titulo-truncado">${event.name || 'Evento sin título'}</h3>
+                <button class="expandir-btn" data-target="titulo">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
             </div>
-            <div class="card-detalles">
-                <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
-                <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time || 'N/A'}</span></div>
-                <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span></a></div>
-            </div>
-            <div class="card-actions">
-                ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
-                <div class="card-actions-primary">
-                    <button class="gemini-btn">✨ Planear Noche</button>
-                    <button class="calendar-btn"><i class="fas fa-calendar-plus"></i> Añadir</button>
-                </div>
-            </div>
-        `;
+        </div>
         
+        <div class="artista"><i class="fas fa-user"></i> <span>${event.artist || 'Artista por confirmar'}</span></div>
+        
+        <div class="descripcion-container">
+            <p class="descripcion-corta">${event.description || ''}</p>
+            <button class="expandir-btn" data-target="descripcion">
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+        </div>
+
+        <div class="card-detalles">
+            <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
+            <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time || 'N/A'}</span></div>
+            <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span></a></div>
+        </div>
+
+        <div class="card-actions">
+            ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
+            <div class="card-actions-primary">
+                <button class="gemini-btn">✨ Planear Noche</button>
+                <button class="calendar-btn"><i class="fas fa-calendar-plus"></i> Añadir</button>
+            </div>
+        </div>
+        ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
+    `;
+
+        // ... (restauramos los event listeners, que siguen siendo válidos)
         eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
             getFlamencoPlan(event);
         });
         eventCard.querySelector('.calendar-btn').addEventListener('click', () => {
             showCalendarLinks(event);
         });
-        
+
         return eventCard;
     }
-    
+
+    // ... (código posterior)
+
     async function loadTotalEventsCount() {
         try {
             // CAMBIO 4: La llamada del contador ahora apunta a /api/events/count
@@ -276,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn('No se pudo cargar el contador total de eventos.');
         }
     }
-    
+
     const tripPlannerBtn = document.getElementById('trip-planner-btn');
     const tripModalOverlay = document.getElementById('trip-planner-modal-overlay');
     const tripModalCloseBtn = document.getElementById('trip-modal-close-btn');
@@ -286,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tripModalOverlay.addEventListener('click', (e) => {
         if (e.target === tripModalOverlay) tripModalOverlay.classList.remove('visible');
     });
-    
+
     tripPlannerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const destination = document.getElementById('trip-destination').value;
@@ -303,9 +322,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 // Asumimos que si la respuesta es OK, será un JSON válido.
-                const result = await response.json(); 
+                const result = await response.json();
                 const text = result.text;
-                const formattedHtml = marked.parse(text); 
+                const formattedHtml = marked.parse(text);
                 tripPlannerResult.innerHTML = formattedHtml;
             } else {
                 // Si la respuesta no es OK, leemos el error como texto.
@@ -318,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tripPlannerResult.innerHTML = `<p style="color: red;">Ha ocurrido un error al generar tu plan: ${error.message}</p>`;
         }
     });
-    
+
     function generateCalendarLinks(event) {
         const startTime = new Date(`${event.date}T${event.time || '00:00:00'}`);
         const endTime = new Date(startTime.getTime() + (2 * 60 * 60 * 1000));
@@ -337,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const icsLink = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
         return { google: googleLink, ical: icsLink };
     }
-    
+
     function showCalendarLinks(event) {
         const links = generateCalendarLinks(event);
         modalContent.innerHTML = `
@@ -355,17 +374,17 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         showModal();
     }
-    
+
     function handleQuickFilter(event) {
         event.preventDefault();
         const url = new URL(event.currentTarget.href);
         window.location.href = url.toString(); // Forzamos recarga con el nuevo filtro
     }
-    
+
     document.querySelectorAll('.quick-filter-btn').forEach(btn => {
         btn.addEventListener('click', handleQuickFilter);
     });
-    
+
     // --- LÓGICA DE INICIALIZACIÓN CON PARÁMETROS DE BÚSQUEDA ---
     function initialize() {
         loadTotalEventsCount();
@@ -397,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
             isResultsView = false;
         }
     });
-    
+
     modalCloseBtn.addEventListener('click', hideModal);
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) hideModal();
@@ -405,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupFilterToggle('province-filters-toggle', 'province-filters-container');
     setupFilterToggle('country-filters-toggle', 'country-filters-container');
-    
+
     searchForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const searchTerm = searchInput.value.trim();
@@ -414,21 +433,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
-   // ...
-// --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
-// --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
-function showAmbiguityModal(searchTerm, options) {
-    // Configuramos y mostramos el modal
-    ambiguityModal.classList.add('visible');
+    // ...
+    // --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
+    // --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
+    function showAmbiguityModal(searchTerm, options) {
+        // Configuramos y mostramos el modal
+        ambiguityModal.classList.add('visible');
 
-    // Traducimos las opciones
-    const option1Text = options[0] === 'country' ? 'país' : 'artista';
-    const option2Text = options[1] === 'country' ? 'país' : 'artista';
+        // Traducimos las opciones
+        const option1Text = options[0] === 'country' ? 'país' : 'artista';
+        const option2Text = options[1] === 'country' ? 'país' : 'artista';
 
-    // Usamos marked.parse para dar formato al texto
-    const textHtml = marked.parse(`El término **"${searchTerm}"** puede referirse a un **${option1Text}** o un **${option2Text}**. ¿Qué estás buscando?`);
-    
-    ambiguityModalContent.innerHTML = `
+        // Usamos marked.parse para dar formato al texto
+        const textHtml = marked.parse(`El término **"${searchTerm}"** puede referirse a un **${option1Text}** o un **${option2Text}**. ¿Qué estás buscando?`);
+
+        ambiguityModalContent.innerHTML = `
         <div class="modal-header">
             <h2>Búsqueda ambigua</h2>
         </div>
@@ -452,9 +471,9 @@ function showAmbiguityModal(searchTerm, options) {
         </div>
     `;
 
-    // Estilos de los botones
-    const styleElement = document.createElement('style');
-    styleElement.innerHTML = `
+        // Estilos de los botones
+        const styleElement = document.createElement('style');
+        styleElement.innerHTML = `
         .modal-body {
             background-color: #fff;
             color: #333;
@@ -479,22 +498,22 @@ function showAmbiguityModal(searchTerm, options) {
             transform: translateY(-2px);
         }
     `;
-    ambiguityModalContent.appendChild(styleElement);
-}
+        ambiguityModalContent.appendChild(styleElement);
+    }
 
-function hideAmbiguityModal() {
-    ambiguityModal.classList.remove('visible');
-}// --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
-// --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
-// --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
-function showAmbiguityModal(searchTerm, options) {
-    // Configuramos y mostramos el modal
-    ambiguityModal.classList.add('visible');
-    
-    const option1Text = options[0] === 'country' ? 'país' : 'artista';
-    const option2Text = options[1] === 'country' ? 'país' : 'artista';
+    function hideAmbiguityModal() {
+        ambiguityModal.classList.remove('visible');
+    }// --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
+    // --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
+    // --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
+    function showAmbiguityModal(searchTerm, options) {
+        // Configuramos y mostramos el modal
+        ambiguityModal.classList.add('visible');
 
-    ambiguityModalContent.innerHTML = `
+        const option1Text = options[0] === 'country' ? 'país' : 'artista';
+        const option2Text = options[1] === 'country' ? 'país' : 'artista';
+
+        ambiguityModalContent.innerHTML = `
         <div class="modal-header">
             <h2>Búsqueda ambigua</h2>
         </div>
@@ -515,9 +534,9 @@ function showAmbiguityModal(searchTerm, options) {
         </div>
     `;
 
-    // Estilos de los botones
-    const styleElement = document.createElement('style');
-    styleElement.innerHTML = `
+        // Estilos de los botones
+        const styleElement = document.createElement('style');
+        styleElement.innerHTML = `
         .modal-body-ambiguity-transparent {
             background-color: transparent;
             box-shadow: none;
@@ -542,18 +561,18 @@ function showAmbiguityModal(searchTerm, options) {
             transform: translateY(-2px);
         }
     `;
-    ambiguityModalContent.appendChild(styleElement);
-}
+        ambiguityModalContent.appendChild(styleElement);
+    }
 
-function hideAmbiguityModal() {
-    ambiguityModal.classList.remove('visible');
-}
+    function hideAmbiguityModal() {
+        ambiguityModal.classList.remove('visible');
+    }
 
-function hideAmbiguityModal() {
-    ambiguityModal.classList.remove('visible');
-}
+    function hideAmbiguityModal() {
+        ambiguityModal.classList.remove('visible');
+    }
 
-// ...
+    // ...
 
     function hideAmbiguityModal() {
         ambiguityModal.classList.remove('visible');
@@ -569,6 +588,21 @@ function hideAmbiguityModal() {
     ambiguityModal.addEventListener('click', (e) => {
         if (e.target === ambiguityModal) hideAmbiguityModal();
     });
-    
+    // Listener para los botones de expansión de título y descripción
+    document.addEventListener('click', (event) => {
+        const button = event.target.closest('.expandir-btn');
+        if (button) {
+            const targetType = button.getAttribute('data-target');
+            let elementoAExpandir;
+            if (targetType === 'titulo') {
+                elementoAExpandir = button.parentElement.querySelector('.titulo-truncado');
+            } else if (targetType === 'descripcion') {
+                elementoAExpandir = button.parentElement.querySelector('.descripcion-corta');
+            }
+            if (elementoAExpandir) {
+                elementoAExpandir.classList.toggle('expanded');
+            }
+        }
+    });
     initialize();
 });

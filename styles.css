@@ -47,7 +47,10 @@ html {
     box-sizing: border-box;
     scroll-behavior: smooth;
 }
-*, *:before, *:after {
+
+*,
+*:before,
+*:after {
     box-sizing: inherit;
 }
 
@@ -79,11 +82,13 @@ h1 {
     font-weight: 900;
     margin-bottom: 0.5rem;
 }
+
 h1 .duende-word {
     font-family: 'Cinzel', serif;
     font-weight: 700;
     color: var(--color-texto-principal);
 }
+
 h1 span {
     color: var(--color-primario);
 }
@@ -111,6 +116,7 @@ h1 span {
     align-items: center;
     transition: color 0.3s ease, border-color 0.3s ease;
 }
+
 .theme-toggle-btn:hover,
 .theme-toggle-btn:focus-visible {
     color: var(--color-primario);
@@ -131,6 +137,7 @@ h1 span {
     display: flex;
     gap: 0.5rem;
 }
+
 .search-input {
     flex-grow: 1;
     padding: 0.75rem 1rem;
@@ -140,6 +147,7 @@ h1 span {
     background-color: var(--color-superficie);
     color: var(--color-texto-principal);
 }
+
 .search-button {
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
@@ -191,6 +199,7 @@ h1 span {
     padding: 0;
     transition: color 0.2s ease;
 }
+
 .quick-filters-toggle:hover {
     color: var(--color-primario);
     text-decoration: underline;
@@ -211,9 +220,11 @@ h1 span {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
 .quick-filters-container::-webkit-scrollbar {
     display: none;
 }
+
 .quick-filters-container.visible {
     max-height: 80px;
     margin-bottom: 2rem;
@@ -240,6 +251,7 @@ h1 span {
     border-color: var(--color-primario);
     outline: none;
 }
+
 .quick-filter-btn:active {
     transform: scale(0.95);
 }
@@ -249,7 +261,8 @@ h1 span {
     font-size: 1.2rem;
 }
 
-#resultsContainer, #skeleton-container {
+#resultsContainer,
+#skeleton-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 1.5rem;
@@ -267,6 +280,7 @@ h1 span {
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
     animation: fadeIn 0.5s ease-in-out;
 }
+
 .evento-card:hover {
     transform: translateY(-8px);
     border-color: var(--color-primario);
@@ -274,14 +288,37 @@ h1 span {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.card-header { min-height: 4.5rem; }
-.evento-card h3 { margin: 0; font-size: 1.5rem; font-weight: 700; }
-.evento-card .artista { color: var(--color-primario); font-weight: 700; margin-top: 1rem; }
-.descripcion-container { flex-grow: 1; margin-top: 1rem; }
+.card-header {
+    min-height: 4.5rem;
+}
+
+.evento-card h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.evento-card .artista {
+    color: var(--color-primario);
+    font-weight: 700;
+    margin-top: 1rem;
+}
+
+.descripcion-container {
+    flex-grow: 1;
+    margin-top: 1rem;
+}
 
 .evento-card .descripcion {
     color: var(--color-texto-secundario);
@@ -317,38 +354,53 @@ h1 span {
     transition: border-color 0.3s ease;
 }
 
-.evento-detalle i { color: var(--color-primario); width: 20px; text-align: center; }
-.evento-detalle a { color: inherit; text-decoration: none; }
-.evento-detalle a:hover { color: var(--color-primario); }
+.evento-detalle i {
+    color: var(--color-primario);
+    width: 20px;
+    text-align: center;
+}
+
+.evento-detalle a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.evento-detalle a:hover {
+    color: var(--color-primario);
+}
 
 .card-actions {
-    margin-top: auto; 
+    margin-top: auto;
     padding-top: 1rem;
     border-top: 1px solid var(--color-borde);
     display: flex;
     flex-direction: column;
-    gap: 0.75rem; 
+    gap: 0.75rem;
     align-items: stretch;
 }
+
 .card-actions-primary {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
 }
-.card-actions > .source-link-btn,
-.card-actions-primary > .gemini-btn,
-.card-actions-primary > .calendar-btn {
+
+.card-actions>.source-link-btn,
+.card-actions-primary>.gemini-btn,
+.card-actions-primary>.calendar-btn {
     justify-content: center;
-    margin: 0; 
-    width: 100%; 
+    margin: 0;
+    width: 100%;
 }
+
 @media (min-width: 500px) {
     .card-actions-primary {
         flex-direction: row;
     }
 }
 
-.gemini-btn, .calendar-btn {
+.gemini-btn,
+.calendar-btn {
     background-color: var(--color-gemini-btn);
     color: white;
     border: none;
@@ -363,6 +415,7 @@ h1 span {
     align-items: center;
     gap: 0.5rem;
 }
+
 .gemini-btn:hover {
     background-color: var(--color-gemini-btn-hover);
 }
@@ -381,6 +434,7 @@ h1 span {
     align-items: center;
     gap: 0.5rem;
 }
+
 .source-link-btn:hover {
     background-color: var(--color-primario);
     color: var(--color-fondo);
@@ -407,6 +461,7 @@ h1 span {
     transform: translateY(100px);
     z-index: 1000;
 }
+
 .back-to-top-btn.visible {
     opacity: 1;
     visibility: visible;
@@ -428,10 +483,12 @@ h1 span {
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
+
 .modal-overlay.visible {
     opacity: 1;
     visibility: visible;
 }
+
 .modal {
     background-color: var(--color-superficie-light);
     color: var(--color-texto-principal-light);
@@ -445,9 +502,11 @@ h1 span {
     transform: scale(0.9);
     transition: transform 0.3s ease;
 }
+
 .modal-overlay.visible .modal {
     transform: scale(1);
 }
+
 .modal-close-btn {
     position: absolute;
     top: 1rem;
@@ -458,26 +517,32 @@ h1 span {
     font-size: 1.5rem;
     cursor: pointer;
 }
+
 .modal-header {
     text-align: center;
     margin-bottom: 1.5rem;
 }
+
 .modal-header h2 {
     margin: 0;
     color: var(--color-texto-principal-light);
 }
+
 .modal-content h3 {
     color: var(--color-primario-light);
     margin-top: 1.5rem;
 }
+
 .modal-content p {
     line-height: 1.6;
 }
+
 .modal-content a {
     color: var(--color-enlace-light);
     text-decoration: underline;
     font-weight: bold;
 }
+
 .modal-footer {
     margin-top: 2rem;
     padding-top: 1rem;
@@ -488,11 +553,14 @@ h1 span {
     align-items: center;
     gap: 1rem;
 }
+
 .modal-footer-buttons {
     display: flex;
     gap: 1rem;
 }
-.copy-plan-btn, .listen-plan-btn {
+
+.copy-plan-btn,
+.listen-plan-btn {
     background-color: var(--color-gemini-btn-light);
     color: white;
     border: none;
@@ -505,11 +573,13 @@ h1 span {
     gap: 0.5rem;
     text-decoration: none;
 }
+
 .ai-disclaimer {
     font-size: 0.8rem;
     color: var(--color-texto-secundario-light);
     margin-top: 1rem;
 }
+
 .loader-container {
     display: flex;
     flex-direction: column;
@@ -518,11 +588,13 @@ h1 span {
     text-align: center;
     padding: 2rem 0;
 }
+
 .loader-container p {
     margin-top: 1.5rem;
     font-style: italic;
     color: var(--color-texto-secundario-light);
 }
+
 .loader {
     width: 48px;
     height: 48px;
@@ -533,9 +605,15 @@ h1 span {
     box-sizing: border-box;
     animation: rotation 1s linear infinite;
 }
+
 @keyframes rotation {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .skeleton-card {
@@ -544,30 +622,87 @@ h1 span {
     border-radius: 12px;
     padding: 1.5rem;
 }
+
 .skeleton {
     background-color: color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde));
     border-radius: 4px;
     animation: shimmer 1.5s infinite linear;
 }
-.skeleton.title { height: 24px; width: 70%; margin-bottom: 1rem; }
-.skeleton.text { height: 16px; margin-bottom: 0.5rem; }
-.skeleton.text-short { width: 40%; }
-.skeleton.text-long { width: 90%; }
-@keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
+
+.skeleton.title {
+    height: 24px;
+    width: 70%;
+    margin-bottom: 1rem;
 }
+
+.skeleton.text {
+    height: 16px;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton.text-short {
+    width: 40%;
+}
+
+.skeleton.text-long {
+    width: 90%;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
 .skeleton {
-    background-image: linear-gradient(to right, color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde)) 0%, color-mix(in srgb, var(--color-superficie) 20%, var(--color-borde)) 20%, color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde)) 40%, color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde)) 100% );
+    background-image: linear-gradient(to right, color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde)) 0%, color-mix(in srgb, var(--color-superficie) 20%, var(--color-borde)) 20%, color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde)) 40%, color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde)) 100%);
     background-repeat: no-repeat;
     background-size: 2000px 104px;
 }
-#trip-planner-form { display: flex; flex-direction: column; gap: 1.5rem; text-align: left; }
-.form-row { display: flex; gap: 1rem; }
-.form-group { flex: 1; display: flex; flex-direction: column; }
-.form-group label { margin-bottom: 0.5rem; font-weight: bold; color: var(--color-texto-secundario-light); }
-.form-group input, .form-group select { width: 100%; padding: 0.75rem; font-size: 1rem; border-radius: 6px; border: 1px solid var(--color-borde-light); background-color: var(--color-fondo-light); color: var(--color-texto-principal-light); }
-#trip-planner-result { margin-top: 1.5rem; text-align: left; }
+
+#trip-planner-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: left;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: var(--color-texto-secundario-light);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--color-borde-light);
+    background-color: var(--color-fondo-light);
+    color: var(--color-texto-principal-light);
+}
+
+#trip-planner-result {
+    margin-top: 1.5rem;
+    text-align: left;
+}
 
 .calendar-link-btn {
     display: flex;
@@ -584,10 +719,12 @@ h1 span {
     background-color: transparent;
     color: var(--color-texto-principal-light);
 }
+
 .calendar-link-btn:hover {
     background-color: var(--color-fondo-light);
     transform: translateY(-2px);
 }
+
 .calendar-link-btn i {
     font-size: 1.2rem;
 }
@@ -599,21 +736,25 @@ h1 span {
     opacity: 1;
     visibility: visible;
 }
+
 main.container.results-active #search-controls {
     max-height: 0;
     opacity: 0;
     visibility: hidden;
     margin-bottom: 0;
 }
+
 #province-filters-toggle,
 #province-filters-container,
 #country-filters-toggle,
 #country-filters-container {
     display: none;
 }
+
 /* --- Mejoras para el modal de ambigüedad --- */
 #ambiguity-modal-overlay {
-    display: none; /* Empezamos oculto */
+    display: none;
+    /* Empezamos oculto */
     position: fixed;
     top: 0;
     left: 0;
@@ -642,7 +783,8 @@ main.container.results-active #search-controls {
     width: 450px;
     text-align: center;
     animation: fadeIn 0.3s ease-in-out;
-    position: relative; /* Para el botón de cierre */
+    position: relative;
+    /* Para el botón de cierre */
 }
 
 #ambiguity-modal-content h2 {
@@ -672,8 +814,10 @@ main.container.results-active #search-controls {
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    flex: 1; /* Para que los botones se adapten al espacio */
-    white-space: nowrap; /* Evita que el texto del botón se rompa */
+    flex: 1;
+    /* Para que los botones se adapten al espacio */
+    white-space: nowrap;
+    /* Evita que el texto del botón se rompa */
 }
 
 .option-btn:hover {
@@ -687,7 +831,9 @@ main.container.results-active #search-controls {
 
 .modal-header {
     margin-bottom: 1rem;
-}/* Estilos para agrupar y alinear los detalles de las tarjetas */
+}
+
+/* Estilos para agrupar y alinear los detalles de las tarjetas */
 .card-detalles {
     display: flex;
     flex-wrap: wrap;
@@ -712,4 +858,87 @@ main.container.results-active #search-controls {
 
 .evento-detalle i {
     color: var(--color-primario);
+}
+
+/* --- Estilos para los contenedores de título y descripción --- */
+.header-evento,
+.descripcion-container {
+    position: relative;
+}
+
+/* --- Estilos para los títulos truncados --- */
+.titulo-truncado {
+    max-height: 2.8em;
+    /* 2 líneas */
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding-right: 30px;
+    /* Espacio para el icono */
+    margin-bottom: 0.5rem;
+    /* Separación del resto de la card */
+}
+
+.titulo-truncado.expanded {
+    max-height: none;
+    /* Muestra el título completo */
+}
+
+/* --- Estilos para las descripciones truncadas --- */
+.descripcion-corta {
+    max-height: 5em;
+    /* Aproximadamente 3-4 líneas */
+    overflow: hidden;
+    position: relative;
+    transition: max-height 0.3s ease-out;
+    padding-right: 30px;
+    /* Espacio para el icono */
+    margin-top: 1rem;
+}
+
+.descripcion-corta.expanded {
+    max-height: 1000px;
+    /* Un valor grande para mostrar todo */
+    height: auto;
+}
+
+.descripcion-corta::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2em;
+    background: linear-gradient(to bottom, transparent, var(--color-fondo-card));
+    /* Usa la variable de CSS para el fondo */
+    pointer-events: none;
+}
+
+.descripcion-corta.expanded::after {
+    content: none;
+}
+
+/* --- Estilos unificados para el botón de icono --- */
+.expandir-btn {
+    background: none;
+    border: none;
+    color: #a0a0a0;
+    /* Color gris suave */
+    cursor: pointer;
+    padding: 0;
+    font-size: 1em;
+    position: absolute;
+    top: 0;
+    /* Posición vertical del icono */
+    right: 0;
+    /* Posición horizontal del icono */
+}
+
+.expandir-btn i {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Rotar la flecha cuando el contenido está expandido */
+.titulo-truncado.expanded+.expandir-btn i,
+.descripcion-corta.expanded+.expandir-btn i {
+    transform: rotate(180deg);
 }
