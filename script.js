@@ -183,28 +183,44 @@ document.addEventListener('DOMContentLoaded', () => {
             isResultsView = true;
             setTimeout(() => { statusMessage.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
         }
+
         const queryString = new URLSearchParams(params).toString();
-        try {
-            // CAMBIO 3: La llamada de búsqueda ahora apunta a /api/events
-            const response = await fetch(`${API_BASE_URL}/api/events?${queryString}`);
-            if (!response.ok) {
-                throw new Error(`Error de red: ${response.statusText}`);
+        const MAX_RETRIES = 3;
+        const RETRY_DELAY_MS = 2000; // 2 segundos de espera entre reintentos
+
+        for (let i = 0; i < MAX_RETRIES; i++) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/events?${queryString}`);
+
+                // Si la respuesta es exitosa (código 200-299), salimos del bucle.
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.isAmbiguous) {
+                        showAmbiguityModal(data.searchTerm, data.options);
+                        hideSkeletonLoader();
+                        return; // Terminamos la función
+                    }
+
+                    const events = data.events;
+                    displayEvents(events);
+                    return; // Terminamos la función
+                } else {
+                    // Si la respuesta no es exitosa, pero no es un error de red,
+                    // lanzamos un error para que lo capture el 'catch'.
+                    throw new Error(`Error del servidor: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error(`Intento ${i + 1} de búsqueda fallido:`, error);
+                // Si es el último intento, mostramos el error al usuario.
+                if (i === MAX_RETRIES - 1) {
+                    statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
+                    hideSkeletonLoader();
+                } else {
+                    // Esperamos antes de reintentar hasta 3 veces
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                }
             }
-            const data = await response.json();
-
-            if (data.isAmbiguous) {
-                showAmbiguityModal(data.searchTerm, data.options);
-                hideSkeletonLoader();
-                return;
-            }
-
-            const events = data.events;
-            displayEvents(events);
-
-        } catch (error) {
-            console.error('Error al realizar la búsqueda:', error);
-            statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
-            hideSkeletonLoader();
         }
     }
 
