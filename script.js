@@ -24,6 +24,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const ambiguityModal = document.getElementById('ambiguity-modal-overlay');
     const ambiguityModalContent = document.getElementById('ambiguity-modal-content');
 
+    // --- NUEVA LÓGICA DE DELEGACIÓN DE EVENTOS PARA EL BOTÓN DE COMPARTIR ---
+    resultsContainer.addEventListener('click', (event) => {
+        const button = event.target.closest('.export-button');
+
+        if (button) {
+            const cardId = button.dataset.targetCardId;
+            const originalCard = document.getElementById(cardId);
+
+            button.disabled = true;
+
+            const animatedCard = originalCard.cloneNode(true);
+            animatedCard.classList.add('animated-card');
+
+            const originalCardRect = originalCard.getBoundingClientRect();
+            animatedCard.style.top = `${originalCardRect.top + window.scrollY}px`;
+            animatedCard.style.left = `${originalCardRect.left + window.scrollX}px`;
+            animatedCard.style.width = `${originalCardRect.width}px`;
+            animatedCard.style.height = `${originalCardRect.height}px`;
+
+            document.body.appendChild(animatedCard);
+
+            setTimeout(() => {
+                animatedCard.classList.add('start-animation');
+            }, 100);
+
+            const animationDuration = 1200;
+            setTimeout(() => {
+                html2canvas(originalCard, { scale: 2, useCORS: true }).then(canvas => {
+                    animatedCard.remove();
+
+                    const imageURL = canvas.toDataURL('image/png');
+
+                    const link = document.createElement('a');
+                    link.download = `ficha-duende-finder-${cardId}.png`;
+                    link.href = imageURL;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    button.disabled = false;
+                });
+            }, animationDuration);
+        }
+    });
+    // --- FIN DE LA NUEVA LÓGICA ---
+
     function getSessionId() {
         let sessionId = sessionStorage.getItem('duendeSessionId');
         if (!sessionId) {
@@ -249,8 +295,6 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.appendChild(fragment);
     }
 
-    // ... (código anterior)
-
     function createEventCard(event) {
         const uniqueCardId = `event-card-${event._id}`; // Creamos el ID único
 
@@ -298,23 +342,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         </div>
         ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
-    `;
+        `;
 
-        // ... (El resto de la lógica para los event listeners que ya tienes)
         eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
             getFlamencoPlan(event);
         });
 
-        // Nuevo listener para el botón de exportar
-        eventCard.querySelector('.export-button').addEventListener('click', (e) => {
-            // Por ahora no hará nada, pero aquí irá nuestra lógica de animación
-            console.log(`Botón de exportar de la ficha ${uniqueCardId} clicado.`);
-        });
-
         return eventCard;
     }
-
-    // ... (código posterior)
 
     async function loadTotalEventsCount() {
         try {
@@ -503,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fas fa-times"></i>
             </button>
         </div>
-    `;
+        `;
 
         // Estilos de los botones
         const styleElement = document.createElement('style');
@@ -531,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
             box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
             transform: translateY(-2px);
         }
-    `;
+        `;
         ambiguityModalContent.appendChild(styleElement);
     }
 
@@ -566,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fas fa-times"></i>
             </button>
         </div>
-    `;
+        `;
 
         // Estilos de los botones
         const styleElement = document.createElement('style');
@@ -594,7 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
             box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
             transform: translateY(-2px);
         }
-    `;
+        `;
         ambiguityModalContent.appendChild(styleElement);
     }
 
