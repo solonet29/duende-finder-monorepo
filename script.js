@@ -1,6 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     // CAMBIO 1: La URL de la API ahora es flexible para poder hacer pruebas fácilmente.
-    const API_BASE_URL = localStorage.getItem('apiUrl') || 'https://duende-api-next.vercel.app';
+    // Define las URLs base para cada entorno
+    const PRODUCTION_API_URL = 'https://duende-api-next.vercel.app';
+    const DEVELOPMENT_API_URL = 'http://localhost:3000';
+
+    // Decide qué URL usar basándose en el hostname actual del navegador
+    // Si la URL contiene "localhost" o "0.0.0.0", usa la de desarrollo.
+    // De lo contrario, usa la de producción.
+    const API_BASE_URL = window.location.hostname.includes('localhost') || window.location.hostname.includes('0.0.0.0')
+        ? DEVELOPMENT_API_URL
+        : PRODUCTION_API_URL;
 
     const resultsContainer = document.getElementById('resultsContainer');
     const skeletonContainer = document.getElementById('skeleton-container');
@@ -14,6 +23,52 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- NUEVAS REFERENCIAS PARA EL MODAL DE AMBIGÜEDAD ---
     const ambiguityModal = document.getElementById('ambiguity-modal-overlay');
     const ambiguityModalContent = document.getElementById('ambiguity-modal-content');
+
+    // --- NUEVA LÓGICA DE DELEGACIÓN DE EVENTOS PARA EL BOTÓN DE COMPARTIR ---
+    resultsContainer.addEventListener('click', (event) => {
+        const button = event.target.closest('.export-button');
+
+        if (button) {
+            const cardId = button.dataset.targetCardId;
+            const originalCard = document.getElementById(cardId);
+
+            button.disabled = true;
+
+            const animatedCard = originalCard.cloneNode(true);
+            animatedCard.classList.add('animated-card');
+
+            const originalCardRect = originalCard.getBoundingClientRect();
+            animatedCard.style.top = `${originalCardRect.top + window.scrollY}px`;
+            animatedCard.style.left = `${originalCardRect.left + window.scrollX}px`;
+            animatedCard.style.width = `${originalCardRect.width}px`;
+            animatedCard.style.height = `${originalCardRect.height}px`;
+
+            document.body.appendChild(animatedCard);
+
+            setTimeout(() => {
+                animatedCard.classList.add('start-animation');
+            }, 100);
+
+            const animationDuration = 1200;
+            setTimeout(() => {
+                html2canvas(originalCard, { scale: 2, useCORS: true }).then(canvas => {
+                    animatedCard.remove();
+
+                    const imageURL = canvas.toDataURL('image/png');
+
+                    const link = document.createElement('a');
+                    link.download = `ficha-duende-finder-${cardId}.png`;
+                    link.href = imageURL;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    button.disabled = false;
+                });
+            }, animationDuration);
+        }
+    });
+    // --- FIN DE LA NUEVA LÓGICA ---
 
     function getSessionId() {
         let sessionId = sessionStorage.getItem('duendeSessionId');
@@ -183,28 +238,44 @@ document.addEventListener('DOMContentLoaded', () => {
             isResultsView = true;
             setTimeout(() => { statusMessage.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
         }
+
         const queryString = new URLSearchParams(params).toString();
-        try {
-            // CAMBIO 3: La llamada de búsqueda ahora apunta a /api/events
-            const response = await fetch(`${API_BASE_URL}/api/events?${queryString}`);
-            if (!response.ok) {
-                throw new Error(`Error de red: ${response.statusText}`);
+        const MAX_RETRIES = 3;
+        const RETRY_DELAY_MS = 2000; // 2 segundos de espera entre reintentos
+
+        for (let i = 0; i < MAX_RETRIES; i++) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/events?${queryString}`);
+
+                // Si la respuesta es exitosa (código 200-299), salimos del bucle.
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.isAmbiguous) {
+                        showAmbiguityModal(data.searchTerm, data.options);
+                        hideSkeletonLoader();
+                        return; // Terminamos la función
+                    }
+
+                    const events = data.events;
+                    displayEvents(events);
+                    return; // Terminamos la función
+                } else {
+                    // Si la respuesta no es exitosa, pero no es un error de red,
+                    // lanzamos un error para que lo capture el 'catch'.
+                    throw new Error(`Error del servidor: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error(`Intento ${i + 1} de búsqueda fallido:`, error);
+                // Si es el último intento, mostramos el error al usuario.
+                if (i === MAX_RETRIES - 1) {
+                    statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
+                    hideSkeletonLoader();
+                } else {
+                    // Esperamos antes de reintentar hasta 3 veces
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                }
             }
-            const data = await response.json();
-
-            if (data.isAmbiguous) {
-                showAmbiguityModal(data.searchTerm, data.options);
-                hideSkeletonLoader();
-                return;
-            }
-
-            const events = data.events;
-            displayEvents(events);
-
-        } catch (error) {
-            console.error('Error al realizar la búsqueda:', error);
-            statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
-            hideSkeletonLoader();
         }
     }
 
@@ -224,11 +295,12 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.appendChild(fragment);
     }
 
-    // ... (código anterior)
-
     function createEventCard(event) {
+        const uniqueCardId = `event-card-${event._id}`; // Creamos el ID único
+
         const eventCard = document.createElement('article');
         eventCard.className = 'evento-card';
+        eventCard.id = uniqueCardId; // ¡Aquí asignamos el ID!
 
         const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
         const fullLocation = [event.venue, event.city, event.country].filter(Boolean).join(', ');
@@ -263,24 +335,21 @@ document.addEventListener('DOMContentLoaded', () => {
             ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
             <div class="card-actions-primary">
                 <button class="gemini-btn">✨ Planear Noche</button>
-                <button class="calendar-btn"><i class="fas fa-calendar-plus"></i> Añadir</button>
+                
+                <button class="export-button" data-target-card-id="${uniqueCardId}">
+                    <i class="fas fa-solid fa-share-nodes"></i> Compartir
+                </button>
             </div>
         </div>
         ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
-    `;
+        `;
 
-        // ... (restauramos los event listeners, que siguen siendo válidos)
         eventCard.querySelector('.gemini-btn').addEventListener('click', () => {
             getFlamencoPlan(event);
-        });
-        eventCard.querySelector('.calendar-btn').addEventListener('click', () => {
-            showCalendarLinks(event);
         });
 
         return eventCard;
     }
-
-    // ... (código posterior)
 
     async function loadTotalEventsCount() {
         try {
@@ -469,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fas fa-times"></i>
             </button>
         </div>
-    `;
+        `;
 
         // Estilos de los botones
         const styleElement = document.createElement('style');
@@ -497,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
             box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
             transform: translateY(-2px);
         }
-    `;
+        `;
         ambiguityModalContent.appendChild(styleElement);
     }
 
@@ -532,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fas fa-times"></i>
             </button>
         </div>
-    `;
+        `;
 
         // Estilos de los botones
         const styleElement = document.createElement('style');
@@ -560,7 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
             box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
             transform: translateY(-2px);
         }
-    `;
+        `;
         ambiguityModalContent.appendChild(styleElement);
     }
 
