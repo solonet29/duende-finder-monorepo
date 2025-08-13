@@ -49,9 +49,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 animatedCard.classList.add('start-animation');
             }, 100);
 
-            const animationDuration = 1200;
+            // Busca esta parte de tu código dentro del eventListener de resultsContainer
+            const animationDuration = 800;
             setTimeout(() => {
+                // 1. Añadimos la clase para asegurar el contraste antes de capturar
+                originalCard.classList.add('export-ready');
+
+                // 2. Usamos html2canvas en la ficha original para generar la imagen
                 html2canvas(originalCard, { scale: 2, useCORS: true }).then(canvas => {
+                    // 3. Removemos la clase inmediatamente para no afectar la interfaz
+                    originalCard.classList.remove('export-ready');
+
                     animatedCard.remove();
 
                     const imageURL = canvas.toDataURL('image/png');
