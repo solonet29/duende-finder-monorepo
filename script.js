@@ -50,15 +50,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 100);
 
             // Busca esta parte de tu código dentro del eventListener de resultsContainer
-            const animationDuration = 800;
+            const animationDuration = 800; // O el valor que hayas elegido
             setTimeout(() => {
-                // 1. Añadimos la clase para asegurar el contraste antes de capturar
-                originalCard.classList.add('export-ready');
+                // 1. Guardamos los estilos originales del texto para poder revertirlos
+                const originalTextColor = originalCard.style.color;
+                const originalBgColor = originalCard.style.backgroundColor;
 
-                // 2. Usamos html2canvas en la ficha original para generar la imagen
+                // 2. Aplicamos estilos directamente para asegurar el contraste
+                originalCard.style.color = '#FFFFFF';
+                originalCard.style.backgroundColor = '#121212';
+                // También aplicamos el estilo a elementos internos
+                originalCard.querySelectorAll('h3, p, span').forEach(el => {
+                    el.style.color = '#FFFFFF';
+                });
+
+                // 3. Capturamos la imagen con html2canvas
                 html2canvas(originalCard, { scale: 2, useCORS: true }).then(canvas => {
-                    // 3. Removemos la clase inmediatamente para no afectar la interfaz
-                    originalCard.classList.remove('export-ready');
+                    // 4. Inmediatamente después, restauramos los estilos originales
+                    originalCard.style.color = originalTextColor;
+                    originalCard.style.backgroundColor = originalBgColor;
+                    originalCard.querySelectorAll('h3, p, span').forEach(el => {
+                        el.style.color = ''; // Elimina el estilo para que vuelva a su estado normal
+                    });
 
                     animatedCard.remove();
 
