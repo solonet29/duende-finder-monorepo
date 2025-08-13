@@ -1001,15 +1001,3 @@ main.container.results-active #search-controls {
     background: #ccc;
     cursor: not-allowed;
 }
-
-/* Estilo para asegurar la legibilidad del texto en la imagen exportada */
-.event-card.export-ready,
-.event-card.export-ready h3,
-.event-card.export-ready p,
-.event-card.export-ready .evento-detalle,
-.event-card.export-ready .artista span {
-    color: #ffffff !important;
-    /* Fuerza el color blanco para el texto */
-    background-color: #121212 !important;
-    /* Fuerza el fondo oscuro */
-}
