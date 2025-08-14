@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error(`Intento ${i + 1} de búsqueda fallido:`, error);
                 // Si es el último intento, mostramos el error al usuario.
                 if (i === MAX_RETRIES - 1) {
-                    statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
+                    statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo, clica en Buscar para recargar';
                     hideSkeletonLoader();
                 } else {
                     // Esperamos antes de reintentar hasta 3 veces
@@ -515,6 +515,19 @@ document.addEventListener('DOMContentLoaded', () => {
     setupFilterToggle('province-filters-toggle', 'province-filters-container');
     setupFilterToggle('country-filters-toggle', 'country-filters-container');
 
+    // --- NUEVA LÓGICA: EVENTOS DE FOCUS Y BLUR PARA LA BARRA DE BÚSQUEDA ---
+    searchInput.addEventListener('focus', () => {
+        searchForm.classList.add('active');
+    });
+
+    searchInput.addEventListener('blur', () => {
+        // Usamos un pequeño retraso para permitir que el clic en el botón se procese
+        setTimeout(() => {
+            searchForm.classList.remove('active');
+        }, 150);
+    });
+    // --- FIN DE LA NUEVA LÓGICA ---
+
     searchForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const searchTerm = searchInput.value.trim();
@@ -524,78 +537,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
     // ...
-    // --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
-    // --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
-    function showAmbiguityModal(searchTerm, options) {
-        // Configuramos y mostramos el modal
-        ambiguityModal.classList.add('visible');
-
-        // Traducimos las opciones
-        const option1Text = options[0] === 'country' ? 'país' : 'artista';
-        const option2Text = options[1] === 'country' ? 'país' : 'artista';
-
-        // Usamos marked.parse para dar formato al texto
-        const textHtml = marked.parse(`El término **"${searchTerm}"** puede referirse a un **${option1Text}** o un **${option2Text}**. ¿Qué estás buscando?`);
-
-        ambiguityModalContent.innerHTML = `
-        <div class="modal-header">
-            <h2>Búsqueda ambigua</h2>
-        </div>
-        <div class="modal-body">
-            <div style="padding: 1.5rem; text-align: center;">
-                ${textHtml}
-                <div style="margin-top: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
-                    <button class="option-btn modal-green-btn" onclick="searchForOption('${searchTerm}', '${options[0]}')">
-                        Buscar ${option1Text}
-                    </button>
-                    <button class="option-btn modal-green-btn" onclick="searchForOption('${searchTerm}', '${options[1]}')">
-                        Buscar ${option2Text}
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer-close">
-            <button id="ambiguity-modal-close-btn" onclick="hideAmbiguityModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        `;
-
-        // Estilos de los botones
-        const styleElement = document.createElement('style');
-        styleElement.innerHTML = `
-        .modal-body {
-            background-color: #fff;
-            color: #333;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .modal-green-btn {
-            background-color: #00b140;
-            color: #fff;
-            border: 2px solid #00b140;
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .modal-green-btn:hover {
-            background-color: #008f33;
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-            transform: translateY(-2px);
-        }
-        `;
-        ambiguityModalContent.appendChild(styleElement);
-    }
-
-    function hideAmbiguityModal() {
-        ambiguityModal.classList.remove('visible');
-    }// --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
-    // --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
-    // --- NUEVAS FUNCIONES PARA EL MODAL DE AMBIGÜEDAD ---
     function showAmbiguityModal(searchTerm, options) {
         // Configuramos y mostramos el modal
         ambiguityModal.classList.add('visible');
@@ -653,16 +594,6 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         ambiguityModalContent.appendChild(styleElement);
     }
-
-    function hideAmbiguityModal() {
-        ambiguityModal.classList.remove('visible');
-    }
-
-    function hideAmbiguityModal() {
-        ambiguityModal.classList.remove('visible');
-    }
-
-    // ...
 
     function hideAmbiguityModal() {
         ambiguityModal.classList.remove('visible');

@@ -1001,3 +1001,25 @@ main.container.results-active #search-controls {
     background: #ccc;
     cursor: not-allowed;
 }
+
+#search-form {
+    position: relative;
+    /* Este es clave para posicionar el botón. */
+}
+
+/* Estilos iniciales del botón */
+.search-button {
+    transition: transform 0.3s ease-in-out;
+    /* La clave de la animación. */
+    position: absolute;
+    /* Para que se mueva libremente dentro de #search-form. */
+    right: 10px;
+    bottom: 5px;
+    z-index: 10;
+}
+
+/* El estado final cuando el input está enfocado */
+#search-form.active .search-button {
+    transform: translateY(-50px);
+    /* Ajusta este valor si necesitas que suba más o menos. */
+}
