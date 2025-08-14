@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error(`Intento ${i + 1} de búsqueda fallido:`, error);
                 // Si es el último intento, mostramos el error al usuario.
                 if (i === MAX_RETRIES - 1) {
-                    statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
+                    statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo, clica en Buscar para recargar';
                     hideSkeletonLoader();
                 } else {
                     // Esperamos antes de reintentar hasta 3 veces
