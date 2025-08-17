@@ -43,6 +43,7 @@
 
             <button id="trip-planner-btn" class="trip-planner-btn"><i class="fas fa-route"></i> Planear mi Viaje
                 Flamenco</button>
+            <button id="nearby-events-btn" class="trip-planner-btn">🎯 Buscar cerca de mí</button>
             <div class="filter-toggles-wrapper">
                 <button id="province-filters-toggle" class="quick-filters-toggle">Búsqueda por Provincia <i
                         class="fas fa-chevron-down"></i></button>
@@ -67,6 +68,9 @@
         </div>
 
         <div id="statusMessage" class="status-message" aria-live="polite" role="status"></div>
+        <div id="no-results-message" style="display: none; text-align: center; padding: 20px;">
+            <h3>No hemos encontrado eventos en tu zona</h3>
+        </div>
         <div id="skeleton-container"></div>
         <div id="resultsContainer" style="display: none;"></div>
     </main>
