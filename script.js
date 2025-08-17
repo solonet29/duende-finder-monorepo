@@ -203,6 +203,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return eventCard;
     }
 
+    function linkifyLocations(text, city) {
+        const regex = /\ \[([^\\]+)\]/g; // Matches [Location Name]
+        if (!text.match(regex)) {
+            return text;
+        }
+        return text.replace(regex, (match, p1) => {
+            const placeName = p1.trim();
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName + ', ' + city)}`;
+            return `<a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+        });
+    }
+
     async function getFlamencoPlan(event) {
         showModal();
         modalContent.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Un momento, el duende está afinando la guitarra...</p></div>`;
