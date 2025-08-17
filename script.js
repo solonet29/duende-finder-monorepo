@@ -316,6 +316,34 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.appendChild(fragment);
     }
 
+    /**
+ * Gestiona la acción de compartir un evento de forma inteligente.
+ * Utiliza la Web Share API si está disponible, de lo contrario,
+ * copia la URL del evento al portapapeles.
+ * @param {string} title - El título del evento a compartir.
+ * @param {string} text - Una breve descripción para el cuerpo del mensaje.
+ * @param {string} url - La URL específica del evento a compartir.
+ */
+function shareEvent(title, text, url) {
+    const shareUrl = url || window.location.href;
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: text,
+            url: shareUrl,
+        })
+        .then(() => console.log('Contenido compartido con éxito.'))
+        .catch((error) => console.error('Error al compartir:', error));
+    } else {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            alert('¡Enlace del evento copiado al portapapeles!');
+        }).catch(err => {
+            console.error('Error al copiar al portapapeles:', err);
+            alert('No se pudo copiar el enlace.');
+        });
+    }
+}
+
     function createEventCard(event) {
         const uniqueCardId = `event-card-${event._id}`; // Creamos el ID único
 
@@ -326,6 +354,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
         const fullLocation = [event.venue, event.city, event.country].filter(Boolean).join(', ');
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
+
+        // Preparamos los textos para compartir, escapando caracteres que puedan romper el HTML.
+        const shareTitle = (event.name || 'Evento sin título').replace(/'/g, "'");
+        const shareText = ('Mira este evento en Duende Finder: ' + (event.description || '')).replace(/'/g, "'").replace(/[
+]+/g, ' ');
+        const shareUrl = event.sourceURL || window.location.href;
+
 
         eventCard.innerHTML = `
         <div class="card-header">
@@ -357,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="card-actions-primary">
                 <button class="gemini-btn">✨ Planear Noche</button>
                 
-                <button class="export-button" data-target-card-id="${uniqueCardId}">
+                <button class="share-button" onclick="shareEvent('${shareTitle}', '${shareText}', '${shareUrl}')">
                     <i class="fas fa-solid fa-share-nodes"></i> Compartir
                 </button>
             </div>
@@ -371,6 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return eventCard;
     }
+
 
     async function loadTotalEventsCount() {
         try {
