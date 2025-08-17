@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tripPlannerResult = document.getElementById('trip-planner-result');
     const themeToggle = document.getElementById('theme-toggle');
     const backToTopBtn = document.getElementById('back-to-top-btn');
+    const notificationsBtn = document.getElementById('notifications-btn');
     const synth = window.speechSynthesis;
     let isResultsView = false;
     let eventsCache = {};
@@ -50,6 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("La geolocalización no es soportada por tu navegador.");
             }
         });
+
+        notificationsBtn.addEventListener('click', registerServiceWorkerAndSubscribe);
 
         resultsContainer.addEventListener('click', handleResultsContainerClick);
 
@@ -119,6 +122,68 @@ document.addEventListener('DOMContentLoaded', () => {
         getTripPlan(destination, startDate, endDate);
     }
 
+    // --- PUSH NOTIFICATIONS ---
+    async function registerServiceWorkerAndSubscribe() {
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+            try {
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                console.log('Service Worker registrado con éxito:', registration);
+
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    throw new Error('Permiso de notificación no concedido.');
+                }
+
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array('BNxZrStD4xo8ZeM4ZZtvsR910WdrxqYb91HKTR-Y2Rl0uSvWU0UqREQpz-AJKoKZaAtck5ad9sRYYd8ogyjpCF8')
+                });
+
+                console.log('Suscripción Push obtenida:', subscription);
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/subscribe`, {
+                        method: 'POST',
+                        body: JSON.stringify(subscription),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        showNotification('¡Te has suscrito a las notificaciones!', 'success');
+                    } else {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Error al registrar la suscripción en el servidor.');
+                    }
+                } catch (error) {
+                    console.error('Error al enviar la suscripción al servidor:', error);
+                    // Aquí podrías querer anular la suscripción si el backend falla,
+                    // para que el usuario pueda intentarlo de nuevo más tarde.
+                    // await subscription.unsubscribe();
+                    showNotification('No se pudo completar la suscripción con el servidor. Por favor, inténtalo más tarde.', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error durante el registro del Service Worker o la suscripción push:', error);
+                showNotification('Error al suscribirse a las notificaciones.', 'error');
+            }
+        } else {
+            showNotification('Las notificaciones push no son soportadas por tu navegador.', 'warning');
+        }
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+
     // --- CORE FUNCTIONS ---
     async function performSearch(params, isUserSearch = false) {
         showSkeletonLoader();
@@ -140,10 +205,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const events = data.events || data;
             displayEvents(events);
+            if (events.length > 0) {
+                showNotification(`Se encontraron ${events.length} eventos.`, 'success');
+            } else {
+                showNotification('No se encontraron eventos.', 'info');
+            }
         } catch (error) {
             console.error("Error en la búsqueda:", error);
             statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
             hideSkeletonLoader();
+            showNotification('Error al realizar la búsqueda.', 'error');
         }
     }
 
@@ -278,9 +349,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 .catch((error) => console.error('Error al compartir:', error));
         } else {
             navigator.clipboard.writeText(shareUrl).then(() => {
-                alert('¡Enlace del evento copiado al portapapeles!');
+                showNotification('¡Enlace del evento copiado al portapapeles!', 'success');
             }).catch(err => {
                 console.error('Error al copiar al portapapeles:', err);
+                showNotification('Error al copiar el enlace.', 'error');
             });
         }
     }
@@ -322,7 +394,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function geolocationError(error) {
-        alert("Error al obtener la ubicación: " + error.message);
+        showNotification("Error al obtener la ubicación: " + error.message, 'error');
+    }
+
+    // --- NOTIFICATIONS ---
+    function showNotification(message, type = 'info') {
+        const notificationContainer = document.getElementById('notification-container');
+        if (!notificationContainer) {
+            console.error('Notification container not found!');
+            return;
+        }
+
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+
+        notificationContainer.appendChild(notification);
+
+        // Automatically remove the notification after a few seconds
+        setTimeout(() => {
+            notification.classList.add('hide');
+            notification.addEventListener('transitionend', () => notification.remove());
+        }, 5000); // 5 seconds
     }
 
     // --- UI & THEME ---
@@ -354,6 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('theme-color-meta').setAttribute('content',
             getComputedStyle(root).getPropertyValue(theme === 'dark' ? '--color-fondo-dark' : '--color-fondo-light').trim()
         );
+        showNotification(`Tema cambiado a ${theme === 'dark' ? 'oscuro' : 'claro'}.`, 'info');
     }
 
     function showModal() { modalOverlay.classList.add('visible'); }

@@ -18,3 +18,32 @@ self.addEventListener('fetch', (event) => {
   // Pero el simple hecho de gestionar este evento cumple el requisito.
   event.respondWith(fetch(event.request));
 });
+
+// Evento 'push': se dispara cuando se recibe una notificación push.
+self.addEventListener('push', (event) => {
+  console.log('Service Worker: Notificación Push Recibida.');
+  const pushData = event.data.json();
+
+  const title = pushData.title || 'Duende Finder';
+  const options = {
+    body: pushData.body || 'Hay nuevos eventos flamencos cerca de ti.',
+    icon: pushData.icon || 'favicon.png',
+    badge: pushData.badge || 'favicon.png',
+    data: {
+      url: pushData.url || '/'
+    }
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+// Evento 'notificationclick': se dispara cuando el usuario hace clic en la notificación.
+self.addEventListener('notificationclick', (event) => {
+  console.log('Service Worker: Clic en Notificación.');
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow(event.notification.data.url)
+  );
+});

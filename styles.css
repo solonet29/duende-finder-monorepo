@@ -686,8 +686,7 @@ h1 span {
     margin-bottom: 0.5rem;
     font-weight: bold;
     color: var(--color-texto-secundario-light);
-}
-
+}
 .form-group input,
 .form-group select {
     width: 100%;
@@ -1022,4 +1021,51 @@ main.container.results-active #search-controls {
 #search-form.active .search-button {
     transform: translateY(-50px);
     /* Ajusta este valor si necesitas que suba más o menos. */
+}
+
+/* --- Notifications --- */
+#notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 3000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification {
+    background-color: var(--color-superficie);
+    color: var(--color-texto-principal);
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    transform: translateX(0);
+    min-width: 250px;
+    max-width: 350px;
+    word-wrap: break-word;
+    border: 1px solid var(--color-borde);
+}
+
+.notification.hide {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+.notification.info {
+    border-left: 5px solid #2196F3; /* Blue */
+}
+
+.notification.success {
+    border-left: 5px solid #4CAF50; /* Green */
+}
+
+.notification.warning {
+    border-left: 5px solid #ff9800; /* Orange */
+}
+
+.notification.error {
+    border-left: 5px solid #f44336; /* Red */
 }
