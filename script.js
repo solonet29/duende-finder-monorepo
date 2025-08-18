@@ -194,6 +194,10 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { statusMessage.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
         }
         const queryString = new URLSearchParams(params).toString();
+        if (isUserSearch) {
+            const newUrl = `${window.location.pathname}?${queryString}`;
+            window.history.pushState({ path: newUrl }, '', newUrl);
+        }
         try {
             const response = await fetch(`${API_BASE_URL}/api/events?${queryString}`);
             if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
@@ -220,15 +224,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayEvents(events) {
         hideSkeletonLoader();
-        statusMessage.textContent = '';
-        noResultsMessage.style.display = 'none';
         resultsContainer.innerHTML = '';
         eventsCache = {};
 
-        if (events.length === 0) {
+        if (!events || events.length === 0) {
             statusMessage.textContent = 'No se encontraron eventos que coincidan con tu búsqueda.';
+            noResultsMessage.style.display = 'block';
+            totalEventsSpan.parentElement.style.display = 'none';
             return;
         }
+
+        statusMessage.textContent = '';
+        noResultsMessage.style.display = 'none';
+        totalEventsSpan.parentElement.style.display = 'block';
+        totalEventsSpan.textContent = events.length;
 
         const fragment = document.createDocumentFragment();
         events.forEach(event => {
@@ -492,14 +501,15 @@ document.addEventListener('DOMContentLoaded', () => {
         setTheme(savedTheme);
         
         setupEventListeners();
-        loadTotalEventsCount();
 
         const urlParams = new URLSearchParams(window.location.search);
         const params = Object.fromEntries(urlParams.entries());
+
         if (Object.keys(params).length > 0) {
             if (params.search) searchInput.value = params.search;
             performSearch(params, true);
         } else {
+            loadTotalEventsCount();
             performSearch({ timeframe: 'week' });
         }
     }
@@ -511,9 +521,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (data.total !== undefined) {
                 totalEventsSpan.textContent = data.total;
+            } else {
+                totalEventsSpan.parentElement.style.display = 'none';
             }
         } catch (error) {
             console.warn('No se pudo cargar el contador total de eventos.', error);
+            totalEventsSpan.parentElement.style.display = 'none';
         }
     }
 
