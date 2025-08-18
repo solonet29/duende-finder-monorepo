@@ -46,9 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         nearbyEventsBtn.addEventListener('click', () => {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError);
+                // Al hacer clic, se fuerza la búsqueda por geolocalización
+                statusMessage.textContent = 'Buscando tu ubicación para mostrarte los eventos más cercanos...';
+                navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError, { timeout: 5000 });
             } else {
-                alert("La geolocalización no es soportada por tu navegador.");
+                showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
             }
         });
 
@@ -158,9 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } catch (error) {
                     console.error('Error al enviar la suscripción al servidor:', error);
-                    // Aquí podrías querer anular la suscripción si el backend falla,
-                    // para que el usuario pueda intentarlo de nuevo más tarde.
-                    // await subscription.unsubscribe();
                     showNotification('No se pudo completar la suscripción con el servidor. Por favor, inténtalo más tarde.', 'error');
                 }
 
@@ -397,13 +396,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- GEOLOCATION ---
+    // MODIFICADO: Esta función ahora solo maneja el éxito de la geolocalización
     async function geolocationSuccess(position) {
         const { latitude, longitude } = position.coords;
+        statusMessage.textContent = '¡Ubicación encontrada! Buscando eventos cerca de ti...';
         performSearch({ lat: latitude, lon: longitude, radius: 120 }, true);
     }
 
+    // MODIFICADO: Esta función ahora maneja el error y carga la vista por defecto
     function geolocationError(error) {
-        showNotification("Error al obtener la ubicación: " + error.message, 'error');
+        console.error("Error al obtener la ubicación:", error);
+        loadDefaultView();
+    }
+
+    // AÑADIDO: Nueva función para cargar la vista por defecto (eventos de la semana)
+    async function loadDefaultView() {
+        statusMessage.textContent = 'No se pudo obtener la ubicación. Mostrando los eventos de la semana.';
+        await performSearch({ timeframe: 'week' });
+        loadTotalEventsCount();
     }
 
     // --- NOTIFICATIONS ---
@@ -480,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showAmbiguityModal(searchTerm, options) {
         ambiguityModal.classList.add('visible');
-        let optionsHtml = options.map(opt => 
+        let optionsHtml = options.map(opt =>
             `<button onclick="searchForOption('${searchTerm}', '${opt}')">${opt}</button>`
         ).join('');
         ambiguityModalContent.innerHTML = `<h3>'${searchTerm}' es ambiguo.</h3><p>¿A cuál te refieres?</p><div class="options">${optionsHtml}</div>`;
@@ -496,10 +506,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- INITIALIZATION ---
+    // MODIFICADO: Se intenta la geolocalización al cargar la página si no hay URL de búsqueda
     function initialize() {
         const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         setTheme(savedTheme);
-        
+
         setupEventListeners();
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -509,8 +520,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (params.search) searchInput.value = params.search;
             performSearch(params, true);
         } else {
-            loadTotalEventsCount();
-            performSearch({ timeframe: 'week' });
+            // Intentar geolocalización solo si no hay URL de búsqueda
+            if (navigator.geolocation) {
+                statusMessage.textContent = 'Buscando tu ubicación para mostrarte los eventos más cercanos...';
+                navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError, { timeout: 5000 });
+            } else {
+                // Si la geolocalización no es compatible, carga la vista por defecto
+                loadDefaultView();
+            }
         }
     }
 
