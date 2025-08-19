@@ -128,8 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
     async function registerServiceWorkerAndSubscribe() {
         if ('serviceWorker' in navigator && 'PushManager' in window) {
             try {
-                const registration = await navigator.serviceWorker.register('/sw.js');
-                console.log('Service Worker registrado con éxito:', registration);
+                await navigator.serviceWorker.register('/sw.js');
+                const registration = await navigator.serviceWorker.ready;
+                console.log('Service Worker listo y activo:', registration);
 
                 const permission = await Notification.requestPermission();
                 if (permission !== 'granted') {
