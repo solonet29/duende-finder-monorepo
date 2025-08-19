@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const PRODUCTION_API_URL = 'https://duende-api.vercel.app';
-    const DEVELOPMENT_API_URL = 'http://localhost:3000';
+    const DEVELOPMENT_API_URL = 'http://127.0.0.1:3000'; // CAMBIADO DE localhost A 127.0.0.1
     const API_BASE_URL = window.location.hostname.includes('localhost') || window.location.hostname.includes('0.0.0.0')
         ? DEVELOPMENT_API_URL
         : PRODUCTION_API_URL;
@@ -214,7 +214,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch(`${API_BASE_URL}/api/unsubscribe`, {
                     method: 'POST',
                     body: JSON.stringify({ endpoint: subscription.endpoint }),
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
                 if (response.ok) {
                     await subscription.unsubscribe();
@@ -340,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventCountry = sanitizeField(event.country, '');
 
         const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
-        
+
         const fullLocation = [eventVenue, eventCity, eventCountry].filter(Boolean).join(', ') || 'Ubicación no disponible';
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
 
@@ -379,8 +381,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return text;
         }
         return text.replace(regex, (match, p1) => {
-            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName + ', ' + city)}`;
-            return `<a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">${placeName}</a>`;
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p1 + ', ' + city)}`;
+            return `<a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">${p1}</a>`;
         });
     }
 
@@ -411,8 +413,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function getTripPlan(destination, startDate, endDate) {
-        tripPlannerResult.innerHTML = `<div class="loader-container"><div class="loader"></div><p>El duende está preparando tu viaje...</p></div>`;
+    async function getTripPlan(destination, startDate, endDate) {
+        tripPlannerResult.innerHTML = `<div class="loader-container"><div class="loader"></div></div>`;
         try {
             const response = await fetch(`${API_BASE_URL}/api/trip-planner`, {
                 method: 'POST',
@@ -551,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const root = document.documentElement;
         root.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
-        
+
         // Update the new toggle switch in the settings modal
         if (themeToggleSwitch) {
             themeToggleSwitch.checked = theme === 'dark';
