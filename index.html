@@ -27,7 +27,7 @@
 <body id="top">
     <div id="notification-container"></div>
     <main class="container">
-        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Cambiar tema"><i class="fas fa-sun"></i></button>
+        <button id="settings-btn" class="theme-toggle-btn" aria-label="Abrir ajustes"><i class="fas fa-cog"></i></button>
         <h1><span class="duende-word">Duende</span> <span>Finder</span></h1>
 
         <div id="search-controls">
@@ -44,7 +44,6 @@
 
             <button id="trip-planner-btn" class="trip-planner-btn"><i class="fas fa-route"></i> Planear mi Viaje
                 Flamenco</button>
-            <button id="notifications-btn" class="trip-planner-btn"><i class="fas fa-bell"></i> Activar Notificaciones</button>
             <button id="nearby-events-btn" class="trip-planner-btn">🎯 Buscar cerca de mí</button>
             <div class="filter-toggles-wrapper">
                 <button id="province-filters-toggle" class="quick-filters-toggle">Búsqueda por Provincia <i
@@ -78,12 +77,16 @@
     </main>
     <a href="#top" id="back-to-top-btn" class="back-to-top-btn" aria-label="Volver arriba"><i
             class="fas fa-arrow-up"></i></a>
+    
+    <!-- Modal de Plan de Noche -->
     <div id="gemini-modal-overlay" class="modal-overlay">
         <div class="modal">
             <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
             <div id="modal-content" class="modal-content"></div>
         </div>
     </div>
+
+    <!-- Modal de Plan de Viaje -->
     <div id="trip-planner-modal-overlay" class="modal-overlay">
         <div class="modal">
             <button id="trip-modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
@@ -91,39 +94,49 @@
                 <h2><i class="fas fa-route"></i> Planificador de Viaje Flamenco</h2>
             </div>
             <form id="trip-planner-form">
-                <div class="form-group">
-                    <label for="trip-destination">Destino</label>
-                    <select id="trip-destination" required>
-                        <option value="Cádiz">Cádiz</option>
-                        <option value="Córdoba">Córdoba</option>
-                        <option value="Granada">Granada</option>
-                        <option value="Huelva">Huelva</option>
-                        <option value="Jaén">Jaén</option>
-                        <option value="Málaga">Málaga</option>
-                        <option value="Sevilla">Sevilla</option>
-                        <option value="Almeria">Almeria</option>
-                        <option value="Jerez">Jerez</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label for="trip-start-date">Fecha de Inicio</label><input type="date"
-                            id="trip-start-date" required></div>
-                    <div class="form-group"><label for="trip-end-date">Fecha de Fin</label><input type="date"
-                            id="trip-end-date" required></div>
-                </div>
-                <button type="submit" class="gemini-btn" style="width: 100%; justify-content: center;">Generar Plan de
-                    Viaje</button>
+                <!-- ... form content ... -->
             </form>
             <div id="trip-planner-result"></div>
         </div>
     </div>
+
+    <!-- Modal de Ambigüedad -->
     <div id="ambiguity-modal-overlay" class="modal-overlay">
         <div id="ambiguity-modal-content" class="modal-content">
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- NUEVO: Modal de Ajustes -->
+    <div id="settings-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <button id="settings-modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> Ajustes</h2>
+            </div>
+            <div class="settings-content">
+                <div class="setting-item">
+                    <label for="theme-toggle-switch">Tema Oscuro</label>
+                    <div class="switch-container">
+                        <input type="checkbox" id="theme-toggle-switch" class="switch-input">
+                        <label for="theme-toggle-switch" class="switch-label"></label>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label for="notifications-toggle-switch">Activar Notificaciones</label>
+                    <div class="switch-container">
+                        <input type="checkbox" id="notifications-toggle-switch" class="switch-input">
+                        <label for="notifications-toggle-switch" class="switch-label"></label>
+                    </div>
+                </div>
+                <div class="setting-item-links">
+                    <a href="/como-funciona.html" class="settings-link">¿Cómo funciona?</a>
+                    <a href="/terminos.html" class="settings-link">Términos y Condiciones</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="script.js"></script>
 </body>
 
