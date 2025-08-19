@@ -1,10 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- CONSTANTES Y VARIABLES GLOBALES ---
     const PRODUCTION_API_URL = 'https://duende-api-next.vercel.app';
-    const DEVELOPMENT_API_URL = 'http://127.0.0.1:3000';
-    const API_BASE_URL = window.location.hostname.includes('localhost') || window.location.hostname.includes('0.0.0.0')
+    const DEVELOPMENT_API_URL = 'http://localhost:3000'; // Unificado a localhost
+    const API_BASE_URL = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1') || window.location.hostname.includes('0.0.0.0')
         ? DEVELOPMENT_API_URL
         : PRODUCTION_API_URL;
 
+    // --- Selectores del DOM (fusionados) ---
     const resultsContainer = document.getElementById('resultsContainer');
     const skeletonContainer = document.getElementById('skeleton-container');
     const statusMessage = document.getElementById('statusMessage');
@@ -14,38 +16,78 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainContainer = document.querySelector('main.container');
     const nearbyEventsBtn = document.getElementById('nearby-events-btn');
     const noResultsMessage = document.getElementById('no-results-message');
-    const ambiguityModal = document.getElementById('ambiguity-modal-overlay');
-    const ambiguityModalContent = document.getElementById('ambiguity-modal-content');
+    const backToTopBtn = document.getElementById('back-to-top-btn');
+
+    // Modales
     const modalOverlay = document.getElementById('gemini-modal-overlay');
     const modalContent = document.getElementById('modal-content');
     const modalCloseBtn = document.getElementById('modal-close-btn');
+    const ambiguityModal = document.getElementById('ambiguity-modal-overlay');
+    const ambiguityModalContent = document.getElementById('ambiguity-modal-content');
+
+    // Trip Planner
     const tripPlannerBtn = document.getElementById('trip-planner-btn');
     const tripModalOverlay = document.getElementById('trip-planner-modal-overlay');
     const tripModalCloseBtn = document.getElementById('trip-modal-close-btn');
     const tripPlannerForm = document.getElementById('trip-planner-form');
     const tripPlannerResult = document.getElementById('trip-planner-result');
-    const backToTopBtn = document.getElementById('back-to-top-btn');
-    const synth = window.speechSynthesis;
-    let isResultsView = false;
-    let eventsCache = {};
 
+    // Settings Modal
     const settingsBtn = document.getElementById('settings-btn');
     const settingsModalOverlay = document.getElementById('settings-modal-overlay');
     const settingsModalCloseBtn = document.getElementById('settings-modal-close-btn');
     const themeToggleSwitch = document.getElementById('theme-toggle-switch');
     const notificationsToggleSwitch = document.getElementById('notifications-toggle-switch');
 
-    // --- Helper Functions ---
+    // Estado de la aplicación
+    const synth = window.speechSynthesis;
+    let isResultsView = false;
+    let eventsCache = {};
+
+    // --- FUNCIONES DE AYUDA (HELPERS) ---
+
+    function showSkeletonLoader() {
+        skeletonContainer.innerHTML = '';
+        resultsContainer.style.display = 'none';
+        skeletonContainer.style.display = 'grid';
+        statusMessage.textContent = 'Buscando el mejor compás...';
+        noResultsMessage.style.display = 'none';
+        for (let i = 0; i < 6; i++) {
+            const skeletonCard = document.createElement('div');
+            skeletonCard.className = 'skeleton-card';
+            skeletonCard.innerHTML = `<div class="skeleton title"></div><div class="skeleton text"></div><div class="skeleton text"></div>`;
+            skeletonContainer.appendChild(skeletonCard);
+        }
+    }
+
+    function hideSkeletonLoader() {
+        skeletonContainer.style.display = 'none';
+        resultsContainer.style.display = 'grid';
+    }
+
+    function showNotification(message, type = 'info') {
+        const notificationContainer = document.getElementById('notification-container');
+        if (!notificationContainer) return;
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notificationContainer.appendChild(notification);
+        setTimeout(() => {
+            notification.classList.add('hide');
+            notification.addEventListener('transitionend', () => notification.remove());
+        }, 5000);
+    }
+
     function sanitizeField(value, defaultText = 'No disponible') {
         if (value && typeof value === 'string' && value.trim() !== '' && value.trim().toLowerCase() !== 'n/a') {
-            return value.replace(/\ \[object Object\]/g, '').trim();
+            return value.replace(/\s*\[object Object\]/g, '').trim();
         }
         return defaultText;
     }
 
     function urlBase64ToUint8Array(base64String) {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
-        const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
         const rawData = window.atob(base64);
         const outputArray = new Uint8Array(rawData.length);
         for (let i = 0; i < rawData.length; ++i) {
@@ -54,28 +96,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return outputArray;
     }
 
-    function showModal() {
-        modalOverlay.classList.add('visible');
+    function showModal() { modalOverlay.classList.add('visible'); }
+    function hideModal() { modalOverlay.classList.remove('visible'); }
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        themeToggleSwitch.checked = theme === 'dark';
     }
 
-    function hideModal() {
-        modalOverlay.classList.remove('visible');
-    }
+    // --- EVENT LISTENERS Y MANEJADORES ---
 
-    // --- EVENT LISTENERS SETUP ---
     function setupEventListeners() {
         searchForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const searchTerm = searchInput.value.trim();
-            performSearch({ search: searchTerm }, true);
+            performSearch({ search: searchInput.value.trim() }, true);
         });
 
         nearbyEventsBtn.addEventListener('click', () => {
             if (navigator.geolocation) {
-                statusMessage.textContent = 'Buscando tu ubicación para mostrarte los eventos más cercanos...';
-                navigator.geolocation.getCurrentPosition(async (position) => {
-                    await geolocationSuccess(position);
-                }, geolocationError, { timeout: 5000 });
+                statusMessage.textContent = 'Buscando tu ubicación...';
+                navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError, { timeout: 5000 });
             } else {
                 showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
             }
@@ -83,18 +124,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         resultsContainer.addEventListener('click', handleResultsContainerClick);
 
+        // Modales
+        modalCloseBtn.addEventListener('click', hideModal);
+        modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
+
         tripPlannerBtn.addEventListener('click', () => tripModalOverlay.classList.add('visible'));
         tripModalCloseBtn.addEventListener('click', () => tripModalOverlay.classList.remove('visible'));
-        tripModalOverlay.addEventListener('click', (e) => {
-            if (e.target === tripModalOverlay) tripModalOverlay.classList.remove('visible');
-        });
+        tripModalOverlay.addEventListener('click', (e) => { if (e.target === tripModalOverlay) tripModalOverlay.classList.remove('visible'); });
         tripPlannerForm.addEventListener('submit', handleTripPlannerSubmit);
 
-        modalCloseBtn.addEventListener('click', hideModal);
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) hideModal();
+        // Ajustes
+        settingsBtn.addEventListener('click', () => settingsModalOverlay.classList.add('visible'));
+        settingsModalCloseBtn.addEventListener('click', () => settingsModalOverlay.classList.remove('visible'));
+        settingsModalOverlay.addEventListener('click', (e) => { if (e.target === settingsModalOverlay) settingsModalOverlay.classList.remove('visible'); });
+        themeToggleSwitch.addEventListener('change', () => {
+            const newTheme = themeToggleSwitch.checked ? 'dark' : 'light';
+            setTheme(newTheme);
         });
+        notificationsToggleSwitch.addEventListener('change', handleNotificationToggle);
 
+        // UI General
         window.addEventListener('scroll', () => {
             backToTopBtn.classList.toggle('visible', window.scrollY > 300);
             if (isResultsView && window.scrollY < 150) {
@@ -106,50 +155,32 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.quick-filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const url = new URL(e.currentTarget.href);
-                window.location.href = url.toString();
+                window.location.href = e.currentTarget.href;
             });
         });
-
-        // NOTA: Estas funciones no estaban en el código original, deberás crearlas si las necesitas
-        // setupFilterToggle('province-filters-toggle', 'province-filters-container');
-        // setupFilterToggle('country-filters-toggle', 'country-filters-container');
-
-        settingsBtn.addEventListener('click', () => settingsModalOverlay.classList.add('visible'));
-        settingsModalCloseBtn.addEventListener('click', () => settingsModalOverlay.classList.remove('visible'));
-        settingsModalOverlay.addEventListener('click', (e) => {
-            if (e.target === settingsModalOverlay) settingsModalOverlay.classList.remove('visible');
-        });
-
-        themeToggleSwitch.addEventListener('change', () => {
-            const newTheme = themeToggleSwitch.checked ? 'dark' : 'light';
-            // Debes tener una función setTheme(newTheme)
-        });
-        notificationsToggleSwitch.addEventListener('change', handleNotificationToggle);
     }
 
     function handleResultsContainerClick(event) {
-        const target = event.target;
-        const geminiBtn = target.closest('.gemini-btn');
-        const shareBtn = target.closest('.share-button');
+        const geminiBtn = event.target.closest('.gemini-btn');
+        const shareBtn = event.target.closest('.share-button');
 
         if (geminiBtn) {
             const eventId = geminiBtn.dataset.eventId;
             const eventData = eventsCache[eventId];
-            if (eventData) {
-                getAndShowNightPlan(eventData);
-            }
-            return;
+            if (eventData) getAndShowNightPlan(eventData);
         }
 
         if (shareBtn) {
             const eventId = shareBtn.dataset.eventId;
             const eventData = eventsCache[eventId];
-            if (eventData) {
-                const shareTitle = eventData.name || 'Evento sin título';
-                const shareText = 'Mira este evento en Duende Finder: ' + (eventData.description || '');
-                const shareUrl = eventData.sourceURL || window.location.href;
-                // Debes tener una función shareEvent(shareTitle, shareText, shareUrl)
+            if (eventData && navigator.share) {
+                navigator.share({
+                    title: eventData.name || 'Evento de Flamenco',
+                    text: `¡Mira este evento flamenco: ${eventData.name}!`,
+                    url: eventData.sourceURL || window.location.href,
+                }).catch(err => console.error("Error al compartir:", err));
+            } else {
+                showNotification('Tu navegador no soporta la función de compartir.', 'warning');
             }
         }
     }
@@ -159,47 +190,55 @@ document.addEventListener('DOMContentLoaded', () => {
         const destination = document.getElementById('trip-destination').value;
         const startDate = document.getElementById('trip-start-date').value;
         const endDate = document.getElementById('trip-end-date').value;
-        // Debes tener una función getTripPlan(destination, startDate, endDate)
+        tripPlannerResult.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Planeando tu viaje flamenco...</p></div>`;
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/generate-trip-plan`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ destination, startDate, endDate })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Error desconocido');
+            tripPlannerResult.innerHTML = window.marked ? marked.parse(data.content) : `<pre>${data.content}</pre>`;
+        } catch (error) {
+            tripPlannerResult.innerHTML = `<p class="error-message">No se pudo generar el plan de viaje. Inténtalo de nuevo. (${error.message})</p>`;
+        }
     }
 
-    // --- PUSH NOTIFICATIONS ---
+    // --- NOTIFICACIONES PUSH ---
+
     async function registerServiceWorkerAndSubscribe() {
-        if ('serviceWorker' in navigator && 'PushManager' in window) {
-            try {
-                await navigator.serviceWorker.register('/sw.js');
-                const registration = await navigator.serviceWorker.ready;
-                console.log('Service Worker listo y activo:', registration);
-
-                const permission = await Notification.requestPermission();
-                if (permission !== 'granted') {
-                    throw new Error('Permiso de notificación no concedido.');
-                }
-
-                const subscription = await registration.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array('BNxZrStD4xo8ZeM4ZZtvsR910WdrxqYb91HKTR-Y2Rl0uSvWU0UqREQpz-AJKoKZaAtck5ad9sRYYd8ogyjpCF8')
-                });
-
-                console.log('Suscripción Push obtenida:', subscription);
-
-                const response = await fetch(`${API_BASE_URL}/api/subscribe`, {
-                    method: 'POST',
-                    body: JSON.stringify(subscription),
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (response.ok) {
-                    showNotification('¡Te has suscrito a las notificaciones!', 'success');
-                } else {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Error al registrar la suscripción en el servidor.');
-                }
-            } catch (error) {
-                console.error('Error durante el registro del Service Worker o la suscripción push:', error);
-                showNotification('Error al suscribirse a las notificaciones.', 'error');
-            }
-        } else {
+        if (!('serviceWorker' in navigator && 'PushManager' in window)) {
             showNotification('Las notificaciones push no son soportadas por tu navegador.', 'warning');
+            return;
+        }
+        try {
+            await navigator.serviceWorker.register('/sw.js');
+            const registration = await navigator.serviceWorker.ready;
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') throw new Error('Permiso de notificación no concedido.');
+
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array('BNxZrStD4xo8ZeM4ZZtvsR910WdrxqYb91HKTR-Y2Rl0uSvWU0UqREQpz-AJKoKZaAtck5ad9sRYYd8ogyjpCF8')
+            });
+
+            const response = await fetch(`${API_BASE_URL}/api/subscribe`, {
+                method: 'POST',
+                body: JSON.stringify(subscription),
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.ok) {
+                showNotification('¡Te has suscrito a las notificaciones!', 'success');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error al registrar la suscripción.');
+            }
+        } catch (error) {
+            console.error('Error durante la suscripción push:', error);
+            showNotification('Error al suscribirse a las notificaciones.', 'error');
+            updateNotificationToggleState(); // Revertir el estado del toggle si falla
         }
     }
 
@@ -220,11 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('Error en el servidor al cancelar la suscripción.');
                 }
             } catch (error) {
-                console.error('Error al cancelar la suscripción:', error);
                 showNotification('No se pudo cancelar la suscripción.', 'error');
             }
         }
-        updateNotificationToggleState();
     }
 
     function updateNotificationToggleState() {
@@ -232,73 +269,68 @@ document.addEventListener('DOMContentLoaded', () => {
             notificationsToggleSwitch.disabled = true;
             return;
         }
-        switch (Notification.permission) {
-            case 'granted':
-                notificationsToggleSwitch.checked = true;
-                notificationsToggleSwitch.disabled = false;
-                break;
-            case 'denied':
-                notificationsToggleSwitch.checked = false;
-                notificationsToggleSwitch.disabled = true;
-                break;
-            case 'default':
-                notificationsToggleSwitch.checked = false;
-                notificationsToggleSwitch.disabled = false;
-                break;
-        }
+        navigator.serviceWorker.ready.then(reg => {
+            reg.pushManager.getSubscription().then(sub => {
+                notificationsToggleSwitch.checked = sub !== null;
+            });
+        });
+        notificationsToggleSwitch.disabled = Notification.permission === 'denied';
     }
 
     function handleNotificationToggle() {
         if (notificationsToggleSwitch.checked) {
-            registerServiceWorkerAndSubscribe().catch(err => {
-                console.error(err);
-                updateNotificationToggleState();
-            });
+            registerServiceWorkerAndSubscribe();
         } else {
             unsubscribeUser();
         }
     }
 
-    // --- CORE FUNCTIONS ---
+    // --- LÓGICA PRINCIPAL DE LA APLICACIÓN ---
+
     async function performSearch(params, isUserSearch = false) {
-        // showSkeletonLoader(); // Debes tener esta función definida
-        hideAmbiguityModal();
+        showSkeletonLoader();
+        // ambiguityModal.classList.remove('visible'); // Ocultar por si estaba visible
+
         if (isUserSearch) {
             mainContainer.classList.add('results-active');
             isResultsView = true;
             setTimeout(() => { statusMessage.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
-        }
-        const queryString = new URLSearchParams(params).toString();
-        if (isUserSearch) {
+            const queryString = new URLSearchParams(params).toString();
             const newUrl = `${window.location.pathname}?${queryString}`;
             window.history.pushState({ path: newUrl }, '', newUrl);
         }
+
         try {
-            const response = await fetch(`${API_BASE_URL}/api/events?${queryString}`);
+            const response = await fetch(`${API_BASE_URL}/api/events?${new URLSearchParams(params).toString()}`);
             if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
             const data = await response.json();
+
+            // Manejo de ambigüedad
             if (data.isAmbiguous) {
-                showAmbiguityModal(data.searchTerm, data.options);
-                // hideSkeletonLoader(); // Debes tener esta función definida
+                // Aquí iría la lógica para mostrar el modal de ambigüedad
+                // showAmbiguityModal(data.searchTerm, data.options);
+                hideSkeletonLoader();
+                statusMessage.textContent = `Tu búsqueda "${data.searchTerm}" es ambigua. ¿Quizás quisiste decir: ${data.options.join(', ')}?`;
                 return;
             }
+
             const events = data.events || data;
             displayEvents(events);
-            if (events.length > 0) {
-                showNotification(`Se encontraron ${events.length} eventos.`, 'success');
-            } else {
-                showNotification('No se encontraron eventos.', 'info');
+
+            if (isUserSearch) {
+                showNotification(events.length > 0 ? `Se encontraron ${events.length} eventos.` : 'No se encontraron eventos.', events.length > 0 ? 'success' : 'info');
             }
+
         } catch (error) {
             console.error("Error en la búsqueda:", error);
-            statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
-            // hideSkeletonLoader(); // Debes tener esta función definida
+            hideSkeletonLoader();
+            statusMessage.textContent = 'Hubo un error al realizar la búsqueda.';
             showNotification('Error al realizar la búsqueda.', 'error');
         }
     }
 
     function displayEvents(events) {
-        // hideSkeletonLoader(); // Debes tener esta función definida
+        hideSkeletonLoader();
         resultsContainer.innerHTML = '';
         eventsCache = {};
 
@@ -325,6 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createEventCard(event) {
         const eventCard = document.createElement('article');
         eventCard.className = 'evento-card';
+
         const eventName = sanitizeField(event.name, 'Evento sin título');
         const artistName = sanitizeField(event.artist, 'Artista por confirmar');
         const description = sanitizeField(event.description, 'Sin descripción disponible.');
@@ -333,14 +366,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventCity = sanitizeField(event.city, '');
         const eventCountry = sanitizeField(event.country, '');
         const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
+
         const fullLocation = [eventVenue, eventCity, eventCountry].filter(Boolean).join(', ') || 'Ubicación no disponible';
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
 
         eventCard.innerHTML = `
             <div class="card-header">
-                <div class="header-evento">
-                    <h3 class="titulo-truncado">${eventName}</h3>
-                </div>
+                <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
             </div>
             <div class="artista"><i class="fas fa-user"></i> <span>${artistName}</span></div>
             <div class="descripcion-container">
@@ -365,18 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return eventCard;
     }
 
-    function linkifyLocations(text, city) {
-        const regex = new RegExp("\\[([^\\]]+)\\]", "g");
-        if (!text.match(regex)) {
-            return text;
-        }
-        return text.replace(regex, (match, p1) => {
-            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p1 + ', ' + city)}`;
-            return `<a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">${p1}</a>`;
-        });
-    }
-
-    // --- NUEVA FUNCIÓN Y FUNCIÓN CORREGIDA ---
     function displayNightPlan(planData) {
         if (window.marked) {
             modalContent.innerHTML = marked.parse(planData.content);
@@ -389,50 +409,50 @@ document.addEventListener('DOMContentLoaded', () => {
     async function getAndShowNightPlan(event) {
         showModal();
         modalContent.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Un momento, el duende está afinando la guitarra...</p></div>`;
-
         try {
             const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
             const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'No se pudo generar el plan.');
-            }
-
+            if (!response.ok) throw new Error(data.error || 'No se pudo generar el plan.');
             displayNightPlan(data);
-
         } catch (error) {
             console.error("Error al generar el Plan Noche:", error);
-            modalContent.innerHTML = `<div class="error-message">
-                <h3>¡Vaya! El duende se ha despistado.</h3>
-                <p>No se pudo generar el plan en este momento. Por favor, inténtalo de nuevo más tarde.</p>
-                <small>Detalle: ${error.message}</small>
-            </div>`;
+            modalContent.innerHTML = `<div class="error-message"><h3>¡Vaya! El duende se ha despistado.</h3><p>No se pudo generar el plan. Inténtalo de nuevo más tarde.</p><small>Detalle: ${error.message}</small></div>`;
             showNotification('Error al generar el plan.', 'error');
         }
     }
 
+    // --- GEOLOCALIZACIÓN ---
+
+    function geolocationSuccess(position) {
+        const { latitude, longitude } = position.coords;
+        performSearch({ lat: latitude, lon: longitude, radius: 120 }, true);
+    }
+
+    function geolocationError(error) {
+        console.error("Error de geolocalización:", error);
+        showNotification('No se pudo obtener tu ubicación. Mostrando eventos generales.', 'error');
+        performSearch({});
+    }
+
     // --- INICIALIZACIÓN ---
+
     function init() {
+        // Establecer tema inicial
+        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        setTheme(savedTheme);
+
         setupEventListeners();
+        updateNotificationToggleState();
+
         const urlParams = new URLSearchParams(window.location.search);
         const params = Object.fromEntries(urlParams.entries());
         if (Object.keys(params).length > 0) {
             searchInput.value = params.search || params.province || params.country || '';
-            performSearch(params);
+            performSearch(params, true);
         } else {
             performSearch({});
         }
     }
-
-    // NOTA: Asegúrate de tener estas funciones definidas en alguna parte,
-    // ya que son llamadas pero no están en el código que me pasaste.
-    function showNotification(message, type) { console.log(`[${type.toUpperCase()}] Notification: ${message}`); }
-    function hideAmbiguityModal() { ambiguityModal.classList.remove('visible'); }
-    function showAmbiguityModal(searchTerm, options) { ambiguityModal.classList.add('visible'); /* ... más lógica ... */ }
-    // function showSkeletonLoader() { skeletonContainer.style.display = 'flex'; }
-    // function hideSkeletonLoader() { skeletonContainer.style.display = 'none'; }
-    async function geolocationSuccess(position) { /* ... */ }
-    function geolocationError(error) { /* ... */ }
 
     init();
 });
