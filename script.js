@@ -24,20 +24,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const tripModalCloseBtn = document.getElementById('trip-modal-close-btn');
     const tripPlannerForm = document.getElementById('trip-planner-form');
     const tripPlannerResult = document.getElementById('trip-planner-result');
-    const themeToggle = document.getElementById('theme-toggle');
     const backToTopBtn = document.getElementById('back-to-top-btn');
-    const notificationsBtn = document.getElementById('notifications-btn');
     const synth = window.speechSynthesis;
     let isResultsView = false;
     let eventsCache = {};
 
+    // NEW: Settings Modal Elements
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsModalOverlay = document.getElementById('settings-modal-overlay');
+    const settingsModalCloseBtn = document.getElementById('settings-modal-close-btn');
+    const themeToggleSwitch = document.getElementById('theme-toggle-switch');
+    const notificationsToggleSwitch = document.getElementById('notifications-toggle-switch');
+
+    // --- Helper Functions ---
+    function sanitizeField(value, defaultText = 'No disponible') {
+        if (value && typeof value === 'string' && value.trim() !== '' && value.trim().toLowerCase() !== 'n/a') {
+            return value.replace(/\ \[object Object\]/g, '').trim();
+        }
+        return defaultText;
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+
     // --- EVENT LISTENERS SETUP ---
     function setupEventListeners() {
-        themeToggle.addEventListener('click', () => {
-            const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            setTheme(newTheme);
-        });
-
         searchForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const searchTerm = searchInput.value.trim();
@@ -46,15 +65,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         nearbyEventsBtn.addEventListener('click', () => {
             if (navigator.geolocation) {
-                // Al hacer clic, se fuerza la búsqueda por geolocalización
                 statusMessage.textContent = 'Buscando tu ubicación para mostrarte los eventos más cercanos...';
                 navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError, { timeout: 5000 });
             } else {
                 showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
             }
         });
-
-        notificationsBtn.addEventListener('click', registerServiceWorkerAndSubscribe);
 
         resultsContainer.addEventListener('click', handleResultsContainerClick);
 
@@ -88,6 +104,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setupFilterToggle('province-filters-toggle', 'province-filters-container');
         setupFilterToggle('country-filters-toggle', 'country-filters-container');
+
+        // NEW: Settings Modal Listeners
+        settingsBtn.addEventListener('click', () => settingsModalOverlay.classList.add('visible'));
+        settingsModalCloseBtn.addEventListener('click', () => settingsModalOverlay.classList.remove('visible'));
+        settingsModalOverlay.addEventListener('click', (e) => {
+            if (e.target === settingsModalOverlay) settingsModalOverlay.classList.remove('visible');
+        });
+
+        // NEW: Listeners for controls inside settings modal
+        themeToggleSwitch.addEventListener('change', () => {
+            const newTheme = themeToggleSwitch.checked ? 'dark' : 'light';
+            setTheme(newTheme);
+        });
+        notificationsToggleSwitch.addEventListener('change', handleNotificationToggle);
     }
 
     function handleResultsContainerClick(event) {
@@ -153,10 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
 
-                    console.log('Respuesta recibida del servidor:', response);
-                    console.log('Response OK:', response.ok);
-                    console.log('Response Status:', response.status);
-
                     if (response.ok) {
                         showNotification('¡Te has suscrito a las notificaciones!', 'success');
                     } else {
@@ -177,15 +203,63 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function urlBase64ToUint8Array(base64String) {
-        const padding = '='.repeat((4 - base64String.length % 4) % 4);
-        const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-        const rawData = window.atob(base64);
-        const outputArray = new Uint8Array(rawData.length);
-        for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
+    // NEW: Unsubscribe logic
+    async function unsubscribeUser() {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/unsubscribe`, {
+                    method: 'POST',
+                    body: JSON.stringify({ endpoint: subscription.endpoint }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    await subscription.unsubscribe();
+                    showNotification('Suscripción a notificaciones cancelada.', 'info');
+                } else {
+                    throw new Error('Error en el servidor al cancelar la suscripción.');
+                }
+            } catch (error) {
+                console.error('Error al cancelar la suscripción:', error);
+                showNotification('No se pudo cancelar la suscripción.', 'error');
+            }
         }
-        return outputArray;
+        updateNotificationToggleState();
+    }
+
+    // NEW: Update toggle state based on permission
+    function updateNotificationToggleState() {
+        if (!('Notification' in window)) {
+            notificationsToggleSwitch.disabled = true;
+            return;
+        }
+        switch (Notification.permission) {
+            case 'granted':
+                notificationsToggleSwitch.checked = true;
+                notificationsToggleSwitch.disabled = false;
+                break;
+            case 'denied':
+                notificationsToggleSwitch.checked = false;
+                notificationsToggleSwitch.disabled = true;
+                break;
+            case 'default':
+                notificationsToggleSwitch.checked = false;
+                notificationsToggleSwitch.disabled = false;
+                break;
+        }
+    }
+
+    // NEW: Handle the notification toggle switch logic
+    function handleNotificationToggle() {
+        if (notificationsToggleSwitch.checked) {
+            registerServiceWorkerAndSubscribe().catch(err => {
+                console.error(err);
+                updateNotificationToggleState(); // Revert toggle on failure
+            });
+        } else {
+            unsubscribeUser();
+        }
     }
 
     // --- CORE FUNCTIONS ---
@@ -254,23 +328,33 @@ document.addEventListener('DOMContentLoaded', () => {
     function createEventCard(event) {
         const eventCard = document.createElement('article');
         eventCard.className = 'evento-card';
-        const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-        const fullLocation = [event.venue, event.city, event.country].filter(Boolean).join(', ');
+
+        const eventName = sanitizeField(event.name, 'Evento sin título');
+        const artistName = sanitizeField(event.artist, 'Artista por confirmar');
+        const description = sanitizeField(event.description, 'Sin descripción disponible.');
+        const eventTime = sanitizeField(event.time, 'No disponible');
+        const eventVenue = sanitizeField(event.venue, '');
+        const eventCity = sanitizeField(event.city, '');
+        const eventCountry = sanitizeField(event.country, '');
+
+        const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
+        
+        const fullLocation = [eventVenue, eventCity, eventCountry].filter(Boolean).join(', ') || 'Ubicación no disponible';
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
 
         eventCard.innerHTML = `
             <div class="card-header">
                 <div class="header-evento">
-                    <h3 class="titulo-truncado">${event.name || 'Evento sin título'}</h3>
+                    <h3 class="titulo-truncado">${eventName}</h3>
                 </div>
             </div>
-            <div class="artista"><i class="fas fa-user"></i> <span>${event.artist || 'Artista por confirmar'}</span></div>
+            <div class="artista"><i class="fas fa-user"></i> <span>${artistName}</span></div>
             <div class="descripcion-container">
-                <p class="descripcion-corta">${event.description || ''}</p>
+                <p class="descripcion-corta">${description}</p>
             </div>
             <div class="card-detalles">
                 <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span><strong>Fecha:</strong> ${eventDate}</span></div>
-                <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${event.time || 'N/A'}</span></div>
+                <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${eventTime}</span></div>
                 <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span></a></div>
             </div>
             <div class="card-actions">
@@ -288,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function linkifyLocations(text, city) {
-        const regex = / \[([^\\]+)\]/g; // Matches [Location Name]
+        const regex = /\ \[([^\]+)\]/g; // Matches [Location Name]
         if (!text.match(regex)) {
             return text;
         }
@@ -471,12 +555,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const root = document.documentElement;
         root.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
-        const toggleIcon = themeToggle.querySelector('i');
-        toggleIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        
+        // Update the new toggle switch in the settings modal
+        if (themeToggleSwitch) {
+            themeToggleSwitch.checked = theme === 'dark';
+        }
+
         document.getElementById('theme-color-meta').setAttribute('content',
             getComputedStyle(root).getPropertyValue(theme === 'dark' ? '--color-fondo-dark' : '--color-fondo-light').trim()
         );
-        showNotification(`Tema cambiado a ${theme === 'dark' ? 'oscuro' : 'claro'}.`, 'info');
     }
 
     function showModal() { modalOverlay.classList.add('visible'); }
@@ -555,6 +642,15 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (Object.keys(params).length > 0) {
             if (params.search) searchInput.value = params.search;
             performSearch(params, true);
+        } else {
+            // Intentar geolocalización solo si no hay URL de búsqueda
+            if (navigator.geolocation) {
+                statusMessage.textContent = 'Buscando tu ubicación para mostrarte los eventos más cercanos...';
+                navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError, { timeout: 5000 });
+            } else {
+                // Si la geolocalización no es compatible, carga la vista por defecto
+                loadDefaultView();
+            }
         }
 
         // Iniciar el temporizador para la petición proactiva de notificaciones
