@@ -131,10 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
         modalCloseBtn.addEventListener('click', hideModal);
         modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
 
-        tripPlannerBtn.addEventListener('click', () => tripModalOverlay.classList.add('visible'));
-        tripModalCloseBtn.addEventListener('click', () => tripModalOverlay.classList.remove('visible'));
-        tripModalOverlay.addEventListener('click', (e) => { if (e.target === tripModalOverlay) tripModalOverlay.classList.remove('visible'); });
-        tripPlannerForm.addEventListener('submit', handleTripPlannerSubmit);
+        tripPlannerBtn.addEventListener('click', () => {
+            window.location.href = 'https://afland.es/viajes-y-rutas/';
+        });
 
         // Ajustes
         // --- Lógica para la sección de Ajustes y Modales de Información ---
