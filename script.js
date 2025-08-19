@@ -145,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Suscripción Push obtenida:', subscription);
 
                 try {
-                    console.log('Enviando suscripción al servidor...');
                     const response = await fetch(`${API_BASE_URL}/api/subscribe`, {
                         method: 'POST',
                         body: JSON.stringify(subscription),
@@ -154,20 +153,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
 
-                    console.log('Respuesta recibida del servidor:', response);
-                    console.log('Response OK:', response.ok);
-                    console.log('Response Status:', response.status);
-
                     if (response.ok) {
                         showNotification('¡Te has suscrito a las notificaciones!', 'success');
                     } else {
-                        console.error('La respuesta del servidor no fue OK.');
-                        const errorText = await response.text(); // Usar .text() para evitar errores de parseo JSON
-                        console.error('Cuerpo de la respuesta de error:', errorText);
-                        throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Error al registrar la suscripción en el servidor.');
                     }
                 } catch (error) {
-                    console.error('Error detallado al enviar la suscripción:', error);
+                    console.error('Error al enviar la suscripción al servidor:', error);
                     showNotification('No se pudo completar la suscripción con el servidor. Por favor, inténtalo más tarde.', 'error');
                 }
 
@@ -480,7 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('theme-color-meta').setAttribute('content',
             getComputedStyle(root).getPropertyValue(theme === 'dark' ? '--color-fondo-dark' : '--color-fondo-light').trim()
         );
-        showNotification(`Tema cambiado a ${theme === 'dark' ? 'oscuro' : 'claro'}.`, 'info');
+        showNotification(`Tema ਕੀਤਾ a ${theme === 'dark' ? 'oscuro' : 'claro'}.`, 'info');
     }
 
     function showModal() { modalOverlay.classList.add('visible'); }
@@ -520,6 +513,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- INITIALIZATION ---
+    function proactiveNotificationPrompt() {
+        // No molestar si ya se ha preguntado o si estamos en local
+        if (Notification.permission === 'default' && !window.location.hostname.includes('localhost')) {
+            console.log('Iniciando petición proactiva de permiso para notificaciones...');
+            // Se podría mostrar un banner personalizado aquí antes de llamar a la función principal
+            registerServiceWorkerAndSubscribe().catch(err => {
+                // Silenciar el error si el usuario cierra el pop-up sin elegir
+                if (err.message.includes('Permiso de notificación no concedido')) {
+                    console.log('El usuario decidió no conceder permisos de notificación en este momento.');
+                } else {
+                    console.error('Error en la suscripción proactiva:', err);
+                }
+            });
+        }
+    }
+
     async function performInitialLocationSearch(params) {
         await performSearch(params, true);
         if (resultsContainer.children.length === 0) {
@@ -553,6 +562,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadDefaultView();
             }
         }
+
+        // Iniciar el temporizador para la petición proactiva de notificaciones
+        setTimeout(proactiveNotificationPrompt, 20000); // 20 segundos de espera
     }
 
     async function loadTotalEventsCount() {
