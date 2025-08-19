@@ -73,8 +73,10 @@
         </div>
 
         <div id="statusMessage" class="status-message" aria-live="polite" role="status"></div>
-        <div id="no-results-message" style="display: none; text-align: center; padding: 20px;">
-            <h3>No hemos encontrado eventos que coincidan.</h3>
+        <div id="no-results-message" style="display: none;">
+            <h3>No se encontraron eventos con tu búsqueda.</h3>
+            <p>Intenta con otros términos o explora la lista completa.</p>
+            <button id="reload-all-btn" class="action-btn">Ver todos los eventos</button>
         </div>
         <div id="skeleton-container"></div>
         <div id="resultsContainer" style="display: none;"></div>

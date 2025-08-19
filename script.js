@@ -157,6 +157,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 window.location.href = e.currentTarget.href;
             });
+            const reloadAllBtn = document.getElementById('reload-all-btn');
+            if (reloadAllBtn) {
+                reloadAllBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); // Buena práctica
+                    searchInput.value = ''; // Limpiamos el campo de búsqueda
+                    performSearch({}); // Llama a la búsqueda sin parámetros para cargar todo
+                });
+            }
+
         });
     }
 
