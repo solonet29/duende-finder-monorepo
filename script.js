@@ -66,7 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
         nearbyEventsBtn.addEventListener('click', () => {
             if (navigator.geolocation) {
                 statusMessage.textContent = 'Buscando tu ubicación para mostrarte los eventos más cercanos...';
-                navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError, { timeout: 5000 });
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    await geolocationSuccess(position);
+                }, geolocationError, { timeout: 5000 });
             } else {
                 showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
             }
@@ -640,7 +642,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Intentar geolocalización solo si no hay URL de búsqueda
             if (navigator.geolocation) {
                 statusMessage.textContent = 'Buscando tu ubicación para mostrarte los eventos más cercanos...';
-                navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError, { timeout: 5000 });
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    await geolocationSuccess(position);
+                }, geolocationError, { timeout: 5000 });
             } else {
                 // Si la geolocalización no es compatible, carga la vista por defecto
                 loadDefaultView();
