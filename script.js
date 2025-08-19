@@ -134,14 +134,47 @@ document.addEventListener('DOMContentLoaded', () => {
         tripPlannerForm.addEventListener('submit', handleTripPlannerSubmit);
 
         // Ajustes
+        // --- Lógica para la sección de Ajustes y Modales de Información ---
+
+        // 1. Lógica para el modal principal de Ajustes (el del engranaje)
         settingsBtn.addEventListener('click', () => settingsModalOverlay.classList.add('visible'));
         settingsModalCloseBtn.addEventListener('click', () => settingsModalOverlay.classList.remove('visible'));
-        settingsModalOverlay.addEventListener('click', (e) => { if (e.target === settingsModalOverlay) settingsModalOverlay.classList.remove('visible'); });
+        settingsModalOverlay.addEventListener('click', (e) => {
+            if (e.target === settingsModalOverlay) settingsModalOverlay.classList.remove('visible');
+        });
+
+        // 2. Lógica para los interruptores (toggles) dentro de Ajustes
         themeToggleSwitch.addEventListener('change', () => {
             const newTheme = themeToggleSwitch.checked ? 'dark' : 'light';
             setTheme(newTheme);
         });
         notificationsToggleSwitch.addEventListener('change', handleNotificationToggle);
+
+        // 3. Lógica para los nuevos botones ("Cómo funciona" y "Términos")
+        const settingsActionBtns = document.querySelectorAll('.settings-action-btn');
+
+        settingsActionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Coge el ID del contenido del atributo data-* del botón
+                const contentId = btn.dataset.modalContentId;
+                // Busca el div oculto que tiene ese contenido
+                const contentSource = document.getElementById(contentId);
+
+                if (contentSource) {
+                    // Pone el contenido en el modal de información y lo muestra
+                    infoModalContent.innerHTML = contentSource.innerHTML;
+                    infoModalOverlay.classList.add('visible');
+                }
+            });
+        });
+
+        // 4. Lógica para cerrar el nuevo modal de información
+        infoModalCloseBtn.addEventListener('click', () => infoModalOverlay.classList.remove('visible'));
+        infoModalOverlay.addEventListener('click', e => {
+            if (e.target === infoModalOverlay) {
+                infoModalOverlay.classList.remove('visible');
+            }
+        });
 
         // UI General
         window.addEventListener('scroll', () => {
