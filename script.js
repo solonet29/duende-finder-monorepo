@@ -38,6 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsModalCloseBtn = document.getElementById('settings-modal-close-btn');
     const themeToggleSwitch = document.getElementById('theme-toggle-switch');
     const notificationsToggleSwitch = document.getElementById('notifications-toggle-switch');
+    const infoModalOverlay = document.getElementById('info-modal-overlay');
+    const infoModalContent = document.getElementById('info-modal-content');
+    const infoModalCloseBtn = document.getElementById('info-modal-close-btn');
 
     // Estado de la aplicación
     const synth = window.speechSynthesis;
