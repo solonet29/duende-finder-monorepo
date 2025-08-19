@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -20,21 +20,22 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212" id="theme-color-meta">
-
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body id="top">
     <div id="notification-container"></div>
+
     <main class="container">
-        <button id="settings-btn" class="theme-toggle-btn" aria-label="Abrir ajustes"><i
-                class="fas fa-cog"></i></button>
-        <h1><span class="duende-word">Duende</span> <span>Finder</span></h1>
+        <header class="main-header">
+            <h1><span class="duende-word">Duende</span> <span>Finder</span></h1>
+            <button id="settings-btn" class="settings-btn" aria-label="Abrir ajustes"><i
+                    class="fas fa-cog"></i></button>
+        </header>
 
         <div id="search-controls">
-            <p class="subtitle"><i class="fas fa-guitar"
-                    style="margin-right: 8px; color: var(--color-primario);"></i>Descubre la magia del flamenco. Busca
-                conciertos, tablaos y festivales por toda Europa.</p>
+            <p class="subtitle"><i class="fas fa-guitar"></i>Descubre la magia del flamenco. Busca conciertos, tablaos y
+                festivales.</p>
             <p class="event-counter">Tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p>
 
             <form id="search-form" class="search-form">
@@ -43,14 +44,16 @@
                 <button type="submit" id="searchBtn" class="search-button">Buscar</button>
             </form>
 
-            <button id="trip-planner-btn" class="trip-planner-btn"><i class="fas fa-route"></i> Planear mi Viaje
-                Flamenco</button>
-            <button id="nearby-events-btn" class="trip-planner-btn">🎯 Buscar cerca de mí</button>
+            <div class="main-actions">
+                <button id="nearby-events-btn" class="action-btn">🎯 Buscar cerca de mí</button>
+                <button id="trip-planner-btn" class="action-btn"><i class="fas fa-route"></i> Planear Viaje</button>
+            </div>
+
             <div class="filter-toggles-wrapper">
                 <button id="province-filters-toggle" class="quick-filters-toggle">Búsqueda por Provincia <i
                         class="fas fa-chevron-down"></i></button>
-                <button id="country-filters-toggle" class="quick-filters-toggle" style="margin-left: 1.5rem;">Búsqueda
-                    por País <i class="fas fa-chevron-down"></i></button>
+                <button id="country-filters-toggle" class="quick-filters-toggle">Búsqueda por País <i
+                        class="fas fa-chevron-down"></i></button>
             </div>
             <div id="province-filters-container" class="quick-filters-container">
                 <a href="?city=Sevilla" class="quick-filter-btn">Sevilla</a><a href="?city=Málaga"
@@ -71,15 +74,15 @@
 
         <div id="statusMessage" class="status-message" aria-live="polite" role="status"></div>
         <div id="no-results-message" style="display: none; text-align: center; padding: 20px;">
-            <h3>No hemos encontrado eventos en tu zona</h3>
+            <h3>No hemos encontrado eventos que coincidan.</h3>
         </div>
         <div id="skeleton-container"></div>
         <div id="resultsContainer" style="display: none;"></div>
     </main>
+
     <a href="#top" id="back-to-top-btn" class="back-to-top-btn" aria-label="Volver arriba"><i
             class="fas fa-arrow-up"></i></a>
 
-    <!-- Modal de Plan de Noche -->
     <div id="gemini-modal-overlay" class="modal-overlay">
         <div class="modal">
             <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
@@ -87,7 +90,6 @@
         </div>
     </div>
 
-    <!-- Modal del Plan de Viaje -->
     <div id="trip-planner-modal-overlay" class="modal-overlay">
         <div class="modal">
             <button id="trip-modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
@@ -95,19 +97,32 @@
                 <h2><i class="fas fa-route"></i> Planificador de Viaje Flamenco</h2>
             </div>
             <form id="trip-planner-form">
-                <!-- ... form content ... -->
+                <div class="form-group">
+                    <label for="trip-destination">Destino</label>
+                    <select id="trip-destination" required>
+                        <option value="Cádiz">Cádiz</option>
+                        <option value="Córdoba">Córdoba</option>
+                        <option value="Granada">Granada</option>
+                        <option value="Huelva">Huelva</option>
+                        <option value="Jaén">Jaén</option>
+                        <option value="Jerez">Jerez de la Frontera</option>
+                        <option value="Málaga">Málaga</option>
+                        <option value="Sevilla">Sevilla</option>
+                        <option value="Almeria">Almería</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="trip-start-date">Fecha de Inicio</label><input type="date"
+                            id="trip-start-date" required></div>
+                    <div class="form-group"><label for="trip-end-date">Fecha de Fin</label><input type="date"
+                            id="trip-end-date" required></div>
+                </div>
+                <button type="submit" class="submit-btn">Generar Plan de Viaje</button>
             </form>
             <div id="trip-planner-result"></div>
         </div>
     </div>
 
-    <!-- Modal de Ambigüedad -->
-    <div id="ambiguity-modal-overlay" class="modal-overlay">
-        <div id="ambiguity-modal-content" class="modal-content">
-        </div>
-    </div>
-
-    <!-- NUEVO: Modal de Ajustes -->
     <div id="settings-modal-overlay" class="modal-overlay">
         <div class="modal">
             <button id="settings-modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
@@ -116,29 +131,29 @@
             </div>
             <div class="settings-content">
                 <div class="setting-item">
-                    <label for="theme-toggle-switch">Tema Oscuro</label>
-                    <div class="switch-container">
-                        <input type="checkbox" id="theme-toggle-switch" class="switch-input">
-                        <label for="theme-toggle-switch" class="switch-label"></label>
-                    </div>
+                    <label for="theme-toggle-switch"><i class="fas fa-palette"></i> Modo Oscuro</label>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle-switch">
+                        <span class="slider round"></span>
+                    </label>
                 </div>
                 <div class="setting-item">
-                    <label for="notifications-toggle-switch">Activar Notificaciones</label>
-                    <div class="switch-container">
-                        <input type="checkbox" id="notifications-toggle-switch" class="switch-input">
-                        <label for="notifications-toggle-switch" class="switch-label"></label>
-                    </div>
-                </div>
-                <div class="setting-item-links">
-                    <a href="/como-funciona.html" class="settings-link">¿Cómo funciona?</a>
-                    <a href="/terminos.html" class="settings-link">Términos y Condiciones</a>
+                    <label for="notifications-toggle-switch"><i class="fas fa-bell"></i> Activar Notificaciones</label>
+                    <label class="switch">
+                        <input type="checkbox" id="notifications-toggle-switch">
+                        <span class="slider round"></span>
+                    </label>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="script.js"></script>
+    <div id="ambiguity-modal-overlay" class="modal-overlay">
+        <div id="ambiguity-modal-content" class="modal">
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 
 </html>
