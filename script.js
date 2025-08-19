@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function linkifyLocations(text, city) {
-        const regex = /\ \[([^\]+)\]/g; // Matches [Location Name]
+        const regex = new RegExp("\\ \[([^\\]+)\\]", "g"); // Corrected regex
         if (!text.match(regex)) {
             return text;
         }
@@ -388,34 +388,28 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
             if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
-            const result = await response.json();
-            if (result && result.content) {
-                const textWithLinks = linkifyLocations(result.content, event.city);
-                const formattedHtml = marked.parse(textWithLinks);
-                const calendarLinks = generateCalendarLinks(event);
-                modalContent.innerHTML = `
-                    <div class="modal-header"><h2>✨ Tu Noche Flamenca ✨</h2></div>
-                    <div id="plan-text">${formattedHtml}</div>
-                    <div class="modal-footer" style="border-top: 1px solid var(--color-borde-light); margin-top: 1.5rem; padding-top: 1.5rem;">
-                        <h3 style="margin:0; margin-bottom: 1rem; color: var(--color-texto-principal-light);">Añadir el evento principal al calendario</h3>
-                        <div style="display:flex; flex-direction:column; align-items:center; gap:1rem;">
-                            <a href="${calendarLinks.google}" target="_blank" rel="noopener noreferrer" class="calendar-link-btn"><i class="fab fa-google"></i> Google Calendar</a>
-                            <a href="${calendarLinks.ical}" download="${event.name}.ics" class="calendar-link-btn"><i class="fab fa-apple"></i> Apple / iCal</a>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <p class="ai-disclaimer">Contenido generado por IA. La información puede no ser precisa.</p>
-                    </div>`;
+            const data = await response.json();
+            if (data.isAmbiguous) {
+                showAmbiguityModal(data.searchTerm, data.options);
+                hideSkeletonLoader();
+                return;
+            }
+            const events = data.events || data;
+            displayEvents(events);
+            if (events.length > 0) {
+                showNotification(`Se encontraron ${events.length} eventos.`, 'success');
             } else {
-                throw new Error("La IA no devolvió una respuesta válida.");
+                showNotification('No se encontraron eventos.', 'info');
             }
         } catch (error) {
-            console.error("Error en getFlamencoPlan:", error);
-            modalContent.innerHTML = `<h3>Error</h3><p>No se pudo generar el plan. El duende puede que esté ocupado.</p>`;
+            console.error("Error en la búsqueda:", error);
+            statusMessage.textContent = 'Hubo un error al realizar la búsqueda. Por favor, inténtalo de nuevo.';
+            hideSkeletonLoader();
+            showNotification('Error al realizar la búsqueda.', 'error');
         }
     }
 
-    async function getTripPlan(destination, startDate, endDate) {
+    function getTripPlan(destination, startDate, endDate) {
         tripPlannerResult.innerHTML = `<div class="loader-container"><div class="loader"></div><p>El duende está preparando tu viaje...</p></div>`;
         try {
             const response = await fetch(`${API_BASE_URL}/api/trip-planner`, {
