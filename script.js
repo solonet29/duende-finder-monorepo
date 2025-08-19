@@ -512,6 +512,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- INITIALIZATION ---
+    async function performInitialLocationSearch(params) {
+        await performSearch(params, true);
+        if (resultsContainer.children.length === 0) {
+            showNotification('No se encontraron eventos en tu zona, mostrando los eventos de la semana.', 'info');
+            await loadDefaultView();
+        }
+    }
+
     // MODIFICADO: Se intenta la geolocalización al cargar la página si no hay URL de búsqueda
     function initialize() {
         const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -522,7 +530,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const params = Object.fromEntries(urlParams.entries());
 
-        if (Object.keys(params).length > 0) {
+        if (params.lat && params.lon) {
+            performInitialLocationSearch(params);
+        } else if (Object.keys(params).length > 0) {
             if (params.search) searchInput.value = params.search;
             performSearch(params, true);
         } else {
