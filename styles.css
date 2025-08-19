@@ -61,6 +61,7 @@ body {
     margin: 0;
     padding: 2rem;
     display: flex;
+    align-items: center;
     flex-direction: column;
     min-height: 100vh;
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -686,7 +687,8 @@ h1 span {
     margin-bottom: 0.5rem;
     font-weight: bold;
     color: var(--color-texto-secundario-light);
-}
+}
+
 .form-group input,
 .form-group select {
     width: 100%;
@@ -1055,17 +1057,21 @@ main.container.results-active #search-controls {
 }
 
 .notification.info {
-    border-left: 5px solid #2196F3; /* Blue */
+    border-left: 5px solid #2196F3;
+    /* Blue */
 }
 
 .notification.success {
-    border-left: 5px solid #4CAF50; /* Green */
+    border-left: 5px solid #4CAF50;
+    /* Green */
 }
 
 .notification.warning {
-    border-left: 5px solid #ff9800; /* Orange */
+    border-left: 5px solid #ff9800;
+    /* Orange */
 }
 
 .notification.error {
-    border-left: 5px solid #f44336; /* Red */
+    border-left: 5px solid #f44336;
+    /* Red */
 }
