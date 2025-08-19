@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const PRODUCTION_API_URL = 'https://duende-api.vercel.app';
+    const PRODUCTION_API_URL = 'https://duende-api-next.vercel.app';
     const DEVELOPMENT_API_URL = 'http://127.0.0.1:3000';
     const API_BASE_URL = window.location.hostname.includes('localhost') || window.location.hostname.includes('0.0.0.0')
         ? DEVELOPMENT_API_URL
