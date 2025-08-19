@@ -400,7 +400,13 @@ document.addEventListener('DOMContentLoaded', () => {
     async function geolocationSuccess(position) {
         const { latitude, longitude } = position.coords;
         statusMessage.textContent = '¡Ubicación encontrada! Buscando eventos cerca de ti...';
-        performSearch({ lat: latitude, lon: longitude, radius: 120 }, true);
+        await performSearch({ lat: latitude, lon: longitude, radius: 120 }, true);
+
+        // Si no se encuentran eventos, cargar la vista por defecto
+        if (resultsContainer.children.length === 0) {
+            showNotification('No se encontraron eventos en tu zona, mostrando los eventos de la semana.', 'info');
+            await loadDefaultView();
+        }
     }
 
     // MODIFICADO: Esta función ahora maneja el error y carga la vista por defecto
