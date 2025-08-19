@@ -132,7 +132,20 @@ document.addEventListener('DOMContentLoaded', () => {
         modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
 
         tripPlannerBtn.addEventListener('click', () => {
-            window.location.href = 'https://afland.es/viajes-y-rutas/';
+            // 1. Coge el valor actual del campo de búsqueda.
+            const searchTerm = searchInput.value.trim();
+
+            // 2. Prepara la URL base de tu página de viajes.
+            let url = 'https://afland.es/viajes-y-rutas/';
+
+            // 3. Si el usuario ha escrito algo en el buscador...
+            if (searchTerm) {
+                // ...se añade a la URL como un parámetro de búsqueda.
+                url += `?busqueda=${encodeURIComponent(searchTerm)}`;
+            }
+
+            // 4. Redirige al usuario a la URL final (sea la base o la personalizada).
+            window.location.href = url;
         });
 
         // Ajustes
