@@ -144,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Suscripción Push obtenida:', subscription);
 
                 try {
+                    console.log('Enviando suscripción al servidor...');
                     const response = await fetch(`${API_BASE_URL}/api/subscribe`, {
                         method: 'POST',
                         body: JSON.stringify(subscription),
@@ -152,14 +153,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
 
+                    console.log('Respuesta recibida del servidor:', response);
+                    console.log('Response OK:', response.ok);
+                    console.log('Response Status:', response.status);
+
                     if (response.ok) {
                         showNotification('¡Te has suscrito a las notificaciones!', 'success');
                     } else {
-                        const errorData = await response.json();
-                        throw new Error(errorData.message || 'Error al registrar la suscripción en el servidor.');
+                        console.error('La respuesta del servidor no fue OK.');
+                        const errorText = await response.text(); // Usar .text() para evitar errores de parseo JSON
+                        console.error('Cuerpo de la respuesta de error:', errorText);
+                        throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
                     }
                 } catch (error) {
-                    console.error('Error al enviar la suscripción al servidor:', error);
+                    console.error('Error detallado al enviar la suscripción:', error);
                     showNotification('No se pudo completar la suscripción con el servidor. Por favor, inténtalo más tarde.', 'error');
                 }
 
