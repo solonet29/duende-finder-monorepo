@@ -348,38 +348,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LÓGICA PRINCIPAL DE LA APLICACIÓN ---
 
-    async function performSearch(params, isUserSearch = false) {
+    async function performSearch(params, isUserSearch = false, filterEventId = null) {
         showSkeletonLoader();
-        // ambiguityModal.classList.remove('visible'); // Ocultar por si estaba visible
+        // ambiguityModal.classList.remove('visible');
 
-        if (isUserSearch) {
+        // Si es una búsqueda de usuario (no por eventId), actualiza la UI y el historial
+        if (isUserSearch && !filterEventId) {
             mainContainer.classList.add('results-active');
             isResultsView = true;
             setTimeout(() => { statusMessage.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
             const queryString = new URLSearchParams(params).toString();
             const newUrl = `${window.location.pathname}?${queryString}`;
             window.history.pushState({ path: newUrl }, '', newUrl);
+        } else if (filterEventId) {
+            // Si es por eventId, solo activa la vista de resultados
+            mainContainer.classList.add('results-active');
+            isResultsView = true;
         }
 
+        // Para filtrar por ID, necesitamos todos los eventos, así que la búsqueda a la API es sin parámetros
+        const fetchParams = filterEventId ? {} : params;
+
         try {
-            const response = await fetch(`${API_BASE_URL}/api/events?${new URLSearchParams(params).toString()}`);
+            const response = await fetch(`${API_BASE_URL}/api/events?${new URLSearchParams(fetchParams).toString()}`);
             if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
             const data = await response.json();
 
-            // Manejo de ambigüedad
             if (data.isAmbiguous) {
-                // Aquí iría la lógica para mostrar el modal de ambigüedad
-                // showAmbiguityModal(data.searchTerm, data.options);
                 hideSkeletonLoader();
                 statusMessage.textContent = `Tu búsqueda "${data.searchTerm}" es ambigua. ¿Quizás quisiste decir: ${data.options.join(', ')}?`;
                 return;
             }
 
-            const events = data.events || data;
+            let events = data.events || data;
+
+            // Filtra por ID en el cliente si se ha proporcionado un filterEventId
+            if (filterEventId) {
+                const singleEvent = events.find(event => event._id === filterEventId);
+                events = singleEvent ? [singleEvent] : [];
+            }
+
             displayEvents(events);
 
             if (isUserSearch) {
-                showNotification(events.length > 0 ? `Se encontraron ${events.length} eventos.` : 'No se encontraron eventos.', events.length > 0 ? 'success' : 'info');
+                const message = events.length > 0 
+                    ? (filterEventId ? `Mostrando el evento compartido.` : `Se encontraron ${events.length} eventos.`)
+                    : 'No se encontraron eventos.';
+                showNotification(message, events.length > 0 ? 'success' : 'info');
             }
 
         } catch (error) {
@@ -557,17 +572,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const urlParams = new URLSearchParams(window.location.search);
         const eventId = urlParams.get('eventId');
+        const params = Object.fromEntries(urlParams.entries());
 
+        // Si hay un eventId, se realiza una búsqueda general y luego se filtra
+        // en el lado del cliente dentro de performSearch.
         if (eventId) {
-            performSearch({ eventId: eventId }, true);
+            performSearch({}, true, eventId);
+        } else if (Object.keys(params).length > 0) {
+            searchInput.value = params.search || params.province || params.country || '';
+            performSearch(params, true);
         } else {
-            const params = Object.fromEntries(urlParams.entries());
-            if (Object.keys(params).length > 0) {
-                searchInput.value = params.search || params.province || params.country || '';
-                performSearch(params, true);
-            } else {
-                performSearch({});
-            }
+            performSearch({});
         }
     }
 
