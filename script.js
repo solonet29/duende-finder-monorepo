@@ -530,6 +530,17 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn("Librería 'marked.js' no encontrada. Mostrando texto plano.");
             modalContent.innerHTML = `<pre style="white-space: pre-wrap;">${planData.content}</pre>`;
         }
+
+        const shopLink = document.createElement('div');
+        shopLink.className = 'shop-promo-modal';
+        shopLink.innerHTML = `
+            <hr>
+            <div class="promo-content">
+                <h5>¿Buscas el atuendo perfecto?</h5>
+                <p>Visita nuestra <a href="https://afland.es/la-tienda-flamenca-afland/" target="_blank" rel="noopener noreferrer">Tienda Flamenca</a> para encontrar moda y accesorios únicos.</p>
+            </div>
+        `;
+        modalContent.appendChild(shopLink);
     }
 
     async function getAndShowNightPlan(event) {
