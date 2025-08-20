@@ -447,36 +447,50 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.appendChild(header);
 
         try {
+            // 1. Fetch all events that might be related from the API
             const response = await fetch(`${API_BASE_URL}/api/events?search=${encodeURIComponent(artistName)}`);
             if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
             
             const data = await response.json();
             const events = data.events || data;
-            
-            // Excluir el evento que ya se está mostrando
-            const otherEvents = events.filter(event => event._id !== currentEventId);
+
+            // 2. Use Fuse.js for smart, client-side filtering
+            const fuseOptions = {
+                keys: ['artist'],
+                includeScore: true,
+                threshold: 0.4, // Adjust for strictness (0.0 = exact, 1.0 = anything)
+                ignoreLocation: true, // Search the entire string
+            };
+            const fuse = new Fuse(events, fuseOptions);
+            const fuseResults = fuse.search(artistName);
+
+            // 3. Filter results based on a relevance score
+            const relevantEvents = fuseResults
+                .filter(result => result.score < 0.3) // Lower score is a better match
+                .map(result => result.item);
+
+            // 4. Exclude the event that is already being displayed
+            const otherEvents = relevantEvents.filter(event => event._id !== currentEventId);
 
             if (otherEvents.length > 0) {
                 const fragment = document.createDocumentFragment();
                 otherEvents.forEach(event => {
-                    // Asegurarse de no duplicar eventos si ya están en la caché por alguna razón
                     if (!eventsCache[event._id]) { 
                         eventsCache[event._id] = event;
                         fragment.appendChild(createEventCard(event));
                     }
                 });
                 resultsContainer.appendChild(fragment);
-                // Actualizar el contador total de eventos mostrados
                 totalEventsSpan.textContent = document.querySelectorAll('.evento-card').length;
             } else {
                 const noMoreEvents = document.createElement('p');
-                noMoreEvents.textContent = `No hemos encontrado más eventos para ${artistName}.`;
+                noMoreEvents.textContent = `No hemos encontrado más eventos relevantes para ${artistName}.`;
                 noMoreEvents.className = 'no-related-events';
                 resultsContainer.appendChild(noMoreEvents);
             }
         } catch (error) {
             console.error('Error al buscar eventos relacionados del artista:', error);
-            // Opcional: no mostrar un error al usuario para no distraer
+            // Optional: do not show an error to the user to avoid distraction
         }
     }
 
