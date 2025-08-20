@@ -231,10 +231,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const eventId = shareBtn.dataset.eventId;
             const eventData = eventsCache[eventId];
             if (eventData && navigator.share) {
+                // Construye una URL limpia que solo contiene el eventId
+                const shareUrl = new URL(window.location.origin + window.location.pathname);
+                shareUrl.searchParams.set('eventId', eventId);
+
                 navigator.share({
                     title: eventData.name || 'Evento de Flamenco',
                     text: `¡Mira este evento flamenco: ${eventData.name}!`,
-                    url: eventData.sourceURL || window.location.href,
+                    url: shareUrl.href,
                 }).catch(err => console.error("Error al compartir:", err));
             } else {
                 showNotification('Tu navegador no soporta la función de compartir.', 'warning');
@@ -409,6 +413,56 @@ document.addEventListener('DOMContentLoaded', () => {
             fragment.appendChild(createEventCard(event));
         });
         resultsContainer.appendChild(fragment);
+
+        // Si se muestra un solo evento (desde un enlace compartido), busca más del mismo artista.
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('eventId');
+        if (eventId && events.length === 1 && events[0]._id === eventId) {
+            const artist = events[0].artist;
+            if (artist && artist.toLowerCase() !== 'artista por confirmar' && artist.toLowerCase() !== 'n/a') {
+                fetchAndAppendArtistEvents(artist, eventId);
+            }
+        }
+    }
+
+    async function fetchAndAppendArtistEvents(artistName, currentEventId) {
+        const header = document.createElement('h2');
+        header.innerHTML = `<i class="fas fa-user-friends"></i> Más de ${artistName}`;
+        header.className = 'related-events-header';
+        resultsContainer.appendChild(header);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/events?search=${encodeURIComponent(artistName)}`);
+            if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
+            
+            const data = await response.json();
+            const events = data.events || data;
+            
+            // Excluir el evento que ya se está mostrando
+            const otherEvents = events.filter(event => event._id !== currentEventId);
+
+            if (otherEvents.length > 0) {
+                const fragment = document.createDocumentFragment();
+                otherEvents.forEach(event => {
+                    // Asegurarse de no duplicar eventos si ya están en la caché por alguna razón
+                    if (!eventsCache[event._id]) { 
+                        eventsCache[event._id] = event;
+                        fragment.appendChild(createEventCard(event));
+                    }
+                });
+                resultsContainer.appendChild(fragment);
+                // Actualizar el contador total de eventos mostrados
+                totalEventsSpan.textContent = document.querySelectorAll('.evento-card').length;
+            } else {
+                const noMoreEvents = document.createElement('p');
+                noMoreEvents.textContent = `No hemos encontrado más eventos para ${artistName}.`;
+                noMoreEvents.className = 'no-related-events';
+                resultsContainer.appendChild(noMoreEvents);
+            }
+        } catch (error) {
+            console.error('Error al buscar eventos relacionados del artista:', error);
+            // Opcional: no mostrar un error al usuario para no distraer
+        }
     }
 
     function createEventCard(event) {
@@ -502,12 +556,18 @@ document.addEventListener('DOMContentLoaded', () => {
         updateNotificationToggleState();
 
         const urlParams = new URLSearchParams(window.location.search);
-        const params = Object.fromEntries(urlParams.entries());
-        if (Object.keys(params).length > 0) {
-            searchInput.value = params.search || params.province || params.country || '';
-            performSearch(params, true);
+        const eventId = urlParams.get('eventId');
+
+        if (eventId) {
+            performSearch({ eventId: eventId }, true);
         } else {
-            performSearch({});
+            const params = Object.fromEntries(urlParams.entries());
+            if (Object.keys(params).length > 0) {
+                searchInput.value = params.search || params.province || params.country || '';
+                performSearch(params, true);
+            } else {
+                performSearch({});
+            }
         }
     }
 
