@@ -352,7 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showSkeletonLoader();
         // ambiguityModal.classList.remove('visible');
 
-        // Si es una búsqueda de usuario (no por eventId), actualiza la UI y el historial
         if (isUserSearch && !filterEventId) {
             mainContainer.classList.add('results-active');
             isResultsView = true;
@@ -361,12 +360,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const newUrl = `${window.location.pathname}?${queryString}`;
             window.history.pushState({ path: newUrl }, '', newUrl);
         } else if (filterEventId) {
-            // Si es por eventId, solo activa la vista de resultados
             mainContainer.classList.add('results-active');
             isResultsView = true;
         }
 
-        // Para filtrar por ID, necesitamos todos los eventos, así que la búsqueda a la API es sin parámetros
         const fetchParams = filterEventId ? {} : params;
 
         try {
@@ -382,10 +379,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let events = data.events || data;
 
-            // Filtra por ID en el cliente si se ha proporcionado un filterEventId
+            // Client-side filtering for a single event (from shared link)
             if (filterEventId) {
                 const singleEvent = events.find(event => event._id === filterEventId);
                 events = singleEvent ? [singleEvent] : [];
+            }
+            // Fuzzy search for main search queries
+            else if (params.search) {
+                const fuseOptions = {
+                    keys: ['name', 'artist', 'city', 'venue'],
+                    includeScore: true,
+                    threshold: 0.4,
+                    ignoreLocation: true,
+                };
+                const fuse = new Fuse(events, fuseOptions);
+                const fuseResults = fuse.search(params.search);
+                events = fuseResults.filter(r => r.score < 0.4).map(r => r.item);
             }
 
             displayEvents(events);
