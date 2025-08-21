@@ -531,8 +531,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const fullLocation = [eventVenue, eventCity, eventCountry].filter(Boolean).join(', ') || 'Ubicación no disponible';
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
+        const eventImageUrl = event.imageUrl;
 
         eventCard.innerHTML = `
+            ${eventImageUrl ? `<img src="${eventImageUrl}" alt="Imagen del evento ${eventName}" class="evento-card-img">` : ''}
             <div class="card-header">
                 <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
             </div>
