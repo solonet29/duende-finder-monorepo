@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalCloseBtn = document.getElementById('modal-close-btn');
     const ambiguityModal = document.getElementById('ambiguity-modal-overlay');
     const ambiguityModalContent = document.getElementById('ambiguity-modal-content');
+    const imageModalOverlay = document.getElementById('image-modal-overlay');
+    const imageModalContent = document.getElementById('image-modal-content');
+    const imageModalCloseBtn = document.querySelector('.image-modal-close-btn');
 
     // Trip Planner
     const tripPlannerBtn = document.getElementById('trip-planner-btn');
@@ -131,6 +134,14 @@ document.addEventListener('DOMContentLoaded', () => {
         modalCloseBtn.addEventListener('click', hideModal);
         modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
 
+        imageModalOverlay.addEventListener('click', () => {
+            imageModalOverlay.style.display = 'none';
+        });
+
+        imageModalCloseBtn.addEventListener('click', () => {
+            imageModalOverlay.style.display = 'none';
+        });
+
         tripPlannerBtn.addEventListener('click', () => {
             // 1. Coge el valor actual del campo de búsqueda.
             const searchTerm = searchInput.value.trim();
@@ -220,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleResultsContainerClick(event) {
         const geminiBtn = event.target.closest('.gemini-btn');
         const shareBtn = event.target.closest('.share-button');
+        const image = event.target.closest('.evento-card-img');
 
         if (geminiBtn) {
             const eventId = geminiBtn.dataset.eventId;
@@ -243,6 +255,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 showNotification('Tu navegador no soporta la función de compartir.', 'warning');
             }
+        }
+
+        if (image) {
+            imageModalContent.src = image.src;
+            imageModalOverlay.style.display = 'flex';
         }
     }
 
