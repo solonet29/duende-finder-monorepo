@@ -538,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         eventCard.innerHTML = `
-            ${eventImageUrl ? `<img src="${eventImageUrl}" alt="Imagen del evento ${eventName}" class="evento-card-img" onerror="this.remove()">` : ''}
+            ${eventImageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen del evento ${eventName}" class="evento-card-img" onerror="this.remove()"></div>` : ''}
             <div class="card-header">
                 <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
             </div>
