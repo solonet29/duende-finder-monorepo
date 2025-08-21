@@ -419,6 +419,19 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.innerHTML = '';
         eventsCache = {};
 
+        // --- INICIO DE LA MODIFICACIÓN OG:IMAGE ---
+        const urlParamsForOg = new URLSearchParams(window.location.search);
+        const eventIdForOg = urlParamsForOg.get('eventId');
+        const ogImageTag = document.getElementById('og-image-tag');
+
+        if (eventIdForOg && events.length === 1 && events[0]._id === eventIdForOg && ogImageTag) {
+            const eventImageUrl = events[0].imageUrl;
+            if (eventImageUrl) {
+                ogImageTag.setAttribute('content', eventImageUrl);
+            }
+        }
+        // --- FIN DE LA MODIFICACIÓN OG:IMAGE ---
+
         if (!events || events.length === 0) {
             statusMessage.textContent = 'No se encontraron eventos que coincidan con tu búsqueda.';
             noResultsMessage.style.display = 'block';
