@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalOverlay = document.getElementById('gemini-modal-overlay');
     const modalContent = document.getElementById('modal-content');
     const modalCloseBtn = document.getElementById('modal-close-btn');
+    const copyPlanBtn = document.getElementById('copy-plan-btn');
     const ambiguityModal = document.getElementById('ambiguity-modal-overlay');
     const ambiguityModalContent = document.getElementById('ambiguity-modal-content');
     const imageModalOverlay = document.getElementById('image-modal-overlay');
@@ -133,6 +134,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Modales
         modalCloseBtn.addEventListener('click', hideModal);
         modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
+
+        copyPlanBtn.addEventListener('click', () => {
+            const planText = modalContent.innerText;
+            navigator.clipboard.writeText(planText)
+                .then(() => showNotification('¡Plan copiado al portapapeles!', 'success'))
+                .catch(err => {
+                    console.error('Error al copiar: ', err);
+                    showNotification('No se pudo copiar el plan.', 'error');
+                });
+        });
 
         imageModalOverlay.addEventListener('click', () => {
             imageModalOverlay.style.display = 'none';
