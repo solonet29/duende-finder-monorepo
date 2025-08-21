@@ -531,7 +531,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const fullLocation = [eventVenue, eventCity, eventCountry].filter(Boolean).join(', ') || 'Ubicación no disponible';
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
-        const eventImageUrl = event.imageUrl;
+        
+        let eventImageUrl = event.imageUrl;
+        if (eventImageUrl && !eventImageUrl.startsWith('http')) {
+            eventImageUrl = null;
+        }
 
         eventCard.innerHTML = `
             ${eventImageUrl ? `<img src="${eventImageUrl}" alt="Imagen del evento ${eventName}" class="evento-card-img" onerror="this.remove()">` : ''}
