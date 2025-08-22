@@ -565,6 +565,14 @@ document.addEventListener('DOMContentLoaded', () => {
             eventImageUrl = null;
         }
 
+        // Lógica para el botón del blog
+        const isPublishedWithUrl = event.contentStatus === 'published' && event.blogPostUrl;
+        const blogUrl = isPublishedWithUrl ? event.blogPostUrl : 'https://afland.es/';
+        const blogText = isPublishedWithUrl ? 'Leer en el Blog' : 'Explorar Blog';
+        const blogIcon = isPublishedWithUrl ? 'fa-book-open' : 'fa-blog';
+        const blogButtonClass = isPublishedWithUrl ? 'blog-link-btn' : 'btn-blog-explorar';
+
+
         eventCard.innerHTML = `
             ${eventImageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen del evento ${eventName}" class="evento-card-img" onerror="this.remove()"></div>` : ''}
             <div class="card-header">
@@ -583,6 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
                 <div class="card-actions-primary">
                     <button class="gemini-btn" data-event-id="${event._id}">✨ Planear Noche</button>
+                    <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><i class="fas ${blogIcon}"></i> ${blogText}</a>
                     <button class="share-button" data-event-id="${event._id}">
                         <i class="fas fa-solid fa-share-nodes"></i> Compartir
                     </button>
