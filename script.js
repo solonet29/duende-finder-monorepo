@@ -442,6 +442,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function initializeExpandableText() {
+        const textElements = document.querySelectorAll('.titulo-truncado, .descripcion-corta');
+        textElements.forEach(element => {
+            const isOverflowing = element.scrollHeight > element.clientHeight;
+            if (isOverflowing) {
+                element.classList.add('expandable');
+                element.addEventListener('click', () => {
+                    element.classList.toggle('expanded');
+                });
+            }
+        });
+    }
+
     function displayEvents(events) {
         hideSkeletonLoader();
         resultsContainer.innerHTML = '';
@@ -478,6 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fragment.appendChild(createEventCard(event));
         });
         resultsContainer.appendChild(fragment);
+        initializeExpandableText();
 
         // Si se muestra un solo evento (desde un enlace compartido), busca más del mismo artista.
         const urlParams = new URLSearchParams(window.location.search);
@@ -531,6 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 resultsContainer.appendChild(fragment);
+                initializeExpandableText();
                 totalEventsSpan.textContent = document.querySelectorAll('.evento-card').length;
             } else {
                 const noMoreEvents = document.createElement('p');

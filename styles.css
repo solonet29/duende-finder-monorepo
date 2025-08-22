@@ -406,11 +406,11 @@ h1 span {
     gap: 0.75rem;
 }
 
-.card-actions > .source-link-btn,
-.card-actions-primary > .gemini-btn,
-.card-actions-primary > .calendar-btn,
-.card-actions-primary > .blog-link-btn,
-.card-actions-primary > .btn-blog-explorar {
+.card-actions>.source-link-btn,
+.card-actions-primary>.gemini-btn,
+.card-actions-primary>.calendar-btn,
+.card-actions-primary>.blog-link-btn,
+.card-actions-primary>.btn-blog-explorar {
     justify-content: center;
     margin: 0;
     width: 100%;
@@ -464,7 +464,8 @@ h1 span {
 }
 
 .blog-link-btn {
-    background-color: #ff9800; /* Naranja distintivo */
+    background-color: #ff9800;
+    /* Naranja distintivo */
     color: white;
     border: none;
     text-decoration: none;
@@ -481,7 +482,8 @@ h1 span {
 }
 
 .blog-link-btn:hover {
-    background-color: #f57c00; /* Naranja más oscuro */
+    background-color: #f57c00;
+    /* Naranja más oscuro */
 }
 
 .btn-blog-explorar {
@@ -1016,8 +1018,8 @@ main.container.results-active #search-controls {
 }
 
 /* Rotar la flecha cuando el contenido está expandido */
-.titulo-truncado.expanded + .expandir-btn i,
-.descripcion-corta.expanded + .expandir-btn i {
+.titulo-truncado.expanded+.expandir-btn i,
+.descripcion-corta.expanded+.expandir-btn i {
     transform: rotate(180deg);
 }
 
@@ -1315,4 +1317,59 @@ main.container.results-active #search-controls {
     font-size: 40px;
     font-weight: bold;
     cursor: pointer;
+}
+
+/*
+ * Estilos para los textos que pueden ser expandidos.
+ * Aplicamos esto a los títulos y descripciones.
+*/
+
+.card-title {
+    /* ... */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    /* Para compatibilidad con navegadores antiguos */
+    line-clamp: 2;
+    /* El estándar para navegadores modernos y futuros */
+    overflow: hidden;
+
+    /* Transición suave para la expansión */
+    transition: all 0.3s ease-in-out;
+}
+
+/*
+ * Clase 'expandable': se añadirá con JS SÓLO si el texto se desborda.
+ * Esto nos permite mostrar una pista visual al usuario.
+*/
+.expandable {
+    cursor: pointer;
+    /* Indica que se puede hacer clic */
+}
+
+/* Opcional: Añadir un pequeño icono o "..." al final para indicar que hay más texto */
+.expandable::after {
+    content: '...';
+    font-weight: bold;
+    color: #888;
+    padding-left: 2px;
+}
+
+/*
+ * Clase 'expanded': se activa/desactiva con JS al hacer clic.
+ * Anula el truncamiento y muestra todo el texto.
+*/
+.card-title.expanded,
+.card-description.expanded {
+    -webkit-line-clamp: unset;
+    /* Anula el límite para navegadores antiguos */
+    line-clamp: unset;
+    /* Anula el límite para navegadores modernos */
+    overflow: visible;
+}
+
+
+/* Cuando está expandido, quitamos los puntos suspensivos */
+.expanded.expandable::after {
+    content: '';
 }
