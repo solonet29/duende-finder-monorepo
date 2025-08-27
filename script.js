@@ -695,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function geolocationSuccess(position) {
         const { latitude, longitude } = position.coords;
-        performSearch({ lat: latitude, lon: longitude, radius: 120 }, true);
+        performSearch({ lat: latitude, lon: longitude, radius: 60 }, true);
     }
 
     function geolocationError(error) {
