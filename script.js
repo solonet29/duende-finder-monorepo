@@ -112,6 +112,44 @@ document.addEventListener('DOMContentLoaded', () => {
         themeToggleSwitch.checked = theme === 'dark';
     }
 
+    // --- INICIO DE LA NUEVA FUNCIÓN ---
+    /**
+     * Revisa la URL en busca de un ID de evento, y si lo encuentra,
+     * hace scroll hasta la tarjeta del evento y la resalta.
+     * Es compatible con 'eventId' (usado por el botón de compartir) 
+     * y 'event_id' (usado por el saneador del blog).
+     */
+    function handleDirectLink() {
+        const params = new URLSearchParams(window.location.search);
+        const eventId = params.get('event_id') || params.get('eventId');
+
+        if (eventId) {
+            // Damos un pequeño respiro para que el DOM termine de renderizarse.
+            setTimeout(() => {
+                const eventCard = document.querySelector(`.evento-card[data-event-id="${eventId}"]`);
+
+                if (eventCard) {
+                    console.log(`🔗 Enlace directo detectado. Enfocando evento: ${eventId}`);
+
+                    // Hacemos scroll suave hasta la tarjeta
+                    eventCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    // Añadimos una clase para resaltarla visualmente
+                    eventCard.classList.add('highlighted');
+
+                    // Quitamos el resaltado después de unos segundos
+                    setTimeout(() => {
+                        eventCard.classList.remove('highlighted');
+                    }, 3500); // 3.5 segundos
+                } else {
+                    // Esto puede pasar si el evento ya no existe pero el enlace sí.
+                    console.warn(`No se encontró la tarjeta para el event_id: ${eventId}`);
+                }
+            }, 100); // Una pequeña espera de 100ms es suficiente.
+        }
+    }
+    // --- FIN DE LA NUEVA FUNCIÓN ---
+
     // --- EVENT LISTENERS Y MANEJADORES ---
 
     function setupEventListeners() {
@@ -428,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
             displayEvents(events);
 
             if (isUserSearch) {
-                const message = events.length > 0 
+                const message = events.length > 0
                     ? (filterEventId ? `Mostrando el evento compartido.` : `Se encontraron ${events.length} eventos.`)
                     : 'No se encontraron eventos.';
                 showNotification(message, events.length > 0 ? 'success' : 'info');
@@ -470,6 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (eventImageUrl) {
                 ogImageTag.setAttribute('content', eventImageUrl);
             }
+            handleDirectLink();
         }
         // --- FIN DE LA MODIFICACIÓN OG:IMAGE ---
 
@@ -514,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Fetch all events that might be related from the API
             const response = await fetch(`${API_BASE_URL}/api/events?search=${encodeURIComponent(artistName)}`);
             if (!response.ok) throw new Error('La respuesta de la red no fue correcta');
-            
+
             const data = await response.json();
             const events = data.events || data;
 
@@ -539,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (otherEvents.length > 0) {
                 const fragment = document.createDocumentFragment();
                 otherEvents.forEach(event => {
-                    if (!eventsCache[event._id]) { 
+                    if (!eventsCache[event._id]) {
                         eventsCache[event._id] = event;
                         fragment.appendChild(createEventCard(event));
                     }
@@ -562,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createEventCard(event) {
         const eventCard = document.createElement('article');
         eventCard.className = 'evento-card';
-
+        eventCard.setAttribute('data-event-id', event._id);
         const eventName = sanitizeField(event.name, 'Evento sin título');
         const artistName = sanitizeField(event.artist, 'Artista por confirmar');
         const description = sanitizeField(event.description, 'Sin descripción disponible.');
@@ -574,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const fullLocation = [eventVenue, eventCity, eventCountry].filter(Boolean).join(', ') || 'Ubicación no disponible';
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
-        
+
         let eventImageUrl = event.imageUrl;
         if (eventImageUrl && !eventImageUrl.startsWith('http')) {
             eventImageUrl = null;
