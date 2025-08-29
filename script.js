@@ -629,8 +629,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // En la función createEventCard(event)
 
+        // En la función createEventCard(event)
+
         eventCard.innerHTML = `
-    ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
     ${eventImageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen del evento ${eventName}" class="evento-card-img" onerror="this.remove()"></div>` : ''}
     <div class="card-header">
         <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
@@ -644,7 +645,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="evento-detalle"><i class="fas fa-clock"></i><span><strong>Hora:</strong> ${eventTime}</span></div>
         <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-map-marker-alt"></i><span><strong>Lugar:</strong> ${fullLocation}</span></a></div>
     </div>
+    <hr class="card-actions-separator">
     <div class="card-actions">
+        ${event.verified ? `<div class="verificado-badge"><i class="fas fa-check"></i> Verificado</div>` : ''}
         ${event.sourceURL ? `<a href="${event.sourceURL}" target="_blank" rel="noopener noreferrer" class="source-link-btn"><i class="fas fa-external-link-alt"></i> Ver Fuente</a>` : ''}
         <div class="card-actions-primary">
             <button class="gemini-btn" data-event-id="${event._id}">✨ Planear Noche</button>
