@@ -656,6 +656,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return eventCard;
     }
 
+    // --- FUNCIONES DE MODALES ---
+
+    // Define las URLs de los banners al inicio del script, junto a las otras constantes.
+    // Asegúrate de que estas URLs son las correctas y accesibles públicamente.
+    const BANNER_URL_M2 = 'https://afland.es/wp-content/uploads/2025/08/banner-publicidad-1.jpg';
+    const BANNER_URL_M3 = 'https://afland.es/wp-content/uploads/2025/08/banner-publicidad-2.jpg';
+
+    // La función displayNightPlan con la modificación para los nuevos banners
     function displayNightPlan(planData) {
         if (window.marked) {
             modalContent.innerHTML = marked.parse(planData.content);
@@ -664,15 +672,31 @@ document.addEventListener('DOMContentLoaded', () => {
             modalContent.innerHTML = `<pre style="white-space: pre-wrap;">${planData.content}</pre>`;
         }
 
+        // --- PRO: INYECTAR BANNERS DE MONETIZACIÓN ---
+        const newBannersHtml = `
+        <div class="banner-container" style="text-align: center; margin: 30px 0;">
+            <a href="#">
+                <img src="${BANNER_URL_M2}" alt="Publicidad para restaurantes y tablaos flamencos" style="max-width: 100%; height: auto; margin-bottom: 20px;" />
+            </a>
+            <a href="#">
+                <img src="${BANNER_URL_M3}" alt="Publicidad para hoteles y alojamientos con encanto" style="max-width: 100%; height: auto;" />
+            </a>
+        </div>
+    `;
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newBannersHtml;
+        modalContent.appendChild(tempDiv.firstChild);
+
+        // Banners de la tienda (ya existían en tu código)
         const shopLink = document.createElement('div');
         shopLink.className = 'shop-promo-modal';
         shopLink.innerHTML = `
-            <hr>
-            <div class="promo-content">
-                <h5>¿Buscas el atuendo perfecto?</h5>
-                <p>Visita nuestra <a href="https://afland.es/la-tienda-flamenca-afland/" target="_blank" rel="noopener noreferrer">Tienda Flamenca</a> para encontrar moda y accesorios únicos.</p>
-            </div>
-        `;
+        <hr>
+        <div class="promo-content">
+            <h5>¿Buscas el atuendo perfecto?</h5>
+            <p>Visita nuestra <a href="https://afland.es/la-tienda-flamenca-afland/" target="_blank" rel="noopener noreferrer">Tienda Flamenca</a> para encontrar moda y accesorios únicos.</p>
+        </div>
+    `;
         modalContent.appendChild(shopLink);
     }
 
