@@ -14,10 +14,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="manifest" href="manifest.json">
@@ -65,7 +64,7 @@
         <div class="modal">
             <button class="modal-close-btn">&times;</button>
             <div class="modal-content">
-                <h2><i class="fas fa-question-circle"></i> ¿Cómo funciona Duende Finder?</h2>
+                <h2><ion-icon name="help-circle-outline"></ion-icon> ¿Cómo funciona Duende Finder?</h2>
                 <p>Duende Finder es un motor de búsqueda especializado que rastrea constantemente la web en busca de
                     eventos de flamenco en tablaos, festivales y salas de conciertos de todo el mundo.</p>
                 <p><strong>Búsqueda Inteligente:</strong> Puedes buscar por artista, ciudad, provincia o nombre del
@@ -86,7 +85,7 @@
         <div class="modal">
             <button class="modal-close-btn">&times;</button>
             <div class="modal-content">
-                <h2><i class="fas fa-file-contract"></i> Términos y Condiciones</h2>
+                <h2><ion-icon name="document-text-outline"></ion-icon> Términos y Condiciones</h2>
                 <ol>
                     <li><strong>Uso del Servicio:</strong> Duende Finder es una herramienta gratuita de información. La
                         información de los eventos (fechas, artistas, lugares) se obtiene de fuentes públicas y puede
@@ -102,21 +101,27 @@
         </div>
     </div>
 
+    <div id="gemini-modal-overlay" class="modal-overlay">
+    </div>
+
+    <div id="image-modal-overlay" class="modal-overlay">
+    </div>
+
     <nav id="bottom-nav">
         <button class="nav-btn active" id="nav-home-btn" title="Inicio">
-            <i class="fas fa-home"></i>
+            <ion-icon name="home"></ion-icon>
         </button>
         <button class="nav-btn" id="nav-how-it-works-btn" title="Cómo Funciona">
-            <i class="fas fa-question-circle"></i>
+            <ion-icon name="help-circle-outline"></ion-icon>
         </button>
         <button class="nav-btn" id="nav-terms-btn" title="Términos y Condiciones">
-            <i class="fas fa-file-contract"></i>
+            <ion-icon name="document-text-outline"></ion-icon>
         </button>
         <button class="nav-btn" id="nav-theme-toggle" title="Cambiar Tema">
-            <i class="fas fa-moon"></i>
+            <ion-icon name="moon-outline"></ion-icon>
         </button>
         <a href="https://afland.es" target="_blank" rel="noopener noreferrer" class="nav-btn" title="Visitar Afland.es">
-            <i class="fas fa-feather-alt"></i>
+            <ion-icon name="flame-outline"></ion-icon>
         </a>
     </nav>
 

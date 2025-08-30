@@ -53,38 +53,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventCard = document.createElement('article');
         eventCard.className = 'evento-card';
         eventCard.setAttribute('data-event-id', event._id);
+
         const eventName = sanitizeField(event.name, 'Evento sin título');
         const artistName = sanitizeField(event.artist, 'Artista por confirmar');
         const description = sanitizeField(event.description, 'Sin descripción disponible.');
         const eventTime = sanitizeField(event.time, 'No disponible');
         const eventVenue = sanitizeField(event.location?.venue, 'Ubicación no disponible');
         const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
+
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
         const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
-        const blogIcon = event.blogPostUrl ? 'fa-book-open' : 'fa-blog';
+        const blogIcon = event.blogPostUrl ? 'book-outline' : 'newspaper-outline';
         const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
+
         eventCard.innerHTML = `
-            ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${event.imageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
-            <div class="card-header">
-                <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
+        ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${event.imageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
+        <div class="card-header">
+            <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
+        </div>
+        <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
+        <div class="descripcion-container">
+            <p class="descripcion-corta">${description}</p>
+        </div>
+        <div class="card-detalles">
+            <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
+            <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
+            <div class="evento-detalle"><ion-icon name="location-outline"></ion-icon><span>${eventVenue}</span></div>
+        </div>
+        <div class="card-actions">
+            <div class="card-actions-primary">
+                <button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button>
+                <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a>
+                <button class="share-button" data-event-id="${event._id}"><ion-icon name="share-social-outline"></ion-icon> Compartir</button>
             </div>
-            <div class="artista"><i class="fas fa-user"></i> <span>${artistName}</span></div>
-            <div class="descripcion-container">
-                <p class="descripcion-corta">${description}</p>
-            </div>
-            <div class="card-detalles">
-                <div class="evento-detalle"><i class="fas fa-calendar-alt"></i><span>${eventDate}</span></div>
-                <div class="evento-detalle"><i class="fas fa-clock"></i><span>${eventTime}</span></div>
-                <div class="evento-detalle"><i class="fas fa-map-marker-alt"></i><span>${eventVenue}</span></div>
-            </div>
-            <div class="card-actions">
-                <div class="card-actions-primary">
-                    <button class="gemini-btn" data-event-id="${event._id}"><i class="fas fa-magic"></i> Planear Noche</button>
-                    <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><i class="fas ${blogIcon}"></i> ${blogText}</a>
-                    <button class="share-button" data-event-id="${event._id}"><i class="fas fa-share-nodes"></i> Compartir</button>
-                </div>
-            </div>
-        `;
+        </div>
+    `;
         return eventCard;
     }
 
@@ -314,9 +317,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('duende-theme', theme);
         if (navThemeToggle) {
-            const icon = navThemeToggle.querySelector('i');
+            const icon = navThemeToggle.querySelector('ion-icon'); // Buscamos ion-icon
             if (icon) {
-                icon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+                // Cambiamos el atributo 'name' en lugar de la clase
+                icon.setAttribute('name', theme === 'dark' ? 'moon-outline' : 'sunny-outline');
             }
         }
     }

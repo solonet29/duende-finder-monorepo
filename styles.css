@@ -681,3 +681,23 @@ header {
 .modal-content ol {
     padding-left: 20px;
 }
+
+/* --- Ajustes para Ionicons --- */
+ion-icon {
+    font-size: 1.2em;
+    /* Hace el icono un poco más grande que el texto que lo rodea */
+    vertical-align: middle;
+    /* Mejora la alineación vertical */
+    margin-bottom: 2px;
+}
+
+/* Ajuste específico para la barra de navegación */
+#bottom-nav ion-icon {
+    font-size: 24px;
+}
+
+/* Ajuste para los detalles de la tarjeta */
+.evento-detalle ion-icon {
+    font-size: 18px;
+    color: var(--color-acento);
+}
