@@ -772,3 +772,24 @@ ion-icon {
     font-size: 18px;
     color: var(--color-acento);
 }
+
+.logo {
+    /* Evita que el texto se envuelva en varias líneas */
+    white-space: nowrap;
+}
+
+.logo span {
+    /* Ajusta dinámicamente el tamaño de la fuente */
+    font-size: clamp(1.2rem, 4vw, 2rem);
+
+    /* Garantiza que no haya saltos de línea */
+    white-space: nowrap;
+}
+
+/* Opcional: Si la barra superior tiene un 'padding' o un 'gap' */
+/* Puedes ajustar el tamaño de la fuente a un valor fijo si prefieres */
+@media (max-width: 768px) {
+    .logo span {
+        font-size: 4vw;
+    }
+}
