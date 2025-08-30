@@ -51,47 +51,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createEventCard(event) {
-        // Línea de depuración para ver los datos completos del evento
-        "Datos del evento recibidos:", event);
+        const eventCard = document.createElement('article');
+        eventCard.className = 'evento-card';
+        eventCard.setAttribute('data-event-id', event._id);
 
-const eventCard = document.createElement('article');
-eventCard.className = 'evento-card';
-eventCard.setAttribute('data-event-id', event._id);
+        const eventName = sanitizeField(event.name, 'Evento sin título');
+        const artistName = sanitizeField(event.artist, 'Artista por confirmar');
+        const description = sanitizeField(event.description, 'Sin descripción disponible.');
+        const eventTime = sanitizeField(event.time, 'No disponible');
+        const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
 
-const eventName = sanitizeField(event.name, 'Evento sin título');
-const artistName = sanitizeField(event.artist, 'Artista por confirmar');
-const description = sanitizeField(event.description, 'Sin descripción disponible.');
-const eventTime = sanitizeField(event.time, 'No disponible');
-const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
+        // Accedemos directamente a las propiedades venue y city
+        const venue = sanitizeField(event.venue, '');
+        const city = sanitizeField(event.city, '');
 
-// Accedemos directamente a las propiedades venue y city
-const venue = sanitizeField(event.venue, '');
-const city = sanitizeField(event.city, '');
+        let displayLocation = 'Ubicación no disponible';
+        if (venue && city) {
+            displayLocation = `${venue}, ${city}`;
+        } else if (venue || city) {
+            displayLocation = venue || city;
+        }
 
-let displayLocation = 'Ubicación no disponible';
-if (venue && city) {
-    displayLocation = `${venue}, ${city}`;
-} else if (venue || city) {
-    displayLocation = venue || city;
-}
+        // CORRECCIÓN CRÍTICA: Sintaxis del enlace de Google Maps
+        let mapLink;
+        const mapsQuery = [eventName, venue, city, sanitizeField(event.country, '')].filter(Boolean).join(', ');
+        if (event.location && event.location.coordinates) {
+            const [lon, lat] = event.location.coordinates;
+            mapLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+        } else {
+            mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`;
+        }
 
-// CORRECCIÓN CRÍTICA: Sintaxis del enlace de Google Maps
-let mapLink;
-const mapsQuery = [eventName, venue, city, sanitizeField(event.country, '')].filter(Boolean).join(', ');
-if (event.location && event.location.coordinates) {
-    const [lon, lat] = event.location.coordinates;
-    mapLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
-} else {
-    mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`;
-}
+        const blogUrl = event.blogPostUrl || 'https://afland.es/';
+        const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
+        const blogIcon = event.blogPostUrl ? 'book-outline' : 'newspaper-outline';
+        const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
+        const eventImageUrl = event.imageUrl || './assets/flamenco-placeholder.png';
 
-const blogUrl = event.blogPostUrl || 'https://afland.es/';
-const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
-const blogIcon = event.blogPostUrl ? 'book-outline' : 'newspaper-outline';
-const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
-const eventImageUrl = event.imageUrl || './assets/flamenco-placeholder.png';
-
-eventCard.innerHTML = `
+        eventCard.innerHTML = `
         ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
         <div class="card-header">
             <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
@@ -118,360 +115,360 @@ eventCard.innerHTML = `
             </div>
         </div>
         `;
-return eventCard;
+        return eventCard;
     }
 
-// =========================================================================
-// 4. LÓGICA DE LA APLICACIÓN
-// =========================================================================
-async function performSearch(params) {
-    showSkeletonLoader();
-    let url = `${API_BASE_URL}/api/events`;
-    const shouldScroll = !!params.clickedId || params.source === 'filter';
-    const apiParams = { ...params };
-    delete apiParams.clickedId;
-    delete apiParams.source;
-    const queryParams = new URLSearchParams(apiParams).toString();
-    if (queryParams) { url += `?${queryParams}`; }
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
-        const data = await response.json();
-        let eventsToShow = data.events || [];
-        if (params.clickedId && eventsToShow.length > 1) {
-            eventsToShow.sort((a, b) => {
-                if (a._id === params.clickedId) return -1;
-                if (b._id === params.clickedId) return 1;
-                return 0;
-            });
+    // =========================================================================
+    // 4. LÓGICA DE LA APLICACIÓN
+    // =========================================================================
+    async function performSearch(params) {
+        showSkeletonLoader();
+        let url = `${API_BASE_URL}/api/events`;
+        const shouldScroll = !!params.clickedId || params.source === 'filter';
+        const apiParams = { ...params };
+        delete apiParams.clickedId;
+        delete apiParams.source;
+        const queryParams = new URLSearchParams(apiParams).toString();
+        if (queryParams) { url += `?${queryParams}`; }
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
+            const data = await response.json();
+            let eventsToShow = data.events || [];
+            if (params.clickedId && eventsToShow.length > 1) {
+                eventsToShow.sort((a, b) => {
+                    if (a._id === params.clickedId) return -1;
+                    if (b._id === params.clickedId) return 1;
+                    return 0;
+                });
+            }
+            displayEvents(eventsToShow, shouldScroll);
+        } catch (error) {
+            console.error("Error en la búsqueda:", error);
+            hideSkeletonLoader();
+            if (statusMessage) statusMessage.textContent = 'Hubo un error al realizar la búsqueda.';
         }
-        displayEvents(eventsToShow, shouldScroll);
-    } catch (error) {
-        console.error("Error en la búsqueda:", error);
+    }
+
+    function displayEvents(events, shouldScroll = false) {
         hideSkeletonLoader();
-        if (statusMessage) statusMessage.textContent = 'Hubo un error al realizar la búsqueda.';
-    }
-}
-
-function displayEvents(events, shouldScroll = false) {
-    hideSkeletonLoader();
-    if (!resultsContainer) return;
-    resultsContainer.innerHTML = '';
-    eventsCache = {};
-    if (!events || events.length === 0) {
+        if (!resultsContainer) return;
+        resultsContainer.innerHTML = '';
+        eventsCache = {};
+        if (!events || events.length === 0) {
+            if (statusMessage) statusMessage.textContent = '';
+            if (noResultsMessage) noResultsMessage.style.display = 'block';
+            return;
+        }
         if (statusMessage) statusMessage.textContent = '';
-        if (noResultsMessage) noResultsMessage.style.display = 'block';
-        return;
-    }
-    if (statusMessage) statusMessage.textContent = '';
-    if (noResultsMessage) noResultsMessage.style.display = 'none';
-    const fragment = document.createDocumentFragment();
-    events.forEach(event => {
-        eventsCache[event._id] = event;
-        fragment.appendChild(createEventCard(event));
-    });
-    resultsContainer.appendChild(fragment);
-    if (shouldScroll) {
-        const resultsSection = document.querySelector('.full-events-section');
-        if (resultsSection) {
-            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }
-}
-
-async function loadAndDisplaySliders() {
-    try {
-        const [featuredResponse, recentResponse] = await Promise.all([
-            fetch(`${API_BASE_URL}/api/events?featured=true`),
-            fetch(`${API_BASE_URL}/api/events?sort=date&order=desc&limit=10`)
-        ]);
-        if (!featuredResponse.ok || !recentResponse.ok) throw new Error('Fallo al cargar datos para sliders');
-        const featuredData = await featuredResponse.json();
-        const recentData = await recentResponse.json();
-        if (featuredSlider && featuredData.events) {
-            featuredSlider.innerHTML = '';
-            featuredData.events.forEach(event => featuredSlider.appendChild(createSliderCard(event)));
-        }
-        if (recentSlider && recentData.events) {
-            recentSlider.innerHTML = '';
-            recentData.events.forEach(event => recentSlider.appendChild(createSliderCard(event)));
-        }
-    } catch (error) {
-        console.error("Error al cargar los sliders:", error);
-        if (featuredSlider) featuredSlider.parentElement.style.display = 'none';
-        if (recentSlider) recentSlider.parentElement.style.display = 'none';
-    }
-}
-
-// =========================================================================
-// 5. GESTORES DE EVENTOS Y LISTENERS
-// =========================================================================
-function handleResultsContainerClick(event) {
-    const geminiBtn = event.target.closest('.gemini-btn');
-    const shareBtn = event.target.closest('.share-button');
-    const image = event.target.closest('.evento-card-img');
-    const clickedCard = event.target.closest('.event-card');
-    if (geminiBtn) {
-        const eventId = geminiBtn.dataset.eventId;
-        const eventData = eventsCache[eventId];
-        if (eventData) getAndShowNightPlan(eventData);
-        return;
-    }
-    if (shareBtn) {
-        showNotification('Función de compartir próximamente.', 'info');
-        return;
-    }
-    if (image && !image.closest('.slider-container')) {
-        const imageModalOverlay = document.getElementById('image-modal-overlay');
-        const imageModalContent = document.getElementById('image-modal-content');
-        if (imageModalContent) imageModalContent.src = image.src;
-        if (imageModalOverlay) imageModalOverlay.style.display = 'flex';
-        return;
-    }
-    if (clickedCard && clickedCard.parentElement.classList.contains('slider-container')) {
-        const eventId = clickedCard.dataset.eventId;
-        const artistName = clickedCard.dataset.artistName;
-        if (eventId && artistName) {
-            performSearch({ artist: artistName, clickedId: eventId });
-        }
-    }
-}
-
-function setupEventListeners() {
-    if (resultsContainer) resultsContainer.addEventListener('click', handleResultsContainerClick);
-    if (featuredSlider) featuredSlider.addEventListener('click', handleResultsContainerClick);
-    if (recentSlider) recentSlider.addEventListener('click', handleResultsContainerClick);
-
-    if (filterBar) {
-        filterBar.addEventListener('click', (e) => {
-            if (e.target.classList.contains('filter-chip')) {
-                filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                const filterType = e.target.dataset.filter;
-                handleFilterClick(filterType);
+        if (noResultsMessage) noResultsMessage.style.display = 'none';
+        const fragment = document.createDocumentFragment();
+        events.forEach(event => {
+            eventsCache[event._id] = event;
+            fragment.appendChild(createEventCard(event));
+        });
+        resultsContainer.appendChild(fragment);
+        if (shouldScroll) {
+            const resultsSection = document.querySelector('.full-events-section');
+            if (resultsSection) {
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-        });
+        }
     }
 
-    if (navHomeBtn) {
-        navHomeBtn.addEventListener('click', () => {
-            performSearch({});
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (filterBar) {
-                filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
-                const todosFilter = filterBar.querySelector('[data-filter="todos"]');
-                if (todosFilter) todosFilter.classList.add('active');
+    async function loadAndDisplaySliders() {
+        try {
+            const [featuredResponse, recentResponse] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/events?featured=true`),
+                fetch(`${API_BASE_URL}/api/events?sort=date&order=desc&limit=10`)
+            ]);
+            if (!featuredResponse.ok || !recentResponse.ok) throw new Error('Fallo al cargar datos para sliders');
+            const featuredData = await featuredResponse.json();
+            const recentData = await recentResponse.json();
+            if (featuredSlider && featuredData.events) {
+                featuredSlider.innerHTML = '';
+                featuredData.events.forEach(event => featuredSlider.appendChild(createSliderCard(event)));
             }
-            if (resultsTitle) resultsTitle.textContent = 'Todos los Eventos';
-        });
-    }
-    if (navThemeToggle) {
-        navThemeToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
-        });
-    }
-    if (navHowItWorksBtn) {
-        navHowItWorksBtn.addEventListener('click', () => howItWorksModal?.classList.add('visible'));
-    }
-    if (navTermsBtn) {
-        navTermsBtn.addEventListener('click', () => termsModal?.classList.add('visible'));
+            if (recentSlider && recentData.events) {
+                recentSlider.innerHTML = '';
+                recentData.events.forEach(event => recentSlider.appendChild(createSliderCard(event)));
+            }
+        } catch (error) {
+            console.error("Error al cargar los sliders:", error);
+            if (featuredSlider) featuredSlider.parentElement.style.display = 'none';
+            if (recentSlider) recentSlider.parentElement.style.display = 'none';
+        }
     }
 
-    const modalCloseBtns = document.querySelectorAll('.modal-close-btn');
-    if (modalCloseBtns) {
-        modalCloseBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const modal = e.target.closest('.modal-overlay');
-                if (modal) modal.classList.remove('visible');
-            });
-        });
+    // =========================================================================
+    // 5. GESTORES DE EVENTOS Y LISTENERS
+    // =========================================================================
+    function handleResultsContainerClick(event) {
+        const geminiBtn = event.target.closest('.gemini-btn');
+        const shareBtn = event.target.closest('.share-button');
+        const image = event.target.closest('.evento-card-img');
+        const clickedCard = event.target.closest('.event-card');
+        if (geminiBtn) {
+            const eventId = geminiBtn.dataset.eventId;
+            const eventData = eventsCache[eventId];
+            if (eventData) getAndShowNightPlan(eventData);
+            return;
+        }
+        if (shareBtn) {
+            showNotification('Función de compartir próximamente.', 'info');
+            return;
+        }
+        if (image && !image.closest('.slider-container')) {
+            const imageModalOverlay = document.getElementById('image-modal-overlay');
+            const imageModalContent = document.getElementById('image-modal-content');
+            if (imageModalContent) imageModalContent.src = image.src;
+            if (imageModalOverlay) imageModalOverlay.style.display = 'flex';
+            return;
+        }
+        if (clickedCard && clickedCard.parentElement.classList.contains('slider-container')) {
+            const eventId = clickedCard.dataset.eventId;
+            const artistName = clickedCard.dataset.artistName;
+            if (eventId && artistName) {
+                performSearch({ artist: artistName, clickedId: eventId });
+            }
+        }
     }
 
-    const modalOverlays = document.querySelectorAll('.modal-overlay');
-    if (modalOverlays) {
-        modalOverlays.forEach(overlay => {
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    overlay.classList.remove('visible');
+    function setupEventListeners() {
+        if (resultsContainer) resultsContainer.addEventListener('click', handleResultsContainerClick);
+        if (featuredSlider) featuredSlider.addEventListener('click', handleResultsContainerClick);
+        if (recentSlider) recentSlider.addEventListener('click', handleResultsContainerClick);
+
+        if (filterBar) {
+            filterBar.addEventListener('click', (e) => {
+                if (e.target.classList.contains('filter-chip')) {
+                    filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    const filterType = e.target.dataset.filter;
+                    handleFilterClick(filterType);
                 }
             });
-        });
-    }
+        }
 
-    const copyBtn = document.getElementById('copy-plan-btn');
-    if (copyBtn) {
-        copyBtn.addEventListener('click', () => {
-            const modalContent = document.getElementById('modal-content');
-            if (modalContent) {
-                const textToCopy = modalContent.innerText;
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    showNotification('¡Plan copiado al portapapeles!', 'success');
-                }).catch(err => {
-                    console.error('Error al copiar el texto:', err);
+        if (navHomeBtn) {
+            navHomeBtn.addEventListener('click', () => {
+                performSearch({});
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (filterBar) {
+                    filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+                    const todosFilter = filterBar.querySelector('[data-filter="todos"]');
+                    if (todosFilter) todosFilter.classList.add('active');
+                }
+                if (resultsTitle) resultsTitle.textContent = 'Todos los Eventos';
+            });
+        }
+        if (navThemeToggle) {
+            navThemeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+            });
+        }
+        if (navHowItWorksBtn) {
+            navHowItWorksBtn.addEventListener('click', () => howItWorksModal?.classList.add('visible'));
+        }
+        if (navTermsBtn) {
+            navTermsBtn.addEventListener('click', () => termsModal?.classList.add('visible'));
+        }
+
+        const modalCloseBtns = document.querySelectorAll('.modal-close-btn');
+        if (modalCloseBtns) {
+            modalCloseBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const modal = e.target.closest('.modal-overlay');
+                    if (modal) modal.classList.remove('visible');
                 });
-            }
-        });
-    }
-}
-
-function handleFilterClick(filterType) {
-    if (navHomeBtn) {
-        navHomeBtn.classList.toggle('active', filterType === 'todos');
-    }
-    if (!resultsTitle) return;
-    switch (filterType) {
-        case 'todos':
-            resultsTitle.textContent = 'Todos los Eventos';
-            performSearch({ source: 'filter' });
-            break;
-        case 'cerca':
-            resultsTitle.textContent = 'Eventos Cerca de Ti 📍';
-            geolocationSearch();
-            break;
-        case 'hoy':
-            resultsTitle.textContent = 'Eventos para Hoy 📅';
-            performSearch({ date: 'today', source: 'filter' });
-            break;
-        case 'semana':
-            resultsTitle.textContent = 'Eventos de Esta Semana 🗓️';
-            performSearch({ dateRange: 'week', source: 'filter' });
-            break;
-        case 'festivales':
-            resultsTitle.textContent = 'Festivales Flamencos 🎪';
-            performSearch({ category: 'festival', source: 'filter' });
-            break;
-    }
-}
-
-// =========================================================================
-// 6. FUNCIONES AUXILIARES
-// =========================================================================
-
-function geolocationSearch() {
-    if (navigator.geolocation) {
-        if (statusMessage) statusMessage.textContent = 'Buscando tu ubicación...';
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                performSearch({ lat: latitude, lon: longitude, radius: 50 });
-            },
-            (error) => {
-                console.error("Error de geolocalización:", error);
-                showNotification('No se pudo obtener tu ubicación.', 'error');
-            }
-        );
-    } else {
-        showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
-    }
-}
-
-function sanitizeField(value, defaultText = 'No disponible') {
-    if (value && typeof value === 'string' && value.trim() && value.trim().toLowerCase() !== 'n/a') {
-        return value.trim();
-    }
-    return defaultText;
-}
-
-function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('duende-theme', theme);
-    if (navThemeToggle) {
-        const icon = navThemeToggle.querySelector('ion-icon'); // Buscamos ion-icon
-        if (icon) {
-            // Cambiamos el atributo 'name' en lugar de la clase
-            icon.setAttribute('name', theme === 'dark' ? 'moon-outline' : 'sunny-outline');
+            });
         }
-    }
-}
 
-async function getAndShowNightPlan(event) {
-    if (!geminiModalOverlay || !modalContent) return;
-    geminiModalOverlay.classList.add('visible');
-    modalContent.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Un momento, el duende está afinando la guitarra...</p></div>`;
-    const copyBtn = document.getElementById('copy-plan-btn');
-    if (copyBtn) copyBtn.style.display = 'none';
+        const modalOverlays = document.querySelectorAll('.modal-overlay');
+        if (modalOverlays) {
+            modalOverlays.forEach(overlay => {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('visible');
+                    }
+                });
+            });
+        }
 
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`La respuesta del servidor no fue OK: ${response.status} - ${errorText}`);
-        }
-        const data = await response.json();
-        if (window.marked) {
-            modalContent.innerHTML = marked.parse(data.content);
-        } else {
-            modalContent.innerHTML = `<pre style="white-space: pre-wrap;">${data.content}</pre>`;
-        }
+        const copyBtn = document.getElementById('copy-plan-btn');
         if (copyBtn) {
-            copyBtn.style.display = 'block';
-            // Añadir el listener AHORA, cuando el elemento existe
-            copyBtn.onclick = () => { // Usar onclick para evitar múltiples listeners
-                const textToCopy = modalContent.innerText;
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    showNotification('¡Plan copiado al portapapeles!', 'success');
-                }).catch(err => {
-                    console.error('Error al copiar el texto:', err);
-                });
-            };
+            copyBtn.addEventListener('click', () => {
+                const modalContent = document.getElementById('modal-content');
+                if (modalContent) {
+                    const textToCopy = modalContent.innerText;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        showNotification('¡Plan copiado al portapapeles!', 'success');
+                    }).catch(err => {
+                        console.error('Error al copiar el texto:', err);
+                    });
+                }
+            });
         }
-    } catch (error) {
-        console.error("Error al generar el Plan Noche:", error);
-        modalContent.innerHTML = `<div class="error-message"><h3>¡Vaya! El duende se ha despistado.</h3><p>No se pudo generar el plan. Inténtalo de nuevo más tarde.</p></div>`;
+    }
+
+    function handleFilterClick(filterType) {
+        if (navHomeBtn) {
+            navHomeBtn.classList.toggle('active', filterType === 'todos');
+        }
+        if (!resultsTitle) return;
+        switch (filterType) {
+            case 'todos':
+                resultsTitle.textContent = 'Todos los Eventos';
+                performSearch({ source: 'filter' });
+                break;
+            case 'cerca':
+                resultsTitle.textContent = 'Eventos Cerca de Ti 📍';
+                geolocationSearch();
+                break;
+            case 'hoy':
+                resultsTitle.textContent = 'Eventos para Hoy 📅';
+                performSearch({ date: 'today', source: 'filter' });
+                break;
+            case 'semana':
+                resultsTitle.textContent = 'Eventos de Esta Semana 🗓️';
+                performSearch({ dateRange: 'week', source: 'filter' });
+                break;
+            case 'festivales':
+                resultsTitle.textContent = 'Festivales Flamencos 🎪';
+                performSearch({ category: 'festival', source: 'filter' });
+                break;
+        }
+    }
+
+    // =========================================================================
+    // 6. FUNCIONES AUXILIARES
+    // =========================================================================
+
+    function geolocationSearch() {
+        if (navigator.geolocation) {
+            if (statusMessage) statusMessage.textContent = 'Buscando tu ubicación...';
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    performSearch({ lat: latitude, lon: longitude, radius: 50 });
+                },
+                (error) => {
+                    console.error("Error de geolocalización:", error);
+                    showNotification('No se pudo obtener tu ubicación.', 'error');
+                }
+            );
+        } else {
+            showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
+        }
+    }
+
+    function sanitizeField(value, defaultText = 'No disponible') {
+        if (value && typeof value === 'string' && value.trim() && value.trim().toLowerCase() !== 'n/a') {
+            return value.trim();
+        }
+        return defaultText;
+    }
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('duende-theme', theme);
+        if (navThemeToggle) {
+            const icon = navThemeToggle.querySelector('ion-icon'); // Buscamos ion-icon
+            if (icon) {
+                // Cambiamos el atributo 'name' en lugar de la clase
+                icon.setAttribute('name', theme === 'dark' ? 'moon-outline' : 'sunny-outline');
+            }
+        }
+    }
+
+    async function getAndShowNightPlan(event) {
+        if (!geminiModalOverlay || !modalContent) return;
+        geminiModalOverlay.classList.add('visible');
+        modalContent.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Un momento, el duende está afinando la guitarra...</p></div>`;
+        const copyBtn = document.getElementById('copy-plan-btn');
         if (copyBtn) copyBtn.style.display = 'none';
-    }
-}
 
-function showNotification(message, type = 'info') {
-    let notificationContainer = document.getElementById('notification-container');
-    if (!notificationContainer) {
-        notificationContainer = document.createElement('div');
-        notificationContainer.id = 'notification-container';
-        document.body.appendChild(notificationContainer);
-    }
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    notificationContainer.appendChild(notification);
-    setTimeout(() => {
-        notification.classList.add('hide');
-        notification.addEventListener('transitionend', () => notification.remove());
-    }, 5000);
-}
-
-function showSkeletonLoader() {
-    if (skeletonContainer) {
-        skeletonContainer.innerHTML = '';
-        resultsContainer.style.display = 'none';
-        skeletonContainer.style.display = 'grid';
-        for (let i = 0; i < 6; i++) {
-            const skeletonCard = document.createElement('div');
-            skeletonCard.className = 'skeleton-card';
-            skeletonCard.innerHTML = `<div class="skeleton title"></div><div class="skeleton text"></div><div class="skeleton text"></div>`;
-            skeletonContainer.appendChild(skeletonCard);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`La respuesta del servidor no fue OK: ${response.status} - ${errorText}`);
+            }
+            const data = await response.json();
+            if (window.marked) {
+                modalContent.innerHTML = marked.parse(data.content);
+            } else {
+                modalContent.innerHTML = `<pre style="white-space: pre-wrap;">${data.content}</pre>`;
+            }
+            if (copyBtn) {
+                copyBtn.style.display = 'block';
+                // Añadir el listener AHORA, cuando el elemento existe
+                copyBtn.onclick = () => { // Usar onclick para evitar múltiples listeners
+                    const textToCopy = modalContent.innerText;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        showNotification('¡Plan copiado al portapapeles!', 'success');
+                    }).catch(err => {
+                        console.error('Error al copiar el texto:', err);
+                    });
+                };
+            }
+        } catch (error) {
+            console.error("Error al generar el Plan Noche:", error);
+            modalContent.innerHTML = `<div class="error-message"><h3>¡Vaya! El duende se ha despistado.</h3><p>No se pudo generar el plan. Inténtalo de nuevo más tarde.</p></div>`;
+            if (copyBtn) copyBtn.style.display = 'none';
         }
     }
-    if (statusMessage) statusMessage.textContent = 'Buscando el mejor compás...';
-    if (noResultsMessage) noResultsMessage.style.display = 'none';
-}
 
-function hideSkeletonLoader() {
-    if (skeletonContainer) skeletonContainer.style.display = 'none';
-    if (resultsContainer) resultsContainer.style.display = 'grid';
-}
+    function showNotification(message, type = 'info') {
+        let notificationContainer = document.getElementById('notification-container');
+        if (!notificationContainer) {
+            notificationContainer = document.createElement('div');
+            notificationContainer.id = 'notification-container';
+            document.body.appendChild(notificationContainer);
+        }
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notificationContainer.appendChild(notification);
+        setTimeout(() => {
+            notification.classList.add('hide');
+            notification.addEventListener('transitionend', () => notification.remove());
+        }, 5000);
+    }
 
-// =========================================================================
-// 7. INICIALIZACIÓN
-// =========================================================================
+    function showSkeletonLoader() {
+        if (skeletonContainer) {
+            skeletonContainer.innerHTML = '';
+            resultsContainer.style.display = 'none';
+            skeletonContainer.style.display = 'grid';
+            for (let i = 0; i < 6; i++) {
+                const skeletonCard = document.createElement('div');
+                skeletonCard.className = 'skeleton-card';
+                skeletonCard.innerHTML = `<div class="skeleton title"></div><div class="skeleton text"></div><div class="skeleton text"></div>`;
+                skeletonContainer.appendChild(skeletonCard);
+            }
+        }
+        if (statusMessage) statusMessage.textContent = 'Buscando el mejor compás...';
+        if (noResultsMessage) noResultsMessage.style.display = 'none';
+    }
 
-function init() {
-    const savedTheme = localStorage.getItem('duende-theme') || 'dark';
-    applyTheme(savedTheme);
-    setupEventListeners();
-    loadAndDisplaySliders();
-    performSearch({});
-}
+    function hideSkeletonLoader() {
+        if (skeletonContainer) skeletonContainer.style.display = 'none';
+        if (resultsContainer) resultsContainer.style.display = 'grid';
+    }
 
-init();
+    // =========================================================================
+    // 7. INICIALIZACIÓN
+    // =========================================================================
+
+    function init() {
+        const savedTheme = localStorage.getItem('duende-theme') || 'dark';
+        applyTheme(savedTheme);
+        setupEventListeners();
+        loadAndDisplaySliders();
+        performSearch({});
+    }
+
+    init();
 });
