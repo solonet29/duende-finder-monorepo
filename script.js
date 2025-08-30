@@ -111,8 +111,11 @@ document.addEventListener('DOMContentLoaded', () => {
         showSkeletonLoader();
         let url = `${API_BASE_URL}/api/events`;
 
+        // --- LÍNEA CLAVE ---
+        // La búsqueda debe provocar scroll si viene de un slider (clickedId) O de un filtro (source: 'filter')
         const shouldScroll = !!params.clickedId || params.source === 'filter';
 
+        // Creamos una copia para no enviar nuestros parámetros internos a la API
         const apiParams = { ...params };
         delete apiParams.clickedId;
         delete apiParams.source;
@@ -124,8 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
+
             const data = await response.json();
             let eventsToShow = data.events || [];
+
+            // Lógica de ordenación para cuando se clica un slider
             if (params.clickedId && eventsToShow.length > 1) {
                 eventsToShow.sort((a, b) => {
                     if (a._id === params.clickedId) return -1;
@@ -133,7 +139,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     return 0;
                 });
             }
+
+            // Pasamos el array de eventos y la orden de hacer scroll a la función que los muestra
             displayEvents(eventsToShow, shouldScroll);
+
         } catch (error) {
             console.error("Error en la búsqueda:", error);
             hideSkeletonLoader();
