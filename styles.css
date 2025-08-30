@@ -593,3 +593,50 @@ header {
     font-size: 1.5rem;
     cursor: pointer;
 }
+
+/* ==========================================================================
+   8. BARRA DE NAVEGACIÓN INFERIOR
+   ========================================================================== */
+
+#bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(18, 18, 18, 0.85);
+    /* Fondo negro semitransparente */
+    backdrop-filter: blur(10px);
+    /* Efecto "cristal esmerilado" */
+    -webkit-backdrop-filter: blur(10px);
+    /* Para compatibilidad con Safari */
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    z-index: 1000;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    color: var(--color-texto-secundario);
+    font-size: 22px;
+    padding: 10px;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.nav-btn:hover {
+    color: var(--color-texto-principal);
+    transform: translateY(-3px);
+}
+
+/* Podríamos usar esta clase 'active' para el botón de la sección actual */
+.nav-btn.active {
+    color: var(--color-acento);
+}

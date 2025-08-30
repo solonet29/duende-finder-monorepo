@@ -22,15 +22,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const featuredSlider = document.getElementById('featured-events-slider');
     const recentSlider = document.getElementById('recent-events-slider');
 
-    const backToTopBtn = document.getElementById('back-to-top-btn');
     const filterBar = document.querySelector('.filter-bar');
 
-    // --- Modales ---
-    const settingsBtn = document.getElementById('settings-btn');
-    const settingsModalOverlay = document.getElementById('settings-modal-overlay');
-    const settingsModalCloseBtn = document.getElementById('settings-modal-close-btn');
-    const themeToggleSwitch = document.getElementById('theme-toggle-switch');
+    // --- Selectores de la nueva barra de navegación ---
+    const navHomeBtn = document.getElementById('nav-home-btn');
+    const navThemeToggle = document.getElementById('nav-theme-toggle');
+    const navBackToTop = document.getElementById('nav-back-to-top');
 
+    // --- Modales ---
     const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
     const modalContent = document.getElementById('modal-content');
     const modalCloseBtn = document.getElementById('modal-close-btn');
@@ -110,16 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
     async function performSearch(params) {
         showSkeletonLoader();
         let url = `${API_BASE_URL}/api/events`;
-
-        // --- LÍNEA CLAVE ---
-        // La búsqueda debe provocar scroll si viene de un slider (clickedId) O de un filtro (source: 'filter')
         const shouldScroll = !!params.clickedId || params.source === 'filter';
-
-        // Creamos una copia para no enviar nuestros parámetros internos a la API
         const apiParams = { ...params };
         delete apiParams.clickedId;
         delete apiParams.source;
-
         const queryParams = new URLSearchParams(apiParams).toString();
         if (queryParams) {
             url += `?${queryParams}`;
@@ -127,11 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
-
             const data = await response.json();
             let eventsToShow = data.events || [];
-
-            // Lógica de ordenación para cuando se clica un slider
             if (params.clickedId && eventsToShow.length > 1) {
                 eventsToShow.sort((a, b) => {
                     if (a._id === params.clickedId) return -1;
@@ -139,10 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return 0;
                 });
             }
-
-            // Pasamos el array de eventos y la orden de hacer scroll a la función que los muestra
             displayEvents(eventsToShow, shouldScroll);
-
         } catch (error) {
             console.error("Error en la búsqueda:", error);
             hideSkeletonLoader();
@@ -254,41 +241,36 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        if (backToTopBtn) {
-            window.addEventListener('scroll', () => {
-                backToTopBtn.classList.toggle('visible', window.scrollY > 300);
-            });
-            backToTopBtn.addEventListener('click', () => {
+        // --- LISTENERS PARA LA NUEVA BARRA DE NAVEGACIÓN ---
+        if (navHomeBtn) {
+            navHomeBtn.addEventListener('click', () => {
+                performSearch({});
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         }
 
-        if (settingsBtn) {
-            settingsBtn.addEventListener('click', () => settingsModalOverlay.classList.add('visible'));
-        }
-        if (settingsModalCloseBtn) {
-            settingsModalCloseBtn.addEventListener('click', () => settingsModalOverlay.classList.remove('visible'));
-        }
-        if (settingsModalOverlay) {
-            settingsModalOverlay.addEventListener('click', (e) => {
-                if (e.target === settingsModalOverlay) settingsModalOverlay.classList.remove('visible');
-            });
-        }
-        if (themeToggleSwitch) {
-            themeToggleSwitch.addEventListener('change', () => {
-                const newTheme = themeToggleSwitch.checked ? 'dark' : 'light';
+        if (navThemeToggle) {
+            navThemeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
                 applyTheme(newTheme);
             });
         }
 
+        if (navBackToTop) {
+            navBackToTop.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // --- Listeners de Modales ---
         if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => geminiModalOverlay.classList.remove('visible'));
         if (geminiModalOverlay) geminiModalOverlay.addEventListener('click', (e) => { if (e.target === geminiModalOverlay) geminiModalOverlay.classList.remove('visible'); });
         if (imageModalCloseBtn) imageModalCloseBtn.addEventListener('click', () => { if (imageModalOverlay) imageModalOverlay.style.display = 'none'; });
     }
 
     function handleFilterClick(filterType) {
-        if (!resultsTitle) return; // Si el título no existe, no hacemos nada
-
+        if (!resultsTitle) return;
         switch (filterType) {
             case 'todos':
                 resultsTitle.textContent = 'Todos los Eventos';
@@ -345,8 +327,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('duende-theme', theme);
-        if (themeToggleSwitch) {
-            themeToggleSwitch.checked = theme === 'dark';
+        if (navThemeToggle) {
+            const icon = navThemeToggle.querySelector('i');
+            if (icon) {
+                icon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+            }
         }
     }
 
@@ -370,16 +355,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showNotification(message, type = 'info') {
-        const notificationContainer = document.getElementById('notification-container');
+        let notificationContainer = document.getElementById('notification-container');
         if (!notificationContainer) {
-            const container = document.createElement('div');
-            container.id = 'notification-container';
-            document.body.appendChild(container);
+            notificationContainer = document.createElement('div');
+            notificationContainer.id = 'notification-container';
+            document.body.appendChild(notificationContainer);
         }
-        document.getElementById('notification-container').innerHTML += `<div class="notification ${type}">${message}</div>`;
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notificationContainer.appendChild(notification);
         setTimeout(() => {
-            const notif = document.querySelector('.notification');
-            if (notif) notif.remove();
+            notification.classList.add('hide');
+            notification.addEventListener('transitionend', () => notification.remove());
         }, 5000);
     }
 
