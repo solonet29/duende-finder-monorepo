@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
 
     const API_BASE_URL = window.location.hostname.includes('localhost')
-        ? 'http://localhost:3000'
-        : 'https://duende-api-next.vercel.app';
+        ? 'http://localhost:3000' // Para tu desarrollo local
+        : ''; // Para Vercel (producción y previews), usamos rutas relativas
 
     let eventsCache = {};
 
