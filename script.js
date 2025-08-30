@@ -85,15 +85,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventCard = document.createElement('div');
         eventCard.className = 'event-card';
         eventCard.setAttribute('data-event-id', event._id);
+        const artistName = sanitizeField(event.artist, 'Artista por confirmar');
+
+        // --- LÍNEA AÑADIDA ---
+        eventCard.setAttribute('data-artist-name', artistName);
+
         const placeholderUrl = 'https://placehold.co/280x160/121212/7f8c8d?text=Flamenco';
         const eventImageUrl = event.imageUrl || placeholderUrl;
-        const artistName = sanitizeField(event.artist, 'Artista por confirmar');
+
         eventCard.innerHTML = `
-            <img src="${eventImageUrl}" alt="${artistName}" class="card-image" onerror="this.src='${placeholderUrl}'">
-            <div class="card-content">
-                <h3 class="card-title">${artistName}</h3>
-            </div>
-        `;
+        <img src="${eventImageUrl}" alt="${artistName}" class="card-image" onerror="this.src='${placeholderUrl}'">
+        <div class="card-content">
+            <h3 class="card-title">${artistName}</h3>
+        </div>
+    `;
         return eventCard;
     }
 
@@ -258,19 +263,14 @@ document.addEventListener('DOMContentLoaded', () => {
         showSkeletonLoader();
 
         let url = `${API_BASE_URL}/api/events`;
-        let isSingleEventSearch = false; // <-- Variable de control
 
-        // Si el parámetro 'params' contiene un _id, construimos una URL diferente
-        if (params._id) {
-            url = `${API_BASE_URL}/api/events/${params._id}`;
-            isSingleEventSearch = true; // <-- Marcamos que es una búsqueda individual
-        }
-        // Si no, construimos la URL con parámetros de búsqueda normales.
-        else {
-            const queryParams = new URLSearchParams(params).toString();
-            if (queryParams) {
-                url += `?${queryParams}`;
-            }
+        // Creamos una copia de los parámetros para no enviar 'clickedId' a la API
+        const apiParams = { ...params };
+        delete apiParams.clickedId; // La API no necesita saber qué evento fue clicado
+
+        const queryParams = new URLSearchParams(apiParams).toString();
+        if (queryParams) {
+            url += `?${queryParams}`;
         }
 
         try {
@@ -279,10 +279,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
 
-            // --- LÍNEA CLAVE CORREGIDA ---
-            // Si es una búsqueda de un solo evento, 'data' es el evento. Lo metemos en un array.
-            // Si es una búsqueda general, los eventos están en 'data.events'.
-            const eventsToShow = isSingleEventSearch ? [data] : data.events || [];
+            let eventsToShow = data.events || [];
+
+            // --- NUEVA LÓGICA DE ORDENACIÓN ---
+            // Si nos han pasado un 'clickedId', reordenamos el array de resultados
+            if (params.clickedId && eventsToShow.length > 1) {
+                eventsToShow.sort((a, b) => {
+                    if (a._id === params.clickedId) return -1; // Mueve 'a' al principio
+                    if (b._id === params.clickedId) return 1;  // Mueve 'b' al principio
+                    return 0; // Deja el resto como está
+                });
+            }
 
             displayEvents(eventsToShow);
 
@@ -308,22 +315,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (shareBtn) {
-            // Lógica de compartir...
+            // Lógica de compartir (no necesita cambios)
+            const eventId = shareBtn.dataset.eventId;
+            const eventData = eventsCache[eventId];
+            if (eventData && navigator.share) {
+                const shareUrl = new URL(window.location.origin + window.location.pathname);
+                shareUrl.searchParams.set('eventId', eventId);
+                navigator.share({
+                    title: eventData.name || 'Evento de Flamenco',
+                    text: `¡Mira este evento flamenco: ${eventData.name}!`,
+                    url: shareUrl.href,
+                }).catch(err => console.error("Error al compartir:", err));
+            } else {
+                showNotification('Tu navegador no soporta la función de compartir.', 'warning');
+            }
             return;
         }
 
         if (image) {
-            imageModalContent.src = image.src;
-            imageModalOverlay.style.display = 'flex';
-            return;
+            // Comprobamos que no estemos dentro de un slider para la lógica de ampliar
+            if (!image.closest('.slider-container')) {
+                imageModalContent.src = image.src;
+                imageModalOverlay.style.display = 'flex';
+            }
+            // Si la imagen está en un slider, dejamos que el siguiente bloque lo gestione
         }
 
+        // Lógica principal para el clic en una tarjeta del slider
         if (clickedCard && clickedCard.parentElement.classList.contains('slider-container')) {
             const eventId = clickedCard.dataset.eventId;
-            if (eventId) {
+            const artistName = clickedCard.dataset.artistName; // <-- Leemos el nombre del artista
+
+            if (eventId && artistName) { // <-- Nos aseguramos de tener ambos datos
                 const slidersSection = document.querySelector('.sliders-section');
                 if (slidersSection) slidersSection.style.display = 'none';
-                performSearch({ _id: eventId });
+
+                // <-- Llamamos a la búsqueda con el artista y el ID para ordenar
+                performSearch({ artist: artistName, clickedId: eventId });
             }
         }
     }
