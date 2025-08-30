@@ -8,241 +8,124 @@
     <meta name="description"
         content="Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por todo el Mundo.">
     <meta property="og:image"
-        content="https://www.afland.es/wp-content/uploads/2024/04/DUENDE-FINDER-LOGO-1200-X-630-PX.png"
-        id="og-image-tag">
+        content="https://www.afland.es/wp-content/uploads/2024/04/DUENDE-FINDER-LOGO-1200-X-630-PX.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&display=swap"
         rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#121212" id="theme-color-meta">
+    <meta name="theme-color" content="#121212">
+
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="chatbot.css">
 </head>
 
-<body id="top">
-    <div id="notification-container"></div>
+<body>
+
+    <header>
+        <div class="top-bar">
+            <div class="logo">
+                <span>Duende Finder</span>
+            </div>
+        </div>
+        <nav class="filter-bar">
+            <button class="filter-chip active" data-filter="todos">Todos</button>
+            <button class="filter-chip" data-filter="hoy">Hoy</button>
+            <button class="filter-chip" data-filter="semana">Esta Semana</button>
+            <button class="filter-chip" data-filter="festivales">Festivales</button>
+        </nav>
+    </header>
 
     <main class="container">
-        <header class="main-header">
-            <h1><span class="duende-word">Duende</span> <span>Finder</span></h1>
-            <button id="settings-btn" class="settings-btn" aria-label="Abrir ajustes"><i
-                    class="fas fa-cog"></i></button>
-        </header>
+        <section class="sliders-section">
+            <h2>Eventos Destacados ✨</h2>
+            <div class="slider-container" id="featured-events-slider"></div>
+            <h2>Próximos Flamencos 🔥</h2>
+            <div class="slider-container" id="recent-events-slider"></div>
+        </section>
 
-        <div id="search-controls">
-            <p class="subtitle"><i class="fas fa-guitar"></i>Descubre la magia del flamenco. Busca conciertos, tablaos y
-                festivales.</p>
-            <p class="event-counter">Tenemos <strong id="total-events">...</strong> eventos en nuestra agenda.</p>
-
-            <form id="search-form" class="search-form">
-                <input type="text" id="search-input" class="search-input"
-                    placeholder="Buscar por artista, evento o ciudad...">
-                <button type="submit" id="searchBtn" class="search-button">Buscar</button>
-            </form>
-
-            <div class="main-actions">
-                <div class="main-actions-group">
-                    <button id="nearby-events-btn" class="action-btn">🎯 Buscar cerca de mí</button>
-                    <button id="trip-planner-btn" class="action-btn"><i class="fas fa-route"></i> Planear Viaje</button>
-                </div>
-                <a href="https://afland.es/la-tienda-flamenca-afland/" target="_blank" rel="noopener noreferrer"
-                    class="action-btn promo-action-btn">
-                    <i class="fas fa-shopping-bag"></i> Tienda Flamenca
-                </a>
+        <section class="full-events-section">
+            <h2 id="results-title">Todos los Eventos</h2>
+            <div id="statusMessage"></div>
+            <div id="skeleton-container" class="grid-view"></div>
+            <div id="resultsContainer" class="grid-view"></div>
+            <div id="no-results-message" style="display:none;">
+                <p>No se encontraron eventos.</p>
             </div>
-
-            <div class="filter-toggles-wrapper">
-                <button id="province-filters-toggle" class="quick-filters-toggle">Búsqueda por Provincia <i
-                        class="fas fa-chevron-down"></i></button>
-                <button id="country-filters-toggle" class="quick-filters-toggle">Búsqueda por País <i
-                        class="fas fa-chevron-down"></i></button>
-            </div>
-            <div id="province-filters-container" class="quick-filters-container">
-                <a href="?city=Sevilla" class="quick-filter-btn">Sevilla</a><a href="?city=Málaga"
-                    class="quick-filter-btn">Málaga</a><a href="?city=Granada" class="quick-filter-btn">Granada</a><a
-                    href="?city=Cádiz" class="quick-filter-btn">Cádiz</a><a href="?city=Córdoba"
-                    class="quick-filter-btn">Córdoba</a><a href="?city=Jerez de la Frontera"
-                    class="quick-filter-btn">Jerez</a><a href="?city=Huelva" class="quick-filter-btn">Huelva</a><a
-                    href="?city=Almería" class="quick-filter-btn">Almería</a><a href="?city=Jaén"
-                    class="quick-filter-btn">Jaén</a>
-            </div>
-            <div id="country-filters-container" class="quick-filters-container">
-                <a href="?country=Francia" class="quick-filter-btn">Francia</a><a href="?country=Japón"
-                    class="quick-filter-btn">Japón</a><a href="?country=EEUU" class="quick-filter-btn">EEUU</a><a
-                    href="?country=Reino Unido" class="quick-filter-btn">Reino Unido</a><a href="?country=Argentina"
-                    class="quick-filter-btn">Argentina</a>
-            </div>
-        </div>
-
-        <div id="statusMessage" class="status-message" aria-live="polite" role="status"></div>
-        <div id="no-results-message" style="display: none;">
-            <h3>No se encontraron eventos con tu búsqueda.</h3>
-            <p>Intenta con otros términos o explora la lista completa.</p>
-            <button id="reload-all-btn" class="action-btn">Ver todos los eventos</button>
-            <p class="shop-promo-no-results">
-                Mientras tanto, ¿por qué no echas un vistazo a nuestra
-                <a href="https://afland.es/la-tienda-flamenca-afland/" target="_blank" rel="noopener noreferrer">Tienda
-                    Flamenca</a>?
-            </p>
-        </div>
-        <div id="skeleton-container"></div>
-        <div id="resultsContainer" style="display: none;"></div>
+        </section>
     </main>
 
-    <a href="#top" id="back-to-top-btn" class="back-to-top-btn" aria-label="Volver arriba"><i
-            class="fas fa-arrow-up"></i></a>
+    <div id="how-it-works-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close-btn">&times;</button>
+            <div class="modal-content">
+                <h2><ion-icon name="help-circle-outline"></ion-icon> ¿Cómo funciona Duende Finder?</h2>
+                <p>Duende Finder es un motor de búsqueda especializado que rastrea constantemente la web en busca de
+                    eventos de flamenco en tablaos, festivales y salas de conciertos de todo el mundo.</p>
+                <p><strong>Búsqueda Inteligente:</strong> Puedes buscar por artista, ciudad, provincia o nombre del
+                    evento. Nuestro sistema buscará en nuestra base de datos, que se actualiza diariamente.</p>
+                <p><strong>Cerca de Mí:</strong> Usando la geolocalización de tu dispositivo, te mostramos los eventos
+                    más cercanos a tu ubicación actual en un radio de 60 km.</p>
+                <p><strong>Planificador de Noche:</strong> Gracias a la IA de Gemini, podemos sugerirte un plan completo
+                    para tu velada flamenca, recomendándote lugares para cenar o tomar algo cerca del evento.</p>
+                <p><strong>Contenido Enriquecido:</strong> Para eventos seleccionados, nuestro sistema de IA genera
+                    automáticamente un artículo detallado. Si ves el botón naranja "Leer en el Blog", te llevará a un
+                    post único sobre ese evento. Si no, el botón "Explorar Blog" te llevará a nuestra página principal
+                    de contenido flamenco.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="terms-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close-btn">&times;</button>
+            <div class="modal-content">
+                <h2><ion-icon name="document-text-outline"></ion-icon> Términos y Condiciones</h2>
+                <ol>
+                    <li><strong>Uso del Servicio:</strong> Duende Finder es una herramienta gratuita de información. La
+                        información de los eventos (fechas, artistas, lugares) se obtiene de fuentes públicas y puede
+                        estar sujeta a cambios por parte de los organizadores.</li>
+                    <li><strong>Exactitud:</strong> Aunque nos esforzamos por tener la información más precisa y
+                        actualizada posible, siempre recomendamos verificar los detalles en la fuente original del
+                        evento (enlace "Ver Fuente") antes de hacer planes o comprar entradas.</li>
+                    <li><strong>Privacidad:</strong> Si activas las notificaciones o la búsqueda por ubicación, tus
+                        datos se gestionan de forma anónima y segura. No almacenamos información personal identificable.
+                        Tu ubicación solo se usa en el momento de la búsqueda y no se guarda.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
 
     <div id="gemini-modal-overlay" class="modal-overlay">
-        <div class="modal">
-            <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
-            <button id="copy-plan-btn" class="modal-copy-btn" aria-label="Copiar al portapapeles"><i
-                    class="fas fa-copy"></i></button>
-            <div id="modal-content" class="modal-content"></div>
-        </div>
     </div>
 
-    <div id="trip-planner-modal-overlay" class="modal-overlay">
-        <div class="modal">
-            <button id="trip-modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
-            <div class="modal-header">
-                <h2><i class="fas fa-route"></i> Planificador de Viaje Flamenco</h2>
-            </div>
-            <form id="trip-planner-form">
-                <div class="form-group">
-                    <label for="trip-destination">Destino</label>
-                    <select id="trip-destination" required>
-                        <option value="Cádiz">Cádiz</option>
-                        <option value="Córdoba">Córdoba</option>
-                        <option value="Granada">Granada</option>
-                        <option value="Huelva">Huelva</option>
-                        <option value="Jaén">Jaén</option>
-                        <option value="Jerez">Jerez de la Frontera</option>
-                        <option value="Málaga">Málaga</option>
-                        <option value="Sevilla">Sevilla</option>
-                        <option value="Almeria">Almería</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label for="trip-start-date">Fecha de Inicio</label><input type="date"
-                            id="trip-start-date" required></div>
-                    <div class="form-group"><label for="trip-end-date">Fecha de Fin</label><input type="date"
-                            id="trip-end-date" required></div>
-                </div>
-                <button type="submit" class="submit-btn">Generar Plan de Viaje</button>
-            </form>
-            <div id="trip-planner-result"></div>
-        </div>
+    <div id="image-modal-overlay" class="modal-overlay">
     </div>
 
-    <div id="settings-modal-overlay" class="modal-overlay">
-        <div class="modal">
-            <button id="settings-modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
-            <div class="modal-header">
-                <h2><i class="fas fa-cog"></i> Ajustes</h2>
-            </div>
-
-            <div class="settings-content">
-
-                <div class="setting-item">
-                    <label for="theme-toggle-switch"><i class="fas fa-palette"></i> Modo Oscuro</label>
-                    <label class="switch">
-                        <input type="checkbox" id="theme-toggle-switch">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                <div class="setting-item">
-                    <label for="notifications-toggle-switch"><i class="fas fa-bell"></i> Activar Notificaciones</label>
-                    <label class="switch">
-                        <input type="checkbox" id="notifications-toggle-switch">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-
-                <hr>
-
-                <button class="settings-action-btn" data-modal-content-id="how-it-works-content">
-                    <i class="fas fa-question-circle"></i> Cómo funciona
-                </button>
-                <button class="settings-action-btn" data-modal-content-id="terms-content">
-                    <i class="fas fa-file-alt"></i> Términos y Condiciones
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="ambiguity-modal-overlay" class="modal-overlay">
-        <div id="ambiguity-modal-content" class="modal">
-        </div>
-    </div>
-
-    <div style="display: none;">
-        <div id="how-it-works-content">
-            <h2><i class="fas fa-magic"></i> ¿Cómo funciona Duende Finder?</h2>
-            <p>Duende Finder es un motor de búsqueda especializado que rastrea constantemente la web en busca de eventos
-                de flamenco en tablaos, festivales y salas de conciertos de todo el mundo.</p>
-            <p><strong>Búsqueda Inteligente:</strong> Puedes buscar por artista, ciudad, provincia o nombre del evento.
-                Nuestro sistema buscará en nuestra base de datos, que se actualiza diariamente.</p>
-            <p><strong>Cerca de Mí:</strong> Usando la geolocalización de tu dispositivo, te mostramos los eventos más
-                cercanos a tu ubicación actual en un radio de 60 km.</p>
-            <p><strong>Planificador de Noche:</strong> Gracias a la IA de Gemini, podemos sugerirte un plan completo
-                para tu velada flamenca, recomendándote lugares para cenar o tomar algo cerca del evento.</p>
-            <p><strong>Contenido Enriquecido:</strong> Para eventos seleccionados, nuestro sistema de IA genera
-                automáticamente un artículo detallado.
-                Si ves el botón naranja <strong>"Leer en el Blog"</strong>, te llevará a un post único sobre ese evento.
-                Si no, el botón <strong>"Explorar Blog"</strong> te llevará a nuestra página principal de contenido
-                flamenco.</p>
-        </div>
-
-        <div id="terms-content">
-            <h2><i class="fas fa-file-contract"></i> Términos y Condiciones</h2>
-            <p><strong>1. Uso del Servicio:</strong> Duende Finder es una herramienta gratuita de información. La
-                información de los eventos (fechas, artistas, lugares) se obtiene de fuentes públicas y puede estar
-                sujeta a cambios por parte de los organizadores.</p>
-            <p><strong>2. Exactitud:</strong> Aunque nos esforzamos por tener la información más precisa y actualizada
-                posible, siempre recomendamos verificar los detalles en la fuente original del evento (enlace "Ver
-                Fuente") antes de hacer planes o comprar entradas.</p>
-            <p><strong>3. Privacidad:</strong> Si activas las notificaciones o la búsqueda por ubicación, tus datos se
-                gestionan de forma anónima y segura. No almacenamos información personal identificable. Tu ubicación
-                solo se usa en el momento de la búsqueda y no se guarda.</p>
-        </div>
-    </div>
-
-    <div id="info-modal-overlay" class="modal-overlay">
-        <div class="modal">
-            <button id="info-modal-close-btn" class="modal-close-btn" aria-label="Cerrar">×</button>
-            <div id="info-modal-content" class="modal-content text-content">
-            </div>
-        </div>
-    </div>
-
-    <footer class="main-footer">
-        <div class="footer-content">
-            <p>&copy; 2025 Duende Finder</p>
-            <nav class="footer-nav">
-                <a href="https://afland.es/la-tienda-flamenca-afland/" target="_blank"
-                    rel="noopener noreferrer">Tienda</a>
-                <a href="como-funciona.html">Cómo Funciona</a>
-                <a href="terminos.html">Términos</a>
-            </nav>
-        </div>
-    </footer>
-
-    <div id="image-modal-overlay" class="image-modal-overlay">
-        <span class="image-modal-close-btn">&times;</span>
-        <img class="image-modal-content" id="image-modal-content">
-    </div>
+    <nav id="bottom-nav">
+        <button class="nav-btn active" id="nav-home-btn" title="Inicio">
+            <ion-icon name="home"></ion-icon>
+        </button>
+        <button class="nav-btn" id="nav-how-it-works-btn" title="Cómo Funciona">
+            <ion-icon name="help-circle-outline"></ion-icon>
+        </button>
+        <button class="nav-btn" id="nav-terms-btn" title="Términos y Condiciones">
+            <ion-icon name="document-text-outline"></ion-icon>
+        </button>
+        <button class="nav-btn" id="nav-theme-toggle" title="Cambiar Tema">
+            <ion-icon name="moon-outline"></ion-icon>
+        </button>
+        <a href="https://afland.es" target="_blank" rel="noopener noreferrer" class="nav-btn" title="Visitar Afland.es">
+            <ion-icon name="flame-outline"></ion-icon>
+        </a>
+    </nav>
 
     <script src="script.js"></script>
-    <script src="chatbot.js"></script>
 </body>
 
 </html>

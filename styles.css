@@ -1,47 +1,123 @@
+/* ==========================================================================
+   1. VARIABLES Y TEMAS (THEMING) - CORREGIDO
+   ========================================================================== */
+
 :root {
+    /* --- COLORES BASE (DARK) --- */
     --color-fondo-dark: #121212;
-    --color-superficie-dark: #1e1e1e;
-    --color-borde-dark: #444;
-    --color-primario-dark: #3DDC84;
+    --color-superficie-dark: #181818;
     --color-texto-principal-dark: #e0e0e0;
     --color-texto-secundario-dark: #a0a0a0;
-    --color-gemini-btn-dark: #3498db;
-    --color-gemini-btn-hover-dark: #5dade2;
-    --color-enlace-dark: var(--color-primario-dark);
+    --color-borde-dark: #282828;
+    --color-acento-marca-dark: #E58A2D;
+    --color-nav-fondo-dark: rgba(18, 18, 18, 0.85);
+    /* Fondo semitransparente para la barra nav */
+
+    /* --- COLORES BASE (LIGHT) --- */
     --color-fondo-light: #f4f4f5;
     --color-superficie-light: #ffffff;
-    --color-borde-light: #d4d4d8;
-    --color-primario-light: #16a34a;
-    --color-texto-principal-light: #18181b;
+    --color-texto-principal-light: #181818;
     --color-texto-secundario-light: #71717a;
-    --color-gemini-btn-light: #2980b9;
-    --color-gemini-btn-hover-light: #3498db;
-    --color-enlace-light: var(--color-primario-light);
+    --color-borde-light: #d4d4d8;
+    --color-acento-marca-light: #D47F26;
+    --color-nav-fondo-light: rgba(244, 244, 245, 0.85);
+    /* Equivalente en claro */
 }
 
+/* TEMA OSCURO */
 [data-theme="dark"] {
     --color-fondo: var(--color-fondo-dark);
     --color-superficie: var(--color-superficie-dark);
     --color-borde: var(--color-borde-dark);
-    --color-primario: var(--color-primario-dark);
     --color-texto-principal: var(--color-texto-principal-dark);
     --color-texto-secundario: var(--color-texto-secundario-dark);
-    --color-gemini-btn: var(--color-gemini-btn-dark);
-    --color-gemini-btn-hover: var(--color-gemini-btn-hover-dark);
-    --color-enlace: var(--color-enlace-dark);
+    --color-acento: var(--color-acento-marca-dark);
+    --color-nav-fondo: var(--color-nav-fondo-dark);
+    /* <-- Variable añadida */
 }
 
+/* TEMA CLARO */
 [data-theme="light"] {
     --color-fondo: var(--color-fondo-light);
     --color-superficie: var(--color-superficie-light);
     --color-borde: var(--color-borde-light);
-    --color-primario: var(--color-primario-light);
     --color-texto-principal: var(--color-texto-principal-light);
     --color-texto-secundario: var(--color-texto-secundario-light);
-    --color-gemini-btn: var(--color-gemini-btn-light);
-    --color-gemini-btn-hover: var(--color-gemini-btn-hover-light);
-    --color-enlace: var(--color-enlace-light);
+    --color-acento: var(--color-acento-marca-light);
+    --color-nav-fondo: var(--color-nav-fondo-light);
+    /* <-- Variable añadida */
 }
+
+
+/* ==========================================================================
+   3. CABECERA (HEADER) - CORREGIDO
+   ========================================================================== */
+
+header {
+    background-color: var(--color-fondo);
+    /* Ahora usa la variable del fondo principal */
+    padding: 10px 15px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--color-borde);
+    /* Borde sutil para separar */
+    box-shadow: none;
+    /* Quitamos la sombra, el borde es más limpio */
+}
+
+/* ... (El resto de estilos de la cabecera .top-bar, .logo, etc. se quedan igual) ... */
+
+
+/* ==========================================================================
+   8. BARRA DE NAVEGACIÓN INFERIOR - CORREGIDO
+   ========================================================================== */
+
+#bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--color-nav-fondo);
+    /* <-- AHORA USA LA VARIABLE DE TEMA */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    z-index: 1000;
+    border-top: 1px solid var(--color-borde);
+    /* Borde sutil */
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    color: var(--color-texto-secundario);
+    /* Ya usa variables, correcto */
+    font-size: 22px;
+    padding: 10px;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.nav-btn:hover {
+    color: var(--color-texto-principal);
+    transform: translateY(-3px);
+}
+
+.nav-btn.active {
+    color: var(--color-acento);
+}
+
+/* ==========================================================================
+   2. ESTILOS GLOBALES Y DE BASE
+   ========================================================================== */
 
 html {
     box-sizing: border-box;
@@ -59,484 +135,488 @@ body {
     background-color: var(--color-fondo);
     color: var(--color-texto-principal);
     margin: 0;
-    padding: 2rem;
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    min-height: 100vh;
     transition: background-color 0.3s ease, color 0.3s ease;
-    background-image: radial-gradient(circle at top, color-mix(in srgb, var(--color-fondo) 80%, white) 0%, var(--color-fondo) 40%);
+    background-image: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--color-fondo) 90%, white), var(--color-fondo) 70%);
 }
 
 main.container {
     max-width: 1200px;
     width: 100%;
     margin: 0 auto;
-    text-align: center;
-    flex-grow: 1;
+    padding: 0 15px;
+    /* Padding para los lados en móvil */
+}
+
+/* ==========================================================================
+   3. CABECERA (HEADER)
+   ========================================================================== */
+
+/* --- CABECERA --- */
+header {
+    background-color: var(--color-fondo);
+    padding: 10px 15px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Barra Superior --- */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
     position: relative;
+    height: 40px;
 }
 
-h1 {
-    font-family: 'Inter', sans-serif;
-    font-size: 3.5rem;
-    font-weight: 900;
-    margin-bottom: 0.5rem;
+.logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-h1 .duende-word {
-    font-family: 'Cinzel', serif;
+.logo span {
+    font-size: 1.4rem;
     font-weight: 700;
     color: var(--color-texto-principal);
+    font-family: 'Cinzel', serif;
 }
 
-h1 span {
-    color: var(--color-primario);
+.header-actions {
+    margin-left: auto;
+    /* Empuja el botón de ajustes a la derecha */
 }
 
-.subtitle {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    font-size: 1.1rem;
-}
-
-.theme-toggle-btn {
-    position: absolute;
-    top: 0;
-    right: 0;
+.header-btn {
     background: none;
-    border: 2px solid var(--color-borde);
+    border: none;
     color: var(--color-texto-secundario);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    font-size: 24px;
     cursor: pointer;
-    font-size: 1.2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: color 0.3s ease, border-color 0.3s ease;
+    transition: color 0.2s;
 }
 
-.theme-toggle-btn:hover,
-.theme-toggle-btn:focus-visible {
-    color: var(--color-primario);
-    border-color: var(--color-primario);
-    outline: none;
-}
-
-.event-counter {
-    margin-top: 1.5rem;
-    margin-bottom: 2rem;
-    color: var(--color-texto-secundario);
-    font-size: 1.1rem;
-}
-
-.search-form {
-    max-width: 600px;
-    margin: 0 auto 1.5rem auto;
-    display: flex;
-    gap: 0.5rem;
-}
-
-.search-input {
-    flex-grow: 1;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    border-radius: 20px;
-    border: 1px solid var(--color-borde);
-    background-color: var(--color-superficie);
+.header-btn:hover {
     color: var(--color-texto-principal);
 }
 
-.search-button {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    background-color: var(--color-primario);
-    color: var(--color-fondo);
-}
-
-@media (max-width: 600px) {
-    .search-form {
-        flex-direction: column;
-    }
-}
-
-.trip-planner-btn {
-    background-color: var(--color-gemini-btn);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    cursor: pointer;
-    margin-bottom: 2.5rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.filter-toggles-wrapper {
-    margin-bottom: 1.5rem;
-}
-
-.quick-filters-toggle {
-    background: none;
-    border: none;
-    color: var(--color-texto-secundario);
-    cursor: pointer;
-    text-decoration: none;
-    margin-bottom: 1.5rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: inherit;
-    font-size: 1.1rem;
-    padding: 0;
-    transition: color 0.2s ease;
-}
-
-.quick-filters-toggle:hover {
-    color: var(--color-primario);
-    text-decoration: underline;
-}
-
-.quick-filters-container {
+/* --- Barra de Filtros --- */
+.filter-bar {
     display: flex;
-    flex-wrap: nowrap;
+    gap: 10px;
     overflow-x: auto;
-    justify-content: flex-start;
-    gap: 1rem;
-    margin-bottom: 0;
-    overflow-y: hidden;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    transition: all 0.5s ease-out;
+    padding-bottom: 5px;
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
 
-.quick-filters-container::-webkit-scrollbar {
+.filter-bar::-webkit-scrollbar {
     display: none;
 }
 
-.quick-filters-container.visible {
-    max-height: 80px;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-}
-
-.quick-filter-btn {
+.filter-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--color-borde);
     background-color: var(--color-superficie);
     color: var(--color-texto-principal);
-    border: 1px solid var(--color-borde);
-    text-decoration: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
     white-space: nowrap;
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s ease;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-.quick-filter-btn:hover,
-.quick-filter-btn:focus-visible {
-    background-color: var(--color-primario);
-    color: var(--color-fondo);
-    border-color: var(--color-primario);
-    outline: none;
+.filter-chip:hover {
+    background-color: var(--color-borde);
 }
 
-.quick-filter-btn:active {
-    transform: scale(0.95);
+.filter-chip.active {
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+    border-color: var(--color-acento);
 }
 
-.status-message {
-    padding: 2rem;
-    font-size: 1.2rem;
+
+/* ==========================================================================
+   4. SLIDERS HORIZONTALES
+   ========================================================================== */
+
+.sliders-section {
+    width: 100%;
+    margin: 30px 0;
 }
 
-#resultsContainer,
-#skeleton-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.5rem;
+.sliders-section h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--color-texto-principal);
+    margin-bottom: 20px;
 }
 
-.evento-card {
-    background-color: var(--color-superficie);
-    border: 1px solid var(--color-borde);
-    border-radius: 12px;
-    padding: 1.5rem;
+.slider-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding-bottom: 15px;
+    scroll-snap-type: x mandatory;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.slider-container::-webkit-scrollbar {
+    display: none;
+    /* Ocultamos por defecto */
+}
+
+/* Solo para ordenadores, mostramos un scrollbar sutil */
+@media (hover: hover) and (pointer: fine) {
+    .slider-container::-webkit-scrollbar {
+        display: block;
+        height: 6px;
+    }
+
+    .slider-container::-webkit-scrollbar-thumb {
+        background-color: #444;
+        border-radius: 10px;
+    }
+}
+
+/* --- Tarjetas dentro de un Slider --- */
+/* --- Tarjetas dentro de un Slider (Diseño Corregido y Consistente) --- */
+
+.slider-container .event-card {
+    flex: 0 0 220px;
+    /* Reducimos el ancho base a 220px */
+    width: 220px;
+    /* Forzamos el ancho para consistencia */
     display: flex;
     flex-direction: column;
-    text-align: left;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    animation: fadeIn 0.5s ease-in-out;
+    background-color: var(--color-superficie);
+    border-radius: 8px;
     overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.slider-container .event-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+.slider-container .event-card .card-image {
+    width: 100%;
+    height: 125px;
+    /* Reducimos la altura de la imagen */
+    object-fit: cover;
+}
+
+.slider-container .event-card .card-content {
+    padding: 10px 5px;
+    text-align: center;
+    margin-top: auto;
+}
+
+.slider-container .event-card .card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-texto-principal);
+
+    /* --- CORRECCIÓN CLAVE --- */
+    display: inline-block;
+    padding: 5px 10px;
+    /* Padding reducido para hacerlo más pequeño */
+    border-radius: 20px;
+    background-color: transparent;
+    transition: background-color 0.3s, color 0.3s;
+
+    /* --- LÓGICA PARA LOS PUNTOS SUSPENSIVOS --- */
+    max-width: 90%;
+    /* El botón no puede ser más ancho que el 90% de la tarjeta */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- Efecto Hover Corregido --- */
+.slider-container .event-card:hover .card-title {
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+}
+
+
+/* --- ¡Aquí está la Magia del Hover! --- */
+
+.slider-container .event-card:hover .card-content {
+    background-color: var(--color-acento);
+    /* Cambia el fondo al color de la marca */
+}
+
+.slider-container .event-card:hover .card-title {
+    background-color: var(--color-acento);
+    /* Cambia el fondo al color de la marca */
+    color: var(--color-superficie);
+    /* Cambia el texto a un color oscuro */
+}
+
+/* --- Borde Sutil para Imágenes --- */
+
+/* Para las imagen de la ficha grande de resultados */
+
+.evento-card-img-container {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Blanco con 10% de opacidad */
+}
+
+/* Para la tarjeta pequeña del slider (el borde va en el contenedor) */
+.slider-container .event-card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Mismo borde para consistencia */
+}
+
+/* ==========================================================================
+   5. PARRILLA PRINCIPAL Y FICHAS DE EVENTO
+   ========================================================================== */
+
+.full-events-section {
+    margin-top: 40px;
+}
+
+#resultsContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    padding: 20px 0;
+}
+
+/* --- La Ficha de Evento Detallada --- */
+.evento-card {
+    background-color: var(--color-superficie);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: background-color 0.3s, transform 0.2s;
+    border: 1px solid var(--color-borde);
+    text-align: left;
 }
 
 .evento-card:hover {
-    transform: translateY(-8px);
-    border-color: var(--color-primario);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    background-color: var(--color-borde);
+    transform: translateY(-4px);
 }
 
 .evento-card-img-container {
-    height: 180px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
     overflow: hidden;
-    border-radius: 12px 12px 0 0;
-    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    margin-bottom: 5px;
 }
 
 .evento-card-img {
-    display: block;
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border-radius: 0;
+}
+
+.card-header .titulo-truncado {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-texto-principal);
     margin: 0;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.card-header {
-    min-height: 4.5rem;
-}
-
-.evento-card h3 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-}
-
-.evento-card .artista {
-    color: var(--color-primario);
-    font-weight: 700;
-    margin-top: 1rem;
-}
-
-.descripcion-container {
-    flex-grow: 1;
-    margin-top: 1rem;
-}
-
-.evento-card .descripcion {
+.artista {
+    font-size: 1rem;
+    font-weight: 500;
     color: var(--color-texto-secundario);
-    line-height: 1.6;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.verificado-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: rgba(61, 220, 132, 0.1);
-    color: var(--color-primario);
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    border: 1px solid var(--color-primario);
-    margin-top: 1rem;
+.descripcion-corta {
+    font-size: 0.9rem;
+    color: var(--color-texto-secundario);
+    line-height: 1.5;
+}
+
+.card-detalles {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-top: 1px solid var(--color-borde);
+    padding-top: 15px;
+    margin-top: 15px;
 }
 
 .evento-detalle {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 10px;
+    font-size: 0.9rem;
     color: var(--color-texto-secundario);
-    border-top: 1px solid var(--color-borde);
-    padding-top: 1rem;
-    margin-top: 1rem;
-    transition: border-color 0.3s ease;
 }
 
 .evento-detalle i {
-    color: var(--color-primario);
-    width: 20px;
+    color: var(--color-acento);
+    width: 16px;
     text-align: center;
 }
 
 .evento-detalle a {
-    color: inherit;
+    color: var(--color-texto-secundario);
     text-decoration: none;
+    transition: color 0.2s;
 }
 
 .evento-detalle a:hover {
-    color: var(--color-primario);
+    color: var(--color-texto-principal);
 }
 
+
+/* ==========================================================================
+   6. BOTONES Y ACCIONES
+   ========================================================================== */
+
 .card-actions {
-    margin-top: auto;
-    padding-top: 1rem;
-    border-top: 1px solid var(--color-borde);
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    align-items: stretch;
+    gap: 15px;
+    margin-top: auto;
+    /* Empuja los botones al final */
 }
 
 .card-actions-primary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+.card-actions-primary button,
+.card-actions-primary a {
+    padding: 10px;
+    border-radius: 25px;
+    border: none;
+    font-weight: bold;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.2s, background-color 0.2s;
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.card-actions>.source-link-btn,
-.card-actions-primary>.gemini-btn,
-.card-actions-primary>.calendar-btn,
-.card-actions-primary>.blog-link-btn,
-.card-actions-primary>.btn-blog-explorar {
+    align-items: center;
     justify-content: center;
-    margin: 0;
-    width: 100%;
+    gap: 5px;
 }
 
-@media (min-width: 500px) {
-    .card-actions-primary {
-        flex-direction: row;
-    }
+.card-actions-primary button:hover,
+.card-actions-primary a:hover {
+    transform: scale(1.05);
 }
 
-.gemini-btn,
-.calendar-btn {
-    background-color: var(--color-gemini-btn);
-    color: white;
-    border: none;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+.gemini-btn {
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
 }
 
-.gemini-btn:hover {
-    background-color: var(--color-gemini-btn-hover);
+.btn-blog-explorar,
+.blog-link-btn,
+.share-button {
+    background-color: var(--color-borde);
+    color: var(--color-texto-principal);
 }
 
-.source-link-btn {
-    background-color: var(--color-superficie);
-    color: var(--color-primario);
-    border: 1px solid var(--color-primario);
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    transition: background-color 0.2s, color 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.source-link-btn:hover {
-    background-color: var(--color-primario);
-    color: var(--color-fondo);
-}
-
-.blog-link-btn {
-    background-color: #ff9800;
-    /* Naranja distintivo */
-    color: white;
-    border: none;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-}
-
-.blog-link-btn:hover {
-    background-color: #f57c00;
-    /* Naranja más oscuro */
-}
-
-.btn-blog-explorar {
-    background-color: transparent;
-    color: var(--color-texto-secundario);
-    border: 1px solid var(--color-borde);
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-}
-
-.btn-blog-explorar:hover {
-    background-color: var(--color-superficie);
-    color: var(--color-primario);
-    border-color: var(--color-primario);
-}
-
-.back-to-top-btn {
+/* --- BOTÓN FLOTANTE 'VOLVER ARRIBA' --- */
+.floating-btn {
     position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    background-color: var(--color-primario);
-    color: var(--color-fondo) !important;
     width: 50px;
     height: 50px;
     border-radius: 50%;
     display: flex;
-    justify-content: center;
     align-items: center;
-    font-size: 1.5rem;
-    text-decoration: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(100px);
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
     z-index: 1000;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out, background-color 0.3s;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
 }
 
-.back-to-top-btn.visible {
+.floating-btn.visible {
     opacity: 1;
-    visibility: visible;
     transform: translateY(0);
+    pointer-events: auto;
 }
 
+#back-to-top-btn {
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+    border: none;
+}
+
+#back-to-top-btn:hover {
+    transform: scale(1.1);
+}
+
+
+/* ==========================================================================
+   7. MODALES Y OTROS COMPONENTES
+   ========================================================================== */
+
+/* --- Esqueleto de Carga (Skeleton Loader) --- */
+.skeleton-card {
+    background-color: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.skeleton {
+    background-color: var(--color-borde);
+    border-radius: 4px;
+    animation: shimmer 1.5s infinite linear;
+    background-image: linear-gradient(to right, var(--color-borde) 0%, var(--color-superficie) 50%, var(--color-borde) 100%);
+    background-repeat: no-repeat;
+    background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -100% 0;
+    }
+
+    100% {
+        background-position: 100% 0;
+    }
+}
+
+.skeleton.title {
+    height: 24px;
+    width: 70%;
+    margin-bottom: 1rem;
+}
+
+.skeleton.text {
+    height: 16px;
+    margin-bottom: 0.5rem;
+}
+
+
+/* --- Estilos de Modales --- */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -544,6 +624,7 @@ h1 span {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -559,8 +640,8 @@ h1 span {
 }
 
 .modal {
-    background-color: var(--color-superficie-light);
-    color: var(--color-texto-principal-light);
+    background-color: var(--color-superficie);
+    color: var(--color-texto-principal);
     padding: 2rem;
     border-radius: 12px;
     max-width: 600px;
@@ -582,802 +663,112 @@ h1 span {
     right: 1rem;
     background: none;
     border: none;
-    color: var(--color-texto-secundario-light);
+    color: var(--color-texto-secundario);
     font-size: 1.5rem;
     cursor: pointer;
 }
 
-.modal-copy-btn {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    background: none;
-    border: none;
-    color: var(--color-texto-secundario-light);
-    font-size: 1.2rem;
-    cursor: pointer;
-}
+/* ==========================================================================
+   8. BARRA DE NAVEGACIÓN INFERIOR
+   ========================================================================== */
 
-.modal-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
-
-.modal-header h2 {
-    margin: 0;
-    color: var(--color-texto-principal-light);
-}
-
-.modal-content h3 {
-    color: var(--color-primario-light);
-    margin-top: 1.5rem;
-}
-
-.modal-content p {
-    line-height: 1.6;
-}
-
-.modal-content a {
-    color: var(--color-enlace-light);
-    text-decoration: underline;
-    font-weight: bold;
-}
-
-.modal-footer {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--color-borde-light);
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.modal-footer-buttons {
-    display: flex;
-    gap: 1rem;
-}
-
-.copy-plan-btn,
-.listen-plan-btn {
-    background-color: var(--color-gemini-btn-light);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-}
-
-.ai-disclaimer {
-    font-size: 0.8rem;
-    color: var(--color-texto-secundario-light);
-    margin-top: 1rem;
-}
-
-.loader-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 2rem 0;
-}
-
-.loader-container p {
-    margin-top: 1.5rem;
-    font-style: italic;
-    color: var(--color-texto-secundario-light);
-}
-
-.loader {
-    width: 48px;
-    height: 48px;
-    border: 5px solid var(--color-texto-principal-light);
-    border-bottom-color: var(--color-primario-light);
-    border-radius: 50%;
-    display: inline-block;
-    box-sizing: border-box;
-    animation: rotation 1s linear infinite;
-}
-
-@keyframes rotation {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-.skeleton-card {
-    background-color: var(--color-superficie);
-    border: 1px solid var(--color-borde);
-    border-radius: 12px;
-    padding: 1.5rem;
-}
-
-.skeleton {
-    background-color: color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde));
-    border-radius: 4px;
-    animation: shimmer 1.5s infinite linear;
-}
-
-.skeleton.title {
-    height: 24px;
-    width: 70%;
-    margin-bottom: 1rem;
-}
-
-.skeleton.text {
-    height: 16px;
-    margin-bottom: 0.5rem;
-}
-
-.skeleton.text-short {
-    width: 40%;
-}
-
-.skeleton.text-long {
-    width: 90%;
-}
-
-@keyframes shimmer {
-    0% {
-        background-position: -1000px 0;
-    }
-
-    100% {
-        background-position: 1000px 0;
-    }
-}
-
-.skeleton {
-    background-image: linear-gradient(to right, color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde)) 0%, color-mix(in srgb, var(--color-superficie) 20%, var(--color-borde)) 20%, color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde)) 40%, color-mix(in srgb, var(--color-superficie) 50%, var(--color-borde)) 100%);
-    background-repeat: no-repeat;
-    background-size: 2000px 104px;
-}
-
-#trip-planner-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    text-align: left;
-}
-
-.form-row {
-    display: flex;
-    gap: 1rem;
-}
-
-.form-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group label {
-    margin-bottom: 0.5rem;
-    font-weight: bold;
-    color: var(--color-texto-secundario-light);
-}
-
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 0.75rem;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid var(--color-borde-light);
-    background-color: var(--color-fondo-light);
-    color: var(--color-texto-principal-light);
-}
-
-#trip-planner-result {
-    margin-top: 1.5rem;
-    text-align: left;
-}
-
-.calendar-link-btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.75rem;
-    width: 80%;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    font-weight: bold;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    border: 1px solid var(--color-borde-light);
-    background-color: transparent;
-    color: var(--color-texto-principal-light);
-}
-
-.calendar-link-btn:hover {
-    background-color: var(--color-fondo-light);
-    transform: translateY(-2px);
-}
-
-.calendar-link-btn i {
-    font-size: 1.2rem;
-}
-
-#search-controls {
-    max-height: 1000px;
-    transition: all 0.5s ease-in-out;
-    overflow: hidden;
-    opacity: 1;
-    visibility: visible;
-}
-
-main.container.results-active #search-controls {
-    max-height: 0;
-    opacity: 0;
-    visibility: hidden;
-    margin-bottom: 0;
-}
-
-#province-filters-toggle,
-#province-filters-container,
-#country-filters-toggle,
-#country-filters-container {
-    display: none;
-}
-
-/* --- Mejoras para el modal de ambigüedad --- */
-#ambiguity-modal-overlay {
-    display: none;
-    /* Empezamos oculto */
+#bottom-nav {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-}
-
-#ambiguity-modal-overlay.visible {
-    display: flex;
-}
-
-#ambiguity-modal-content {
-    background-color: var(--color-tarjeta-fondo);
-    color: var(--color-texto-principal);
-    border-radius: 12px;
-    padding: 2.5rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    max-width: 90%;
-    width: 450px;
-    text-align: center;
-    animation: fadeIn 0.3s ease-in-out;
-    position: relative;
-    /* Para el botón de cierre */
-}
-
-#ambiguity-modal-content h2 {
-    color: var(--color-texto-principal);
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
-}
-
-#ambiguity-modal-content p {
-    font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: 2rem;
-}
-
-#ambiguity-modal-content strong {
-    color: var(--color-principal);
-}
-
-.option-btn {
-    background-color: var(--color-principal);
-    color: var(--color-texto-claro);
-    border: none;
-    border-radius: 8px;
-    padding: 12px 24px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    flex: 1;
-    /* Para que los botones se adapten al espacio */
-    white-space: nowrap;
-    /* Evita que el texto del botón se rompa */
-}
-
-.option-btn:hover {
-    background-color: var(--color-principal-hover);
-    transform: translateY(-2px);
-}
-
-.option-btn:active {
-    transform: translateY(0);
-}
-
-.modal-header {
-    margin-bottom: 1rem;
-}
-
-/* Estilos para agrupar y alinear los detalles de las tarjetas */
-.card-detalles {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--color-borde);
-}
-
-.evento-detalle {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--color-texto-secundario);
-    font-size: 0.9rem;
-}
-
-.evento-detalle a {
-    color: var(--color-texto-secundario);
-    text-decoration: none;
-}
-
-.evento-detalle i {
-    color: var(--color-primario);
-}
-
-/* --- Estilos para los contenedores de título y descripción --- */
-.header-evento,
-.descripcion-container {
-    position: relative;
-}
-
-/* --- Estilos para los títulos truncados --- */
-.titulo-truncado {
-    max-height: 2.8em;
-    /* 2 líneas */
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-    padding-right: 30px;
-    /* Espacio para el icono */
-    margin-bottom: 0.5rem;
-    /* Separación del resto de la card */
-}
-
-.titulo-truncado.expanded {
-    max-height: none;
-    /* Muestra el título completo */
-}
-
-/* --- Estilos para las descripciones truncadas --- */
-.descripcion-corta {
-    max-height: 5em;
-    /* Aproximadamente 3-4 líneas */
-    overflow: hidden;
-    position: relative;
-    transition: max-height 0.3s ease-out;
-    padding-right: 30px;
-    /* Espacio para el icono */
-    margin-top: 1rem;
-}
-
-.descripcion-corta.expanded {
-    max-height: 1000px;
-    /* Un valor grande para mostrar todo */
-    height: auto;
-}
-
-.descripcion-corta::after {
-    content: "";
-    position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 2em;
-    background: linear-gradient(to bottom, transparent, var(--color-fondo-card));
-    /* Usa la variable de CSS para el fondo */
-    pointer-events: none;
+    background-color: rgba(18, 18, 18, 0.85);
+    /* Fondo negro semitransparente */
+    backdrop-filter: blur(10px);
+    /* Efecto "cristal esmerilado" */
+    -webkit-backdrop-filter: blur(10px);
+    /* Para compatibilidad con Safari */
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    z-index: 1000;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.descripcion-corta.expanded::after {
-    content: none;
-}
-
-/* --- Estilos unificados para el botón de icono --- */
-.expandir-btn {
+.nav-btn {
     background: none;
     border: none;
-    color: #a0a0a0;
-    /* Color gris suave */
+    color: var(--color-texto-secundario);
+    font-size: 22px;
+    padding: 10px;
     cursor: pointer;
-    padding: 0;
-    font-size: 1em;
-    position: absolute;
-    top: 0;
-    /* Posición vertical del icono */
-    right: 0;
-    /* Posición horizontal del icono */
+    transition: color 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
 }
 
-.expandir-btn i {
-    transition: transform 0.3s ease-in-out;
+.nav-btn:hover {
+    color: var(--color-texto-principal);
+    transform: translateY(-3px);
 }
 
-/* Rotar la flecha cuando el contenido está expandido */
-.titulo-truncado.expanded+.expandir-btn i,
-.descripcion-corta.expanded+.expandir-btn i {
-    transform: rotate(180deg);
+/* Podríamos usar esta clase 'active' para el botón de la sección actual */
+.nav-btn.active {
+    color: var(--color-acento);
 }
 
-/* Estilos para el clon de la ficha que se anima */
-.animated-card {
-    position: absolute;
-    /* El JavaScript calculará su posición inicial */
-    z-index: 9999;
-    transform: scale(0.9);
-    /* Empieza un poco más pequeña */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    transition: transform 1.2s ease-in-out;
-    opacity: 1;
-    background-color: var(--color-fondo-card);
-    border: 1px solid var(--color-borde-card);
-    border-radius: 10px;
-    /* La siguiente línea evita que los botones dentro del clon sean interactivos */
+/* --- Estilos Adicionales para Barra de Navegación y Modales --- */
+
+/* Para el botón activo en la barra de navegación */
+.nav-btn.active {
+    color: var(--color-acento);
+    /* Se ilumina con el color de la marca */
+    transform: translateY(-3px);
+}
+
+/* Para los botones no clicables (si los hubiera en el futuro) */
+.nav-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
     pointer-events: none;
 }
 
-/* Animación de desplazamiento hacia arriba */
-@keyframes slide-up-and-fade {
-    0% {
-        transform: translateY(0) scale(0.9);
-        opacity: 1;
-    }
-
-    100% {
-        transform: translateY(-200px) scale(0.8);
-        opacity: 0;
-    }
-}
-
-/* Clase para iniciar la animación */
-.animated-card.start-animation {
-    animation: slide-up-and-fade 0.8s forwards;
-}
-
-/* Estilo para los botones de compartir */
-.export-button {
-    background: var(--color-primario);
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: background-color 0.3s ease;
-}
-
-.export-button:hover {
-    background: var(--color-primario-dark);
-}
-
-.export-button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-}
-
-#search-form {
-    position: relative;
-    /* Este es clave para posicionar el botón. */
-}
-
-/* Estilos iniciales del botón */
-.search-button {
-    transition: transform 0.3s ease-in-out;
-    /* La clave de la animación. */
-    position: absolute;
-    /* Para que se mueva libremente dentro de #search-form. */
-    right: 10px;
-    bottom: 5px;
-    z-index: 10;
-}
-
-/* El estado final cuando el input está enfocado */
-#search-form.active .search-button {
-    transform: translateY(-50px);
-    /* Ajusta este valor si necesitas que suba más o menos. */
-}
-
-/* --- Notifications --- */
-#notification-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 3000;
+/* Mejoras para el contenido de los nuevos modales */
+.modal-content h2 {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 10px;
-}
-
-.notification {
-    background-color: var(--color-superficie);
     color: var(--color-texto-principal);
-    padding: 15px 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    opacity: 1;
-    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-    transform: translateX(0);
-    min-width: 250px;
-    max-width: 350px;
-    word-wrap: break-word;
-    border: 1px solid var(--color-borde);
 }
 
-.notification.hide {
-    opacity: 0;
-    transform: translateX(100%);
-}
-
-.notification.info {
-    border-left: 5px solid #2196F3;
-    /* Blue */
-}
-
-.notification.success {
-    border-left: 5px solid #4CAF50;
-    /* Green */
-}
-
-.notification.warning {
-    border-left: 5px solid #ff9800;
-    /* Orange */
-}
-
-.notification.error {
-    border-left: 5px solid #f44336;
-    /* Red */
-}
-
-/* --- Estilos para los nuevos elementos de promoción --- */
-
-/* Footer */
-.main-footer {
-    width: 100%;
-    max-width: 1200px;
-    margin-top: 4rem;
-    padding: 2rem;
-    border-top: 1px solid var(--color-borde);
-    text-align: center;
+.modal-content p,
+.modal-content li {
+    line-height: 1.6;
     color: var(--color-texto-secundario);
 }
 
-.footer-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.footer-nav {
-    display: flex;
-    gap: 1.5rem;
-}
-
-.footer-nav a {
-    color: var(--color-texto-secundario);
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-.footer-nav a:hover {
-    color: var(--color-primario);
-    text-decoration: underline;
-}
-
-@media (min-width: 600px) {
-    .footer-content {
-        flex-direction: row;
-        justify-content: space-between;
-    }
-}
-
-/* Promo en "No hay resultados" */
-.shop-promo-no-results {
-    margin-top: 2rem;
-    font-size: 1rem;
-    color: var(--color-texto-secundario);
-}
-
-.shop-promo-no-results a {
-    color: var(--color-enlace);
-    font-weight: bold;
-}
-
-/* Promo en el Modal de Plan de Noche */
-.shop-promo-modal {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--color-borde-light);
-}
-
-.shop-promo-modal .promo-content {
-    background-color: var(--color-fondo-light);
-    padding: 1rem;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.shop-promo-modal h5 {
-    margin: 0 0 0.5rem 0;
-    color: var(--color-texto-principal-light);
-}
-
-.shop-promo-modal p {
-    margin: 0;
-    font-size: 0.9rem;
-    color: var(--color-texto-secundario-light);
-}
-
-/* Action buttons */
-.main-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.main-actions-group {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.action-btn {
-    background-color: var(--color-superficie);
+.modal-content strong {
     color: var(--color-texto-principal);
-    border: 1px solid var(--color-borde);
-    text-decoration: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 1rem;
-    white-space: nowrap;
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
 }
 
-.action-btn:hover,
-.action-btn:focus-visible {
-    background-color: var(--color-primario);
-    color: var(--color-fondo);
-    border-color: var(--color-primario);
-    outline: none;
+.modal-content ol {
+    padding-left: 20px;
 }
 
-.promo-action-btn {
-    background-color: var(--color-primario);
-    color: var(--color-fondo);
-    font-size: 1.1rem;
-    padding: 0.8rem 2rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+/* --- Ajustes para Ionicons --- */
+ion-icon {
+    font-size: 1.2em;
+    /* Hace el icono un poco más grande que el texto que lo rodea */
+    vertical-align: middle;
+    /* Mejora la alineación vertical */
+    margin-bottom: 2px;
 }
 
-.promo-action-btn:hover,
-.promo-action-btn:focus-visible {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+/* Ajuste específico para la barra de navegación */
+#bottom-nav ion-icon {
+    font-size: 24px;
 }
 
-.image-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 3000;
-}
-
-.image-modal-content {
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-}
-
-.image-modal-close-btn {
-    position: absolute;
-    top: 20px;
-    right: 35px;
-    color: #f1f1f1;
-    font-size: 40px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/*
- * Estilos para los textos que pueden ser expandidos.
- * Aplicamos esto a los títulos y descripciones.
-*/
-
-.card-title {
-    /* ... */
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    /* Para compatibilidad con navegadores antiguos */
-    line-clamp: 2;
-    /* El estándar para navegadores modernos y futuros */
-    overflow: hidden;
-
-    /* Transición suave para la expansión */
-    transition: all 0.3s ease-in-out;
-}
-
-/*
- * Clase 'expandable': se añadirá con JS SÓLO si el texto se desborda.
- * Esto nos permite mostrar una pista visual al usuario.
-*/
-.expandable {
-    cursor: pointer;
-    /* Indica que se puede hacer clic */
-}
-
-/* Opcional: Añadir un pequeño icono o "..." al final para indicar que hay más texto */
-.expandable::after {
-    content: '...';
-    font-weight: bold;
-    color: #888;
-    padding-left: 2px;
-}
-
-/*
- * Clase 'expanded': se activa/desactiva con JS al hacer clic.
- * Anula el truncamiento y muestra todo el texto.
-*/
-.card-title.expanded,
-.card-description.expanded {
-    -webkit-line-clamp: unset;
-    /* Anula el límite para navegadores antiguos */
-    line-clamp: unset;
-    /* Anula el límite para navegadores modernos */
-    overflow: visible;
-}
-
-
-/* Cuando está expandido, quitamos los puntos suspensivos */
-.expanded.expandable::after {
-    content: '';
-}
-
-.evento-card.highlighted {
-    box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.8);
-    /* Un brillo dorado */
-    transform: scale(1.02);
-    transition: all 0.3s ease-in-out;
-    border: 2px solid #FFD700;
+/* Ajuste para los detalles de la tarjeta */
+.evento-detalle ion-icon {
+    font-size: 18px;
+    color: var(--color-acento);
 }

@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://duende-api.vercel.app/:path*"
+      "destination": "https://duende-api.vercel.app/api/:path*"
     }
   ]
 }
