@@ -250,13 +250,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LÓGICA DE BÚSQUEDA Y MANEJO DE EVENTOS ---
 
+    // --- LÓGICA DE BÚSQUEDA Y MANEJO DE EVENTOS ---
+
     async function performSearch(params) {
         showSkeletonLoader();
+
+        let url = `${API_BASE_URL}/api/events`;
+
+        // Si el parámetro 'params' contiene un _id, construimos una URL diferente
+        // para obtener un único evento. Ej: /api/events/12345
+        if (params._id) {
+            url = `${API_BASE_URL}/api/events/${params._id}`;
+        }
+        // Si no, construimos la URL con parámetros de búsqueda normales.
+        // Ej: /api/events?search=madrid
+        else {
+            const queryParams = new URLSearchParams(params).toString();
+            if (queryParams) {
+                url += `?${queryParams}`;
+            }
+        }
+
         try {
-            const response = await fetch(`${API_BASE_URL}/api/events?${new URLSearchParams(params).toString()}`);
+            const response = await fetch(url);
             if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
+
             const data = await response.json();
-            displayEvents(data.events || data);
+
+            // Si la respuesta de la API para un ID único no es un array, 
+            // lo convertimos en un array de un solo elemento para que displayEvents funcione.
+            const eventsToShow = Array.isArray(data) ? data : [data];
+
+            // En el caso de la búsqueda general, la API devuelve un objeto { events: [...] }
+            displayEvents(eventsToShow.length > 0 ? eventsToShow : data.events || []);
+
         } catch (error) {
             console.error("Error en la búsqueda:", error);
             hideSkeletonLoader();
