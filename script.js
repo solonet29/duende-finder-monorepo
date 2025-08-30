@@ -50,11 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createEventCard(event) {
-        // --- LÍNEA DE DEPURACIÓN AÑADIDA ---
-        // Esto nos mostrará en la consola el contenido exacto de event.location para cada tarjeta.
-        if (event.name.includes("Cordobes")) { // Filtramos para ver solo el evento problemático
-            console.log("Datos de ubicación para el evento:", event.name, event.location);
-        }
+        // Línea de depuración para ver los datos completos del evento
+        console.log("Datos del evento recibidos:", event);
 
         const eventCard = document.createElement('article');
         eventCard.className = 'evento-card';
@@ -66,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventTime = sanitizeField(event.time, 'No disponible');
         const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
 
+        // --- CORRECCIÓN: Accedemos directamente a las propiedades venue y city ---
         const venue = sanitizeField(event.venue, '');
         const city = sanitizeField(event.city, '');
 
@@ -76,8 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
             displayLocation = venue || city;
         }
 
-        const mapQuery = [eventName, venue, city, sanitizeField(event.country, '')].filter(Boolean).join(', ');
-        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+        // --- CORRECCIÓN: Generación del enlace del mapa más robusta ---
+        const mapsUrl = [eventName, venue, city, sanitizeField(event.country, '')].filter(Boolean).join(', ');
+        const mapLink = event.location && event.location.coordinates ?
+            `https://www.google.com/maps/search/?api=1&query=${event.location.coordinates[1]},${event.location.coordinates[0]}` :
+            `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsUrl)}`;
 
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
         const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
@@ -85,31 +86,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
 
         eventCard.innerHTML = `
-        ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${event.imageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
-        <div class="card-header">
-            <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
+    ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${event.imageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
+    <div class="card-header">
+        <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
+    </div>
+    <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
+    <div class="descripcion-container">
+        <p class="descripcion-corta">${description}</p>
+    </div>
+    <div class="card-detalles">
+        <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
+        <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
+        <div class="evento-detalle">
+            <a href="${mapLink}" target="_blank" rel="noopener noreferrer">
+                <ion-icon name="location-outline"></ion-icon>
+                <span>${displayLocation}</span>
+            </a>
         </div>
-        <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
-        <div class="descripcion-container">
-            <p class="descripcion-corta">${description}</p>
+    </div>
+    <div class="card-actions">
+        <div class="card-actions-primary">
+            <button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button>
+            <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a>
+            <button class="share-button" data-event-id="${event._id}"><ion-icon name="share-social-outline"></ion-icon> Compartir</button>
         </div>
-        <div class="card-detalles">
-            <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
-            <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
-            <div class="evento-detalle">
-                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">
-                    <ion-icon name="location-outline"></ion-icon>
-                    <span>${displayLocation}</span>
-                </a>
-            </div>
-        </div>
-        <div class="card-actions">
-            <div class="card-actions-primary">
-                <button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button>
-                <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a>
-                <button class="share-button" data-event-id="${event._id}"><ion-icon name="share-social-outline"></ion-icon> Compartir</button>
-            </div>
-        </div>
+    </div>
     `;
         return eventCard;
     }
@@ -244,6 +245,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                const textToCopy = modalContent.innerText;
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showNotification('¡Plan copiado al portapapeles!', 'success');
+                }).catch(err => {
+                    console.error('Error al copiar el texto:', err);
+                });
+            });
+        }
+
         if (navHomeBtn) {
             navHomeBtn.addEventListener('click', () => {
                 performSearch({});
@@ -352,18 +364,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!geminiModalOverlay || !modalContent) return;
         geminiModalOverlay.classList.add('visible');
         modalContent.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Un momento, el duende está afinando la guitarra...</p></div>`;
+        const copyBtn = document.getElementById('copy-plan-btn');
+        if (copyBtn) copyBtn.style.display = 'none';
+
         try {
             const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
-            if (!response.ok) throw new Error('La respuesta del servidor no fue OK');
+            if (!response.ok) {
+                // Muestra el error de la respuesta si no es ok
+                const errorText = await response.text();
+                throw new Error(`La respuesta del servidor no fue OK: ${response.status} - ${errorText}`);
+            }
             const data = await response.json();
             if (window.marked) {
                 modalContent.innerHTML = marked.parse(data.content);
             } else {
                 modalContent.innerHTML = `<pre style="white-space: pre-wrap;">${data.content}</pre>`;
             }
+            if (copyBtn) copyBtn.style.display = 'block';
         } catch (error) {
             console.error("Error al generar el Plan Noche:", error);
             modalContent.innerHTML = `<div class="error-message"><h3>¡Vaya! El duende se ha despistado.</h3><p>No se pudo generar el plan. Inténtalo de nuevo más tarde.</p></div>`;
+            if (copyBtn) copyBtn.style.display = 'none';
         }
     }
 
