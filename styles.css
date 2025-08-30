@@ -205,6 +205,7 @@ header.header-main.scrolled .header-top {
 }
 
 .sliders-section h2 {
+    font-family: 'Montserrat', sans-serif;
     font-size: 1.6rem;
     font-weight: 700;
     color: var(--color-texto-principal);
@@ -315,6 +316,7 @@ header.header-main.scrolled .header-top {
    ========================================================================== */
 
 .full-events-section {
+    font-family: 'Montserrat', sans-serif;
     margin-top: 40px;
 }
 
