@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventTime = sanitizeField(event.time, 'No disponible');
         const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
 
-        const venue = sanitizeField(event.location?.venue, '');
-        const city = sanitizeField(event.location?.city, '');
+        const venue = sanitizeField(event.venue, '');
+        const city = sanitizeField(event.city, '');
 
         let displayLocation = 'Ubicación no disponible';
         if (venue && city) {
