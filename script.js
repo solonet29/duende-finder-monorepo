@@ -203,6 +203,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 5. GESTORES DE EVENTOS Y LISTENERS
     // =========================================================================
+    // Variable para la cabecera
+    const header = document.querySelector('.header-main');
+
+    // Agregamos un listener al evento scroll
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            // Añade la clase 'scrolled' si el usuario ha bajado más de 50px
+            header.classList.add('scrolled');
+        } else {
+            // Quita la clase si está en la parte superior
+            header.classList.remove('scrolled');
+        }
+    });
     function handleResultsContainerClick(event) {
         const geminiBtn = event.target.closest('.gemini-btn');
         const shareBtn = event.target.closest('.share-button');
