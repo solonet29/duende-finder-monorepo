@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================================================
-    // 4. LÓGICA DE LA APLICACIÓN
+    // 4. LÓGICA DE LA APLICACIÓN-
     // =========================================================================
     async function performSearch(params) {
         showSkeletonLoader();
