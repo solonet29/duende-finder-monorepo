@@ -278,7 +278,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleFilterClick(filterType) {
-        if (!resultsTitle) return;
+        if (!resultsTitle) return; // Si el título no existe, no hacemos nada
+
         switch (filterType) {
             case 'todos':
                 resultsTitle.textContent = 'Todos los Eventos';
