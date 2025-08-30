@@ -266,13 +266,15 @@ header {
 }
 
 .slider-container .event-card:hover .card-title {
+    background-color: var(--color-acento);
+    /* Cambia el fondo al color de la marca */
     color: var(--color-superficie);
-    /* Cambia el texto a un color oscuro para que contraste */
+    /* Cambia el texto a un color oscuro */
 }
 
 /* --- Borde Sutil para Imágenes --- */
 
-/* Para la imagen de la ficha grande de resultados */
+/* Para las imagen de la ficha grande de resultados */
 
 .evento-card-img-container {
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -284,7 +286,6 @@ header {
     border: 1px solid rgba(255, 255, 255, 0.1);
     /* Mismo borde para consistencia */
 }
-
 
 /* ==========================================================================
    5. PARRILLA PRINCIPAL Y FICHAS DE EVENTO
