@@ -217,17 +217,19 @@ header {
 }
 
 /* --- Tarjetas dentro de un Slider --- */
-/* --- Tarjetas dentro de un Slider (Diseño Corregido) --- */
+/* --- Tarjetas dentro de un Slider (Diseño Corregido y Consistente) --- */
 
 .slider-container .event-card {
-    flex: 0 0 250px;
+    flex: 0 0 220px;
+    /* Reducimos el ancho base a 220px */
+    width: 220px;
+    /* Forzamos el ancho para consistencia */
     display: flex;
     flex-direction: column;
     background-color: var(--color-superficie);
     border-radius: 8px;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    /* Borde con contraste */
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
 }
@@ -239,15 +241,14 @@ header {
 
 .slider-container .event-card .card-image {
     width: 100%;
-    height: 140px;
+    height: 125px;
+    /* Reducimos la altura de la imagen */
     object-fit: cover;
 }
 
 .slider-container .event-card .card-content {
-    padding: 12px 5px;
-    /* Reducimos el padding lateral */
+    padding: 10px 5px;
     text-align: center;
-    /* Centramos el texto/botón */
     margin-top: auto;
 }
 
@@ -258,22 +259,24 @@ header {
 
     /* --- CORRECCIÓN CLAVE --- */
     display: inline-block;
-    /* Hace que el elemento se ajuste al texto */
-    padding: 6px 12px;
-    /* Padding interno para que parezca un botón */
+    padding: 5px 10px;
+    /* Padding reducido para hacerlo más pequeño */
     border-radius: 20px;
-    /* Lo hacemos una "píldora" */
     background-color: transparent;
-    /* Fondo transparente por defecto */
     transition: background-color 0.3s, color 0.3s;
+
+    /* --- LÓGICA PARA LOS PUNTOS SUSPENSIVOS --- */
+    max-width: 90%;
+    /* El botón no puede ser más ancho que el 90% de la tarjeta */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* --- Efecto Hover Corregido (ahora apunta al .card-title) --- */
+/* --- Efecto Hover Corregido --- */
 .slider-container .event-card:hover .card-title {
     background-color: var(--color-acento);
-    /* Cambia el fondo al color de la marca */
     color: var(--color-superficie);
-    /* Cambia el texto a un color oscuro */
 }
 
 
