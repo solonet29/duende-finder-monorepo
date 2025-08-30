@@ -245,16 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        if (copyBtn) {
-            copyBtn.addEventListener('click', () => {
-                const textToCopy = modalContent.innerText;
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    showNotification('¡Plan copiado al portapapeles!', 'success');
-                }).catch(err => {
-                    console.error('Error al copiar el texto:', err);
-                });
-            });
-        }
 
         if (navHomeBtn) {
             navHomeBtn.addEventListener('click', () => {
@@ -370,7 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
             if (!response.ok) {
-                // Muestra el error de la respuesta si no es ok
                 const errorText = await response.text();
                 throw new Error(`La respuesta del servidor no fue OK: ${response.status} - ${errorText}`);
             }
@@ -380,7 +369,18 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 modalContent.innerHTML = `<pre style="white-space: pre-wrap;">${data.content}</pre>`;
             }
-            if (copyBtn) copyBtn.style.display = 'block';
+            if (copyBtn) {
+                copyBtn.style.display = 'block';
+                // Añadir el listener AHORA, cuando el elemento existe
+                copyBtn.onclick = () => { // Usar onclick para evitar múltiples listeners
+                    const textToCopy = modalContent.innerText;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        showNotification('¡Plan copiado al portapapeles!', 'success');
+                    }).catch(err => {
+                        console.error('Error al copiar el texto:', err);
+                    });
+                };
+            }
         } catch (error) {
             console.error("Error al generar el Plan Noche:", error);
             modalContent.innerHTML = `<div class="error-message"><h3>¡Vaya! El duende se ha despistado.</h3><p>No se pudo generar el plan. Inténtalo de nuevo más tarde.</p></div>`;
