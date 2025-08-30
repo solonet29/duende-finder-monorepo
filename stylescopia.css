@@ -1,16 +1,17 @@
 /* ==========================================================================
-   1. VARIABLES DE TEMA (THEMING)
+   1. VARIABLES Y TEMAS (THEMING) - CORREGIDO
    ========================================================================== */
 
 :root {
     /* --- COLORES BASE (DARK) --- */
     --color-fondo-dark: #121212;
-    --color-superficie-dark: #282828;
+    --color-superficie-dark: #181818;
     --color-texto-principal-dark: #e0e0e0;
     --color-texto-secundario-dark: #a0a0a0;
-    --color-borde-dark: #3a3a3a;
+    --color-borde-dark: #282828;
     --color-acento-marca-dark: #E58A2D;
     --color-nav-fondo-dark: rgba(18, 18, 18, 0.85);
+    /* Fondo semitransparente para la barra nav */
 
     /* --- COLORES BASE (LIGHT) --- */
     --color-fondo-light: #f4f4f5;
@@ -20,6 +21,7 @@
     --color-borde-light: #d4d4d8;
     --color-acento-marca-light: #D47F26;
     --color-nav-fondo-light: rgba(244, 244, 245, 0.85);
+    /* Equivalente en claro */
 }
 
 /* TEMA OSCURO */
@@ -31,6 +33,7 @@
     --color-texto-secundario: var(--color-texto-secundario-dark);
     --color-acento: var(--color-acento-marca-dark);
     --color-nav-fondo: var(--color-nav-fondo-dark);
+    /* <-- Variable añadida */
 }
 
 /* TEMA CLARO */
@@ -42,6 +45,74 @@
     --color-texto-secundario: var(--color-texto-secundario-light);
     --color-acento: var(--color-acento-marca-light);
     --color-nav-fondo: var(--color-nav-fondo-light);
+    /* <-- Variable añadida */
+}
+
+
+/* ==========================================================================
+   3. CABECERA (HEADER) - CORREGIDO
+   ========================================================================== */
+
+header {
+    background-color: var(--color-fondo);
+    /* Ahora usa la variable del fondo principal */
+    padding: 10px 15px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--color-borde);
+    /* Borde sutil para separar */
+    box-shadow: none;
+    /* Quitamos la sombra, el borde es más limpio */
+}
+
+/* ... (El resto de estilos de la cabecera .top-bar, .logo, etc. se quedan igual) ... */
+
+
+/* ==========================================================================
+   8. BARRA DE NAVEGACIÓN INFERIOR - CORREGIDO
+   ========================================================================== */
+
+#bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--color-nav-fondo);
+    /* <-- AHORA USA LA VARIABLE DE TEMA */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    z-index: 1000;
+    border-top: 1px solid var(--color-borde);
+    /* Borde sutil */
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    color: var(--color-texto-secundario);
+    /* Ya usa variables, correcto */
+    font-size: 22px;
+    padding: 10px;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.nav-btn:hover {
+    color: var(--color-texto-principal);
+    transform: translateY(-3px);
+}
+
+.nav-btn.active {
+    color: var(--color-acento);
 }
 
 /* ==========================================================================
@@ -73,22 +144,24 @@ main.container {
     width: 100%;
     margin: 0 auto;
     padding: 0 15px;
+    /* Padding para los lados en móvil */
 }
 
 /* ==========================================================================
    3. CABECERA (HEADER)
    ========================================================================== */
 
+/* --- CABECERA --- */
 header {
     background-color: var(--color-fondo);
     padding: 10px 15px;
     position: sticky;
     top: 0;
     z-index: 100;
-    border-bottom: 1px solid var(--color-borde);
-    box-shadow: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
+/* --- Barra Superior --- */
 .top-bar {
     display: flex;
     justify-content: space-between;
@@ -105,8 +178,6 @@ header {
     display: flex;
     align-items: center;
     gap: 10px;
-    /* --- CORRECCIÓN: Evita el salto de línea --- */
-    white-space: nowrap;
 }
 
 .logo span {
@@ -114,12 +185,11 @@ header {
     font-weight: 700;
     color: var(--color-texto-principal);
     font-family: 'Cinzel', serif;
-    /* --- CORRECCIÓN: Ajuste de fuente dinámico --- */
-    font-size: clamp(1.2rem, 4vw, 2rem);
 }
 
 .header-actions {
     margin-left: auto;
+    /* Empuja el botón de ajustes a la derecha */
 }
 
 .header-btn {
@@ -135,6 +205,7 @@ header {
     color: var(--color-texto-principal);
 }
 
+/* --- Barra de Filtros --- */
 .filter-bar {
     display: flex;
     gap: 10px;
@@ -171,8 +242,9 @@ header {
     border-color: var(--color-acento);
 }
 
+
 /* ==========================================================================
-   4. SECCIONES DE EVENTOS Y SLIDERS
+   4. SLIDERS HORIZONTALES
    ========================================================================== */
 
 .sliders-section {
@@ -199,8 +271,10 @@ header {
 
 .slider-container::-webkit-scrollbar {
     display: none;
+    /* Ocultamos por defecto */
 }
 
+/* Solo para ordenadores, mostramos un scrollbar sutil */
 @media (hover: hover) and (pointer: fine) {
     .slider-container::-webkit-scrollbar {
         display: block;
@@ -213,10 +287,14 @@ header {
     }
 }
 
-/* --- Tarjetas del Slider (Pequeñas) --- */
+/* --- Tarjetas dentro de un Slider --- */
+/* --- Tarjetas dentro de un Slider (Diseño Corregido y Consistente) --- */
+
 .slider-container .event-card {
     flex: 0 0 220px;
+    /* Reducimos el ancho base a 220px */
     width: 220px;
+    /* Forzamos el ancho para consistencia */
     display: flex;
     flex-direction: column;
     background-color: var(--color-superficie);
@@ -226,6 +304,11 @@ header {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
 }
+
+/*
+  Estilos para las tarjetas del slider y su efecto hover.
+  Todo el código está unificado para evitar conflictos.
+*/
 
 .slider-container .event-card:hover {
     transform: translateY(-4px);
@@ -238,32 +321,40 @@ header {
     object-fit: cover;
 }
 
-/* Contenedor del título en la tarjeta del slider */
 .slider-container .event-card .card-content {
-    /* --- CORRECCIÓN FINAL: padding para la altura deseada --- */
-    padding: 8px;
+    /* CORRECCIÓN: Ajustamos el padding para reducir el espacio vertical */
+    padding: 5px 5px;
     text-align: center;
     margin-top: auto;
     transition: background-color 0.3s;
 }
 
-/* Título de la tarjeta del slider */
 .slider-container .event-card .card-title {
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--color-texto-principal);
+
+    /* Evita que el texto se envuelva y añade puntos suspensivos */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    /* Estilos del "botón" */
     display: inline-block;
     padding: 5px 10px;
     border-radius: 20px;
     background-color: transparent;
     transition: background-color 0.3s, color 0.3s;
+
+    /* El ancho del título es dinámico, ajustándose a la tarjeta */
     max-width: 90%;
 }
 
-/* Efectos hover para las tarjetas del slider */
+
+/*
+  Efectos Hover unificados.
+  Aplicamos todos los cambios cuando el mouse está sobre la tarjeta.
+*/
 .slider-container .event-card:hover .card-content {
     background-color: var(--color-acento);
 }
@@ -273,9 +364,23 @@ header {
     color: var(--color-superficie);
 }
 
+/* --- Borde Sutil para Imágenes --- */
+
+/* Para las imagen de la ficha grande de resultados */
+
+.evento-card-img-container {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Blanco con 10% de opacidad */
+}
+
+/* Para la tarjeta pequeña del slider (el borde va en el contenedor) */
+.slider-container .event-card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Mismo borde para consistencia */
+}
 
 /* ==========================================================================
-   5. GRILLA PRINCIPAL Y FICHAS DE EVENTO (Tarjetas Grandes)
+   5. PARRILLA PRINCIPAL Y FICHAS DE EVENTO
    ========================================================================== */
 
 .full-events-section {
@@ -289,6 +394,7 @@ header {
     padding: 20px 0;
 }
 
+/* --- La Ficha de Evento Detallada --- */
 .evento-card {
     background-color: var(--color-superficie);
     border-radius: 12px;
@@ -312,7 +418,6 @@ header {
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .evento-card-img {
@@ -386,6 +491,7 @@ header {
     flex-direction: column;
     gap: 15px;
     margin-top: auto;
+    /* Empuja los botones al final */
 }
 
 .card-actions-primary {
@@ -518,7 +624,6 @@ header {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -571,15 +676,18 @@ header {
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: var(--color-nav-fondo);
+    background-color: rgba(18, 18, 18, 0.85);
+    /* Fondo negro semitransparente */
     backdrop-filter: blur(10px);
+    /* Efecto "cristal esmerilado" */
     -webkit-backdrop-filter: blur(10px);
+    /* Para compatibilidad con Safari */
     display: flex;
     justify-content: space-around;
     align-items: center;
     padding: 10px 0;
     z-index: 1000;
-    border-top: 1px solid var(--color-borde);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .nav-btn {
@@ -601,6 +709,7 @@ header {
     transform: translateY(-3px);
 }
 
+/* Podríamos usar esta clase 'active' para el botón de la sección actual */
 .nav-btn.active {
     color: var(--color-acento);
 }
@@ -610,6 +719,7 @@ header {
 /* Para el botón activo en la barra de navegación */
 .nav-btn.active {
     color: var(--color-acento);
+    /* Se ilumina con el color de la marca */
     transform: translateY(-3px);
 }
 
@@ -645,7 +755,9 @@ header {
 /* --- Ajustes para Ionicons --- */
 ion-icon {
     font-size: 1.2em;
+    /* Hace el icono un poco más grande que el texto que lo rodea */
     vertical-align: middle;
+    /* Mejora la alineación vertical */
     margin-bottom: 2px;
 }
 
@@ -658,4 +770,25 @@ ion-icon {
 .evento-detalle ion-icon {
     font-size: 18px;
     color: var(--color-acento);
+}
+
+.logo {
+    /* Evita que el texto se envuelva en varias líneas */
+    white-space: nowrap;
+}
+
+.logo span {
+    /* Ajusta dinámicamente el tamaño de la fuente */
+    font-size: clamp(1.2rem, 4vw, 2rem);
+
+    /* Garantiza que no haya saltos de línea */
+    white-space: nowrap;
+}
+
+/* Opcional: Si la barra superior tiene un 'padding' o un 'gap' */
+/* Puedes ajustar el tamaño de la fuente a un valor fijo si prefieres */
+@media (max-width: 768px) {
+    .logo span {
+        font-size: 4vw;
+    }
 }
