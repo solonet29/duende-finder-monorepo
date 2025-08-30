@@ -117,9 +117,8 @@ header.header-main.scrolled .header-top {
     align-items: center;
     margin-bottom: 15px;
     position: relative;
-    height: 40px;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .logo {
@@ -161,7 +160,7 @@ header.header-main.scrolled .header-top {
 
 .filter-bar {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     overflow-x: auto;
     padding-bottom: 5px;
     -ms-overflow-style: none;
@@ -187,6 +186,7 @@ header.header-main.scrolled .header-top {
 
 .filter-chip:hover {
     background-color: var(--color-borde);
+    min-width: 80px;
 }
 
 .filter-chip.active {
