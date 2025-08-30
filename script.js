@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const termsModal = document.getElementById('terms-modal-overlay');
     const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
     const modalContent = document.getElementById('modal-content');
+    const copyBtn = document.getElementById('copy-plan-btn');
 
     // =========================================================================
     // 3. FUNCIONES DE RENDERIZADO
@@ -50,6 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createEventCard(event) {
+        // Línea de depuración para ver los datos completos del evento
+        console.log("Datos del evento recibidos:", event);
+
         const eventCard = document.createElement('article');
         eventCard.className = 'evento-card';
         eventCard.setAttribute('data-event-id', event._id);
@@ -58,8 +62,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const artistName = sanitizeField(event.artist, 'Artista por confirmar');
         const description = sanitizeField(event.description, 'Sin descripción disponible.');
         const eventTime = sanitizeField(event.time, 'No disponible');
-        const eventVenue = sanitizeField(event.location?.venue, 'Ubicación no disponible');
         const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
+
+        // Accedemos directamente a las propiedades venue y city
+        const venue = sanitizeField(event.venue, '');
+        const city = sanitizeField(event.city, '');
+
+        let displayLocation = 'Ubicación no disponible';
+        if (venue && city) {
+            displayLocation = `${venue}, ${city}`;
+        } else if (venue || city) {
+            displayLocation = venue || city;
+        }
+
+        // CORRECCIÓN CRÍTICA: Sintaxis del enlace de Google Maps
+        let mapLink;
+        if (event.location && event.location.coordinates) {
+            const [lon, lat] = event.location.coordinates;
+            mapLink = `https://maps.google.com/?q=${lat},${lon}`;
+        } else {
+            const mapsQuery = [eventName, venue, city, sanitizeField(event.country, '')].filter(Boolean).join(', ');
+            mapLink = `https://maps.google.com/?q=${encodeURIComponent(mapsQuery)}`;
+        }
 
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
         const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
@@ -78,7 +102,12 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="card-detalles">
             <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
             <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
-            <div class="evento-detalle"><ion-icon name="location-outline"></ion-icon><span>${eventVenue}</span></div>
+            <div class="evento-detalle">
+                <a href="${mapLink}" target="_blank" rel="noopener noreferrer">
+                    <ion-icon name="location-outline"></ion-icon>
+                    <span>${displayLocation}</span>
+                </a>
+            </div>
         </div>
         <div class="card-actions">
             <div class="card-actions-primary">
@@ -87,12 +116,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="share-button" data-event-id="${event._id}"><ion-icon name="share-social-outline"></ion-icon> Compartir</button>
             </div>
         </div>
-    `;
+        `;
+        return eventCard;
+    }
+
+    function createSliderCard(event) {
+        const eventCard = document.createElement('div');
+        eventCard.className = 'event-card';
+        eventCard.setAttribute('data-event-id', event._id);
+        const artistName = sanitizeField(event.artist, 'Artista por confirmar');
+        eventCard.setAttribute('data-artist-name', artistName);
+        const placeholderUrl = 'https://placehold.co/280x160/121212/7f8c8d?text=Flamenco';
+        const eventImageUrl = event.imageUrl || placeholderUrl;
+        eventCard.innerHTML = `
+            <img src="${eventImageUrl}" alt="${artistName}" class="card-image" onerror="this.src='${placeholderUrl}'">
+            <div class="card-content">
+                <h3 class="card-title">${artistName}</h3>
+            </div>
+        `;
         return eventCard;
     }
 
     // =========================================================================
-    // 4. LÓGICA DE LA APLICACIÓN
+    // 4. LÓGICA DE LA APLICACIÓN-
     // =========================================================================
     async function performSearch(params) {
         showSkeletonLoader();
@@ -246,6 +292,18 @@ document.addEventListener('DOMContentLoaded', () => {
             navTermsBtn.addEventListener('click', () => termsModal?.classList.add('visible'));
         }
 
+        // This is the correct place for the listener as the button exists on page load
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                const textToCopy = modalContent.innerText;
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showNotification('¡Plan copiado al portapapeles!', 'success');
+                }).catch(err => {
+                    console.error('Error al copiar el texto:', err);
+                });
+            });
+        }
+
         document.querySelectorAll('.modal-overlay').forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal || e.target.classList.contains('modal-close-btn')) {
@@ -329,18 +387,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!geminiModalOverlay || !modalContent) return;
         geminiModalOverlay.classList.add('visible');
         modalContent.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Un momento, el duende está afinando la guitarra...</p></div>`;
+        const copyBtn = document.getElementById('copy-plan-btn');
+        if (copyBtn) copyBtn.style.display = 'none';
+
         try {
             const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
-            if (!response.ok) throw new Error('La respuesta del servidor no fue OK');
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`La respuesta del servidor no fue OK: ${response.status} - ${errorText}`);
+            }
             const data = await response.json();
             if (window.marked) {
                 modalContent.innerHTML = marked.parse(data.content);
             } else {
                 modalContent.innerHTML = `<pre style="white-space: pre-wrap;">${data.content}</pre>`;
             }
+            if (copyBtn) {
+                copyBtn.style.display = 'block';
+                // Añadir el listener AHORA, cuando el elemento existe
+                copyBtn.onclick = () => { // Usar onclick para evitar múltiples listeners
+                    const textToCopy = modalContent.innerText;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        showNotification('¡Plan copiado al portapapeles!', 'success');
+                    }).catch(err => {
+                        console.error('Error al copiar el texto:', err);
+                    });
+                };
+            }
         } catch (error) {
             console.error("Error al generar el Plan Noche:", error);
             modalContent.innerHTML = `<div class="error-message"><h3>¡Vaya! El duende se ha despistado.</h3><p>No se pudo generar el plan. Inténtalo de nuevo más tarde.</p></div>`;
+            if (copyBtn) copyBtn.style.display = 'none';
         }
     }
 
