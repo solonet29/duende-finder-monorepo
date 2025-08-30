@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ? DEVELOPMENT_API_URL
         : PRODUCTION_API_URL;
 
-    const BANNER_URL_M2 = 'https://afland.es/wp-content/uploads/2025/08/banner_publicidad_restaurantes.jpg';
-    const BANNER_URL_M3 = 'https://afland.es/wp-content/uploads/2025/08/banner_publicidad_hoteles.jpg';
+    const BANNER_URL_M2 = 'https://afland.es/wp-content/uploads/2025/08/banner-publicidad-1.jpg';
+    const BANNER_URL_M3 = 'https://afland.es/wp-content/uploads/2025/08/banner-publicidad-2.jpg';
 
     // --- Selectores del DOM ---
     const resultsContainer = document.getElementById('resultsContainer');
@@ -282,8 +282,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EVENT LISTENERS ---
     function setupEventListeners() {
-        if (searchForm) { /* ... (Sin cambios) ... */ }
-        if (nearbyEventsBtn) { /* ... (Sin cambios) ... */ }
+        // Listener para el formulario de búsqueda
+        if (searchForm) {
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                performSearch({ search: searchInput.value.trim() });
+            });
+        }
+
+        // Listener para el botón "Eventos Cerca de Mí"
+        if (nearbyEventsBtn) {
+            nearbyEventsBtn.addEventListener('click', () => {
+                if (navigator.geolocation) {
+                    if (statusMessage) statusMessage.textContent = 'Buscando tu ubicación...';
+                    navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError, { timeout: 5000 });
+                } else {
+                    showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
+                }
+            });
+        }
+
+        // Listeners para clics en los contenedores de eventos (delegación de eventos)
         if (resultsContainer) {
             resultsContainer.addEventListener('click', handleResultsContainerClick);
         }
@@ -293,18 +312,61 @@ document.addEventListener('DOMContentLoaded', () => {
         if (recentSlider) {
             recentSlider.addEventListener('click', handleResultsContainerClick);
         }
-        if (modalCloseBtn) { /* ... (Sin cambios) ... */ }
-        if (modalOverlay) { /* ... (Sin cambios) ... */ }
-        if (copyPlanBtn) { /* ... (Sin cambios) ... */ }
-        if (imageModalOverlay) { /* ... (Sin cambios) ... */ }
-        if (imageModalCloseBtn) { /* ... (Sin cambios) ... */ }
+
+        // Listeners para los modales
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', hideModal);
+        }
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
+        }
+        if (copyPlanBtn) {
+            copyPlanBtn.addEventListener('click', () => {
+                const planText = modalContent.innerText;
+                navigator.clipboard.writeText(planText)
+                    .then(() => showNotification('¡Plan copiado al portapapeles!', 'success'))
+                    .catch(err => {
+                        console.error('Error al copiar: ', err);
+                        showNotification('No se pudo copiar el plan.', 'error');
+                    });
+            });
+        }
+        if (imageModalOverlay) {
+            imageModalOverlay.addEventListener('click', () => { imageModalOverlay.style.display = 'none'; });
+        }
+        if (imageModalCloseBtn) {
+            imageModalCloseBtn.addEventListener('click', () => { imageModalOverlay.style.display = 'none'; });
+        }
+
+        // Listener para el botón "Ver Todos"
         const viewAllBtn = document.getElementById('view-all-btn');
         if (viewAllBtn) {
             viewAllBtn.addEventListener('click', () => {
                 if (searchInput) searchInput.value = '';
                 const slidersSection = document.querySelector('.sliders-section');
-                if (slidersSection) slidersSection.style.display = 'block'; // Asegurarse de que los sliders se vean
+                if (slidersSection) slidersSection.style.display = 'block';
                 performSearch({});
+            });
+        }
+
+        // --- LÓGICA DEL BOTÓN 'VOLVER ARRIBA' ---
+        const backToTopBtn = document.getElementById('back-to-top-btn');
+        if (backToTopBtn) {
+            // Muestra u oculta el botón según el scroll
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) { // Aparece después de bajar 300px
+                    backToTopBtn.classList.add('visible');
+                } else {
+                    backToTopBtn.classList.remove('visible');
+                }
+            });
+
+            // Hace scroll suave hacia arriba al clicarlo
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
             });
         }
     }
