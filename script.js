@@ -61,6 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventVenue = sanitizeField(event.location?.venue, 'Ubicación no disponible');
         const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
 
+        // --- Lógica para el enlace de Google Maps ---
+        const fullLocation = [eventName, eventVenue].filter(Boolean).join(', ');
+        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullLocation)}`;
+
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
         const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
         const blogIcon = event.blogPostUrl ? 'book-outline' : 'newspaper-outline';
@@ -78,7 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="card-detalles">
             <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
             <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
-            <div class="evento-detalle"><ion-icon name="location-outline"></ion-icon><span>${eventVenue}</span></div>
+            
+            <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><ion-icon name="location-outline"></ion-icon><span>${eventVenue}</span></a></div>
         </div>
         <div class="card-actions">
             <div class="card-actions-primary">
