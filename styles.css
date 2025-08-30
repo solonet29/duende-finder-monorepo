@@ -240,12 +240,11 @@ header {
 
 /* Contenedor del título en la tarjeta del slider */
 .slider-container .event-card .card-content {
-    /* Usamos flexbox para centrar el contenido y controlar la altura */
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px;
-    /* Relleno superior e inferior para un espacio sutil */
+    padding: 8px !important;
+    /* Añadimos !important para forzar el estilo */
     text-align: center;
     margin-top: auto;
     transition: background-color 0.3s;
