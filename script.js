@@ -301,44 +301,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EVENT LISTENERS ---
 
+    // --- EVENT LISTENERS ---
+
     function setupEventListeners() {
-        searchForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            performSearch({ search: searchInput.value.trim() });
-        });
+        // Para cada elemento, comprobamos si existe (!= null) antes de añadir el listener.
+        if (searchForm) {
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                performSearch({ search: searchInput.value.trim() });
+            });
+        }
 
-        nearbyEventsBtn.addEventListener('click', () => {
-            if (navigator.geolocation) {
-                statusMessage.textContent = 'Buscando tu ubicación...';
-                navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError, { timeout: 5000 });
-            } else {
-                showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
-            }
-        });
+        if (nearbyEventsBtn) {
+            nearbyEventsBtn.addEventListener('click', () => {
+                if (navigator.geolocation) {
+                    statusMessage.textContent = 'Buscando tu ubicación...';
+                    navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError, { timeout: 5000 });
+                } else {
+                    showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
+                }
+            });
+        }
 
-        resultsContainer.addEventListener('click', handleResultsContainerClick);
-        featuredSlider.addEventListener('click', handleResultsContainerClick);
-        recentSlider.addEventListener('click', handleResultsContainerClick);
-        modalCloseBtn.addEventListener('click', hideModal);
-        modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
-        copyPlanBtn.addEventListener('click', () => {
-            const planText = modalContent.innerText;
-            navigator.clipboard.writeText(planText)
-                .then(() => showNotification('¡Plan copiado al portapapeles!', 'success'))
-                .catch(err => {
-                    console.error('Error al copiar: ', err);
-                    showNotification('No se pudo copiar el plan.', 'error');
-                });
-        });
-        imageModalOverlay.addEventListener('click', () => { imageModalOverlay.style.display = 'none'; });
-        imageModalCloseBtn.addEventListener('click', () => { imageModalOverlay.style.display = 'none'; });
-        document.getElementById('view-all-btn').addEventListener('click', () => {
-            searchInput.value = '';
-            // Hacemos que la sección de sliders vuelva a aparecer si estaba oculta
-            const slidersSection = document.querySelector('.sliders-section');
-            if (slidersSection) slidersSection.style.display = 'block';
-            performSearch({});
-        });
+        if (resultsContainer) {
+            resultsContainer.addEventListener('click', handleResultsContainerClick);
+        }
+
+        if (featuredSlider) {
+            featuredSlider.addEventListener('click', handleResultsContainerClick);
+        }
+
+        if (recentSlider) {
+            recentSlider.addEventListener('click', handleResultsContainerClick);
+        }
+
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', hideModal);
+        }
+
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
+        }
+
+        if (copyPlanBtn) {
+            copyPlanBtn.addEventListener('click', () => {
+                const planText = modalContent.innerText;
+                navigator.clipboard.writeText(planText)
+                    .then(() => showNotification('¡Plan copiado al portapapeles!', 'success'))
+                    .catch(err => {
+                        console.error('Error al copiar: ', err);
+                        showNotification('No se pudo copiar el plan.', 'error');
+                    });
+            });
+        }
+
+        if (imageModalOverlay) {
+            imageModalOverlay.addEventListener('click', () => { imageModalOverlay.style.display = 'none'; });
+        }
+
+        if (imageModalCloseBtn) {
+            imageModalCloseBtn.addEventListener('click', () => { imageModalOverlay.style.display = 'none'; });
+        }
+
+        const viewAllBtn = document.getElementById('view-all-btn');
+        if (viewAllBtn) {
+            viewAllBtn.addEventListener('click', () => {
+                if (searchInput) searchInput.value = '';
+                // Hacemos que la sección de sliders vuelva a aparecer si estaba oculta
+                const slidersSection = document.querySelector('.sliders-section');
+                if (slidersSection) slidersSection.style.display = 'block';
+                performSearch({});
+            });
+        }
     }
 
     // --- LÓGICA DE GEOLOCALIZACIÓN ---
