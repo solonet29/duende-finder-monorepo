@@ -113,12 +113,12 @@ header.header-main.scrolled .header-top {
 
 .top-bar {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-bottom: 15px;
     position: relative;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding: 10px;
+    /* Relleno uniforme de 10px */
 }
 
 .logo {
