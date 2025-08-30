@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             displayLocation = venue || city;
         }
 
-        const mapQuery = [eventName, venue, city, sanitizeField(event.location?.country, '')].filter(Boolean).join(', ');
+        const mapQuery = [eventName, venue, city, sanitizeField(event.country, '')].filter(Boolean).join(', ');
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
 
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
