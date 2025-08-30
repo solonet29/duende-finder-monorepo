@@ -75,14 +75,14 @@ document.addEventListener('DOMContentLoaded', () => {
             displayLocation = venue || city;
         }
 
-        // --- CORRECCIÓN CRÍTICA: Sintaxis del enlace de Google Maps ---
+        // CORRECCIÓN CRÍTICA: Sintaxis del enlace de Google Maps
         let mapLink;
         if (event.location && event.location.coordinates) {
             const [lon, lat] = event.location.coordinates;
-            mapLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+            mapLink = `https://maps.google.com/?q=${lat},${lon}`;
         } else {
             const mapsQuery = [eventName, venue, city, sanitizeField(event.country, '')].filter(Boolean).join(', ');
-            mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`;
+            mapLink = `https://maps.google.com/?q=${encodeURIComponent(mapsQuery)}`;
         }
 
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
@@ -91,32 +91,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
 
         eventCard.innerHTML = `
-    ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${event.imageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
-    <div class="card-header">
-        <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
-    </div>
-    <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
-    <div class="descripcion-container">
-        <p class="descripcion-corta">${description}</p>
-    </div>
-    <div class="card-detalles">
-        <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
-        <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
-        <div class="evento-detalle">
-            <a href="${mapLink}" target="_blank" rel="noopener noreferrer">
-                <ion-icon name="location-outline"></ion-icon>
-                <span>${displayLocation}</span>
-            </a>
+        ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${event.imageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
+        <div class="card-header">
+            <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
         </div>
-    </div>
-    <div class="card-actions">
-        <div class="card-actions-primary">
-            <button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button>
-            <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a>
-            <button class="share-button" data-event-id="${event._id}"><ion-icon name="share-social-outline"></ion-icon> Compartir</button>
+        <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
+        <div class="descripcion-container">
+            <p class="descripcion-corta">${description}</p>
         </div>
-    </div>
-    `;
+        <div class="card-detalles">
+            <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
+            <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
+            <div class="evento-detalle">
+                <a href="${mapLink}" target="_blank" rel="noopener noreferrer">
+                    <ion-icon name="location-outline"></ion-icon>
+                    <span>${displayLocation}</span>
+                </a>
+            </div>
+        </div>
+        <div class="card-actions">
+            <div class="card-actions-primary">
+                <button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button>
+                <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a>
+                <button class="share-button" data-event-id="${event._id}"><ion-icon name="share-social-outline"></ion-icon> Compartir</button>
+            </div>
+        </div>
+        `;
         return eventCard;
     }
 
@@ -291,6 +291,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (navTermsBtn) {
             navTermsBtn.addEventListener('click', () => termsModal?.classList.add('visible'));
         }
+
+        // This is the correct place for the listener as the button exists on page load
         if (copyBtn) {
             copyBtn.addEventListener('click', () => {
                 const textToCopy = modalContent.innerText;
