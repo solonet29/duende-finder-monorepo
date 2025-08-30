@@ -117,7 +117,12 @@ header.header-main.scrolled .header-top {
     align-items: center;
     margin-bottom: 15px;
     position: relative;
-    padding: 10px;
+    padding-top: 15px;
+    /* <-- Espacio superior para el logo */
+    padding-bottom: 0;
+    /* <-- Eliminamos cualquier padding inferior */
+    margin-bottom: 15px;
+
     /* Relleno uniforme de 10px */
 }
 
@@ -137,7 +142,8 @@ header.header-main.scrolled .header-top {
     font-weight: 700;
     color: var(--color-texto-principal);
     font-family: 'Cinzel', serif;
-    /* --- CORRECCIÓN: Ajuste de fuente dinámico --- */
+    /* --- CORRECCIÓN: Ajuste de la fuente dinámico --- */
+    /* --- CORRECCIÓN: Ajuste de la fuente dinámico --- */
     font-size: clamp(1.2rem, 4vw, 2rem);
 }
 
