@@ -313,7 +313,6 @@ header {
 .slider-container .event-card .card-image {
     width: 100%;
     height: 125px;
-    /* Reducimos la altura de la imagen */
     object-fit: cover;
 }
 
@@ -321,6 +320,7 @@ header {
     padding: 10px 5px;
     text-align: center;
     margin-top: auto;
+    transition: background-color 0.3s;
 }
 
 .slider-container .event-card .card-title {
@@ -328,41 +328,34 @@ header {
     font-weight: 600;
     color: var(--color-texto-principal);
 
-    /* --- CORRECCIÓN CLAVE --- */
+    /* Evita que el texto se envuelva y añade puntos suspensivos */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    /* Estilos del "botón" */
     display: inline-block;
     padding: 5px 10px;
-    /* Padding reducido para hacerlo más pequeño */
     border-radius: 20px;
     background-color: transparent;
     transition: background-color 0.3s, color 0.3s;
 
-    /* --- LÓGICA PARA LOS PUNTOS SUSPENSIVOS --- */
+    /* El ancho del título es dinámico, ajustándose a la tarjeta */
     max-width: 90%;
-    /* El botón no puede ser más ancho que el 90% de la tarjeta */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* --- Efecto Hover Corregido --- */
-.slider-container .event-card:hover .card-title {
-    background-color: var(--color-acento);
-    color: var(--color-superficie);
 }
 
 
-/* --- ¡Aquí está la Magia del Hover! --- */
-
+/*
+  Efectos Hover unificados.
+  Aplicamos todos los cambios cuando el mouse está sobre la tarjeta.
+*/
 .slider-container .event-card:hover .card-content {
     background-color: var(--color-acento);
-    /* Cambia el fondo al color de la marca */
 }
 
 .slider-container .event-card:hover .card-title {
     background-color: var(--color-acento);
-    /* Cambia el fondo al color de la marca */
     color: var(--color-superficie);
-    /* Cambia el texto a un color oscuro */
 }
 
 /* --- Borde Sutil para Imágenes --- */
