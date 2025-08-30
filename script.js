@@ -83,24 +83,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- CREACIÓN DE ELEMENTOS DINÁMICOS ---
 
     function createSliderCard(event) {
-        const sliderCard = document.createElement('div');
-        sliderCard.className = 'slider-card';
-        sliderCard.setAttribute('data-event-id', event._id);
-        const eventImageUrl = event.imageUrl || 'https://via.placeholder.com/150';
-        const artistName = sanitizeField(event.artist, 'Artista');
+        // Primero, creamos el contenedor principal de la tarjeta
+        const eventCard = document.createElement('div');
+        eventCard.className = 'event-card';
+        eventCard.setAttribute('data-event-id', event._id);
 
-        sliderCard.innerHTML = `
-            <img src="${eventImageUrl}" alt="${artistName}" class="slider-card-img" onerror="this.src='https://via.placeholder.com/150'">
-            <div class="slider-card-content">
-                <h4>${artistName}</h4>
-            </div>
-        `;
-        return sliderCard;
+        // Luego, definimos las URLs de las imágenes
+        const placeholderUrl = 'https://placehold.co/280x160/121212/7f8c8d?text=Flamenco';
+        const eventImageUrl = event.imageUrl || placeholderUrl;
+
+        // Después, preparamos los textos que vamos a mostrar
+        const title = sanitizeField(event.title, 'Evento Flamenco');
+        const date = event.date ? new Date(event.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : 'Fecha por confirmar';
+        const venue = sanitizeField(event.location?.venue, 'Lugar por confirmar');
+
+        // ===================================================================
+        // AQUÍ VA INTEGRADO TU CÓDIGO
+        // Esta parte "rellena" la tarjeta con el HTML y los datos
+        eventCard.innerHTML = `
+        <img src="${eventImageUrl}" alt="${title}" class="card-image" onerror="this.src='${placeholderUrl}'">
+        <div class="card-content">
+            <h3 class="card-title">${title}</h3>
+            <p class="card-date">${date}</p>
+            <p class="card-location">${venue}</p>
+        </div>
+    `;
+        // ===================================================================
+
+        // Finalmente, la función devuelve la tarjeta ya creada y lista para usar.
+        return eventCard;
     }
 
     function createEventCard(event) {
-        const eventCard = document.createElement('article');
-        eventCard.className = 'evento-card';
+        const eventCard = document.createElement('div');
+        eventCard.className = 'event-card';
         eventCard.setAttribute('data-event-id', event._id);
         const eventName = sanitizeField(event.name, 'Evento sin título');
         const artistName = sanitizeField(event.artist, 'Artista por confirmar');
@@ -150,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `;
+
         return eventCard;
     }
 
