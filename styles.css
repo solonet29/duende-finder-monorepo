@@ -1,46 +1,48 @@
 :root {
+    /* --- COLORES BASE (DARK) --- */
     --color-fondo-dark: #121212;
-    --color-superficie-dark: #1e1e1e;
-    --color-borde-dark: #444;
-    --color-primario-dark: #3DDC84;
+    --color-superficie-dark: #181818;
+    /* Para las tarjetas */
     --color-texto-principal-dark: #e0e0e0;
     --color-texto-secundario-dark: #a0a0a0;
-    --color-gemini-btn-dark: #3498db;
-    --color-gemini-btn-hover-dark: #5dade2;
-    --color-enlace-dark: var(--color-primario-dark);
+    --color-borde-dark: #282828;
+
+    /* --- COLOR DE ACENTO DE LA MARCA DUENDE FINDER --- */
+    --color-acento-marca-dark: #E58A2D;
+    /* Naranja de afland.es */
+
+    /* --- COLORES BASE (LIGHT) --- */
     --color-fondo-light: #f4f4f5;
     --color-superficie-light: #ffffff;
-    --color-borde-light: #d4d4d8;
-    --color-primario-light: #16a34a;
-    --color-texto-principal-light: #18181b;
+    --color-texto-principal-light: #181818;
     --color-texto-secundario-light: #71717a;
-    --color-gemini-btn-light: #2980b9;
-    --color-gemini-btn-hover-light: #3498db;
-    --color-enlace-light: var(--color-primario-light);
+    --color-borde-light: #d4d4d8;
+
+    /* --- COLOR DE ACENTO DE LA MARCA DUENDE FINDER --- */
+    --color-acento-marca-light: #D47F26;
+    /* Un tono un poco más oscuro para buen contraste en fondos claros */
 }
 
+/* TEMA OSCURO */
 [data-theme="dark"] {
     --color-fondo: var(--color-fondo-dark);
     --color-superficie: var(--color-superficie-dark);
     --color-borde: var(--color-borde-dark);
-    --color-primario: var(--color-primario-dark);
     --color-texto-principal: var(--color-texto-principal-dark);
     --color-texto-secundario: var(--color-texto-secundario-dark);
-    --color-gemini-btn: var(--color-gemini-btn-dark);
-    --color-gemini-btn-hover: var(--color-gemini-btn-hover-dark);
-    --color-enlace: var(--color-enlace-dark);
+    --color-acento: var(--color-acento-marca-dark);
+    /* <-- VARIABLE CLAVE */
 }
 
+/* TEMA CLARO */
 [data-theme="light"] {
     --color-fondo: var(--color-fondo-light);
     --color-superficie: var(--color-superficie-light);
     --color-borde: var(--color-borde-light);
-    --color-primario: var(--color-primario-light);
     --color-texto-principal: var(--color-texto-principal-light);
     --color-texto-secundario: var(--color-texto-secundario-light);
-    --color-gemini-btn: var(--color-gemini-btn-light);
-    --color-gemini-btn-hover: var(--color-gemini-btn-hover-light);
-    --color-enlace: var(--color-enlace-light);
+    --color-acento: var(--color-acento-marca-light);
+    /* <-- VARIABLE CLAVE */
 }
 
 html {
@@ -52,6 +54,101 @@ html {
 *:before,
 *:after {
     box-sizing: inherit;
+}
+
+/* --- NUEVA CABECERA (CON VARIABLES CSS) --- */
+header {
+    background-color: var(--color-fondo);
+    /* Usa variable */
+    padding: 10px 15px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo img {
+    height: 40px;
+    width: 40px;
+}
+
+.logo span {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-texto-principal);
+    /* Usa variable */
+    font-family: 'Cinzel', serif;
+}
+
+.header-btn {
+    background: none;
+    border: none;
+    color: var(--color-texto-secundario);
+    /* Usa variable */
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.header-btn:hover {
+    color: var(--color-texto-principal);
+    /* Usa variable */
+}
+
+/* --- BARRA DE FILTROS ESTILO SPOTIFY (CON VARIABLES CSS) --- */
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.filter-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--color-chip-fondo);
+    /* Usa variable */
+    color: var(--color-texto-principal);
+    /* Usa variable */
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.filter-chip:hover {
+    background-color: var(--color-borde);
+    /* Reutilizamos una variable existente para el hover */
+}
+
+.filter-chip.active {
+    background-color: var(--color-acento);
+    /* <-- USA LA NUEVA VARIABLE */
+    color: var(--color-fondo);
+    /* El texto será del color del fondo para contraste */
+    border-color: var(--color-acento);
+    /* <-- USA LA NUEVA VARIABLE */
 }
 
 body {
@@ -262,51 +359,9 @@ h1 span {
     font-size: 1.2rem;
 }
 
-#resultsContainer,
-#skeleton-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.5rem;
-}
 
-.evento-card {
-    background-color: var(--color-superficie);
-    border: 1px solid var(--color-borde);
-    border-radius: 12px;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    animation: fadeIn 0.5s ease-in-out;
-    overflow: hidden;
-}
 
-.evento-card:hover {
-    transform: translateY(-8px);
-    border-color: var(--color-primario);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
 
-.evento-card-img-container {
-    height: 180px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    border-radius: 12px 12px 0 0;
-    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
-}
-
-.evento-card-img {
-    display: block;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: cover;
-    border-radius: 0;
-    margin: 0;
-}
 
 @keyframes fadeIn {
     from {
@@ -324,32 +379,6 @@ h1 span {
     min-height: 4.5rem;
 }
 
-.evento-card h3 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-}
-
-.evento-card .artista {
-    color: var(--color-primario);
-    font-weight: 700;
-    margin-top: 1rem;
-}
-
-.descripcion-container {
-    flex-grow: 1;
-    margin-top: 1rem;
-}
-
-.evento-card .descripcion {
-    color: var(--color-texto-secundario);
-    line-height: 1.6;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
 
 .verificado-badge {
     display: inline-flex;
@@ -364,30 +393,47 @@ h1 span {
     margin-top: 1rem;
 }
 
+/* --- Detalles (Fecha, Hora, Lugar) --- */
+.card-detalles {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* Espacio entre cada línea de detalle */
+    border-top: 1px solid var(--color-borde);
+    /* Línea separadora arriba del todo */
+    padding-top: 15px;
+    /* Espacio sobre el primer elemento */
+    margin-top: 15px;
+    /* Espacio debajo de la descripción */
+}
+
 .evento-detalle {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 10px;
+    /* Espacio entre el icono y el texto */
+    font-size: 0.9rem;
     color: var(--color-texto-secundario);
-    border-top: 1px solid var(--color-borde);
-    padding-top: 1rem;
-    margin-top: 1rem;
-    transition: border-color 0.3s ease;
 }
 
 .evento-detalle i {
-    color: var(--color-primario);
-    width: 20px;
+    color: var(--color-acento);
+    /* Usamos el color de acento de la marca */
+    width: 16px;
+    /* Ancho consistente para el icono */
     text-align: center;
 }
 
 .evento-detalle a {
-    color: inherit;
+    color: var(--color-texto-secundario);
+    /* Hereda el color por defecto */
     text-decoration: none;
+    transition: color 0.2s;
 }
 
 .evento-detalle a:hover {
-    color: var(--color-primario);
+    color: var(--color-texto-principal);
+    /* Al pasar el ratón, se vuelve más brillante */
 }
 
 .card-actions {
@@ -1397,13 +1443,6 @@ main.container.results-active #search-controls {
     content: '';
 }
 
-.evento-card.highlighted {
-    box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.8);
-    /* Un brillo dorado */
-    transform: scale(1.02);
-    transition: all 0.3s ease-in-out;
-    border: 2px solid #FFD700;
-}
 
 /* --- NUEVOS ESTILOS PARA LA ESTRUCTURA DEL BUSCADOR --- */
 
@@ -1610,4 +1649,164 @@ main.container.results-active #search-controls {
     font-size: 0.9rem;
     color: #7f8c8d;
     margin: 4px 0;
+}
+
+/* --- Parrilla Principal de Resultados --- */
+#resultsContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    /* Más espacio entre tarjetas */
+    padding: 20px 0;
+}
+
+/* --- La Tarjeta del Evento (Estilo Spotify) --- */
+.evento-card {
+    background-color: #181818;
+    /* Un gris un poco más claro que el fondo */
+    border-radius: 12px;
+    /* Bordes más redondeados */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Espacio interno entre secciones de la tarjeta */
+    transition: background-color 0.3s, transform 0.2s;
+    border: 1px solid #282828;
+    /* Borde sutil */
+}
+
+.evento-card:hover {
+    background-color: #282828;
+    /* Se ilumina un poco al pasar el ratón */
+    transform: translateY(-4px);
+}
+
+/* --- Imagen Superior de la Tarjeta --- */
+.evento-card-img-container {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    /* Proporción panorámica */
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.evento-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- Contenido de la Tarjeta --- */
+.card-header .titulo-truncado {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.artista {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #b3b3b3;
+    /* Gris claro para información secundaria */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.descripcion-corta {
+    font-size: 0.9rem;
+    color: #b3b3b3;
+    line-height: 1.5;
+}
+
+/* --- Detalles (Fecha, Hora, Lugar) --- */
+.card-detalles {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-top: 1px solid #282828;
+    padding-top: 15px;
+}
+
+.evento-detalle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #b3b3b3;
+}
+
+.evento-detalle i {
+    color: #1DB954;
+    /* Iconos con el color de acento */
+    width: 16px;
+    text-align: center;
+}
+
+.evento-detalle a {
+    color: #b3b3b3;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.evento-detalle a:hover {
+    color: #ffffff;
+}
+
+/* --- Acciones y Botones --- */
+.card-actions-separator {
+    display: none;
+    /* Eliminamos la línea horizontal, ya no es necesaria */
+}
+
+.card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: auto;
+    /* Empuja los botones al final de la tarjeta */
+}
+
+.card-actions-primary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+/* Estilo general para todos los botones de acción */
+.card-actions-primary button,
+.card-actions-primary a {
+    padding: 10px;
+    border-radius: 25px;
+    border: none;
+    font-weight: bold;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.card-actions-primary button:hover,
+.card-actions-primary a:hover {
+    transform: scale(1.05);
+}
+
+/* Botón Primario: Planear Noche */
+.gemini-btn {
+    background-color: #1DB954;
+    /* Verde Spotify */
+    color: #121212;
+}
+
+/* Botones Secundarios: Blog y Compartir */
+.btn-blog-explorar,
+.blog-link-btn,
+.share-button {
+    background-color: #282828;
+    color: #ffffff;
+    border: 1px solid #3a3a3a;
 }

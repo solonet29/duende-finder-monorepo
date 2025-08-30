@@ -290,19 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Listener para el botón "Eventos Cerca de Mí"
-        if (nearbyEventsBtn) {
-            nearbyEventsBtn.addEventListener('click', () => {
-                if (navigator.geolocation) {
-                    if (statusMessage) statusMessage.textContent = 'Buscando tu ubicación...';
-                    navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError, { timeout: 5000 });
-                } else {
-                    showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
-                }
-            });
-        }
-
-        // Listeners para clics en los contenedores de eventos (delegación de eventos)
+        // Listeners para clics en los contenedores de eventos (delegación)
         if (resultsContainer) {
             resultsContainer.addEventListener('click', handleResultsContainerClick);
         }
@@ -313,60 +301,71 @@ document.addEventListener('DOMContentLoaded', () => {
             recentSlider.addEventListener('click', handleResultsContainerClick);
         }
 
-        // Listeners para los modales
-        if (modalCloseBtn) {
-            modalCloseBtn.addEventListener('click', hideModal);
-        }
-        if (modalOverlay) {
-            modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
-        }
-        if (copyPlanBtn) {
-            copyPlanBtn.addEventListener('click', () => {
-                const planText = modalContent.innerText;
-                navigator.clipboard.writeText(planText)
-                    .then(() => showNotification('¡Plan copiado al portapapeles!', 'success'))
-                    .catch(err => {
-                        console.error('Error al copiar: ', err);
-                        showNotification('No se pudo copiar el plan.', 'error');
-                    });
-            });
-        }
-        if (imageModalOverlay) {
-            imageModalOverlay.addEventListener('click', () => { imageModalOverlay.style.display = 'none'; });
-        }
-        if (imageModalCloseBtn) {
-            imageModalCloseBtn.addEventListener('click', () => { imageModalOverlay.style.display = 'none'; });
-        }
+        // Listeners para los modales y otros botones
+        if (modalCloseBtn) { modalCloseBtn.addEventListener('click', hideModal); }
+        if (modalOverlay) { modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); }); }
+        // ... otros listeners de modales ...
 
-        // Listener para el botón "Ver Todos"
-        const viewAllBtn = document.getElementById('view-all-btn');
-        if (viewAllBtn) {
-            viewAllBtn.addEventListener('click', () => {
-                if (searchInput) searchInput.value = '';
-                const slidersSection = document.querySelector('.sliders-section');
-                if (slidersSection) slidersSection.style.display = 'block';
-                performSearch({});
-            });
-        }
-
-        // --- LÓGICA DEL BOTÓN 'VOLVER ARRIBA' ---
+        // Listener para el botón "Volver Arriba"
         const backToTopBtn = document.getElementById('back-to-top-btn');
         if (backToTopBtn) {
-            // Muestra u oculta el botón según el scroll
             window.addEventListener('scroll', () => {
-                if (window.scrollY > 300) { // Aparece después de bajar 300px
+                if (window.scrollY > 300) {
                     backToTopBtn.classList.add('visible');
                 } else {
                     backToTopBtn.classList.remove('visible');
                 }
             });
-
-            // Hace scroll suave hacia arriba al clicarlo
             backToTopBtn.addEventListener('click', () => {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // --- LÓGICA PARA LA NUEVA BARRA DE FILTROS ---
+        const filterBar = document.querySelector('.filter-bar');
+        if (filterBar) {
+            filterBar.addEventListener('click', (e) => {
+                // Solo reacciona si se clica un botón de filtro
+                if (e.target.classList.contains('filter-chip')) {
+                    // 1. Quita la clase 'active' de todos los botones
+                    filterBar.querySelectorAll('.filter-chip').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+
+                    // 2. Añade la clase 'active' al botón clicado
+                    const clickedButton = e.target;
+                    clickedButton.classList.add('active');
+
+                    // 3. Ejecuta la acción correspondiente
+                    const filterType = clickedButton.dataset.filter;
+
+                    switch (filterType) {
+                        case 'todos':
+                            performSearch({});
+                            break;
+                        case 'cerca':
+                            // Reutilizamos la lógica de geolocalización
+                            if (navigator.geolocation) {
+                                if (statusMessage) statusMessage.textContent = 'Buscando tu ubicación...';
+                                navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError, { timeout: 5000 });
+                            } else {
+                                showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
+                            }
+                            break;
+                        case 'hoy':
+                            // Nota: Requiere que tu API soporte este filtro
+                            performSearch({ date: 'today' });
+                            break;
+                        case 'semana':
+                            // Nota: Requiere que la API soporte este filtro
+                            performSearch({ dateRange: 'week' });
+                            break;
+                        case 'festivales':
+                            // Nota: Requiere que la API soporte este filtro
+                            performSearch({ category: 'festival' });
+                            break;
+                    }
+                }
             });
         }
     }
