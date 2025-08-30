@@ -643,3 +643,41 @@ header {
 .nav-btn.active {
     color: var(--color-acento);
 }
+
+/* --- Estilos Adicionales para Barra de Navegación y Modales --- */
+
+/* Para el botón activo en la barra de navegación */
+.nav-btn.active {
+    color: var(--color-acento);
+    /* Se ilumina con el color de la marca */
+    transform: translateY(-3px);
+}
+
+/* Para los botones no clicables (si los hubiera en el futuro) */
+.nav-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Mejoras para el contenido de los nuevos modales */
+.modal-content h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-texto-principal);
+}
+
+.modal-content p,
+.modal-content li {
+    line-height: 1.6;
+    color: var(--color-texto-secundario);
+}
+
+.modal-content strong {
+    color: var(--color-texto-principal);
+}
+
+.modal-content ol {
+    padding-left: 20px;
+}

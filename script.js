@@ -2,47 +2,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 1. CONFIGURACIÓN Y VARIABLES GLOBALES
     // =========================================================================
-
-    const API_BASE_URL = window.location.hostname.includes('localhost')
-        ? 'http://localhost:3000' // Para tu desarrollo local
-        : ''; // Para Vercel (producción y previews), usamos rutas relativas
-
+    const API_BASE_URL = window.location.hostname.includes('localhost') ? 'http://localhost:3000' : '';
     let eventsCache = {};
 
     // =========================================================================
     // 2. SELECTORES DEL DOM
     // =========================================================================
-
     const resultsContainer = document.getElementById('resultsContainer');
     const skeletonContainer = document.getElementById('skeleton-container');
     const statusMessage = document.getElementById('statusMessage');
     const noResultsMessage = document.getElementById('no-results-message');
     const resultsTitle = document.getElementById('results-title');
-
     const featuredSlider = document.getElementById('featured-events-slider');
     const recentSlider = document.getElementById('recent-events-slider');
-
     const filterBar = document.querySelector('.filter-bar');
 
-    // --- Selectores de la nueva barra de navegación ---
+    // --- Barra de Navegación Inferior ---
     const navHomeBtn = document.getElementById('nav-home-btn');
+    const navHowItWorksBtn = document.getElementById('nav-how-it-works-btn');
+    const navTermsBtn = document.getElementById('nav-terms-btn');
     const navThemeToggle = document.getElementById('nav-theme-toggle');
-    const navBackToTop = document.getElementById('nav-back-to-top');
 
     // --- Modales ---
+    const howItWorksModal = document.getElementById('how-it-works-modal-overlay');
+    const termsModal = document.getElementById('terms-modal-overlay');
     const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
     const modalContent = document.getElementById('modal-content');
-    const modalCloseBtn = document.getElementById('modal-close-btn');
-    const copyPlanBtn = document.getElementById('copy-plan-btn');
-
-    const imageModalOverlay = document.getElementById('image-modal-overlay');
-    const imageModalContent = document.getElementById('image-modal-content');
-    const imageModalCloseBtn = document.querySelector('.image-modal-close-btn');
 
     // =========================================================================
-    // 3. FUNCIONES DE RENDERIZADO (CREACIÓN DE HTML)
+    // 3. FUNCIONES DE RENDERIZADO
     // =========================================================================
-
     function createSliderCard(event) {
         const eventCard = document.createElement('div');
         eventCard.className = 'event-card';
@@ -64,19 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventCard = document.createElement('article');
         eventCard.className = 'evento-card';
         eventCard.setAttribute('data-event-id', event._id);
-
         const eventName = sanitizeField(event.name, 'Evento sin título');
         const artistName = sanitizeField(event.artist, 'Artista por confirmar');
         const description = sanitizeField(event.description, 'Sin descripción disponible.');
         const eventTime = sanitizeField(event.time, 'No disponible');
         const eventVenue = sanitizeField(event.location?.venue, 'Ubicación no disponible');
         const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
-
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
         const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
         const blogIcon = event.blogPostUrl ? 'fa-book-open' : 'fa-blog';
         const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
-
         eventCard.innerHTML = `
             ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${event.imageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
             <div class="card-header">
@@ -105,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 4. LÓGICA DE LA APLICACIÓN
     // =========================================================================
-
     async function performSearch(params) {
         showSkeletonLoader();
         let url = `${API_BASE_URL}/api/events`;
@@ -114,9 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
         delete apiParams.clickedId;
         delete apiParams.source;
         const queryParams = new URLSearchParams(apiParams).toString();
-        if (queryParams) {
-            url += `?${queryParams}`;
-        }
+        if (queryParams) { url += `?${queryParams}`; }
         try {
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
@@ -149,14 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (statusMessage) statusMessage.textContent = '';
         if (noResultsMessage) noResultsMessage.style.display = 'none';
-
         const fragment = document.createDocumentFragment();
         events.forEach(event => {
             eventsCache[event._id] = event;
             fragment.appendChild(createEventCard(event));
         });
         resultsContainer.appendChild(fragment);
-
         if (shouldScroll) {
             const resultsSection = document.querySelector('.full-events-section');
             if (resultsSection) {
@@ -172,10 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch(`${API_BASE_URL}/api/events?sort=date&order=desc&limit=10`)
             ]);
             if (!featuredResponse.ok || !recentResponse.ok) throw new Error('Fallo al cargar datos para sliders');
-
             const featuredData = await featuredResponse.json();
             const recentData = await recentResponse.json();
-
             if (featuredSlider && featuredData.events) {
                 featuredSlider.innerHTML = '';
                 featuredData.events.forEach(event => featuredSlider.appendChild(createSliderCard(event)));
@@ -194,13 +173,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 5. GESTORES DE EVENTOS Y LISTENERS
     // =========================================================================
-
     function handleResultsContainerClick(event) {
         const geminiBtn = event.target.closest('.gemini-btn');
         const shareBtn = event.target.closest('.share-button');
         const image = event.target.closest('.evento-card-img');
         const clickedCard = event.target.closest('.event-card');
-
         if (geminiBtn) {
             const eventId = geminiBtn.dataset.eventId;
             const eventData = eventsCache[eventId];
@@ -241,35 +218,44 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // --- LISTENERS PARA LA NUEVA BARRA DE NAVEGACIÓN ---
         if (navHomeBtn) {
             navHomeBtn.addEventListener('click', () => {
                 performSearch({});
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (filterBar) {
+                    filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+                    const todosFilter = filterBar.querySelector('[data-filter="todos"]');
+                    if (todosFilter) todosFilter.classList.add('active');
+                }
+                if (resultsTitle) resultsTitle.textContent = 'Todos los Eventos';
             });
         }
-
         if (navThemeToggle) {
             navThemeToggle.addEventListener('click', () => {
                 const currentTheme = document.documentElement.getAttribute('data-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                applyTheme(newTheme);
+                applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
             });
         }
-
-        if (navBackToTop) {
-            navBackToTop.addEventListener('click', () => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
+        if (navHowItWorksBtn) {
+            navHowItWorksBtn.addEventListener('click', () => howItWorksModal?.classList.add('visible'));
+        }
+        if (navTermsBtn) {
+            navTermsBtn.addEventListener('click', () => termsModal?.classList.add('visible'));
         }
 
-        // --- Listeners de Modales ---
-        if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => geminiModalOverlay.classList.remove('visible'));
-        if (geminiModalOverlay) geminiModalOverlay.addEventListener('click', (e) => { if (e.target === geminiModalOverlay) geminiModalOverlay.classList.remove('visible'); });
-        if (imageModalCloseBtn) imageModalCloseBtn.addEventListener('click', () => { if (imageModalOverlay) imageModalOverlay.style.display = 'none'; });
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || e.target.classList.contains('modal-close-btn')) {
+                    modal.classList.remove('visible');
+                }
+            });
+        });
     }
 
     function handleFilterClick(filterType) {
+        if (navHomeBtn) {
+            navHomeBtn.classList.toggle('active', filterType === 'todos');
+        }
         if (!resultsTitle) return;
         switch (filterType) {
             case 'todos':
