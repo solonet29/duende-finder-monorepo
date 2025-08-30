@@ -65,6 +65,7 @@ body {
     color: var(--color-texto-principal);
     margin: 0;
     transition: background-color 0.3s ease, color 0.3s ease;
+    background-image: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--color-fondo) 90%, white), var(--color-fondo) 70%);
 }
 
 main.container {
@@ -242,6 +243,18 @@ header {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* --- Borde Sutil para Imágenes --- */
+
+/* Para la imagen de la ficha grande de resultados */
+.evento-card-img-container {
+    border: 1px solid var(--color-borde);
+}
+
+/* Para la imagen de la tarjeta pequeña del slider */
+.slider-container .card-image {
+    border: 1px solid var(--color-borde);
 }
 
 
