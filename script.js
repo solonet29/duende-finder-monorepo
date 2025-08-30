@@ -7,36 +7,38 @@ document.addEventListener('DOMContentLoaded', () => {
         ? 'http://localhost:3000'
         : 'https://duende-api-next.vercel.app';
 
-    // Estado de la aplicación
     let eventsCache = {};
 
     // =========================================================================
-    // 2. SELECTORES DEL DOM (ELEMENTOS HTML)
+    // 2. SELECTORES DEL DOM
     // =========================================================================
 
-    // --- Contenedores Principales ---
     const resultsContainer = document.getElementById('resultsContainer');
     const skeletonContainer = document.getElementById('skeleton-container');
     const statusMessage = document.getElementById('statusMessage');
     const noResultsMessage = document.getElementById('no-results-message');
+    const resultsTitle = document.getElementById('results-title');
 
-    // --- Sliders ---
     const featuredSlider = document.getElementById('featured-events-slider');
     const recentSlider = document.getElementById('recent-events-slider');
 
-    // --- Botones y Controles ---
     const backToTopBtn = document.getElementById('back-to-top-btn');
     const filterBar = document.querySelector('.filter-bar');
 
     // --- Modales ---
-    const modalOverlay = document.getElementById('gemini-modal-overlay');
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsModalOverlay = document.getElementById('settings-modal-overlay');
+    const settingsModalCloseBtn = document.getElementById('settings-modal-close-btn');
+    const themeToggleSwitch = document.getElementById('theme-toggle-switch');
+
+    const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
     const modalContent = document.getElementById('modal-content');
     const modalCloseBtn = document.getElementById('modal-close-btn');
     const copyPlanBtn = document.getElementById('copy-plan-btn');
+
     const imageModalOverlay = document.getElementById('image-modal-overlay');
     const imageModalContent = document.getElementById('image-modal-content');
     const imageModalCloseBtn = document.querySelector('.image-modal-close-btn');
-    // ... (otros selectores de modales si los hubiera)
 
     // =========================================================================
     // 3. FUNCIONES DE RENDERIZADO (CREACIÓN DE HTML)
@@ -102,15 +104,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================================================
-    // 4. LÓGICA DE LA APLICACIÓN (FETCH, BÚSQUEDA, EVENTOS)
+    // 4. LÓGICA DE LA APLICACIÓN
     // =========================================================================
 
     async function performSearch(params) {
         showSkeletonLoader();
         let url = `${API_BASE_URL}/api/events`;
-        const isSliderSearch = !!params.clickedId;
+
+        const shouldScroll = !!params.clickedId || params.source === 'filter';
+
         const apiParams = { ...params };
         delete apiParams.clickedId;
+        delete apiParams.source;
+
         const queryParams = new URLSearchParams(apiParams).toString();
         if (queryParams) {
             url += `?${queryParams}`;
@@ -124,15 +130,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 eventsToShow.sort((a, b) => {
                     if (a._id === params.clickedId) return -1;
                     if (b._id === params.clickedId) return 1;
-                    return 0; // Mantener orden para el resto (p. ej., por fecha)
+                    return 0;
                 });
             }
-            displayEvents(eventsToShow, isSliderSearch);
+            displayEvents(eventsToShow, shouldScroll);
         } catch (error) {
             console.error("Error en la búsqueda:", error);
             hideSkeletonLoader();
             if (statusMessage) statusMessage.textContent = 'Hubo un error al realizar la búsqueda.';
-            showNotification('Error al realizar la búsqueda.', 'error');
         }
     }
 
@@ -185,14 +190,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error("Error al cargar los sliders:", error);
-            // Opcional: Ocultar secciones de sliders si fallan
             if (featuredSlider) featuredSlider.parentElement.style.display = 'none';
             if (recentSlider) recentSlider.parentElement.style.display = 'none';
         }
     }
 
     // =========================================================================
-    // 5. GESTORES DE EVENTOS (EVENT HANDLERS & LISTENERS)
+    // 5. GESTORES DE EVENTOS Y LISTENERS
     // =========================================================================
 
     function handleResultsContainerClick(event) {
@@ -201,29 +205,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const image = event.target.closest('.evento-card-img');
         const clickedCard = event.target.closest('.event-card');
 
-        // --- Acción: Planear Noche ---
         if (geminiBtn) {
             const eventId = geminiBtn.dataset.eventId;
             const eventData = eventsCache[eventId];
             if (eventData) getAndShowNightPlan(eventData);
             return;
         }
-
-        // --- Acción: Compartir ---
         if (shareBtn) {
-            // ... (Añadir lógica de compartir si se necesita) ...
             showNotification('Función de compartir próximamente.', 'info');
             return;
         }
-
-        // --- Acción: Ampliar Imagen (solo en la ficha grande) ---
         if (image && !image.closest('.slider-container')) {
             if (imageModalContent) imageModalContent.src = image.src;
             if (imageModalOverlay) imageModalOverlay.style.display = 'flex';
             return;
         }
-
-        // --- Acción: Clic en Tarjeta de Slider ---
         if (clickedCard && clickedCard.parentElement.classList.contains('slider-container')) {
             const eventId = clickedCard.dataset.eventId;
             const artistName = clickedCard.dataset.artistName;
@@ -234,25 +230,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupEventListeners() {
-        // Clics delegados en los contenedores
         if (resultsContainer) resultsContainer.addEventListener('click', handleResultsContainerClick);
         if (featuredSlider) featuredSlider.addEventListener('click', handleResultsContainerClick);
         if (recentSlider) recentSlider.addEventListener('click', handleResultsContainerClick);
 
-        // Barra de filtros
         if (filterBar) {
             filterBar.addEventListener('click', (e) => {
                 if (e.target.classList.contains('filter-chip')) {
                     filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
-                    const clickedButton = e.target;
-                    clickedButton.classList.add('active');
-                    const filterType = clickedButton.dataset.filter;
+                    e.target.classList.add('active');
+                    const filterType = e.target.dataset.filter;
                     handleFilterClick(filterType);
                 }
             });
         }
 
-        // Botón "Volver Arriba"
         if (backToTopBtn) {
             window.addEventListener('scroll', () => {
                 backToTopBtn.classList.toggle('visible', window.scrollY > 300);
@@ -262,45 +254,68 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Cierres de Modales
-        if (modalCloseBtn) modalCloseBtn.addEventListener('click', hideModal);
-        if (modalOverlay) modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', () => settingsModalOverlay.classList.add('visible'));
+        }
+        if (settingsModalCloseBtn) {
+            settingsModalCloseBtn.addEventListener('click', () => settingsModalOverlay.classList.remove('visible'));
+        }
+        if (settingsModalOverlay) {
+            settingsModalOverlay.addEventListener('click', (e) => {
+                if (e.target === settingsModalOverlay) settingsModalOverlay.classList.remove('visible');
+            });
+        }
+        if (themeToggleSwitch) {
+            themeToggleSwitch.addEventListener('change', () => {
+                const newTheme = themeToggleSwitch.checked ? 'dark' : 'light';
+                applyTheme(newTheme);
+            });
+        }
+
+        if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => geminiModalOverlay.classList.remove('visible'));
+        if (geminiModalOverlay) geminiModalOverlay.addEventListener('click', (e) => { if (e.target === geminiModalOverlay) geminiModalOverlay.classList.remove('visible'); });
         if (imageModalCloseBtn) imageModalCloseBtn.addEventListener('click', () => { if (imageModalOverlay) imageModalOverlay.style.display = 'none'; });
     }
 
     function handleFilterClick(filterType) {
+        if (!resultsTitle) return;
         switch (filterType) {
             case 'todos':
-                performSearch({});
+                resultsTitle.textContent = 'Todos los Eventos';
+                performSearch({ source: 'filter' });
                 break;
             case 'cerca':
+                resultsTitle.textContent = 'Eventos Cerca de Ti 📍';
                 geolocationSearch();
                 break;
             case 'hoy':
-                performSearch({ date: 'today' }); // API debe soportarlo
+                resultsTitle.textContent = 'Eventos para Hoy 📅';
+                performSearch({ date: 'today', source: 'filter' });
                 break;
             case 'semana':
-                performSearch({ dateRange: 'week' }); // API debe soportarlo
+                resultsTitle.textContent = 'Eventos de Esta Semana 🗓️';
+                performSearch({ dateRange: 'week', source: 'filter' });
                 break;
             case 'festivales':
-                performSearch({ category: 'festival' }); // API debe soportarlo
+                resultsTitle.textContent = 'Festivales Flamencos 🎪';
+                performSearch({ category: 'festival', source: 'filter' });
                 break;
         }
     }
 
     // =========================================================================
-    // 6. FUNCIONES AUXILIARES (GEOLOCALIZACIÓN, MODALES, ETC.)
+    // 6. FUNCIONES AUXILIARES
     // =========================================================================
 
     function geolocationSearch() {
         if (navigator.geolocation) {
             if (statusMessage) statusMessage.textContent = 'Buscando tu ubicación...';
             navigator.geolocation.getCurrentPosition(
-                (position) => { // Success
+                (position) => {
                     const { latitude, longitude } = position.coords;
-                    performSearch({ lat: latitude, lon: longitude, radius: 50 }); // radio de 50km
+                    performSearch({ lat: latitude, lon: longitude, radius: 50 });
                 },
-                (error) => { // Error
+                (error) => {
                     console.error("Error de geolocalización:", error);
                     showNotification('No se pudo obtener tu ubicación.', 'error');
                 }
@@ -317,21 +332,78 @@ document.addEventListener('DOMContentLoaded', () => {
         return defaultText;
     }
 
-    async function getAndShowNightPlan(event) { /* ... (Sin cambios, pegar aquí si se necesita) ... */ }
-    function showNotification(message, type = 'info') { /* ... (Sin cambios, pegar aquí si se necesita) ... */ }
-    function showModal() { if (modalOverlay) modalOverlay.classList.add('visible'); }
-    function hideModal() { if (modalOverlay) modalOverlay.classList.remove('visible'); }
-    function showSkeletonLoader() { /* ... (Sin cambios, pegar aquí si se necesita) ... */ }
-    function hideSkeletonLoader() { /* ... (Sin cambios, pegar aquí si se necesita) ... */ }
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('duende-theme', theme);
+        if (themeToggleSwitch) {
+            themeToggleSwitch.checked = theme === 'dark';
+        }
+    }
+
+    async function getAndShowNightPlan(event) {
+        if (!geminiModalOverlay || !modalContent) return;
+        geminiModalOverlay.classList.add('visible');
+        modalContent.innerHTML = `<div class="loader-container"><div class="loader"></div><p>Un momento, el duende está afinando la guitarra...</p></div>`;
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
+            if (!response.ok) throw new Error('La respuesta del servidor no fue OK');
+            const data = await response.json();
+            if (window.marked) {
+                modalContent.innerHTML = marked.parse(data.content);
+            } else {
+                modalContent.innerHTML = `<pre style="white-space: pre-wrap;">${data.content}</pre>`;
+            }
+        } catch (error) {
+            console.error("Error al generar el Plan Noche:", error);
+            modalContent.innerHTML = `<div class="error-message"><h3>¡Vaya! El duende se ha despistado.</h3><p>No se pudo generar el plan. Inténtalo de nuevo más tarde.</p></div>`;
+        }
+    }
+
+    function showNotification(message, type = 'info') {
+        const notificationContainer = document.getElementById('notification-container');
+        if (!notificationContainer) {
+            const container = document.createElement('div');
+            container.id = 'notification-container';
+            document.body.appendChild(container);
+        }
+        document.getElementById('notification-container').innerHTML += `<div class="notification ${type}">${message}</div>`;
+        setTimeout(() => {
+            const notif = document.querySelector('.notification');
+            if (notif) notif.remove();
+        }, 5000);
+    }
+
+    function showSkeletonLoader() {
+        if (skeletonContainer) {
+            skeletonContainer.innerHTML = '';
+            resultsContainer.style.display = 'none';
+            skeletonContainer.style.display = 'grid';
+            for (let i = 0; i < 6; i++) {
+                const skeletonCard = document.createElement('div');
+                skeletonCard.className = 'skeleton-card';
+                skeletonCard.innerHTML = `<div class="skeleton title"></div><div class="skeleton text"></div><div class="skeleton text"></div>`;
+                skeletonContainer.appendChild(skeletonCard);
+            }
+        }
+        if (statusMessage) statusMessage.textContent = 'Buscando el mejor compás...';
+        if (noResultsMessage) noResultsMessage.style.display = 'none';
+    }
+
+    function hideSkeletonLoader() {
+        if (skeletonContainer) skeletonContainer.style.display = 'none';
+        if (resultsContainer) resultsContainer.style.display = 'grid';
+    }
 
     // =========================================================================
     // 7. INICIALIZACIÓN
     // =========================================================================
 
     function init() {
+        const savedTheme = localStorage.getItem('duende-theme') || 'dark';
+        applyTheme(savedTheme);
         setupEventListeners();
         loadAndDisplaySliders();
-        performSearch({}); // Carga inicial de todos los eventos
+        performSearch({});
     }
 
     init();
