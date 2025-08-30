@@ -1,17 +1,17 @@
 /* ==========================================================================
-   1. VARIABLES Y TEMAS (THEMING)
+   1. VARIABLES Y TEMAS (THEMING) - CORREGIDO
    ========================================================================== */
 
 :root {
     /* --- COLORES BASE (DARK) --- */
     --color-fondo-dark: #121212;
     --color-superficie-dark: #181818;
-    /* Para las tarjetas */
     --color-texto-principal-dark: #e0e0e0;
     --color-texto-secundario-dark: #a0a0a0;
     --color-borde-dark: #282828;
     --color-acento-marca-dark: #E58A2D;
-    /* Naranja de afland.es */
+    --color-nav-fondo-dark: rgba(18, 18, 18, 0.85);
+    /* Fondo semitransparente para la barra nav */
 
     /* --- COLORES BASE (LIGHT) --- */
     --color-fondo-light: #f4f4f5;
@@ -20,7 +20,8 @@
     --color-texto-secundario-light: #71717a;
     --color-borde-light: #d4d4d8;
     --color-acento-marca-light: #D47F26;
-    /* Naranja para modo claro */
+    --color-nav-fondo-light: rgba(244, 244, 245, 0.85);
+    /* Equivalente en claro */
 }
 
 /* TEMA OSCURO */
@@ -31,6 +32,8 @@
     --color-texto-principal: var(--color-texto-principal-dark);
     --color-texto-secundario: var(--color-texto-secundario-dark);
     --color-acento: var(--color-acento-marca-dark);
+    --color-nav-fondo: var(--color-nav-fondo-dark);
+    /* <-- Variable añadida */
 }
 
 /* TEMA CLARO */
@@ -41,8 +44,76 @@
     --color-texto-principal: var(--color-texto-principal-light);
     --color-texto-secundario: var(--color-texto-secundario-light);
     --color-acento: var(--color-acento-marca-light);
+    --color-nav-fondo: var(--color-nav-fondo-light);
+    /* <-- Variable añadida */
 }
 
+
+/* ==========================================================================
+   3. CABECERA (HEADER) - CORREGIDO
+   ========================================================================== */
+
+header {
+    background-color: var(--color-fondo);
+    /* Ahora usa la variable del fondo principal */
+    padding: 10px 15px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--color-borde);
+    /* Borde sutil para separar */
+    box-shadow: none;
+    /* Quitamos la sombra, el borde es más limpio */
+}
+
+/* ... (El resto de estilos de la cabecera .top-bar, .logo, etc. se quedan igual) ... */
+
+
+/* ==========================================================================
+   8. BARRA DE NAVEGACIÓN INFERIOR - CORREGIDO
+   ========================================================================== */
+
+#bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--color-nav-fondo);
+    /* <-- AHORA USA LA VARIABLE DE TEMA */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    z-index: 1000;
+    border-top: 1px solid var(--color-borde);
+    /* Borde sutil */
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    color: var(--color-texto-secundario);
+    /* Ya usa variables, correcto */
+    font-size: 22px;
+    padding: 10px;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.nav-btn:hover {
+    color: var(--color-texto-principal);
+    transform: translateY(-3px);
+}
+
+.nav-btn.active {
+    color: var(--color-acento);
+}
 
 /* ==========================================================================
    2. ESTILOS GLOBALES Y DE BASE
