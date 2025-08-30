@@ -1515,9 +1515,28 @@ main.container.results-active #search-controls {
     /* Firefox */
 }
 
+/* --- ESTILOS DEL SCROLLBAR DEL SLIDER --- */
+
+/* Hacemos la barra de scroll visible pero muy delgada */
 .slider-container::-webkit-scrollbar {
-    display: none;
-    /* Chrome, Safari and Opera */
+    height: 6px;
+    /* Altura de la barra de scroll horizontal */
+    background-color: transparent;
+    /* Fondo transparente */
+}
+
+/* Estilo del "pulgar" o la parte que se arrastra */
+.slider-container::-webkit-scrollbar-thumb {
+    background-color: #444;
+    /* Un gris oscuro */
+    border-radius: 10px;
+    border: 2px solid #121212;
+    /* Un borde del color del fondo para dar efecto 'flotante' */
+}
+
+/* Estilo del "track" o el carril por donde se mueve */
+.slider-container::-webkit-scrollbar-track {
+    background-color: transparent;
 }
 
 /* --- ESTILOS DE LA TARJETA DE EVENTO (event-card) --- */
