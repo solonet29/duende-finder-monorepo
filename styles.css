@@ -255,10 +255,11 @@ header {
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--color-texto-principal);
+    line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: inline-block;
+    display: block;
     padding: 5px 10px;
     border-radius: 20px;
     background-color: transparent;
