@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const termsModal = document.getElementById('terms-modal-overlay');
     const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
     const modalContent = document.getElementById('modal-content');
+    const copyBtn = document.getElementById('copy-plan-btn');
 
     // =========================================================================
     // 3. FUNCIONES DE RENDERIZADO
@@ -74,7 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
             displayLocation = venue || city;
         }
 
-        // --- CORRECCIÓN: Generación del enlace del mapa más robusta ---
+        // --- CORRECCIÓN CRÍTICA: Error de sintaxis en el enlace del mapa ---
+        // Se cambió 0{...} por ?q=... o por la latitud y longitud, ya que 0{...} no es sintaxis de URL válida.
         const mapsUrl = [eventName, venue, city, sanitizeField(event.country, '')].filter(Boolean).join(', ');
         const mapLink = event.location && event.location.coordinates ?
             `https://www.google.com/maps/search/?api=1&query=${event.location.coordinates[1]},${event.location.coordinates[0]}` :
@@ -86,32 +88,49 @@ document.addEventListener('DOMContentLoaded', () => {
         const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
 
         eventCard.innerHTML = `
-    ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${event.imageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
-    <div class="card-header">
-        <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
-    </div>
-    <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
-    <div class="descripcion-container">
-        <p class="descripcion-corta">${description}</p>
-    </div>
-    <div class="card-detalles">
-        <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
-        <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
-        <div class="evento-detalle">
-            <a href="${mapLink}" target="_blank" rel="noopener noreferrer">
-                <ion-icon name="location-outline"></ion-icon>
-                <span>${displayLocation}</span>
-            </a>
+        ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${event.imageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
+        <div class="card-header">
+            <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
         </div>
-    </div>
-    <div class="card-actions">
-        <div class="card-actions-primary">
-            <button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button>
-            <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a>
-            <button class="share-button" data-event-id="${event._id}"><ion-icon name="share-social-outline"></ion-icon> Compartir</button>
+        <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
+        <div class="descripcion-container">
+            <p class="descripcion-corta">${description}</p>
         </div>
-    </div>
-    `;
+        <div class="card-detalles">
+            <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
+            <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
+            <div class="evento-detalle">
+                <a href="${mapLink}" target="_blank" rel="noopener noreferrer">
+                    <ion-icon name="location-outline"></ion-icon>
+                    <span>${displayLocation}</span>
+                </a>
+            </div>
+        </div>
+        <div class="card-actions">
+            <div class="card-actions-primary">
+                <button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button>
+                <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a>
+                <button class="share-button" data-event-id="${event._id}"><ion-icon name="share-social-outline"></ion-icon> Compartir</button>
+            </div>
+        </div>
+        `;
+        return eventCard;
+    }
+
+    function createSliderCard(event) {
+        const eventCard = document.createElement('div');
+        eventCard.className = 'event-card';
+        eventCard.setAttribute('data-event-id', event._id);
+        const artistName = sanitizeField(event.artist, 'Artista por confirmar');
+        eventCard.setAttribute('data-artist-name', artistName);
+        const placeholderUrl = 'https://placehold.co/280x160/121212/7f8c8d?text=Flamenco';
+        const eventImageUrl = event.imageUrl || placeholderUrl;
+        eventCard.innerHTML = `
+            <img src="${eventImageUrl}" alt="${artistName}" class="card-image" onerror="this.src='${placeholderUrl}'">
+            <div class="card-content">
+                <h3 class="card-title">${artistName}</h3>
+            </div>
+        `;
         return eventCard;
     }
 
@@ -245,7 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-
         if (navHomeBtn) {
             navHomeBtn.addEventListener('click', () => {
                 performSearch({});
@@ -269,6 +287,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (navTermsBtn) {
             navTermsBtn.addEventListener('click', () => termsModal?.classList.add('visible'));
+        }
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                const textToCopy = modalContent.innerText;
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showNotification('¡Plan copiado al portapapeles!', 'success');
+                }).catch(err => {
+                    console.error('Error al copiar el texto:', err);
+                });
+            });
         }
 
         document.querySelectorAll('.modal-overlay').forEach(modal => {
