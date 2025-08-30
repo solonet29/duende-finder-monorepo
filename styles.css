@@ -239,31 +239,39 @@ header {
 }
 
 /* Contenedor del título en la tarjeta del slider */
+/* Estilos para las tarjetas del slider */
+
 .slider-container .event-card .card-content {
+    /* CORRECCIÓN: Usamos flexbox para centrar y un padding mínimo */
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px !important;
-    /* Añadimos !important para forzar el estilo */
-    text-align: center;
-    margin-top: auto;
-    transition: background-color 0.3s;
+    padding: 8px 0;
+    /* Solo padding vertical en el contenedor */
 }
 
-/* Título de la tarjeta del slider */
 .slider-container .event-card .card-title {
+    /* CORRECCIÓN: Eliminamos el margen y el padding por defecto */
+    margin: 0;
+    padding: 0;
+
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--color-texto-principal);
     line-height: 1.2;
+    /* Reduce el espacio vertical del texto */
+
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
     display: block;
-    padding: 5px 10px;
+    /* Ocupa el 100% del ancho del contenedor */
+
     border-radius: 20px;
     background-color: transparent;
     transition: background-color 0.3s, color 0.3s;
+
     max-width: 90%;
 }
 
