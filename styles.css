@@ -167,6 +167,7 @@ header.header-main {
 
 .slider-container .event-card {
     flex: 0 0 220px;
+    height: min-content;
     width: 220px;
     display: flex;
     flex-direction: column;
@@ -197,11 +198,10 @@ header.header-main {
 /* --- Tarjetas del Slider (CORRECCIÓN DEFINITIVA) --- */
 
 .slider-container .event-card .card-content {
-    /* Este contenedor solo centra el texto y le da un poco de espacio por debajo */
-    text-align: center;
+    flex-grow: 0;
+    /* CLAVE: Prohibimos explícitamente que este div crezca */
     padding: 12px 5px;
-    margin-top: auto;
-    /* Lo empuja al final de la tarjeta */
+    text-align: center;
 }
 
 .slider-container .event-card .card-title {
@@ -209,17 +209,14 @@ header.header-main {
     display: inline-block;
     padding: 6px 12px;
     border-radius: 20px;
-
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-texto-principal);
-
     max-width: 95%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
     transition: background-color 0.3s, color 0.3s;
+    color: var(--color-texto-principal);
+    font-size: 0.9rem;
+    font-weight: 600;
 }
 
 /* El efecto hover ahora se aplica ÚNICAMENTE al título, no a su contenedor */
