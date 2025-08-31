@@ -3,28 +3,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. CONFIGURACIÓN Y SELECTORES
     // =========================================================================
     const API_BASE_URL = window.location.hostname.includes('localhost') ? 'http://localhost:3000' : '';
-    let eventsCache = {}; // Esto sigue siendo útil para pasar datos entre funciones (ej. al abrir un modal)
+    let eventsCache = {};
 
-    // --- Contenedores Principales ---
     const mainContainer = document.querySelector('.container');
     const featuredSlider = document.getElementById('featured-events-slider');
     const weekSlider = document.getElementById('week-events-slider');
     const todaySlider = document.getElementById('today-events-slider');
     const nearbySlider = document.getElementById('nearby-events-slider');
     const monthlySlidersContainer = document.getElementById('monthly-sliders-container');
-    const resultsTitle = document.getElementById('results-title');
 
-    // --- Cabecera y Filtros ---
     const filterBar = document.querySelector('.filter-bar');
-    const cercaDeMiChip = document.getElementById('cerca-de-mi-chip');
 
-    // --- Barra de Navegación Inferior ---
     const navHomeBtn = document.getElementById('nav-home-btn');
     const navHowItWorksBtn = document.getElementById('nav-how-it-works-btn');
     const navTermsBtn = document.getElementById('nav-terms-btn');
     const navThemeToggle = document.getElementById('nav-theme-toggle');
 
-    // --- Modales ---
     const eventDetailModalOverlay = document.getElementById('event-detail-modal-overlay');
     const howItWorksModal = document.getElementById('how-it-works-modal-overlay');
     const termsModal = document.getElementById('terms-modal-overlay');
@@ -118,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderEventDetailModal(event) {
         if (!eventDetailModalOverlay) return;
-
         const eventName = sanitizeField(event.name, 'Evento sin título');
         const artistName = sanitizeField(event.artist, 'Artista por confirmar');
         const description = sanitizeField(event.description, 'Sin descripción disponible.');
@@ -129,43 +122,40 @@ document.addEventListener('DOMContentLoaded', () => {
         let displayLocation = 'Ubicación no disponible';
         if (venue && city) displayLocation = `${venue}, ${city}`;
         else if (venue || city) displayLocation = venue || city;
-
         const mapQuery = [eventName, venue, city, sanitizeField(event.country || (event.location && event.location.country), '')].filter(Boolean).join(', ');
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
-
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
         const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
         const blogIcon = event.blogPostUrl ? 'book-outline' : 'newspaper-outline';
         const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
-
-        // --- LÍNEA CORREGIDA QUE FALTABA ---
         const eventImageUrl = event.imageUrl || './assets/flamenco-placeholder.png';
 
         eventDetailModalOverlay.innerHTML = `
-        <div class="modal">
-            <button class="modal-close-btn">×</button>
-            <div class="modal-content modal-event-details">
-                ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
-                <div class="card-header">
-                    <h2 class="titulo-truncado" title="${eventName}">${eventName}</h2>
-                </div>
-                <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
-                <p class="descripcion-corta">${description}</p>
-                <div class="card-detalles">
-                    <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
-                    <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
-                    <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><ion-icon name="location-outline"></ion-icon><span>${displayLocation}</span></a></div>
-                </div>
-                <div class="card-actions">
-                    <div class="card-actions-primary">
-                        <button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button>
-                        <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a>
+            <div class="modal">
+                <button class="modal-close-btn">×</button>
+                <div class="modal-content modal-event-details">
+                    ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
+                    <div class="card-header">
+                        <h2 class="titulo-truncado" title="${eventName}">${eventName}</h2>
+                    </div>
+                    <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
+                    <p class="descripcion-corta">${description}</p>
+                    <div class="card-detalles">
+                        <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
+                        <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
+                        <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><ion-icon name="location-outline"></ion-icon><span>${displayLocation}</span></a></div>
+                    </div>
+                    <div class="card-actions">
+                        <div class="card-actions-primary">
+                            <button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button>
+                            <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>`;
+            </div>`;
         eventDetailModalOverlay.classList.add('visible');
     }
+
     // =========================================================================
     // 4. FUNCIONES AUXILIARES
     // =========================================================================
@@ -204,30 +194,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function geolocationSearch() {
         const cercaSection = document.getElementById('cerca-section');
-        if (!navigator.geolocation) {
+        if (!cercaSection || !navigator.geolocation) {
             showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
             return;
         }
 
-        // Solo nos preocupamos de mostrar la sección y el loader
-        if (cercaSection) cercaSection.style.display = 'block';
-        if (nearbySlider) nearbySlider.innerHTML = `<div class="skeleton-card"><div class="skeleton title"></div><div class="skeleton text"></div></div>`;
+        cercaSection.style.display = 'block';
+
+        navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+            if (result.state === 'granted') {
+                fetchNearbyEvents();
+            } else if (result.state === 'prompt') {
+                renderGeolocationPrompt();
+            } else if (result.state === 'denied') {
+                renderGeolocationDenied();
+            }
+        });
+    }
+
+    function renderGeolocationPrompt() {
+        if (nearbySlider) {
+            nearbySlider.innerHTML = `
+                <div class="cta-section" style="margin: 0; padding: 1.5rem;">
+                    <p style="margin-bottom: 1rem;">Para ver eventos cercanos, necesitamos tu permiso de ubicación.</p>
+                    <button id="request-location-btn" class="cta-btn">Permitir Ubicación</button>
+                </div>
+            `;
+        }
+    }
+
+    function renderGeolocationDenied() {
+        if (nearbySlider) {
+            nearbySlider.innerHTML = `<p style="color: var(--color-texto-secundario); padding: 1rem; text-align: center;">Has bloqueado los permisos de ubicación. Para ver eventos cercanos, por favor, actívalos en los ajustes de tu navegador.</p>`;
+        }
+    }
+
+    function fetchNearbyEvents() {
+        if (nearbySlider) nearbySlider.innerHTML = `<div class="skeleton-card" style="width: 100%;"></div>`;
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    const cacheKey = `nearby-${latitude.toFixed(2)}-${longitude.toFixed(2)}`;
-                    const nearbyData = await fetchWithCache(`/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`, cacheKey, 15);
+                    const response = await fetch(`${API_BASE_URL}/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`);
+                    if (!response.ok) throw new Error('Error en la petición');
+                    const nearbyData = await response.json();
                     renderSlider(nearbySlider, nearbyData?.events);
                 } catch (error) {
-                    if (nearbySlider) nearbySlider.innerHTML = `<p style="color: var(--color-texto-secundario); padding: 1rem;">No se pudieron cargar los eventos cercanos.</p>`;
+                    renderGeolocationDenied();
                 }
             },
             (error) => {
                 console.error("Error de geolocalización:", error);
-                showNotification('No se pudo obtener tu ubicación.', 'error');
-                if (nearbySlider) nearbySlider.innerHTML = `<p style="color: var(--color-texto-secundario); padding: 1rem;">No se pudo obtener tu ubicación.</p>`;
+                renderGeolocationDenied();
             }
         );
     }
@@ -285,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function hideSkeletonLoader() {
-        // No es necesario ocultar explícitamente, ya que el contenido lo reemplaza
+        // Esta función ya no es tan necesaria
     }
 
     // =========================================================================
@@ -298,6 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const shareBtn = e.target.closest('.share-button');
             const modalOverlay = e.target.closest('.modal-overlay');
             const modalCloseBtn = e.target.closest('.modal-close-btn');
+            const requestLocationBtn = e.target.closest('#request-location-btn');
 
             if (sliderCard) {
                 const eventId = sliderCard.dataset.eventId;
@@ -316,11 +336,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (geminiBtn) {
                 const eventId = geminiBtn.dataset.eventId;
                 const eventData = eventsCache[eventId];
-                if (eventData) {
-                    getAndShowNightPlan(eventData);
-                }
+                if (eventData) getAndShowNightPlan(eventData);
             } else if (shareBtn) {
                 showNotification('Función de compartir próximamente.', 'info');
+            } else if (requestLocationBtn) {
+                fetchNearbyEvents();
             } else if (modalCloseBtn || (modalOverlay && e.target === modalOverlay)) {
                 if (modalOverlay) modalOverlay.classList.remove('visible');
             }
@@ -333,30 +353,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.preventDefault();
                     filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
                     filterChip.classList.add('active');
-
                     const targetId = filterChip.getAttribute('href');
                     const targetSection = document.querySelector(targetId);
-
                     if (targetSection) {
-                        // Hacemos el scroll a la sección correspondiente
                         const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
                         const elementPosition = targetSection.getBoundingClientRect().top;
                         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
                         window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                     }
-
-                    // Si además es el botón de "Cerca de Mí", iniciamos la búsqueda
                     if (filterChip.dataset.filter === 'cerca') {
                         geolocationSearch();
                     }
                 }
-            });
-        }
-
-        if (cercaDeMiChip) {
-            cercaDeMiChip.addEventListener('click', (e) => {
-                e.preventDefault();
-                geolocationSearch();
             });
         }
 
