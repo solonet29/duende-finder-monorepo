@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 6. INICIALIZACIÓN
     // =========================================================================
     function init() {
-        const savedTheme = localStorage.getItem('duende-theme') || 'dark';
+        const savedTheme = localStorage.getItem('duende-theme') || 'light';
         applyTheme(savedTheme);
         setupEventListeners();
         initializeDashboard();
