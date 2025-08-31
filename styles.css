@@ -8,14 +8,17 @@
     --color-texto-secundario-dark: #a0a0a0;
     --color-borde-dark: #282828;
     --color-acento-marca-dark: #E58A2D;
-    --color-nav-fondo-dark: rgba(18, 18, 18, 0.85);
+    --color-nav-fondo-dark: rgba(18, 18, 18, 0.7);
+    /* Transparencia Ajustada */
+
     --color-fondo-light: #f4f4f5;
     --color-superficie-light: #ffffff;
     --color-texto-principal-light: #181818;
     --color-texto-secundario-light: #71717a;
     --color-borde-light: #d4d4d8;
     --color-acento-marca-light: #D47F26;
-    --color-nav-fondo-light: rgba(244, 244, 245, 0.85);
+    --color-nav-fondo-light: rgba(244, 244, 245, 0.7);
+    /* Transparencia Ajustada */
 }
 
 [data-theme="dark"] {
@@ -69,7 +72,7 @@ main.container {
 }
 
 /* ==========================================================================
-   3. CABECERA
+   3. CABECERA CON EFECTO SCROLL
    ========================================================================== */
 header.header-main {
     background-color: var(--color-nav-fondo);
@@ -80,12 +83,16 @@ header.header-main {
     z-index: 100;
     padding: 10px 15px;
     border-bottom: 1px solid var(--color-borde);
+    transition: padding 0.3s ease;
 }
 
 .header-top {
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 40px;
+    overflow: hidden;
+    transition: height 0.3s ease, opacity 0.3s ease, margin-bottom 0.3s ease;
     margin-bottom: 15px;
 }
 
@@ -94,6 +101,17 @@ header.header-main {
     font-weight: 700;
     color: var(--color-texto-principal);
     font-family: 'Cinzel', serif;
+}
+
+header.header-main.scrolled {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+header.header-main.scrolled .header-top {
+    height: 0;
+    opacity: 0;
+    margin-bottom: 0;
 }
 
 .filter-bar {
@@ -155,20 +173,16 @@ header.header-main {
     gap: 15px;
     padding-bottom: 15px;
     scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
     align-items: flex-start;
+    /* CORRECCIÓN: Evita que las tarjetas se estiren */
 }
 
 .slider-container::-webkit-scrollbar {
     display: none;
 }
 
-/* --- Tarjetas dentro de un Slider (Diseño Definitivo) --- */
-
 .slider-container .event-card {
     flex: 0 0 220px;
-    height: min-content;
     width: 220px;
     display: flex;
     flex-direction: column;
@@ -189,48 +203,36 @@ header.header-main {
     width: 100%;
     height: 125px;
     object-fit: cover;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* ==========================================================================
-   CORRECCIÓN DEFINITIVA PARA LA ALTURA DEL TÍTULO EN SLIDERS
-   ========================================================================== */
-
-/* 1. Anulamos el espaciado vertical del CONTENEDOR del título */
-/* --- Tarjetas del Slider (CORRECCIÓN DEFINITIVA) --- */
-
 .slider-container .event-card .card-content {
-    flex-grow: 0;
-    /* CLAVE: Prohibimos explícitamente que este div crezca */
-    padding: 12px 5px;
     text-align: center;
+    padding: 12px 5px;
 }
 
 .slider-container .event-card .card-title {
-    /* Convertimos el título en una "píldora" que se ajusta a su propio texto */
     display: inline-block;
     padding: 6px 12px;
     border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-texto-principal);
     max-width: 95%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     transition: background-color 0.3s, color 0.3s;
-    color: var(--color-texto-principal);
-    font-size: 0.9rem;
-    font-weight: 600;
 }
 
-/* El efecto hover ahora se aplica ÚNICAMENTE al título, no a su contenedor */
 .slider-container .event-card:hover .card-title {
     background-color: var(--color-acento);
     color: var(--color-superficie);
 }
 
 /* ==========================================================================
-   5. MODALES (VERSIÓN DEFINITIVA)
+   5. MODALES
    ========================================================================== */
-
-/* --- Contenedor General y Fondo --- */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -254,7 +256,6 @@ header.header-main {
     visibility: visible;
 }
 
-/* --- La Caja del Modal --- */
 .modal {
     background-color: var(--color-superficie);
     border: 1px solid var(--color-borde);
@@ -288,14 +289,10 @@ header.header-main {
     z-index: 10;
 }
 
-/* --- Área de Contenido General del Modal --- */
 .modal-content {
     flex-grow: 1;
-    /* Ocupa el espacio vertical disponible */
     overflow-y: auto;
-    /* AÑADE SCROLL VERTICAL SI EL CONTENIDO SE DESBORDA */
     padding-right: 10px;
-    /* Espacio para la barra de scroll */
 }
 
 .modal-content>* {
@@ -330,7 +327,6 @@ header.header-main {
     padding-left: 20px;
 }
 
-/* --- Estilos Específicos para la Ficha de Evento en el Modal --- */
 .modal-event-details {
     display: flex;
     flex-direction: column;
@@ -340,7 +336,6 @@ header.header-main {
 .modal-event-details .evento-card-img-container {
     width: 100%;
     aspect-ratio: 16 / 9;
-    /* CORRECCIÓN: Proporción panorámica fija */
     border-radius: 8px;
     overflow: hidden;
     border: 1px solid var(--color-borde);
@@ -351,7 +346,6 @@ header.header-main {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* CORRECCIÓN: Rellena el espacio sin deformarse */
     display: block;
 }
 
@@ -383,7 +377,6 @@ header.header-main {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 }
 
-/* --- Efecto Cascada y z-index --- */
 #gemini-modal-overlay {
     z-index: 3000;
 }
@@ -393,25 +386,6 @@ header.header-main {
     opacity: 0.7;
     filter: blur(2px);
     pointer-events: none;
-}
-
-/* --- Estilo para los Enlaces Dentro de los Modales --- */
-
-.modal-content a {
-    color: var(--color-acento);
-    /* Usamos el color naranja de la marca */
-    font-weight: 600;
-    /* Un poco más de peso para que resalte */
-    text-decoration: none;
-    /* Quitamos el subrayado por defecto */
-    transition: color 0.2s ease, text-decoration 0.2s ease;
-}
-
-.modal-content a:hover {
-    text-decoration: underline;
-    /* Añadimos el subrayado solo al pasar el ratón */
-    filter: brightness(1.2);
-    /* Hacemos que brille un poco para mejor feedback */
 }
 
 /* ==========================================================================
@@ -454,7 +428,7 @@ header.header-main {
 }
 
 /* ==========================================================================
-   7. COMPONENTES (Botones, Skeleton, etc.)
+   7. COMPONENTES Y OTROS
    ========================================================================== */
 ion-icon {
     font-size: 1.2em;
@@ -494,8 +468,7 @@ ion-icon {
 }
 
 .btn-blog-explorar,
-.blog-link-btn,
-.share-button {
+.blog-link-btn {
     background-color: var(--color-borde);
     color: var(--color-texto-principal);
 }
@@ -535,4 +508,41 @@ ion-icon {
 .skeleton.text {
     height: 16px;
     margin-bottom: 0.5rem;
+}
+
+.cta-section {
+    text-align: center;
+    background-color: var(--color-superficie);
+    padding: 2.5rem 1.5rem;
+    border-radius: 12px;
+    margin: 40px 0;
+    border: 1px solid var(--color-borde);
+}
+
+.cta-section h2 {
+    margin-top: 0;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.cta-section p {
+    color: var(--color-texto-secundario);
+    max-width: 450px;
+    margin: 0 auto 1.5rem auto;
+}
+
+.cta-btn {
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.cta-btn:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
 }

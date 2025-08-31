@@ -308,9 +308,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================================================
-    // 5. GESTORES DE EVENTOS Y LISTENERS
-    // =========================================================================
     function setupEventListeners() {
+        // --- LISTENER AÑADIDO PARA EL EFECTO DE SCROLL EN LA CABECERA ---
+        const header = document.querySelector('.header-main');
+        if (header) {
+            window.addEventListener('scroll', () => {
+                // Añade o quita la clase 'scrolled' si el usuario ha bajado más de 10px
+                header.classList.toggle('scrolled', window.scrollY > 10);
+            });
+        }
+
+        // --- GESTOR DE CLICS PRINCIPAL (DELEGACIÓN DE EVENTOS) ---
         document.body.addEventListener('click', async (e) => {
             const sliderCard = e.target.closest('.slider-container .event-card');
             const geminiBtn = e.target.closest('.gemini-btn');
@@ -346,6 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // --- LISTENERS ESTÁTICOS (CABECERA Y BARRA DE NAVEGACIÓN) ---
         if (filterBar) {
             filterBar.addEventListener('click', (e) => {
                 const filterChip = e.target.closest('.filter-chip');
@@ -353,14 +362,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.preventDefault();
                     filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
                     filterChip.classList.add('active');
+
                     const targetId = filterChip.getAttribute('href');
                     const targetSection = document.querySelector(targetId);
+
                     if (targetSection) {
                         const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
                         const elementPosition = targetSection.getBoundingClientRect().top;
                         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
                         window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                     }
+
                     if (filterChip.dataset.filter === 'cerca') {
                         geolocationSearch();
                     }
@@ -369,7 +381,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (navHomeBtn) {
-            navHomeBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+            navHomeBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
         }
         if (navThemeToggle) {
             navThemeToggle.addEventListener('click', () => {
