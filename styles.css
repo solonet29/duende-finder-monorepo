@@ -157,6 +157,7 @@ header.header-main {
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    align-items: flex-start;
 }
 
 .slider-container::-webkit-scrollbar {
