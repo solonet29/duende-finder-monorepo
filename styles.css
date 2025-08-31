@@ -215,7 +215,7 @@ header.header-main {
 }
 
 /* ==========================================================================
-   5. MODALES (VERSIÓN CORREGIDA Y FINAL)
+   5. MODALES (VERSIÓN DEFINITIVA)
    ========================================================================== */
 
 /* --- Contenedor General y Fondo --- */
@@ -274,13 +274,16 @@ header.header-main {
     cursor: pointer;
     line-height: 1;
     z-index: 10;
-    /* Asegura que esté por encima del contenido */
 }
 
 /* --- Área de Contenido General del Modal --- */
 .modal-content {
     flex-grow: 1;
+    /* Ocupa el espacio vertical disponible */
     overflow-y: auto;
+    /* AÑADE SCROLL VERTICAL SI EL CONTENIDO SE DESBORDA */
+    padding-right: 10px;
+    /* Espacio para la barra de scroll */
 }
 
 .modal-content>* {
@@ -324,20 +327,20 @@ header.header-main {
 
 .modal-event-details .evento-card-img-container {
     width: 100%;
-    height: 16 / 9;
-    max-height: 350px;
-    aspect-ratio: unset;
+    aspect-ratio: 16 / 9;
+    /* CORRECCIÓN: Proporción panorámica fija */
     border-radius: 8px;
     overflow: hidden;
-    /* Clave para contener la imagen */
     border: 1px solid var(--color-borde);
+    margin-bottom: 1rem;
 }
 
 .modal-event-details .evento-card-img {
     width: 100%;
     height: 100%;
-    object-fit: cover display: block;
-    /* Evita espacios extraños */
+    object-fit: cover;
+    /* CORRECCIÓN: Rellena el espacio sin deformarse */
+    display: block;
 }
 
 .modal-event-details .card-header .titulo-truncado {
@@ -355,7 +358,6 @@ header.header-main {
 
 .modal-event-details .evento-detalle a {
     color: var(--color-texto-secundario);
-    /* Corrige el color del enlace */
     transition: color 0.2s;
 }
 
@@ -367,7 +369,6 @@ header.header-main {
     display: grid;
     gap: 10px;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    /* Rejilla flexible para los botones */
 }
 
 /* --- Efecto Cascada y z-index --- */
