@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const eventDetailModalOverlay = document.getElementById('event-detail-modal-overlay');
     const howItWorksModal = document.getElementById('how-it-works-modal-overlay');
     const termsModal = document.getElementById('terms-modal-overlay');
-    const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
 
     // =========================================================================
     // 2. LÓGICA PRINCIPAL DE CARGA DEL DASHBOARD
@@ -189,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchWithCache(endpoint, cacheKey, expiryInMinutes = 30) {
         const cachedItem = localStorage.getItem(cacheKey);
         const now = new Date().getTime();
-
         if (cachedItem) {
             const { timestamp, data } = JSON.parse(cachedItem);
             if ((now - timestamp) / (1000 * 60) < expiryInMinutes) {
@@ -197,12 +195,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 return Promise.resolve(data);
             }
         }
-
         console.log(`CACHE MISS (API): Realizando petición para '${cacheKey}'`);
         const response = await fetch(`${API_BASE_URL}${endpoint}`);
         if (!response.ok) throw new Error(`Fallo en la petición de red para ${endpoint}`);
         const data = await response.json();
-
         localStorage.setItem(cacheKey, JSON.stringify({ timestamp: now, data }));
         return data;
     }
@@ -240,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    // Usamos una clave de caché única para la ubicación
                     const cacheKey = `nearby-${latitude.toFixed(2)}-${longitude.toFixed(2)}`;
                     const nearbyData = await fetchWithCache(`/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`, cacheKey, 15);
                     renderSlider(nearbySlider, nearbyData?.events);
@@ -251,16 +246,18 @@ document.addEventListener('DOMContentLoaded', () => {
             (error) => {
                 console.error("Error de geolocalización:", error);
                 showNotification('No se pudo obtener tu ubicación.', 'error');
-                if (nearbySlider) nearbySlider.innerHTML = `<p style="color: var(--color-texto-secundario); padding: 1rem;">No se pudo obtener tu ubicación para mostrar eventos cercanos.</p>`;
+                if (nearbySlider) nearbySlider.innerHTML = `<p style="color: var(--color-texto-secundario); padding: 1rem;">No se pudo obtener tu ubicación.</p>`;
             }
         );
     }
 
+    function showNotification(message, type = 'info') { /* ... (Tu función completa aquí) ... */ }
+
     // =========================================================================
     // 5. GESTORES DE EVENTOS Y LISTENERS
     // =========================================================================
+
     function setupEventListeners() {
-        // Clics en los sliders para abrir el modal de detalle
         document.querySelectorAll('.slider-container').forEach(slider => {
             slider.addEventListener('click', async (e) => {
                 const card = e.target.closest('.event-card');
@@ -271,18 +268,34 @@ document.addEventListener('DOMContentLoaded', () => {
                         renderEventDetailModal(data);
                     } catch (error) {
                         console.error('Error al cargar detalles del evento:', error);
-                        showNotification('No se pudo cargar la información del evento.', 'error');
                     }
                 }
             });
         });
 
-        // Clics en los filtros de la cabecera para hacer scroll
         if (filterBar) {
             filterBar.addEventListener('click', (e) => {
-                if (e.target.classList.contains('filter-chip')) {
+                const filterChip = e.target.closest('.filter-chip');
+                if (filterChip) {
+                    e.preventDefault();
                     filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
+                    filterChip.classList.add('active');
+
+                    const targetId = filterChip.getAttribute('href');
+                    if (targetId === '#') {
+                        geolocationSearch();
+                        return;
+                    }
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        const headerOffset = document.querySelector('header.header-main').offsetHeight + 15;
+                        const elementPosition = targetSection.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: "smooth"
+                        });
+                    }
                 }
             });
         }
@@ -323,6 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 6. INICIALIZACIÓN
     // =========================================================================
+
     function init() {
         const savedTheme = localStorage.getItem('duende-theme') || 'dark';
         applyTheme(savedTheme);
