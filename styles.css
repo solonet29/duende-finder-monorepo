@@ -383,6 +383,25 @@ header.header-main {
     pointer-events: none;
 }
 
+/* --- Estilo para los Enlaces Dentro de los Modales --- */
+
+.modal-content a {
+    color: var(--color-acento);
+    /* Usamos el color naranja de la marca */
+    font-weight: 600;
+    /* Un poco más de peso para que resalte */
+    text-decoration: none;
+    /* Quitamos el subrayado por defecto */
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.modal-content a:hover {
+    text-decoration: underline;
+    /* Añadimos el subrayado solo al pasar el ratón */
+    filter: brightness(1.2);
+    /* Hacemos que brille un poco para mejor feedback */
+}
+
 /* ==========================================================================
    6. BARRA DE NAVEGACIÓN INFERIOR
    ========================================================================== */
