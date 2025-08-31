@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. CONFIGURACIÓN Y SELECTORES
     // =========================================================================
     const API_BASE_URL = window.location.hostname.includes('localhost') ? 'http://localhost:3000' : '';
-    let eventsCache = {};
+    let eventsCache = {}; // Esto sigue siendo útil para pasar datos entre funciones (ej. al abrir un modal)
 
     // --- Contenedores Principales ---
     const mainContainer = document.querySelector('.container');
@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const todaySlider = document.getElementById('today-events-slider');
     const nearbySlider = document.getElementById('nearby-events-slider');
     const monthlySlidersContainer = document.getElementById('monthly-sliders-container');
+    const resultsTitle = document.getElementById('results-title');
 
     // --- Cabecera y Filtros ---
     const filterBar = document.querySelector('.filter-bar');
@@ -35,10 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initializeDashboard() {
         try {
             const [featuredData, weekData, todayData, allEventsData] = await Promise.all([
-                fetchWithCache('/api/events?featured=true&limit=10', 'featured-events', 60),
-                fetchWithCache('/api/events?dateRange=week&limit=10', 'week-events', 30),
-                fetchWithCache('/api/events?date=today&limit=10', 'today-events', 15),
-                fetchWithCache('/api/events?sort=date', 'all-events', 180)
+                fetch(`${API_BASE_URL}/api/events?featured=true&limit=10`).then(res => res.json()),
+                fetch(`${API_BASE_URL}/api/events?dateRange=week&limit=10`).then(res => res.json()),
+                fetch(`${API_BASE_URL}/api/events?date=today&limit=10`).then(res => res.json()),
+                fetch(`${API_BASE_URL}/api/events?sort=date`).then(res => res.json())
             ]);
 
             renderSlider(featuredSlider, featuredData?.events);
@@ -165,35 +166,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 4. FUNCIONES AUXILIARES
     // =========================================================================
-
     function groupEventsByMonth(events) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         return events.reduce((acc, event) => {
             if (!event.date) return acc;
+            const eventDate = new Date(event.date);
+            const diffDays = (eventDate - today) / (1000 * 60 * 60 * 24);
+            if (diffDays >= 0 && diffDays < 7) { return acc; }
             const monthKey = event.date.substring(0, 7);
-            if (!acc[monthKey]) {
-                acc[monthKey] = [];
-            }
+            if (!acc[monthKey]) { acc[monthKey] = []; }
             acc[monthKey].push(event);
             return acc;
         }, {});
-    }
-
-    async function fetchWithCache(endpoint, cacheKey, expiryInMinutes = 30) {
-        const cachedItem = localStorage.getItem(cacheKey);
-        const now = new Date().getTime();
-        if (cachedItem) {
-            const { timestamp, data } = JSON.parse(cachedItem);
-            if ((now - timestamp) / (1000 * 60) < expiryInMinutes) {
-                console.log(`CACHE HIT (localStorage): Devolviendo datos para '${cacheKey}'`);
-                return Promise.resolve(data);
-            }
-        }
-        console.log(`CACHE MISS (API): Realizando petición para '${cacheKey}'`);
-        const response = await fetch(`${API_BASE_URL}${endpoint}`);
-        if (!response.ok) throw new Error(`Fallo en la petición de red para ${endpoint}`);
-        const data = await response.json();
-        localStorage.setItem(cacheKey, JSON.stringify({ timestamp: now, data }));
-        return data;
     }
 
     function sanitizeField(value, defaultText = 'No disponible') {
@@ -227,8 +212,9 @@ document.addEventListener('DOMContentLoaded', () => {
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    const cacheKey = `nearby-${latitude.toFixed(2)}-${longitude.toFixed(2)}`;
-                    const nearbyData = await fetchWithCache(`/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`, cacheKey, 15);
+                    const response = await fetch(`${API_BASE_URL}/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`);
+                    if (!response.ok) throw new Error('Error en la petición de eventos cercanos');
+                    const nearbyData = await response.json();
                     renderSlider(nearbySlider, nearbyData?.events);
                 } catch (error) {
                     if (nearbySlider) nearbySlider.innerHTML = `<p style="color: var(--color-texto-secundario); padding: 1rem;">No se pudieron cargar los eventos cercanos.</p>`;
@@ -246,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!geminiModalOverlay) return;
         const modalContent = geminiModalOverlay.querySelector('.modal-content');
         geminiModalOverlay.classList.add('visible');
-        if (modalContent) modalContent.innerHTML = `<div>Cargando plan...</div>`; // Simple loader
+        if (modalContent) modalContent.innerHTML = `<div>Cargando plan...</div>`;
         try {
             const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
             if (!response.ok) throw new Error('La respuesta del servidor no fue OK');
@@ -276,19 +262,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showSkeletonLoader() {
-        // Esta función ahora es menos necesaria, pero la mantenemos por si acaso.
-        // Podríamos mostrar un esqueleto general para todos los sliders.
+        if (monthlySlidersContainer) {
+            monthlySlidersContainer.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const skeletonSection = document.createElement('div');
+                skeletonSection.className = 'sliders-section';
+                skeletonSection.innerHTML = `
+                    <div class="skeleton title" style="height: 30px; width: 200px; margin-bottom: 20px;"></div>
+                    <div class="slider-container">
+                        <div class="skeleton-card" style="flex: 0 0 220px; width: 220px; height: 180px;"></div>
+                        <div class="skeleton-card" style="flex: 0 0 220px; width: 220px; height: 180px;"></div>
+                        <div class="skeleton-card" style="flex: 0 0 220px; width: 220px; height: 180px;"></div>
+                    </div>
+                `;
+                monthlySlidersContainer.appendChild(skeletonSection);
+            }
+        }
     }
 
     function hideSkeletonLoader() {
-        // Ya no es necesaria en el nuevo flujo.
+        // No es necesario ocultar explícitamente, ya que el contenido lo reemplaza
     }
 
     // =========================================================================
     // 5. GESTORES DE EVENTOS Y LISTENERS
     // =========================================================================
     function setupEventListeners() {
-        // Delegación de eventos para clics dinámicos (sliders, modales)
         document.body.addEventListener('click', async (e) => {
             const sliderCard = e.target.closest('.slider-container .event-card');
             const geminiBtn = e.target.closest('.gemini-btn');
@@ -300,7 +299,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const eventId = sliderCard.dataset.eventId;
                 if (eventId) {
                     try {
-                        const eventData = await fetchWithCache(`/api/events/${eventId}`, `event-${eventId}`, 120);
+                        const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`);
+                        if (!response.ok) throw new Error('Evento no encontrado');
+                        const eventData = await response.json();
+                        eventsCache[eventId] = eventData;
                         renderEventDetailModal(eventData);
                     } catch (error) {
                         console.error('Error al cargar detalles del evento:', error);
@@ -309,8 +311,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else if (geminiBtn) {
                 const eventId = geminiBtn.dataset.eventId;
-                const eventData = await fetchWithCache(`/api/events/${eventId}`, `event-${eventId}`, 120);
-                if (eventData) getAndShowNightPlan(eventData);
+                const eventData = eventsCache[eventId];
+                if (eventData) {
+                    getAndShowNightPlan(eventData);
+                }
             } else if (shareBtn) {
                 showNotification('Función de compartir próximamente.', 'info');
             } else if (modalCloseBtn || (modalOverlay && e.target === modalOverlay)) {
@@ -318,7 +322,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Listeners estáticos (cabecera y barra de navegación)
         if (filterBar) {
             filterBar.addEventListener('click', (e) => {
                 const filterChip = e.target.closest('.filter-chip');
@@ -327,10 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
                     filterChip.classList.add('active');
                     const targetId = filterChip.getAttribute('href');
-                    if (targetId === '#') {
-                        geolocationSearch(); // El chip de 'Cerca de Mí' ahora es un <a> con href="#"
-                        return;
-                    }
+                    if (targetId === '#') { return; }
                     const targetSection = document.querySelector(targetId);
                     if (targetSection) {
                         const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
@@ -339,6 +339,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                     }
                 }
+            });
+        }
+
+        if (cercaDeMiChip) {
+            cercaDeMiChip.addEventListener('click', (e) => {
+                e.preventDefault();
+                geolocationSearch();
             });
         }
 
