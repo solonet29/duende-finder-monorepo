@@ -189,32 +189,32 @@ header.header-main {
     object-fit: cover;
 }
 
-/* Contenedor del título: sin padding vertical, solo para centrar */
+/* ==========================================================================
+   CORRECCIÓN DEFINITIVA PARA LA ALTURA DEL TÍTULO EN SLIDERS
+   ========================================================================== */
+
+/* 1. Anulamos el espaciado vertical del CONTENEDOR del título */
 .slider-container .event-card .card-content {
-    padding: 0 5px 12px 5px;
-    text-align: center;
-    margin-top: auto;
+    padding-top: 0 !important;
+    padding-bottom: 12px !important;
+    /* Dejamos solo un pequeño margen inferior */
+    text-align: center !important;
+    margin-top: auto !important;
 }
 
-/* Título del artista: ahora controla su propio tamaño */
+/* 2. Forzamos el estilo de "píldora" en el TÍTULO, controlando su tamaño exacto */
 .slider-container .event-card .card-title {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-texto-principal);
-    transition: background-color 0.3s, color 0.3s;
-
-    /* --- LA CLAVE DE LA CORRECCIÓN --- */
-    display: inline-block;
-    /* Se ajusta al texto */
-    padding: 6px 12px;
-    /* Padding interno estrecho */
-    border-radius: 20px;
-    /* Forma de píldora */
-
-    max-width: 95%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    display: inline-block !important;
+    /* CLAVE: Se ajusta al texto */
+    padding: 6px 12px !important;
+    /* Padding interno y estrecho */
+    line-height: 1.2 !important;
+    /* Controla la altura de la línea de texto */
+    border-radius: 20px !important;
+    max-width: 95% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 .slider-container .event-card:hover .card-title {
