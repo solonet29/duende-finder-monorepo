@@ -208,16 +208,17 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
             return;
         }
+
+        // Solo nos preocupamos de mostrar la sección y el loader
         if (cercaSection) cercaSection.style.display = 'block';
-        cercaSection.scrollIntoView({ behavior: 'smooth' });
         if (nearbySlider) nearbySlider.innerHTML = `<div class="skeleton-card"><div class="skeleton title"></div><div class="skeleton text"></div></div>`;
+
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    const response = await fetch(`${API_BASE_URL}/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`);
-                    if (!response.ok) throw new Error('Error en la petición de eventos cercanos');
-                    const nearbyData = await response.json();
+                    const cacheKey = `nearby-${latitude.toFixed(2)}-${longitude.toFixed(2)}`;
+                    const nearbyData = await fetchWithCache(`/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`, cacheKey, 15);
                     renderSlider(nearbySlider, nearbyData?.events);
                 } catch (error) {
                     if (nearbySlider) nearbySlider.innerHTML = `<p style="color: var(--color-texto-secundario); padding: 1rem;">No se pudieron cargar los eventos cercanos.</p>`;
@@ -332,14 +333,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.preventDefault();
                     filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
                     filterChip.classList.add('active');
+
                     const targetId = filterChip.getAttribute('href');
-                    if (targetId === '#') { return; }
                     const targetSection = document.querySelector(targetId);
+
                     if (targetSection) {
+                        // Hacemos el scroll a la sección correspondiente
                         const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
                         const elementPosition = targetSection.getBoundingClientRect().top;
                         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
                         window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                    }
+
+                    // Si además es el botón de "Cerca de Mí", iniciamos la búsqueda
+                    if (filterChip.dataset.filter === 'cerca') {
+                        geolocationSearch();
                     }
                 }
             });
