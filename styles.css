@@ -163,6 +163,8 @@ header.header-main {
     display: none;
 }
 
+/* --- Tarjetas dentro de un Slider (Diseño Definitivo) --- */
+
 .slider-container .event-card {
     flex: 0 0 220px;
     width: 220px;
@@ -185,24 +187,30 @@ header.header-main {
     width: 100%;
     height: 125px;
     object-fit: cover;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Contenedor del título: sin padding vertical, solo para centrar */
 .slider-container .event-card .card-content {
     padding: 0 5px 12px 5px;
     text-align: center;
     margin-top: auto;
 }
 
+/* Título del artista: ahora controla su propio tamaño */
 .slider-container .event-card .card-title {
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--color-texto-principal);
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    background-color: transparent;
     transition: background-color 0.3s, color 0.3s;
+
+    /* --- LA CLAVE DE LA CORRECCIÓN --- */
+    display: inline-block;
+    /* Se ajusta al texto */
+    padding: 6px 12px;
+    /* Padding interno estrecho */
+    border-radius: 20px;
+    /* Forma de píldora */
+
     max-width: 95%;
     white-space: nowrap;
     overflow: hidden;
