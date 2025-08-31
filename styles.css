@@ -384,6 +384,12 @@ header.header-main {
     }
 }
 
+/* --- Corrección de z-index para el Modal de Gemini --- */
+#gemini-modal-overlay {
+    z-index: 3000;
+    /* Un valor más alto que el resto de modales (que están en 2000) */
+}
+
 /* ==========================================================================
    6. BARRA DE NAVEGACIÓN INFERIOR
    ========================================================================== */
