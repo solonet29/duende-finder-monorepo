@@ -4,22 +4,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     const API_BASE_URL = window.location.hostname.includes('localhost') ? 'http://localhost:3000' : '';
 
+    // --- Contenedores de Sliders y Secciones ---
+    const mainContainer = document.querySelector('.container');
     const featuredSlider = document.getElementById('featured-events-slider');
     const weekSlider = document.getElementById('week-events-slider');
     const todaySlider = document.getElementById('today-events-slider');
     const nearbySlider = document.getElementById('nearby-events-slider');
     const monthlySlidersContainer = document.getElementById('monthly-sliders-container');
 
+    // --- Cabecera y Filtros ---
     const filterBar = document.querySelector('.filter-bar');
+    const cercaDeMiChip = document.getElementById('cerca-de-mi-chip');
+
+    // --- Barra de Navegación Inferior ---
     const navHomeBtn = document.getElementById('nav-home-btn');
     const navHowItWorksBtn = document.getElementById('nav-how-it-works-btn');
     const navTermsBtn = document.getElementById('nav-terms-btn');
     const navThemeToggle = document.getElementById('nav-theme-toggle');
-    const cercaDeMiChip = document.getElementById('cerca-de-mi-chip');
 
+    // --- Modales ---
     const eventDetailModalOverlay = document.getElementById('event-detail-modal-overlay');
     const howItWorksModal = document.getElementById('how-it-works-modal-overlay');
     const termsModal = document.getElementById('terms-modal-overlay');
+    const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
 
     // =========================================================================
     // 2. LÓGICA PRINCIPAL DE CARGA DEL DASHBOARD
@@ -43,7 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error("Error fatal al cargar el dashboard:", error);
-            const mainContainer = document.querySelector('.container');
             if (mainContainer) mainContainer.innerHTML = '<h2>Oops! No se pudo cargar el contenido. Inténtalo de nuevo más tarde.</h2>';
         }
     }
@@ -130,11 +136,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         eventDetailModalOverlay.innerHTML = `
             <div class="modal">
-                <button class="modal-close-btn">&times;</button>
+                <button class="modal-close-btn">×</button>
                 <div class="modal-content modal-event-details">
                     ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
                     <div class="card-header">
-                        <h3 class="titulo-truncado" title="${eventName}">${eventName}</h3>
+                        <h2 class="titulo-truncado" title="${eventName}">${eventName}</h2>
                     </div>
                     <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
                     <p class="descripcion-corta">${description}</p>
@@ -158,11 +164,97 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 4. FUNCIONES AUXILIARES
     // =========================================================================
-    function groupEventsByMonth(events) { /* ... (Sin cambios) ... */ }
-    async function fetchWithCache(endpoint, cacheKey, expiryInMinutes = 30) { /* ... (Sin cambios) ... */ }
-    function sanitizeField(value, defaultText = 'No disponible') { /* ... (Sin cambios) ... */ }
-    function applyTheme(theme) { /* ... (Sin cambios) ... */ }
-    // ... (Otras funciones auxiliares)
+
+    function groupEventsByMonth(events) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return events.reduce((acc, event) => {
+            if (!event.date) return acc;
+            const eventDate = new Date(event.date);
+            const diffDays = (eventDate - today) / (1000 * 60 * 60 * 24);
+            if (diffDays >= 0 && diffDays < 7) {
+                return acc;
+            }
+
+            const monthKey = event.date.substring(0, 7);
+            if (!acc[monthKey]) {
+                acc[monthKey] = [];
+            }
+            acc[monthKey].push(event);
+            return acc;
+        }, {});
+    }
+
+    async function fetchWithCache(endpoint, cacheKey, expiryInMinutes = 30) {
+        const cachedItem = localStorage.getItem(cacheKey);
+        const now = new Date().getTime();
+
+        if (cachedItem) {
+            const { timestamp, data } = JSON.parse(cachedItem);
+            if ((now - timestamp) / (1000 * 60) < expiryInMinutes) {
+                console.log(`CACHE HIT (localStorage): Devolviendo datos para '${cacheKey}'`);
+                return Promise.resolve(data);
+            }
+        }
+
+        console.log(`CACHE MISS (API): Realizando petición para '${cacheKey}'`);
+        const response = await fetch(`${API_BASE_URL}${endpoint}`);
+        if (!response.ok) throw new Error(`Fallo en la petición de red para ${endpoint}`);
+        const data = await response.json();
+
+        localStorage.setItem(cacheKey, JSON.stringify({ timestamp: now, data }));
+        return data;
+    }
+
+    function sanitizeField(value, defaultText = 'No disponible') {
+        if (value && typeof value === 'string' && value.trim()) {
+            return value.trim();
+        }
+        return defaultText;
+    }
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('duende-theme', theme);
+        if (navThemeToggle) {
+            const icon = navThemeToggle.querySelector('ion-icon');
+            if (icon) {
+                icon.setAttribute('name', theme === 'dark' ? 'moon-outline' : 'sunny-outline');
+            }
+        }
+    }
+
+    function geolocationSearch() {
+        const cercaSection = document.getElementById('cerca-section');
+        if (!navigator.geolocation) {
+            showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
+            return;
+        }
+
+        if (cercaSection) cercaSection.style.display = 'block';
+        cercaSection.scrollIntoView({ behavior: 'smooth' });
+        if (nearbySlider) nearbySlider.innerHTML = `<div class="skeleton-card"><div class="skeleton title"></div><div class="skeleton text"></div></div>`;
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    // Usamos una clave de caché única para la ubicación
+                    const cacheKey = `nearby-${latitude.toFixed(2)}-${longitude.toFixed(2)}`;
+                    const nearbyData = await fetchWithCache(`/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`, cacheKey, 15);
+                    renderSlider(nearbySlider, nearbyData?.events);
+                } catch (error) {
+                    if (nearbySlider) nearbySlider.innerHTML = `<p style="color: var(--color-texto-secundario); padding: 1rem;">No se pudieron cargar los eventos cercanos.</p>`;
+                }
+            },
+            (error) => {
+                console.error("Error de geolocalización:", error);
+                showNotification('No se pudo obtener tu ubicación.', 'error');
+                if (nearbySlider) nearbySlider.innerHTML = `<p style="color: var(--color-texto-secundario); padding: 1rem;">No se pudo obtener tu ubicación para mostrar eventos cercanos.</p>`;
+            }
+        );
+    }
 
     // =========================================================================
     // 5. GESTORES DE EVENTOS Y LISTENERS
@@ -179,6 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         renderEventDetailModal(data);
                     } catch (error) {
                         console.error('Error al cargar detalles del evento:', error);
+                        showNotification('No se pudo cargar la información del evento.', 'error');
                     }
                 }
             });
@@ -194,15 +287,31 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Clic en "Cerca de Mí"
         if (cercaDeMiChip) {
-            cercaDeMiChip.addEventListener('click', geolocationSearch);
+            cercaDeMiChip.addEventListener('click', (e) => {
+                e.preventDefault();
+                geolocationSearch();
+            });
         }
 
-        // --- Listeners para la Barra de Navegación Inferior ---
-        // ... (Tu código de listeners para la barra de navegación)
+        if (navHomeBtn) {
+            navHomeBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+        if (navThemeToggle) {
+            navThemeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+            });
+        }
+        if (navHowItWorksBtn) {
+            navHowItWorksBtn.addEventListener('click', () => howItWorksModal?.classList.add('visible'));
+        }
+        if (navTermsBtn) {
+            navTermsBtn.addEventListener('click', () => termsModal?.classList.add('visible'));
+        }
 
-        // Cierre genérico para todos los modales
         document.body.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close-btn')) {
                 const modal = e.target.closest('.modal-overlay');
