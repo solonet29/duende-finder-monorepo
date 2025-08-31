@@ -194,29 +194,35 @@ header.header-main {
    ========================================================================== */
 
 /* 1. Anulamos el espaciado vertical del CONTENEDOR del título */
+/* --- Tarjetas del Slider (CORRECCIÓN DEFINITIVA) --- */
+
 .slider-container .event-card .card-content {
-    padding-top: 0 !important;
-    padding-bottom: 12px !important;
-    /* Dejamos solo un pequeño margen inferior */
-    text-align: center !important;
-    margin-top: auto !important;
+    /* Este contenedor solo centra el texto y le da un poco de espacio por debajo */
+    text-align: center;
+    padding: 12px 5px;
+    margin-top: auto;
+    /* Lo empuja al final de la tarjeta */
 }
 
-/* 2. Forzamos el estilo de "píldora" en el TÍTULO, controlando su tamaño exacto */
 .slider-container .event-card .card-title {
-    display: inline-block !important;
-    /* CLAVE: Se ajusta al texto */
-    padding: 6px 12px !important;
-    /* Padding interno y estrecho */
-    line-height: 1.2 !important;
-    /* Controla la altura de la línea de texto */
-    border-radius: 20px !important;
-    max-width: 95% !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    /* Convertimos el título en una "píldora" que se ajusta a su propio texto */
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-texto-principal);
+
+    max-width: 95%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    transition: background-color 0.3s, color 0.3s;
 }
 
+/* El efecto hover ahora se aplica ÚNICAMENTE al título, no a su contenedor */
 .slider-container .event-card:hover .card-title {
     background-color: var(--color-acento);
     color: var(--color-superficie);
