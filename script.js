@@ -3,8 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. CONFIGURACIÓN Y SELECTORES
     // =========================================================================
     const API_BASE_URL = window.location.hostname.includes('localhost') ? 'http://localhost:3000' : '';
+    let eventsCache = {};
 
-    // --- Contenedores de Sliders y Secciones ---
+    // --- Contenedores Principales ---
     const mainContainer = document.querySelector('.container');
     const featuredSlider = document.getElementById('featured-events-slider');
     const weekSlider = document.getElementById('week-events-slider');
@@ -16,7 +17,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterBar = document.querySelector('.filter-bar');
     const cercaDeMiChip = document.getElementById('cerca-de-mi-chip');
 
-    // --- (Resto de selectores que se mantengan) ---
+    // --- Barra de Navegación Inferior ---
+    const navHomeBtn = document.getElementById('nav-home-btn');
+    const navHowItWorksBtn = document.getElementById('nav-how-it-works-btn');
+    const navTermsBtn = document.getElementById('nav-terms-btn');
+    const navThemeToggle = document.getElementById('nav-theme-toggle');
+
+    // --- Modales ---
+    const eventDetailModalOverlay = document.getElementById('event-detail-modal-overlay');
+    const howItWorksModal = document.getElementById('how-it-works-modal-overlay');
+    const termsModal = document.getElementById('terms-modal-overlay');
+    const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
 
     // =========================================================================
     // 2. LÓGICA PRINCIPAL DE CARGA DEL DASHBOARD
@@ -105,7 +116,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderEventDetailModal(event) {
-        // ... (Tu función completa aquí) ...
+        if (!eventDetailModalOverlay) return;
+        const eventName = sanitizeField(event.name, 'Evento sin título');
+        const artistName = sanitizeField(event.artist, 'Artista por confirmar');
+        const description = sanitizeField(event.description, 'Sin descripción disponible.');
+        const eventTime = sanitizeField(event.time, 'No disponible');
+        const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
+        const venue = sanitizeField(event.venue || event.location?.venue, '');
+        const city = sanitizeField(event.city || event.location?.city, '');
+        let displayLocation = 'Ubicación no disponible';
+        if (venue && city) displayLocation = `${venue}, ${city}`;
+        else if (venue || city) displayLocation = venue || city;
+        const mapQuery = [eventName, venue, city, sanitizeField(event.country || event.location?.country, '')].filter(Boolean).join(', ');
+        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+        const blogUrl = event.blogPostUrl || 'https://afland.es/';
+        const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
+        const blogIcon = event.blogPostUrl ? 'book-outline' : 'newspaper-outline';
+        const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
+        const eventImageUrl = event.imageUrl || './assets/flamenco-placeholder.png';
+
+        eventDetailModalOverlay.innerHTML = `
+            <div class="modal">
+                <button class="modal-close-btn">×</button>
+                <div class="modal-content modal-event-details">
+                    ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
+                    <div class="card-header">
+                        <h2 class="titulo-truncado" title="${eventName}">${eventName}</h2>
+                    </div>
+                    <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
+                    <p class="descripcion-corta">${description}</p>
+                    <div class="card-detalles">
+                        <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
+                        <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
+                        <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><ion-icon name="location-outline"></ion-icon><span>${displayLocation}</span></a></div>
+                    </div>
+                    <div class="card-actions">
+                        <div class="card-actions-primary">
+                            <button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button>
+                            <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a>
+                            <button class="share-button" data-event-id="${event._id}"><ion-icon name="share-social-outline"></ion-icon> Compartir</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        eventDetailModalOverlay.classList.add('visible');
     }
 
     // =========================================================================
@@ -113,11 +167,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
 
     function groupEventsByMonth(events) {
-        // --- LÓGICA CORREGIDA ---
-        // Simplemente agrupa todos los eventos por mes, sin filtrar nada.
         return events.reduce((acc, event) => {
             if (!event.date) return acc;
-            const monthKey = event.date.substring(0, 7); // Extrae 'AAAA-MM'
+            const monthKey = event.date.substring(0, 7);
             if (!acc[monthKey]) {
                 acc[monthKey] = [];
             }
@@ -132,9 +184,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cachedItem) {
             const { timestamp, data } = JSON.parse(cachedItem);
             if ((now - timestamp) / (1000 * 60) < expiryInMinutes) {
+                console.log(`CACHE HIT (localStorage): Devolviendo datos para '${cacheKey}'`);
                 return Promise.resolve(data);
             }
         }
+        console.log(`CACHE MISS (API): Realizando petición para '${cacheKey}'`);
         const response = await fetch(`${API_BASE_URL}${endpoint}`);
         if (!response.ok) throw new Error(`Fallo en la petición de red para ${endpoint}`);
         const data = await response.json();
@@ -149,20 +203,169 @@ document.addEventListener('DOMContentLoaded', () => {
         return defaultText;
     }
 
-    // ... (El resto de tus funciones auxiliares: applyTheme, geolocationSearch, etc.)
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('duende-theme', theme);
+        if (navThemeToggle) {
+            const icon = navThemeToggle.querySelector('ion-icon');
+            if (icon) {
+                icon.setAttribute('name', theme === 'dark' ? 'moon-outline' : 'sunny-outline');
+            }
+        }
+    }
+
+    function geolocationSearch() {
+        const cercaSection = document.getElementById('cerca-section');
+        if (!navigator.geolocation) {
+            showNotification("La geolocalización no es soportada por tu navegador.", 'warning');
+            return;
+        }
+        if (cercaSection) cercaSection.style.display = 'block';
+        cercaSection.scrollIntoView({ behavior: 'smooth' });
+        if (nearbySlider) nearbySlider.innerHTML = `<div class="skeleton-card"><div class="skeleton title"></div><div class="skeleton text"></div></div>`;
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    const cacheKey = `nearby-${latitude.toFixed(2)}-${longitude.toFixed(2)}`;
+                    const nearbyData = await fetchWithCache(`/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`, cacheKey, 15);
+                    renderSlider(nearbySlider, nearbyData?.events);
+                } catch (error) {
+                    if (nearbySlider) nearbySlider.innerHTML = `<p style="color: var(--color-texto-secundario); padding: 1rem;">No se pudieron cargar los eventos cercanos.</p>`;
+                }
+            },
+            (error) => {
+                console.error("Error de geolocalización:", error);
+                showNotification('No se pudo obtener tu ubicación.', 'error');
+                if (nearbySlider) nearbySlider.innerHTML = `<p style="color: var(--color-texto-secundario); padding: 1rem;">No se pudo obtener tu ubicación.</p>`;
+            }
+        );
+    }
+
+    async function getAndShowNightPlan(event) {
+        if (!geminiModalOverlay) return;
+        const modalContent = geminiModalOverlay.querySelector('.modal-content');
+        geminiModalOverlay.classList.add('visible');
+        if (modalContent) modalContent.innerHTML = `<div>Cargando plan...</div>`; // Simple loader
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
+            if (!response.ok) throw new Error('La respuesta del servidor no fue OK');
+            const data = await response.json();
+            if (modalContent) modalContent.innerHTML = window.marked ? marked.parse(data.content) : `<pre>${data.content}</pre>`;
+        } catch (error) {
+            console.error("Error al generar Plan Noche:", error);
+            if (modalContent) modalContent.innerHTML = `<h3>Error</h3><p>No se pudo generar el plan.</p>`;
+        }
+    }
+
+    function showNotification(message, type = 'info') {
+        let container = document.getElementById('notification-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'notification-container';
+            document.body.appendChild(container);
+        }
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        container.appendChild(notification);
+        setTimeout(() => {
+            notification.classList.add('hide');
+            notification.addEventListener('transitionend', () => notification.remove());
+        }, 5000);
+    }
+
+    function showSkeletonLoader() {
+        // Esta función ahora es menos necesaria, pero la mantenemos por si acaso.
+        // Podríamos mostrar un esqueleto general para todos los sliders.
+    }
+
+    function hideSkeletonLoader() {
+        // Ya no es necesaria en el nuevo flujo.
+    }
 
     // =========================================================================
     // 5. GESTORES DE EVENTOS Y LISTENERS
     // =========================================================================
     function setupEventListeners() {
-        // ... (Tu función completa aquí) ...
+        // Delegación de eventos para clics dinámicos (sliders, modales)
+        document.body.addEventListener('click', async (e) => {
+            const sliderCard = e.target.closest('.slider-container .event-card');
+            const geminiBtn = e.target.closest('.gemini-btn');
+            const shareBtn = e.target.closest('.share-button');
+            const modalOverlay = e.target.closest('.modal-overlay');
+            const modalCloseBtn = e.target.closest('.modal-close-btn');
+
+            if (sliderCard) {
+                const eventId = sliderCard.dataset.eventId;
+                if (eventId) {
+                    try {
+                        const eventData = await fetchWithCache(`/api/events/${eventId}`, `event-${eventId}`, 120);
+                        renderEventDetailModal(eventData);
+                    } catch (error) {
+                        console.error('Error al cargar detalles del evento:', error);
+                        showNotification('No se pudo cargar la información del evento.', 'error');
+                    }
+                }
+            } else if (geminiBtn) {
+                const eventId = geminiBtn.dataset.eventId;
+                const eventData = await fetchWithCache(`/api/events/${eventId}`, `event-${eventId}`, 120);
+                if (eventData) getAndShowNightPlan(eventData);
+            } else if (shareBtn) {
+                showNotification('Función de compartir próximamente.', 'info');
+            } else if (modalCloseBtn || (modalOverlay && e.target === modalOverlay)) {
+                if (modalOverlay) modalOverlay.classList.remove('visible');
+            }
+        });
+
+        // Listeners estáticos (cabecera y barra de navegación)
+        if (filterBar) {
+            filterBar.addEventListener('click', (e) => {
+                const filterChip = e.target.closest('.filter-chip');
+                if (filterChip) {
+                    e.preventDefault();
+                    filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+                    filterChip.classList.add('active');
+                    const targetId = filterChip.getAttribute('href');
+                    if (targetId === '#') {
+                        geolocationSearch(); // El chip de 'Cerca de Mí' ahora es un <a> con href="#"
+                        return;
+                    }
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
+                        const elementPosition = targetSection.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                    }
+                }
+            });
+        }
+
+        if (navHomeBtn) {
+            navHomeBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        }
+        if (navThemeToggle) {
+            navThemeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+            });
+        }
+        if (navHowItWorksBtn) {
+            navHowItWorksBtn.addEventListener('click', () => howItWorksModal?.classList.add('visible'));
+        }
+        if (navTermsBtn) {
+            navTermsBtn.addEventListener('click', () => termsModal?.classList.add('visible'));
+        }
     }
 
     // =========================================================================
     // 6. INICIALIZACIÓN
     // =========================================================================
     function init() {
-        // ... (Tu función de inicialización aquí) ...
+        const savedTheme = localStorage.getItem('duende-theme') || 'dark';
+        applyTheme(savedTheme);
+        setupEventListeners();
         initializeDashboard();
     }
 
