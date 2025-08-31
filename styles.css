@@ -292,6 +292,77 @@ header.header-main {
     padding-left: 20px;
 }
 
+/* --- Estilos para la Ficha de Evento DENTRO de un Modal --- */
+.modal-event-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    /* Espacio uniforme entre elementos */
+}
+
+/* 6. CORRECCIÓN IMAGEN: Quitamos la altura fija y usamos max-height */
+.modal-event-details .evento-card-img-container {
+    width: 100%;
+    height: auto;
+    /* Permite que la imagen crezca en altura */
+    max-height: 350px;
+    /* Pero con un límite */
+    aspect-ratio: unset;
+    /* Anulamos la proporción fija */
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--color-borde);
+}
+
+.modal-event-details .evento-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Muestra la imagen completa sin recortar */
+}
+
+/* 2. CORRECCIÓN COLOR TEXTO: Aseguramos que los textos usen las variables correctas */
+.modal-event-details .card-header .titulo-truncado {
+    font-size: 1.6rem;
+    color: var(--color-texto-principal);
+}
+
+.modal-event-details .artista,
+.modal-event-details .descripcion-corta {
+    color: var(--color-texto-secundario);
+}
+
+/* 5. CORRECCIÓN ESPACIADO ICONOS: Aumentamos el gap */
+.modal-event-details .card-detalles {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* Más espacio entre líneas */
+    border-top: 1px solid var(--color-borde);
+    padding-top: 1rem;
+    margin-top: 0;
+}
+
+.modal-event-details .evento-detalle {
+    gap: 12px;
+    /* Más espacio entre icono y texto */
+}
+
+/* 3. CORRECCIÓN BOTONES: Unificamos el estilo */
+.modal-event-details .card-actions-primary {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Una columna por defecto en móvil */
+    gap: 10px;
+}
+
+/* En pantallas más grandes, dos columnas */
+@media (min-width: 600px) {
+    .modal-event-details .card-actions-primary {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 /* --- Contenido de la Ficha de Evento en el Modal --- */
 .modal-event-details .artista {
     font-size: 1.1rem;

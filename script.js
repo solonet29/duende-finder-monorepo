@@ -115,18 +115,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderEventDetailModal(event) {
         if (!eventDetailModalOverlay) return;
+
+        // 1. CORRECCIÓN UBICACIÓN: Lógica más robusta para asegurar que leemos los datos
+        const venue = sanitizeField(event.venue || event.location?.venue, '');
+        const city = sanitizeField(event.city || event.location?.city, '');
+        let displayLocation = 'Ubicación no disponible';
+        if (venue && city) displayLocation = `${venue}, ${city}`;
+        else if (venue || city) displayLocation = venue || city;
+
         const eventName = sanitizeField(event.name, 'Evento sin título');
         const artistName = sanitizeField(event.artist, 'Artista por confirmar');
         const description = sanitizeField(event.description, 'Sin descripción disponible.');
         const eventTime = sanitizeField(event.time, 'No disponible');
         const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
-        const venue = sanitizeField(event.location?.venue, '');
-        const city = sanitizeField(event.location?.city, '');
-        let displayLocation = 'Ubicación no disponible';
-        if (venue && city) displayLocation = `${venue}, ${city}`;
-        else if (venue || city) displayLocation = venue || city;
-        const mapQuery = [eventName, venue, city, sanitizeField(event.location?.country, '')].filter(Boolean).join(', ');
+
+        const mapQuery = [eventName, venue, city, sanitizeField(event.country || event.location?.country, '')].filter(Boolean).join(', ');
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
         const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
         const blogIcon = event.blogPostUrl ? 'book-outline' : 'newspaper-outline';
@@ -134,29 +139,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventImageUrl = event.imageUrl || './assets/flamenco-placeholder.png';
 
         eventDetailModalOverlay.innerHTML = `
-            <div class="modal">
-                <button class="modal-close-btn">×</button>
-                <div class="modal-content modal-event-details">
-                    ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
-                    <div class="card-header">
-                        <h2 class="titulo-truncado" title="${eventName}">${eventName}</h2>
-                    </div>
-                    <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
-                    <p class="descripcion-corta">${description}</p>
-                    <div class="card-detalles">
-                        <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
-                        <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
-                        <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><ion-icon name="location-outline"></ion-icon><span>${displayLocation}</span></a></div>
-                    </div>
-                    <div class="card-actions">
-                        <div class="card-actions-primary">
-                            <button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button>
-                            <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a>
-                            <button class="share-button" data-event-id="${event._id}"><ion-icon name="share-social-outline"></ion-icon> Compartir</button>
-                        </div>
-                    </div>
+        <div class="modal">
+            <button class="modal-close-btn">×</button>
+            <div class="modal-content modal-event-details">
+                ${event.imageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
+                <div class="card-header">
+                    <h2 class="titulo-truncado" title="${eventName}">${eventName}</h2>
                 </div>
-            </div>`;
+                <div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div>
+                <p class="descripcion-corta">${description}</p>
+                <div class="card-detalles">
+                    <div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div>
+                    <div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div>
+                    <div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><ion-icon name="location-outline"></ion-icon><span>${displayLocation}</span></a></div>
+                </div>
+                <div class="card-actions">
+                    <div class="card-actions-primary">
+                        <button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button>
+                        <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a>
+                        </div>
+                </div>
+            </div>
+        </div>`;
         eventDetailModalOverlay.classList.add('visible');
     }
 
