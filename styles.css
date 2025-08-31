@@ -1,18 +1,14 @@
 /* ==========================================================================
-   1. VARIABLES DE TEMA (THEMING)
+   1. VARIABLES Y TEMAS
    ========================================================================== */
-
 :root {
-    /* --- COLORES BASE (DARK) --- */
     --color-fondo-dark: #121212;
-    --color-superficie-dark: #282828;
+    --color-superficie-dark: #181818;
     --color-texto-principal-dark: #e0e0e0;
     --color-texto-secundario-dark: #a0a0a0;
-    --color-borde-dark: #3a3a3a;
+    --color-borde-dark: #282828;
     --color-acento-marca-dark: #E58A2D;
     --color-nav-fondo-dark: rgba(18, 18, 18, 0.85);
-
-    /* --- COLORES BASE (LIGHT) --- */
     --color-fondo-light: #f4f4f5;
     --color-superficie-light: #ffffff;
     --color-texto-principal-light: #181818;
@@ -22,7 +18,6 @@
     --color-nav-fondo-light: rgba(244, 244, 245, 0.85);
 }
 
-/* TEMA OSCURO */
 [data-theme="dark"] {
     --color-fondo: var(--color-fondo-dark);
     --color-superficie: var(--color-superficie-dark);
@@ -33,7 +28,6 @@
     --color-nav-fondo: var(--color-nav-fondo-dark);
 }
 
-/* TEMA CLARO */
 [data-theme="light"] {
     --color-fondo: var(--color-fondo-light);
     --color-superficie: var(--color-superficie-light);
@@ -45,9 +39,8 @@
 }
 
 /* ==========================================================================
-   2. ESTILOS GLOBALES Y DE BASE
+   2. ESTILOS GLOBALES
    ========================================================================== */
-
 html {
     box-sizing: border-box;
     scroll-behavior: smooth;
@@ -76,9 +69,8 @@ main.container {
 }
 
 /* ==========================================================================
-   3. CABECERA (HEADER)
+   3. CABECERA
    ========================================================================== */
-
 header.header-main {
     background-color: var(--color-nav-fondo);
     backdrop-filter: blur(10px);
@@ -88,12 +80,6 @@ header.header-main {
     z-index: 100;
     padding: 10px 15px;
     border-bottom: 1px solid var(--color-borde);
-    transition: all 0.3s ease;
-}
-
-header.header-main.scrolled {
-    padding: 5px 15px;
-    /* Reduce la altura al hacer scroll */
 }
 
 .header-top {
@@ -101,76 +87,22 @@ header.header-main.scrolled {
     justify-content: center;
     align-items: center;
     margin-bottom: 15px;
-    transition: all 0.3s ease;
-}
-
-header.header-main.scrolled .header-top {
-    height: 0;
-    opacity: 0;
-    visibility: hidden;
-    margin-bottom: 0;
-}
-
-.top-bar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 15px;
-    position: relative;
-    padding-top: 15px;
-    /* <-- Espacio superior para el logo */
-    padding-bottom: 0;
-    /* <-- Eliminamos cualquier padding inferior */
-    margin-bottom: 15px;
-
-    /* Relleno uniforme de 10px */
-}
-
-.logo {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    /* --- CORRECCIÓN: Evita el salto de línea --- */
-    white-space: nowrap;
 }
 
 .logo span {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: var(--color-texto-principal);
     font-family: 'Cinzel', serif;
-    /* --- CORRECCIÓN: Ajuste de la fuente dinámico --- */
-    /* --- CORRECCIÓN: Ajuste de la fuente dinámico --- */
-    font-size: clamp(1.2rem, 4vw, 2rem);
-}
-
-.header-actions {
-    margin-left: auto;
-}
-
-.header-btn {
-    background: none;
-    border: none;
-    color: var(--color-texto-secundario);
-    font-size: 24px;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.header-btn:hover {
-    color: var(--color-texto-principal);
 }
 
 .filter-bar {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     overflow-x: auto;
     padding-bottom: 5px;
-    -ms-overflow-style: none;
     scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .filter-bar::-webkit-scrollbar {
@@ -188,11 +120,11 @@ header.header-main.scrolled .header-top {
     cursor: pointer;
     white-space: nowrap;
     transition: background-color 0.3s, color 0.3s;
+    text-decoration: none;
 }
 
 .filter-chip:hover {
     background-color: var(--color-borde);
-    min-width: 80px;
 }
 
 .filter-chip.active {
@@ -202,9 +134,8 @@ header.header-main.scrolled .header-top {
 }
 
 /* ==========================================================================
-   4. SECCIONES DE EVENTOS Y SLIDERS
+   4. SLIDERS
    ========================================================================== */
-
 .sliders-section {
     width: 100%;
     margin: 30px 0;
@@ -224,27 +155,14 @@ header.header-main.scrolled .header-top {
     gap: 15px;
     padding-bottom: 15px;
     scroll-snap-type: x mandatory;
-    -ms-overflow-style: none;
     scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .slider-container::-webkit-scrollbar {
     display: none;
 }
 
-@media (hover: hover) and (pointer: fine) {
-    .slider-container::-webkit-scrollbar {
-        display: block;
-        height: 6px;
-    }
-
-    .slider-container::-webkit-scrollbar-thumb {
-        background-color: #444;
-        border-radius: 10px;
-    }
-}
-
-/* --- Tarjetas del Slider (Pequeñas) --- */
 .slider-container .event-card {
     flex: 0 0 220px;
     width: 220px;
@@ -267,48 +185,28 @@ header.header-main.scrolled .header-top {
     width: 100%;
     height: 125px;
     object-fit: cover;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Contenedor del título en la tarjeta del slider */
-/* Estilos para las tarjetas del slider */
-
 .slider-container .event-card .card-content {
-    /* CORRECCIÓN: Usamos flexbox para centrar y un padding mínimo */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 0;
-    /* Solo padding vertical en el contenedor */
+    padding: 10px 5px;
+    text-align: center;
+    margin-top: auto;
 }
 
 .slider-container .event-card .card-title {
-    /* CORRECCIÓN: Eliminamos el margen y el padding por defecto */
-    margin: 0;
-    padding: 0;
-
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--color-texto-principal);
-    line-height: 1.2;
-    /* Reduce el espacio vertical del texto */
-
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    display: block;
-    /* Ocupa el 100% del ancho del contenedor */
-
+    display: inline-block;
+    padding: 5px 10px;
     border-radius: 20px;
     background-color: transparent;
     transition: background-color 0.3s, color 0.3s;
-
-    max-width: 90%;
-}
-
-/* Efectos hover para las tarjetas del slider */
-.slider-container .event-card:hover .card-content {
-    background-color: var(--color-acento);
+    max-width: 95%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .slider-container .event-card:hover .card-title {
@@ -316,126 +214,155 @@ header.header-main.scrolled .header-top {
     color: var(--color-superficie);
 }
 
-
 /* ==========================================================================
-   5. GRILLA PRINCIPAL Y FICHAS DE EVENTO (Tarjetas Grandes)
+   5. MODALES
    ========================================================================== */
-
-.full-events-section {
-    font-family: 'Montserrat', sans-serif;
-    margin-top: 40px;
-}
-
-#resultsContainer {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
-    padding: 20px 0;
-}
-
-.evento-card {
-    background-color: var(--color-superficie);
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    transition: background-color 0.3s, transform 0.2s;
-    border: 1px solid var(--color-borde);
-    text-align: left;
-}
-
-.evento-card:hover {
-    background-color: var(--color-borde);
-    transform: translateY(-4px);
-}
-
-.evento-card-img-container {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.evento-card-img {
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
 }
 
-.card-header .titulo-truncado {
-    font-size: 1.4rem;
-    font-weight: 700;
+.modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background-color: var(--color-superficie);
     color: var(--color-texto-principal);
-    margin: 0;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+    border: 1px solid var(--color-borde);
 }
 
-.artista {
-    font-size: 1rem;
-    font-weight: 500;
+.modal-overlay.visible .modal {
+    transform: scale(1);
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
     color: var(--color-texto-secundario);
+    font-size: 1.8rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-content h2 {
     display: flex;
     align-items: center;
-    gap: 8px;
-}
-
-.descripcion-corta {
-    font-size: 0.9rem;
-    color: var(--color-texto-secundario);
-    line-height: 1.5;
-}
-
-.card-detalles {
-    display: flex;
-    flex-direction: column;
     gap: 10px;
-    border-top: 1px solid var(--color-borde);
-    padding-top: 15px;
-    margin-top: 15px;
-}
-
-.evento-detalle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.9rem;
-    color: var(--color-texto-secundario);
-}
-
-.evento-detalle i {
-    color: var(--color-acento);
-    width: 16px;
-    text-align: center;
-}
-
-.evento-detalle a {
-    color: var(--color-texto-secundario);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.evento-detalle a:hover {
     color: var(--color-texto-principal);
 }
 
+.modal-content p,
+.modal-content li {
+    line-height: 1.6;
+    color: var(--color-texto-secundario);
+}
+
+.modal-content strong {
+    color: var(--color-texto-principal);
+}
+
+.modal-content ol {
+    padding-left: 20px;
+}
+
+/* --- Contenido de la Ficha de Evento en el Modal --- */
+.modal-event-details .artista {
+    font-size: 1.1rem;
+}
+
+.modal-event-details .card-detalles {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.modal-event-details .card-actions-primary {
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 600px) {
+    .modal-event-details .card-actions-primary {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
 
 /* ==========================================================================
-   6. BOTONES Y ACCIONES
+   6. BARRA DE NAVEGACIÓN INFERIOR
    ========================================================================== */
-
-.card-actions {
+#bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--color-nav-fondo);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: auto;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    z-index: 1000;
+    border-top: 1px solid var(--color-borde);
 }
 
-.card-actions-primary {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
+.nav-btn {
+    background: none;
+    border: none;
+    color: var(--color-texto-secundario);
+    font-size: 24px;
+    padding: 10px;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.2s;
+    text-decoration: none;
+}
+
+.nav-btn:hover {
+    color: var(--color-texto-principal);
+    transform: translateY(-3px);
+}
+
+.nav-btn.active {
+    color: var(--color-acento);
+}
+
+/* ==========================================================================
+   7. COMPONENTES (Botones, Skeleton, etc.)
+   ========================================================================== */
+ion-icon {
+    font-size: 1.2em;
+    vertical-align: middle;
+}
+
+.evento-detalle ion-icon {
+    font-size: 18px;
+    color: var(--color-acento);
 }
 
 .card-actions-primary button,
@@ -444,15 +371,15 @@ header.header-main.scrolled .header-top {
     border-radius: 25px;
     border: none;
     font-weight: bold;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
-    transition: transform 0.2s, background-color 0.2s;
+    transition: transform 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 8px;
 }
 
 .card-actions-primary button:hover,
@@ -472,49 +399,6 @@ header.header-main.scrolled .header-top {
     color: var(--color-texto-principal);
 }
 
-/* --- BOTÓN FLOTANTE 'VOLVER ARRIBA' --- */
-.floating-btn {
-    position: fixed;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
-    z-index: 1000;
-    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out, background-color 0.3s;
-    opacity: 0;
-    transform: translateY(20px);
-    pointer-events: none;
-}
-
-.floating-btn.visible {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-}
-
-#back-to-top-btn {
-    bottom: 20px;
-    right: 20px;
-    background-color: var(--color-acento);
-    color: var(--color-superficie);
-    border: none;
-}
-
-#back-to-top-btn:hover {
-    transform: scale(1.1);
-}
-
-
-/* ==========================================================================
-   7. MODALES Y OTROS COMPONENTES
-   ========================================================================== */
-
-/* --- Esqueleto de Carga (Skeleton Loader) --- */
 .skeleton-card {
     background-color: var(--color-superficie);
     border: 1px solid var(--color-borde);
@@ -550,156 +434,4 @@ header.header-main.scrolled .header-top {
 .skeleton.text {
     height: 16px;
     margin-bottom: 0.5rem;
-}
-
-
-/* --- Estilos de Modales --- */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.modal-overlay.visible {
-    opacity: 1;
-    visibility: visible;
-}
-
-.modal {
-    background-color: var(--color-superficie);
-    color: var(--color-texto-principal);
-    padding: 2rem;
-    border-radius: 12px;
-    max-width: 600px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
-}
-
-.modal-overlay.visible .modal {
-    transform: scale(1);
-}
-
-.modal-close-btn {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    color: var(--color-texto-secundario);
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-/* ==========================================================================
-   8. BARRA DE NAVEGACIÓN INFERIOR
-   ========================================================================== */
-
-#bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: var(--color-nav-fondo);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 10px 0;
-    z-index: 1000;
-    border-top: 1px solid var(--color-borde);
-}
-
-.nav-btn {
-    background: none;
-    border: none;
-    color: var(--color-texto-secundario);
-    font-size: 22px;
-    padding: 10px;
-    cursor: pointer;
-    transition: color 0.3s, transform 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-}
-
-.nav-btn:hover {
-    color: var(--color-texto-principal);
-    transform: translateY(-3px);
-}
-
-.nav-btn.active {
-    color: var(--color-acento);
-}
-
-/* --- Estilos Adicionales para Barra de Navegación y Modales --- */
-
-/* Para el botón activo en la barra de navegación */
-.nav-btn.active {
-    color: var(--color-acento);
-    transform: translateY(-3px);
-}
-
-/* Para los botones no clicables (si los hubiera en el futuro) */
-.nav-btn.disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-/* Mejoras para el contenido de los nuevos modales */
-.modal-content h2 {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--color-texto-principal);
-}
-
-.modal-content p,
-.modal-content li {
-    line-height: 1.6;
-    color: var(--color-texto-secundario);
-}
-
-.modal-content strong {
-    color: var(--color-texto-principal);
-}
-
-.modal-content ol {
-    padding-left: 20px;
-}
-
-/* --- Ajustes para Ionicons --- */
-ion-icon {
-    font-size: 1.2em;
-    vertical-align: middle;
-    margin-bottom: 2px;
-}
-
-/* Ajuste específico para la barra de navegación */
-#bottom-nav ion-icon {
-    font-size: 24px;
-}
-
-/* Ajuste para los detalles de la tarjeta */
-.evento-detalle ion-icon {
-    font-size: 18px;
-    color: var(--color-acento);
 }
