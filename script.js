@@ -199,8 +199,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // 1. Hacemos visible la sección
         cercaSection.style.display = 'block';
 
+        // 2. HACEMOS EL SCROLL AHORA, que ya es visible
+        const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
+        const elementPosition = cercaSection.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+
+        // 3. Continuamos con la lógica de permisos y carga de datos
         navigator.permissions.query({ name: 'geolocation' }).then((result) => {
             if (result.state === 'granted') {
                 fetchNearbyEvents();
@@ -355,6 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // --- LISTENERS ESTÁTICOS (CABECERA Y BARRA DE NAVEGACIÓN) ---
+        // Este bloque de código está dentro de la función setupEventListeners
         if (filterBar) {
             filterBar.addEventListener('click', (e) => {
                 const filterChip = e.target.closest('.filter-chip');
@@ -363,18 +372,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
                     filterChip.classList.add('active');
 
+                    // Si es el chip de "Cerca de Mí", llamamos a la función especial y paramos
+                    if (filterChip.dataset.filter === 'cerca') {
+                        geolocationSearch();
+                        return;
+                    }
+
+                    // Si es cualquier otro filtro, hacemos el scroll normal
                     const targetId = filterChip.getAttribute('href');
                     const targetSection = document.querySelector(targetId);
-
                     if (targetSection) {
                         const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
                         const elementPosition = targetSection.getBoundingClientRect().top;
                         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
                         window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-                    }
-
-                    if (filterChip.dataset.filter === 'cerca') {
-                        geolocationSearch();
                     }
                 }
             });
