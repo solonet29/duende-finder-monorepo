@@ -259,19 +259,46 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
+    // REEMPLAZA ESTA FUNCIÓN EN TU SCRIPT.JS
+
     async function getAndShowNightPlan(event) {
         if (!geminiModalOverlay) return;
         const modalContent = geminiModalOverlay.querySelector('.modal-content');
+
         geminiModalOverlay.classList.add('visible');
-        if (modalContent) modalContent.innerHTML = `<div>Cargando plan...</div>`;
+
+        // NOVEDAD: Usamos el nuevo HTML para el estado de carga
+        const loadingHtml = `
+        <div class="loading-container">
+            <div class="loader"></div>
+            <p>Planeando tu noche...</p>
+        </div>
+    `;
+        if (modalContent) modalContent.innerHTML = loadingHtml;
+
         try {
             const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
             if (!response.ok) throw new Error('La respuesta del servidor no fue OK');
             const data = await response.json();
-            if (modalContent) modalContent.innerHTML = window.marked ? marked.parse(data.content) : `<pre>${data.content}</pre>`;
+
+            const footerHtml = `
+            <footer class="ai-footer">
+                <p class="ai-disclaimer"><em>Contenido generado por IA. La información puede no ser exacta.</em></p>
+                <a href="https://afland.es/contact" target="_blank" rel="noopener noreferrer" class="business-cta">
+                    ¿Quieres ver tu negocio aquí? Contacta
+                </a>
+            </footer>
+        `;
+
+            const aiHtmlContent = window.marked ? marked.parse(data.content) : `<pre>${data.content}</pre>`;
+
+            if (modalContent) {
+                modalContent.innerHTML = aiHtmlContent + footerHtml;
+            }
+
         } catch (error) {
             console.error("Error al generar Plan Noche:", error);
-            if (modalContent) modalContent.innerHTML = `<h3>Error</h3><p>No se pudo generar el plan.</p>`;
+            if (modalContent) modalContent.innerHTML = `<h3>Error</h3><p>No se pudo generar el plan en este momento.</p>`;
         }
     }
 
