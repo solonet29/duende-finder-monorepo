@@ -440,12 +440,71 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 6. INICIALIZACIÓN
     // =========================================================================
-    function init() {
+    // AÑADE ESTA NUEVA FUNCIÓN a script.js
+    async function handleWelcomeModal() {
+        const overlay = document.getElementById('welcome-modal-overlay');
+        if (!overlay) return { active: false, timer: Promise.resolve() };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/config`);
+            const config = await response.json();
+
+            if (config && config.welcomeModal_enabled) {
+                // Rellenar datos del patrocinador
+                document.getElementById('sponsor-link').href = config.sponsor_website_url || '#';
+                const sponsorLogo = document.getElementById('sponsor-logo');
+                sponsorLogo.src = config.sponsor_logo_url;
+                sponsorLogo.alt = `Logo de ${config.sponsor_name}`;
+
+                // Rellenar y mostrar banner si está activado
+                const bannerContainer = document.getElementById('welcome-banner-container');
+                if (config.banner_enabled && config.banner_imageUrl && bannerContainer) {
+                    document.getElementById('banner-link').href = config.banner_linkUrl || '#';
+                    const bannerImage = document.getElementById('banner-image');
+                    bannerImage.src = config.banner_imageUrl;
+                    bannerImage.alt = config.banner_altText || 'Banner promocional';
+                    bannerContainer.classList.remove('hidden');
+                }
+
+                // Mostrar el modal
+                overlay.classList.remove('hidden');
+
+                const timerPromise = new Promise(resolve => setTimeout(resolve, config.welcomeModal_minDuration_ms || 2000));
+
+                return { active: true, timer: timerPromise };
+            }
+        } catch (error) {
+            console.error("No se pudo cargar la configuración del modal:", error);
+        }
+
+        return { active: false, timer: Promise.resolve() };
+    }
+
+    // REEMPLAZA TU FUNCIÓN init() ACTUAL POR ESTA
+    async function init() {
+        // 1. Tareas rápidas que no bloquean la vista
         const savedTheme = localStorage.getItem('duende-theme') || 'light';
         applyTheme(savedTheme);
         setupEventListeners();
-        initializeDashboard();
+
+        // 2. Lanzamos el modal y la carga de datos del dashboard EN PARALELO
+        const modalPromise = handleWelcomeModal();
+        const dashboardPromise = initializeDashboard();
+
+        // 3. Esperamos a que la duración mínima del modal haya pasado
+        const modalInfo = await modalPromise;
+        await modalInfo.timer;
+
+        // 4. Esperamos a que los datos del dashboard hayan terminado de cargarse
+        await dashboardPromise;
+
+        // 5. Ocultamos el modal con una transición suave
+        const overlay = document.getElementById('welcome-modal-overlay');
+        if (overlay && modalInfo.active) {
+            overlay.classList.add('hidden');
+        }
     }
 
-    init();
+    // Tu script debe terminar llamando a la función principal
+    init()
 });
