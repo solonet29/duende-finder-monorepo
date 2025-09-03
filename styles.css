@@ -551,3 +551,79 @@ ion-icon {
     filter: brightness(1.1);
 }
 
+
+/* --- ESTILOS DEL MODAL DE BIENVENIDA --- */
+#welcome-modal-overlay .modal {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    width: auto; /* Ajustar al contenido */
+    max-width: 90%;
+}
+
+.welcome-modal-content {
+    background-color: var(--color-superficie);
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 350px;
+    max-width: 100%; /* Relativo al .modal auto-ajustado */
+    border: 1px solid var(--color-borde);
+}
+
+#welcome-banner-container {
+    display: none; /* Oculto por defecto */
+    width: 100%;
+}
+
+.sponsor-container p {
+    margin: 0 0 10px 0;
+    color: var(--color-texto-secundario);
+    font-size: 0.9rem;
+}
+
+.sponsor-logo {
+    max-height: 75px;
+    width: auto;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+    transition: transform 0.2s ease;
+}
+
+.sponsor-container a:hover .sponsor-logo {
+    transform: scale(1.05);
+}
+
+.banner-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.loading-indicator {
+    margin-top: 15px;
+    color: var(--color-acento);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.loading-indicator ion-icon {
+    font-size: 2.5rem;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}

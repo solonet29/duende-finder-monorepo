@@ -449,7 +449,6 @@ async function handleWelcomeModal() {
         if (config && config.welcomeModal_enabled) {
             const sponsorLink = document.getElementById('sponsor-link');
             const sponsorLogo = document.getElementById('sponsor-logo');
-            // ... (el resto de las comprobaciones)
 
             if (sponsorLink && sponsorLogo) {
                 sponsorLink.href = config.sponsor_website_url || '#';
@@ -457,12 +456,16 @@ async function handleWelcomeModal() {
                 sponsorLogo.alt = `Logo de ${config.sponsor_name}`;
 
                 const bannerContainer = document.getElementById('welcome-banner-container');
-                if (config.banner_enabled && bannerContainer) {
-                    // ... (lógica del banner)
-                    bannerContainer.classList.remove('hidden'); // Mantenemos .hidden para el banner interno
+                const bannerLink = document.getElementById('banner-link');
+                const bannerImage = document.getElementById('banner-image');
+
+                if (config.banner_enabled && config.banner_imageUrl && bannerContainer && bannerLink && bannerImage) {
+                    bannerLink.href = config.banner_linkUrl || '#';
+                    bannerImage.src = config.banner_imageUrl;
+                    bannerImage.alt = config.banner_altText || 'Banner promocional';
+                    bannerContainer.style.display = 'block'; // Mostramos el banner
                 }
 
-                // LA LÍNEA CLAVE: AÑADIMOS 'visible' EN LUGAR DE QUITAR 'hidden'
                 overlay.classList.add('visible');
 
                 const timerPromise = new Promise(resolve => setTimeout(resolve, config.welcomeModal_minDuration_ms || 2000));
