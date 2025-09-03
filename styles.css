@@ -566,7 +566,8 @@ ion-icon {
     background-color: transparent;
     border: none;
     padding: 0;
-    width: auto; /* Ajustar al contenido */
+    width: auto;
+    /* Ajustar al contenido */
     max-width: 90%;
 }
 
@@ -581,7 +582,8 @@ ion-icon {
     justify-content: center;
     gap: 20px;
     width: 350px;
-    max-width: 100%; /* Relativo al .modal auto-ajustado */
+    max-width: 100%;
+    /* Relativo al .modal auto-ajustado */
     border: 1px solid var(--color-borde);
 }
 
@@ -627,12 +629,36 @@ ion-icon {
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
         opacity: 0.8;
     }
+
     50% {
         transform: scale(1.1);
         opacity: 1;
     }
+}
+
+/* ==========================================================================
+    ESTILOS PARA ENLACES EN TEMA OSCURO
+   ========================================================================== */
+
+/* Estilo para todos los enlaces cuando el tema oscuro está activo */
+[data-theme="dark"] a {
+    /* Usamos el color de acento que ya tienes definido para el tema oscuro */
+    color: var(--color-acento);
+    text-decoration: none;
+    /* Opcional: quita el subrayado por defecto */
+    transition: filter 0.2s ease;
+}
+
+/* Estilo para cuando el usuario pasa el ratón sobre un enlace */
+[data-theme="dark"] a:hover {
+    /* Aclaramos un poco el color para dar feedback visual */
+    filter: brightness(1.2);
+    text-decoration: underline;
+    /* Opcional: añadimos el subrayado en hover */
 }
