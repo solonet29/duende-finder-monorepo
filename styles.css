@@ -81,7 +81,7 @@ main.container {
 }
 
 /* ==========================================================================
-   3. CABECERA STICKY Y FLOTANTE (VERSIÓN DEFINITIVA)
+   3. CABECERA STICKY Y FLOTANTE (VERSIÓN COMPLETA Y CORREGIDA)
    ========================================================================== */
 header.header-main {
     /* Comportamiento de la cabecera */
@@ -107,7 +107,7 @@ header.header-main {
     height: 40px;
     margin-bottom: 15px;
     overflow: hidden;
-    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
 }
 
 .logo span {
@@ -124,7 +124,6 @@ header.header-main.scrolled .header-top {
     opacity: 0;
     pointer-events: none;
     height: 0;
-    /* Aseguramos que colapse su altura */
     margin-bottom: 0;
 }
 
@@ -137,7 +136,7 @@ header.header-main.scrolled {
     padding-bottom: 8px;
 }
 
-/* (El resto de estilos de .filter-bar, .filter-chip, etc. se quedan como estaban) */
+/* --- Barra y Botones de Filtro --- */
 
 .filter-bar {
     display: flex;
@@ -148,6 +147,33 @@ header.header-main.scrolled {
     -ms-overflow-style: none;
 }
 
+.filter-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--color-borde);
+    background-color: var(--color-superficie);
+    color: var(--color-texto-principal);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.3s, color 0.3s;
+    text-decoration: none;
+}
+
+.filter-chip:hover {
+    background-color: var(--color-borde);
+}
+
+.filter-chip.active {
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+    border-color: var(--color-acento);
+}
 
 /* ==========================================================================
    4. SLIDERS
