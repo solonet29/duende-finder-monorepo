@@ -27,6 +27,7 @@
 </head>
 
 <body>
+
     <div id="welcome-modal-overlay" class="modal-overlay visible">
         <div class="modal">
             <div class="modal-content welcome-modal-content">
@@ -36,13 +37,11 @@
                         <img id="sponsor-logo" src="" alt="Logo del Patrocinador" class="sponsor-logo">
                     </a>
                 </div>
-
-                <div id="welcome-banner-container" class="banner-container">
+                <div id="welcome-banner-container" class="banner-container hidden">
                     <a id="banner-link" href="#" target="_blank" rel="noopener noreferrer">
                         <img id="banner-image" src="" alt="Banner promocional" class="banner-image">
                     </a>
                 </div>
-
                 <div class="loading-indicator">
                     <ion-icon name="flame-outline"></ion-icon>
                     <p>Cargando tablaos...</p>
@@ -50,24 +49,20 @@
             </div>
         </div>
     </div>
-    <div class="main-content-wrapper">
-        <header class="header-main">
-            <nav class="filter-bar">
-            </nav>
-        </header>
-        <main class="container">
-            <h1 class="main-title">Duende Finder</h1>
-    </div>
-    </div>
-    <nav class="filter-bar">
-        <a href="#destacados-section" class="filter-chip active">Destacados</a>
-        <a href="#semana-section" class="filter-chip">Esta Semana</a>
-        <a href="#hoy-section" class="filter-chip">Hoy</a>
-        <a href="#cerca-section" class="filter-chip" data-filter="cerca">Cerca de Mí</a>
-    </nav>
+
+    <header class="header-main">
+        <nav class="filter-bar">
+            <a href="#destacados-section" class="filter-chip active">Destacados</a>
+            <a href="#semana-section" class="filter-chip">Esta Semana</a>
+            <a href="#hoy-section" class="filter-chip">Hoy</a>
+            <a href="#cerca-section" class="filter-chip" data-filter="cerca">Cerca de Mí</a>
+        </nav>
     </header>
 
     <main class="container">
+
+        <h1 class="main-title">Duende Finder</h1>
+
         <section id="destacados-section" class="sliders-section">
             <h2>Eventos Destacados ✨</h2>
             <div class="slider-container" id="featured-events-slider"></div>
@@ -90,87 +85,15 @@
 
         <div id="monthly-sliders-container"></div>
     </main>
-    </div>
 
     <div id="event-detail-modal-overlay" class="modal-overlay"></div>
+    <div id="how-it-works-modal-overlay" class="modal-overlay"></div>
+    <div id="terms-modal-overlay" class="modal-overlay"></div>
+    <div id="gemini-modal-overlay" class="modal-overlay"></div>
+    <div id="image-modal-overlay" class="modal-overlay"></div>
+    <nav id="bottom-nav"></nav>
 
-    <div id="how-it-works-modal-overlay" class="modal-overlay">
-        <div class="modal">
-            <button class="modal-close-btn">&times;</button>
-            <div class="modal-content">
-                <h2><ion-icon name="help-circle-outline"></ion-icon> ¿Cómo funciona Duende Finder?</h2>
-                <p>Duende Finder es un motor de búsqueda especializado que rastrea constantemente la web en busca de
-                    eventos de flamenco en tablaos, festivales y salas de conciertos de todo el mundo.</p>
-                <p><strong>Búsqueda Inteligente:</strong> Puedes buscar por artista, ciudad, provincia o nombre del
-                    evento. Nuestro sistema buscará en nuestra base de datos, que se actualiza diariamente.</p>
-                <p><strong>Cerca de Mí:</strong> Usando la geolocalización de tu dispositivo, te mostramos los eventos
-                    más cercanos a tu ubicación actual en un radio de 60 km.</p>
-                <p><strong>Planificador de Noche:</strong> Gracias a la IA de Gemini, podemos sugerirte un plan completo
-                    para tu velada flamenca, recomendándote lugares para cenar o tomar algo cerca del evento.</p>
-                <p><strong>Contenido Enriquecido:</strong> Para eventos seleccionados, nuestro sistema de IA genera
-                    automáticamente un artículo detallado. Si ves el botón naranja "Leer en el Blog", te llevará a un
-                    post único sobre ese evento. Si no, el botón "Explorar Blog" te llevará a nuestra página principal
-                    de contenido flamenco.</p>
-            </div>
-        </div>
-    </div>
-
-    <div id="terms-modal-overlay" class="modal-overlay">
-        <div class="modal">
-            <button class="modal-close-btn">&times;</button>
-            <div class="modal-content">
-                <h2><ion-icon name="document-text-outline"></ion-icon> Términos y Condiciones</h2>
-                <ol>
-                    <li><strong>Uso del Servicio:</strong> Duende Finder es una herramienta gratuita de información. La
-                        información de los eventos (fechas, artistas, lugares) se obtiene de fuentes públicas y puede
-                        estar sujeta a cambios por parte de los organizadores.</li>
-                    <li><strong>Exactitud:</strong> Aunque nos esforzamos por tener la información más precisa y
-                        actualizada posible, siempre recomendamos verificar los detalles en la fuente original del
-                        evento (enlace "Ver Fuente") antes de hacer planes o comprar entradas.</li>
-                    <li><strong>Privacidad:</strong> Si activas las notificaciones o la búsqueda por ubicación, tus
-                        datos se gestionan de forma anónima y segura. No almacenamos información personal identificable.
-                        Tu ubicación solo se usa en el momento de la búsqueda y no se guarda.</li>
-                </ol>
-            </div>
-        </div>
-    </div>
-
-    <div id="gemini-modal-overlay" class="modal-overlay">
-        <div class="modal">
-            <button class="modal-close-btn">×</button>
-            <div class="modal-content" id="gemini-modal-content">
-            </div>
-            <button id="copy-plan-btn" class="copy-plan-btn">
-                <ion-icon name="copy-outline"></ion-icon> Copiar Plan
-            </button>
-        </div>
-    </div>
-
-    <div id="image-modal-overlay" class="modal-overlay">
-        <button class="modal-close-btn">&times;</button>
-        <img id="image-modal-content" src="" alt="Imagen del evento ampliada">
-    </div>
-
-
-    <nav id="bottom-nav">
-        <button class="nav-btn active" id="nav-home-btn" title="Inicio">
-            <ion-icon name="home"></ion-icon>
-        </button>
-        <button class="nav-btn" id="nav-how-it-works-btn" title="Cómo Funciona">
-            <ion-icon name="help-circle-outline"></ion-icon>
-        </button>
-        <button class="nav-btn" id="nav-terms-btn" title="Términos y Condiciones">
-            <ion-icon name="document-text-outline"></ion-icon>
-        </button>
-        <button class="nav-btn" id="nav-theme-toggle" title="Cambiar Tema">
-            <ion-icon name="moon-outline"></ion-icon>
-        </button>
-        <a href="https.afland.es" target="_blank" rel="noopener noreferrer" class="nav-btn" title="Visitar Afland.es">
-            <ion-icon name="flame-outline"></ion-icon>
-        </a>
-    </nav>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
     <script src="script.js"></script>
 
 </body>
