@@ -586,6 +586,11 @@ ion-icon {
     border-radius: 8px;
 }
 
+.sponsor-container a,
+.banner-container a {
+    color: transparent;
+}
+
 .loading-indicator {
     margin-top: 15px;
     color: var(--color-acento);
