@@ -27,7 +27,26 @@
 </head>
 
 <body>
-    <div id="welcome-modal-overlay" class="modal-overlay visible"> </div>
+
+    <div id="welcome-modal-overlay" class="modal-overlay visible">
+        <div class="modal">
+            <div class="modal-content welcome-modal-content">
+                <div class="sponsor-container">
+                    <p>Un proyecto de:</p>
+                    <a id="sponsor-link" href="#" target="_blank" rel="noopener noreferrer"><img id="sponsor-logo"
+                            src="" alt="Logo del Patrocinador" class="sponsor-logo"></a>
+                </div>
+                <div id="welcome-banner-container" class="banner-container hidden">
+                    <a id="banner-link" href="#" target="_blank" rel="noopener noreferrer"><img id="banner-image" src=""
+                            alt="Banner promocional" class="banner-image"></a>
+                </div>
+                <div class="loading-indicator">
+                    <ion-icon name="flame-outline"></ion-icon>
+                    <p>Cargando tablaos...</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <header class="header-main">
         <div class="container">
@@ -46,11 +65,60 @@
             <h2>Eventos Destacados ✨</h2>
             <div class="slider-container" id="featured-events-slider"></div>
         </section>
+        <section id="semana-section" class="sliders-section">
+            <h2>Esta Semana 🔥</h2>
+            <div class="slider-container" id="week-events-slider"></div>
+        </section>
+        <section id="hoy-section" class="sliders-section">
+            <h2>Eventos para Hoy 📅</h2>
+            <div class="slider-container" id="today-events-slider"></div>
+        </section>
+        <section id="cerca-section" class="sliders-section" style="display: none;">
+            <h2>Cerca de Ti 📍</h2>
+            <div class="slider-container" id="nearby-events-slider"></div>
+        </section>
+        <div id="monthly-sliders-container"></div>
     </main>
 
     <div id="event-detail-modal-overlay" class="modal-overlay"></div>
+    <div id="how-it-works-modal-overlay" class="modal-overlay">
+        <div class="modal"><button class="modal-close-btn">&times;</button>
+            <div class="modal-content">
+                <h2><ion-icon name="help-circle-outline"></ion-icon> ¿Cómo funciona?</h2>
+                <p>...</p>
+            </div>
+        </div>
+    </div>
+    <div id="terms-modal-overlay" class="modal-overlay">
+        <div class="modal"><button class="modal-close-btn">&times;</button>
+            <div class="modal-content">
+                <h2><ion-icon name="document-text-outline"></ion-icon> Términos</h2>
+                <p>...</p>
+            </div>
+        </div>
+    </div>
+    <div id="gemini-modal-overlay" class="modal-overlay">
+        <div class="modal"><button class="modal-close-btn">×</button>
+            <div class="modal-content" id="gemini-modal-content"></div>
+        </div>
+    </div>
+    <div id="image-modal-overlay" class="modal-overlay">
+        <button class="modal-close-btn">&times;</button><img id="image-modal-content" src="" alt="Imagen ampliada">
+    </div>
+    <nav id="bottom-nav">
+        <button class="nav-btn active" id="nav-home-btn" title="Inicio"><ion-icon name="home"></ion-icon></button>
+        <button class="nav-btn" id="nav-how-it-works-btn" title="Cómo Funciona"><ion-icon
+                name="help-circle-outline"></ion-icon></button>
+        <button class="nav-btn" id="nav-terms-btn" title="Términos"><ion-icon
+                name="document-text-outline"></ion-icon></button>
+        <button class="nav-btn" id="nav-theme-toggle" title="Tema"><ion-icon name="moon-outline"></ion-icon></button>
+        <a href="https://afland.es" target="_blank" rel="noopener noreferrer" class="nav-btn"
+            title="Visitar Afland.es"><ion-icon name="flame-outline"></ion-icon></a>
+    </nav>
+
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="script.js"></script>
+
 </body>
 
 </html>
