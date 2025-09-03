@@ -39,6 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const howItWorksModal = document.getElementById('how-it-works-modal-overlay');
     const termsModal = document.getElementById('terms-modal-overlay');
     const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('duende-theme', theme);
+        if (navThemeToggle) {
+            const icon = navThemeToggle.querySelector('ion-icon');
+            if (icon) icon.setAttribute('name', theme === 'dark' ? 'moon-outline' : 'sunny-outline');
+        }
+    }
 
     // =========================================================================
     // 2. LÓGICA PRINCIPAL DE ORQUESTACIÓN Y CARGA
@@ -241,14 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return (value && typeof value === 'string' && value.trim()) ? value.trim() : defaultText;
         }
 
-        function applyTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('duende-theme', theme);
-            if (navThemeToggle) {
-                const icon = navThemeToggle.querySelector('ion-icon');
-                if (icon) icon.setAttribute('name', theme === 'dark' ? 'moon-outline' : 'sunny-outline');
-            }
-        }
+
 
         function geolocationSearch() {
             const cercaSection = document.getElementById('cerca-section');
