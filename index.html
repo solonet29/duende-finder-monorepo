@@ -28,25 +28,26 @@
 
 <body>
     <div id="welcome-modal-overlay" class="modal-overlay hidden">
-        <div class="modal">
-            <div class="modal-content welcome-modal-content">
-                <img src="./assets/flamenco-placeholder.png" alt="Duende Finder" class="welcome-logo">
+        <div class="modal-content welcome-modal-content">
 
-                <div class="welcome-sponsor">
-                    <p>Patrocinado por</p>
-                    <a id="sponsor-link" href="#" target="_blank" rel="noopener noreferrer">
-                        <img id="sponsor-logo" src="" alt="Logo del Patrocinador">
-                    </a>
-                </div>
-
-                <div id="welcome-banner-container" class="hidden">
-                    <a id="banner-link" href="#" target="_blank" rel="noopener noreferrer">
-                        <img id="banner-image" src="" alt="">
-                    </a>
-                </div>
-
-                <div class="loader"></div>
+            <div class="sponsor-container">
+                <p>Un proyecto de:</p>
+                <a id="sponsor-link" href="#" target="_blank" rel="noopener noreferrer">
+                    <img id="sponsor-logo" src="" alt="Logo del Patrocinador" class="sponsor-logo">
+                </a>
             </div>
+
+            <div id="welcome-banner-container" class="banner-container hidden">
+                <a id="banner-link" href="#" target="_blank" rel="noopener noreferrer">
+                    <img id="banner-image" src="" alt="Banner promocional" class="banner-image">
+                </a>
+            </div>
+
+            <div class="loading-indicator">
+                <ion-icon name="flame-outline"></ion-icon>
+                <p>Cargando tablaos...</p>
+            </div>
+
         </div>
     </div>
     <header class="header-main">
