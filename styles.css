@@ -81,7 +81,7 @@ main.container {
 }
 
 /* ==========================================================================
-   3. CABECERA CON EFECTO SCROLL (VERSIÓN ANTI-PARPADEO)
+   3. CABECERA CON EFECTO FLOTANTE (VERSIÓN CORREGIDA)
    ========================================================================== */
 header.header-main {
     background-color: var(--color-nav-fondo);
@@ -92,7 +92,8 @@ header.header-main {
     z-index: 100;
     padding: 10px 15px;
     border-bottom: 1px solid var(--color-borde);
-    transition: padding 0.3s ease, background-color 0.3s ease;
+    /* Transición para todas las propiedades que vamos a animar */
+    transition: all 0.3s ease-in-out;
 }
 
 /* 1. Preparamos el contenedor del logo para la animación */
@@ -113,20 +114,28 @@ header.header-main {
     font-family: 'Cinzel', serif;
 }
 
-/* 2. Cuando se hace scroll, OCULTAMOS el logo sin alterar el layout */
+/* 2. Ocultamos el logo al hacer scroll */
 header.header-main.scrolled .header-top {
     transform: translateY(-100%);
     opacity: 0;
     pointer-events: none;
 }
 
-/* 3. Mantenemos el ajuste sutil del padding en la cabecera */
+/* 3. ESTADO DE SCROLL: Hacemos el fondo totalmente transparente */
 header.header-main.scrolled {
-    padding-top: 1px;
-    padding-bottom: 7px;
     background-color: transparent;
+    backdrop-filter: none;
+    /* <--- CORRECCIÓN 1: Desactiva el desenfoque */
+    -webkit-backdrop-filter: none;
+    /* <--- CORRECCIÓN 1: (Compatibilidad) */
+    border-bottom-color: transparent;
+    /* <--- CORRECCIÓN 2: Oculta el borde */
+    padding-top: 8px;
+    /* Padding ajustado para el equilibrio visual */
+    padding-bottom: 8px;
 }
 
+/* (El resto de estilos para .filter-bar y .filter-chip se quedan igual) */
 .filter-bar {
     display: flex;
     gap: 10px;
