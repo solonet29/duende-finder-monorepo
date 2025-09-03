@@ -81,29 +81,32 @@ main.container {
 }
 
 /* ==========================================================================
-   3. CABECERA CON EFECTO FLOTANTE (VERSIÓN CORREGIDA)
+   3. CABECERA STICKY Y FLOTANTE (VERSIÓN DEFINITIVA)
    ========================================================================== */
 header.header-main {
-    background-color: var(--color-nav-fondo);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    /* Comportamiento de la cabecera */
     position: sticky;
     top: 0;
     z-index: 100;
+
+    /* Estilo inicial (antes del scroll) */
+    background-color: var(--color-nav-fondo);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     padding: 10px 15px;
     border-bottom: 1px solid var(--color-borde);
-    /* Transición para todas las propiedades que vamos a animar */
+
+    /* Transición suave para todos los cambios */
     transition: all 0.3s ease-in-out;
 }
 
-/* 1. Preparamos el contenedor del logo para la animación */
 .header-top {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 40px;
     margin-bottom: 15px;
-    overflow: visible;
+    overflow: hidden;
     transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
@@ -114,28 +117,28 @@ header.header-main {
     font-family: 'Cinzel', serif;
 }
 
-/* 2. Ocultamos el logo al hacer scroll */
+/* --- Estado al hacer Scroll --- */
+
 header.header-main.scrolled .header-top {
     transform: translateY(-100%);
     opacity: 0;
     pointer-events: none;
+    height: 0;
+    /* Aseguramos que colapse su altura */
+    margin-bottom: 0;
 }
 
-/* 3. ESTADO DE SCROLL: Hacemos el fondo totalmente transparente */
 header.header-main.scrolled {
     background-color: transparent;
     backdrop-filter: none;
-    /* <--- CORRECCIÓN 1: Desactiva el desenfoque */
     -webkit-backdrop-filter: none;
-    /* <--- CORRECCIÓN 1: (Compatibilidad) */
     border-bottom-color: transparent;
-    /* <--- CORRECCIÓN 2: Oculta el borde */
     padding-top: 8px;
-    /* Padding ajustado para el equilibrio visual */
     padding-bottom: 8px;
 }
 
-/* (El resto de estilos para .filter-bar y .filter-chip se quedan igual) */
+/* (El resto de estilos de .filter-bar, .filter-chip, etc. se quedan como estaban) */
+
 .filter-bar {
     display: flex;
     gap: 10px;
@@ -143,34 +146,6 @@ header.header-main.scrolled {
     padding-bottom: 5px;
     scrollbar-width: none;
     -ms-overflow-style: none;
-}
-
-.filter-bar::-webkit-scrollbar {
-    display: none;
-}
-
-.filter-chip {
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid var(--color-borde);
-    background-color: var(--color-superficie);
-    color: var(--color-texto-principal);
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background-color 0.3s, color 0.3s;
-    text-decoration: none;
-}
-
-.filter-chip:hover {
-    background-color: var(--color-borde);
-}
-
-.filter-chip.active {
-    background-color: var(--color-acento);
-    color: var(--color-superficie);
-    border-color: var(--color-acento);
 }
 
 
