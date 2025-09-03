@@ -437,44 +437,65 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // =========================================================================
-    // 6. INICIALIZACIÓN
-    // =========================================================================
-    // AÑADE ESTA NUEVA FUNCIÓN a script.js
+    // REEMPLAZA ESTA FUNCIÓN en script.js
     async function handleWelcomeModal() {
+        console.log("Iniciando handleWelcomeModal...");
         const overlay = document.getElementById('welcome-modal-overlay');
-        if (!overlay) return { active: false, timer: Promise.resolve() };
+
+        if (!overlay) {
+            console.error("Error Crítico: No se encontró el elemento principal del modal #welcome-modal-overlay. Revisa el ID en index.html.");
+            return { active: false, timer: Promise.resolve() };
+        }
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/config`);
+            if (!response.ok) {
+                console.warn("La API de configuración no respondió correctamente.");
+                return { active: false, timer: Promise.resolve() };
+            }
             const config = await response.json();
+            console.log("Configuración recibida:", config);
 
             if (config && config.welcomeModal_enabled) {
-                // Rellenar datos del patrocinador
-                document.getElementById('sponsor-link').href = config.sponsor_website_url || '#';
+                console.log("Modal está habilitado. Procediendo a rellenar datos...");
+
+                // --- Bloque de comprobaciones ---
+                const sponsorLink = document.getElementById('sponsor-link');
                 const sponsorLogo = document.getElementById('sponsor-logo');
+                const bannerContainer = document.getElementById('welcome-banner-container');
+                const bannerLink = document.getElementById('banner-link');
+                const bannerImage = document.getElementById('banner-image');
+
+                if (!sponsorLink || !sponsorLogo) {
+                    console.error("Error: Faltan elementos del patrocinador ('sponsor-link' o 'sponsor-logo'). Revisa los IDs en index.html.");
+                    return { active: false, timer: Promise.resolve() };
+                }
+                // --- Fin del bloque ---
+
+                sponsorLink.href = config.sponsor_website_url || '#';
                 sponsorLogo.src = config.sponsor_logo_url;
                 sponsorLogo.alt = `Logo de ${config.sponsor_name}`;
 
-                // Rellenar y mostrar banner si está activado
-                const bannerContainer = document.getElementById('welcome-banner-container');
-                if (config.banner_enabled && config.banner_imageUrl && bannerContainer) {
-                    document.getElementById('banner-link').href = config.banner_linkUrl || '#';
-                    const bannerImage = document.getElementById('banner-image');
+                if (config.banner_enabled && config.banner_imageUrl && bannerContainer && bannerLink && bannerImage) {
+                    console.log("Banner está habilitado y se mostrará.");
+                    bannerLink.href = config.banner_linkUrl || '#';
                     bannerImage.src = config.banner_imageUrl;
                     bannerImage.alt = config.banner_altText || 'Banner promocional';
                     bannerContainer.classList.remove('hidden');
+                } else {
+                    console.log("Banner deshabilitado o elementos no encontrados.");
                 }
 
-                // Mostrar el modal
+                console.log("Mostrando el modal...");
                 overlay.classList.remove('hidden');
 
                 const timerPromise = new Promise(resolve => setTimeout(resolve, config.welcomeModal_minDuration_ms || 2000));
-
                 return { active: true, timer: timerPromise };
+            } else {
+                console.log("Modal deshabilitado en la configuración.");
             }
         } catch (error) {
-            console.error("No se pudo cargar la configuración del modal:", error);
+            console.error("Error durante la ejecución de handleWelcomeModal:", error);
         }
 
         return { active: false, timer: Promise.resolve() };
