@@ -479,33 +479,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return { active: false, timer: Promise.resolve() };
         }
     }
-} catch (error) {
-    console.error("No se pudo cargar la configuración del modal:", error);
-}
-return { active: false, timer: Promise.resolve() };
+    return { active: false, timer: Promise.resolve() };
 }
 
-// REEMPLAZA TU FUNCIÓN init() ACTUAL POR ESTA
-async function init() {
-    const savedTheme = localStorage.getItem('duende-theme') || 'light';
-    applyTheme(savedTheme);
-    setupEventListeners();
+    // REEMPLAZA TU FUNCIÓN init() ACTUAL POR ESTA
+    , async function init() {
+        const savedTheme = localStorage.getItem('duende-theme') || 'light';
+        applyTheme(savedTheme);
+        setupEventListeners();
 
-    const modalPromise = handleWelcomeModal();
-    const dashboardPromise = initializeDashboard();
+        const modalPromise = handleWelcomeModal();
+        const dashboardPromise = initializeDashboard();
 
-    const modalInfo = await modalPromise;
-    await modalInfo.timer;
+        const modalInfo = await modalPromise;
+        await modalInfo.timer;
 
-    await dashboardPromise;
+        await dashboardPromise;
 
-    const overlay = document.getElementById('welcome-modal-overlay');
-    if (overlay && modalInfo.active) {
-        // LA LÍNEA CLAVE: QUITAMOS 'visible' EN LUGAR DE AÑADIR 'hidden'
-        overlay.classList.remove('visible');
+        const overlay = document.getElementById('welcome-modal-overlay');
+        if (overlay && modalInfo.active) {
+            // LA LÍNEA CLAVE: QUITAMOS 'visible' EN LUGAR DE AÑADIR 'hidden'
+            overlay.classList.remove('visible');
+        }
     }
-}
 
-// Tu script debe terminar llamando a la función principal
-init()
-});
+    // Tu script debe terminar llamando a la función principal
+    , init()
+);
