@@ -438,93 +438,63 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // REEMPLAZA ESTA FUNCIÓN en script.js
-    async function handleWelcomeModal() {
-        console.log("Iniciando handleWelcomeModal...");
-        const overlay = document.getElementById('welcome-modal-overlay');
+async function handleWelcomeModal() {
+    const overlay = document.getElementById('welcome-modal-overlay');
+    if (!overlay) return { active: false, timer: Promise.resolve() };
 
-        if (!overlay) {
-            console.error("Error Crítico: No se encontró el elemento principal del modal #welcome-modal-overlay. Revisa el ID en index.html.");
-            return { active: false, timer: Promise.resolve() };
-        }
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/config`);
+        const config = await response.json();
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/config`);
-            if (!response.ok) {
-                console.warn("La API de configuración no respondió correctamente.");
-                return { active: false, timer: Promise.resolve() };
-            }
-            const config = await response.json();
-            console.log("Configuración recibida:", config);
+        if (config && config.welcomeModal_enabled) {
+            const sponsorLink = document.getElementById('sponsor-link');
+            const sponsorLogo = document.getElementById('sponsor-logo');
+            // ... (el resto de las comprobaciones)
 
-            if (config && config.welcomeModal_enabled) {
-                console.log("Modal está habilitado. Procediendo a rellenar datos...");
-
-                // --- Bloque de comprobaciones ---
-                const sponsorLink = document.getElementById('sponsor-link');
-                const sponsorLogo = document.getElementById('sponsor-logo');
-                const bannerContainer = document.getElementById('welcome-banner-container');
-                const bannerLink = document.getElementById('banner-link');
-                const bannerImage = document.getElementById('banner-image');
-
-                if (!sponsorLink || !sponsorLogo) {
-                    console.error("Error: Faltan elementos del patrocinador ('sponsor-link' o 'sponsor-logo'). Revisa los IDs en index.html.");
-                    return { active: false, timer: Promise.resolve() };
-                }
-                // --- Fin del bloque ---
-
+            if (sponsorLink && sponsorLogo) {
                 sponsorLink.href = config.sponsor_website_url || '#';
                 sponsorLogo.src = config.sponsor_logo_url;
                 sponsorLogo.alt = `Logo de ${config.sponsor_name}`;
 
-                if (config.banner_enabled && config.banner_imageUrl && bannerContainer && bannerLink && bannerImage) {
-                    console.log("Banner está habilitado y se mostrará.");
-                    bannerLink.href = config.banner_linkUrl || '#';
-                    bannerImage.src = config.banner_imageUrl;
-                    bannerImage.alt = config.banner_altText || 'Banner promocional';
-                    bannerContainer.classList.remove('hidden');
-                } else {
-                    console.log("Banner deshabilitado o elementos no encontrados.");
+                const bannerContainer = document.getElementById('welcome-banner-container');
+                if (config.banner_enabled && bannerContainer) {
+                    // ... (lógica del banner)
+                    bannerContainer.classList.remove('hidden'); // Mantenemos .hidden para el banner interno
                 }
 
-                console.log("Mostrando el modal...");
-                overlay.classList.remove('hidden');
+                // LA LÍNEA CLAVE: AÑADIMOS 'visible' EN LUGAR DE QUITAR 'hidden'
+                overlay.classList.add('visible');
 
                 const timerPromise = new Promise(resolve => setTimeout(resolve, config.welcomeModal_minDuration_ms || 2000));
                 return { active: true, timer: timerPromise };
-            } else {
-                console.log("Modal deshabilitado en la configuración.");
             }
-        } catch (error) {
-            console.error("Error durante la ejecución de handleWelcomeModal:", error);
         }
-
-        return { active: false, timer: Promise.resolve() };
+    } catch (error) {
+        console.error("No se pudo cargar la configuración del modal:", error);
     }
+    return { active: false, timer: Promise.resolve() };
+}
 
-    // REEMPLAZA TU FUNCIÓN init() ACTUAL POR ESTA
-    async function init() {
-        // 1. Tareas rápidas que no bloquean la vista
-        const savedTheme = localStorage.getItem('duende-theme') || 'light';
-        applyTheme(savedTheme);
-        setupEventListeners();
+// REEMPLAZA TU FUNCIÓN init() ACTUAL POR ESTA
+async function init() {
+    const savedTheme = localStorage.getItem('duende-theme') || 'light';
+    applyTheme(savedTheme);
+    setupEventListeners();
 
-        // 2. Lanzamos el modal y la carga de datos del dashboard EN PARALELO
-        const modalPromise = handleWelcomeModal();
-        const dashboardPromise = initializeDashboard();
+    const modalPromise = handleWelcomeModal();
+    const dashboardPromise = initializeDashboard();
 
-        // 3. Esperamos a que la duración mínima del modal haya pasado
-        const modalInfo = await modalPromise;
-        await modalInfo.timer;
+    const modalInfo = await modalPromise;
+    await modalInfo.timer;
 
-        // 4. Esperamos a que los datos del dashboard hayan terminado de cargarse
-        await dashboardPromise;
+    await dashboardPromise;
 
-        // 5. Ocultamos el modal con una transición suave
-        const overlay = document.getElementById('welcome-modal-overlay');
-        if (overlay && modalInfo.active) {
-            overlay.classList.add('hidden');
-        }
+    const overlay = document.getElementById('welcome-modal-overlay');
+    if (overlay && modalInfo.active) {
+        // LA LÍNEA CLAVE: QUITAMOS 'visible' EN LUGAR DE AÑADIR 'hidden'
+        overlay.classList.remove('visible');
     }
+}
 
     // Tu script debe terminar llamando a la función principal
     init()
