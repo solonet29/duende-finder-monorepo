@@ -28,61 +28,37 @@
 
 <body>
 
-    <div id="welcome-modal-overlay" class="modal-overlay visible">
-        <div class="modal">
-            <div class="modal-content welcome-modal-content">
-                <div class="sponsor-container">
-                    <p>Un proyecto de:</p>
-                    <a id="sponsor-link" href="#" target="_blank" rel="noopener noreferrer">
-                        <img id="sponsor-logo" src="" alt="Logo del Patrocinador" class="sponsor-logo">
-                    </a>
-                </div>
-                <div id="welcome-banner-container" class="banner-container hidden">
-                    <a id="banner-link" href="#" target="_blank" rel="noopener noreferrer">
-                        <img id="banner-image" src="" alt="Banner promocional" class="banner-image">
-                    </a>
-                </div>
-                <div class="loading-indicator">
-                    <ion-icon name="flame-outline"></ion-icon>
-                    <p>Cargando tablaos...</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="welcome-modal-overlay" class="modal-overlay visible"></div>
 
     <header class="header-main">
-        <nav class="filter-bar">
-            <a href="#destacados-section" class="filter-chip active">Destacados</a>
-            <a href="#semana-section" class="filter-chip">Esta Semana</a>
-            <a href="#hoy-section" class="filter-chip">Hoy</a>
-            <a href="#cerca-section" class="filter-chip" data-filter="cerca">Cerca de Mí</a>
-        </nav>
+        <div class="header-container">
+            <nav class="filter-bar">
+                <a href="#destacados-section" class="filter-chip active">Destacados</a>
+                <a href="#semana-section" class="filter-chip">Esta Semana</a>
+                <a href="#hoy-section" class="filter-chip">Hoy</a>
+                <a href="#cerca-section" class="filter-chip" data-filter="cerca">Cerca de Mí</a>
+            </nav>
+        </div>
     </header>
 
     <main class="container">
-
         <h1 class="main-title">Duende Finder</h1>
-
         <section id="destacados-section" class="sliders-section">
             <h2>Eventos Destacados ✨</h2>
             <div class="slider-container" id="featured-events-slider"></div>
         </section>
-
         <section id="semana-section" class="sliders-section">
             <h2>Esta Semana 🔥</h2>
             <div class="slider-container" id="week-events-slider"></div>
         </section>
-
         <section id="hoy-section" class="sliders-section">
             <h2>Eventos para Hoy 📅</h2>
             <div class="slider-container" id="today-events-slider"></div>
         </section>
-
         <section id="cerca-section" class="sliders-section" style="display: none;">
             <h2>Cerca de Ti 📍</h2>
             <div class="slider-container" id="nearby-events-slider"></div>
         </section>
-
         <div id="monthly-sliders-container"></div>
     </main>
 
