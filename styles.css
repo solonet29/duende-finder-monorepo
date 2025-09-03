@@ -1,24 +1,22 @@
 /* ==========================================================================
-   1. VARIABLES Y TEMAS
-   ========================================================================== */
+   1. VARIABLES Y TEMAS
+   ========================================================================== */
 :root {
+    /* (Tus variables de color se quedan igual) */
     --color-fondo-dark: #121212;
     --color-superficie-dark: #181818;
     --color-texto-principal-dark: #e0e0e0;
     --color-texto-secundario-dark: #a0a0a0;
     --color-borde-dark: #282828;
     --color-acento-marca-dark: #E58A2D;
-    --color-nav-fondo-dark: rgba(18, 18, 18, 0.7);
-    /* Transparencia Ajustada */
-
+    --color-nav-fondo-dark: rgba(18, 18, 18, 0.85);
     --color-fondo-light: #f4f4f5;
     --color-superficie-light: #ffffff;
     --color-texto-principal-light: #181818;
     --color-texto-secundario-light: #71717a;
     --color-borde-light: #d4d4d8;
     --color-acento-marca-light: #D47F26;
-    --color-nav-fondo-light: rgba(244, 244, 245, 0.7);
-    /* Transparencia Ajustada */
+    --color-nav-fondo-light: rgba(244, 244, 245, 0.85);
 }
 
 [data-theme="dark"] {
@@ -42,8 +40,8 @@
 }
 
 /* ==========================================================================
-   2. ESTILOS GLOBALES
-   ========================================================================== */
+   2. ESTILOS GLOBALES Y ESTRUCTURA
+   ========================================================================== */
 html {
     box-sizing: border-box;
     scroll-behavior: smooth;
@@ -61,27 +59,20 @@ body {
     color: var(--color-texto-principal);
     margin: 0;
     transition: background-color 0.3s ease, color 0.3s ease;
-    background-image: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--color-fondo) 90%, white), var(--color-fondo) 70%);
-    display: flex;
-    justify-content: center;
 }
 
-.main-content-wrapper {
-    display: flex;
-    flex-direction: column;
+/* Contenedor principal para centrar el contenido */
+.container {
     width: 100%;
     max-width: 1200px;
-}
-
-main.container {
-    max-width: 1200px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 0 15px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 /* ==========================================================================
-   3. CABECERA Y TÍTULO (VERSIÓN FINAL Y CENTRADA)
+   3. CABECERA Y TÍTULO
    ========================================================================== */
 header.header-main {
     position: sticky;
@@ -91,15 +82,11 @@ header.header-main {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--color-borde);
+    padding: 8px 0;
+    /* Padding vertical, el horizontal lo dará el .container */
 }
 
-/* Contenedor interno para centrar la barra de filtros */
-.header-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 8px 15px;
-}
-
+/* El título principal de la página */
 .main-title {
     font-family: 'Cinzel', serif;
     font-size: 2rem;
@@ -108,19 +95,21 @@ header.header-main {
     margin: 2rem 0;
 }
 
+/* La barra de filtros dentro de la cabecera */
 .filter-bar {
     display: flex;
-    /* Ya no centramos aquí, el contenedor padre lo hace */
     gap: 10px;
     overflow-x: auto;
     padding-bottom: 5px;
     scrollbar-width: none;
-    -ms-overflow-style: none;
+    /* Oculta scrollbar en Firefox */
 }
 
 .filter-bar::-webkit-scrollbar {
     display: none;
 }
+
+/* Oculta scrollbar en Chrome/Safari */
 
 .filter-chip {
     padding: 8px 16px;
@@ -145,6 +134,7 @@ header.header-main {
     color: var(--color-superficie);
     border-color: var(--color-acento);
 }
+
 
 /* ==========================================================================
    4. SLIDERS
