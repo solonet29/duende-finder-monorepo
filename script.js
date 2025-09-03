@@ -168,7 +168,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderEventDetailModal(event) {
-        if (!eventDetailModalOverlay) return;
+        console.log("renderEventDetailModal function called");
+        if (!eventDetailModalOverlay) {
+            console.error("eventDetailModalOverlay not found");
+            return;
+        }
         const eventName = sanitizeField(event.name, 'Evento sin título');
         const artistName = sanitizeField(event.artist, 'Artista por confirmar');
         const description = sanitizeField(event.description, 'Sin descripción disponible.');
@@ -187,6 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
         const eventImageUrl = event.imageUrl || './assets/flamenco-placeholder.png';
         eventDetailModalOverlay.innerHTML = `<div class="modal"><button class="modal-close-btn">×</button><div class="modal-content modal-event-details">${event.imageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}<div class="card-header"><h2 class="titulo-truncado" title="${eventName}">${eventName}</h2></div><div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div><p class="descripcion-corta">${description}</p><div class="card-detalles"><div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div><div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div><div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><ion-icon name="location-outline"></ion-icon><span>${displayLocation}</span></a></div></div><div class="card-actions"><div class="card-actions-primary"><button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button><a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a></div></div></div></div>`;
+        console.log("Adding .visible class to modal");
         eventDetailModalOverlay.classList.add('visible');
     }
 
@@ -289,7 +294,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const modalOverlay = e.target.closest('.modal-overlay:not(#welcome-modal-overlay)');
             const modalCloseBtn = e.target.closest('.modal-close-btn');
             const requestLocationBtn = e.target.closest('#request-location-btn');
+
             if (sliderCard) {
+                console.log("Slider card clicked");
                 const eventId = sliderCard.dataset.eventId;
                 if (eventId) {
                     try {
@@ -297,6 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (!response.ok) throw new Error('Evento no encontrado');
                         const eventData = await response.json();
                         eventsCache[eventId] = eventData;
+                        console.log("Event data fetched, about to render modal");
                         renderEventDetailModal(eventData);
                     } catch (error) {
                         console.error('Error al cargar detalles del evento:', error);
