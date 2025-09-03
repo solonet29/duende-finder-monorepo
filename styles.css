@@ -81,7 +81,7 @@ main.container {
 }
 
 /* ==========================================================================
-   3. CABECERA STICKY (VERSIÓN SIMPLIFICADA)
+   3. CABECERA Y TÍTULO (VERSIÓN FINAL Y ESTABLE)
    ========================================================================== */
 header.header-main {
     position: sticky;
@@ -91,12 +91,9 @@ header.header-main {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     padding: 8px 15px;
-    /* Un padding fijo, ya no cambia */
     border-bottom: 1px solid var(--color-borde);
-    transition: all 0.3s ease-in-out;
 }
 
-/* --- Título Principal (el antiguo logo) --- */
 .main-title {
     font-family: 'Cinzel', serif;
     font-size: 2rem;
@@ -105,14 +102,42 @@ header.header-main {
     margin: 2rem 0;
 }
 
-/* (Los estilos de .filter-bar y .filter-chip se quedan igual) */
 .filter-bar {
     display: flex;
     justify-content: center;
-    /* Centramos los filtros ahora que hay espacio */
     gap: 10px;
     overflow-x: auto;
     padding-bottom: 5px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.filter-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--color-borde);
+    background-color: var(--color-superficie);
+    color: var(--color-texto-principal);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.3s, color 0.3s;
+    text-decoration: none;
+}
+
+.filter-chip:hover {
+    background-color: var(--color-borde);
+}
+
+.filter-chip.active {
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+    border-color: var(--color-acento);
 }
 
 /* ==========================================================================
