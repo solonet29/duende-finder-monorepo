@@ -438,44 +438,51 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // REEMPLAZA ESTA FUNCIÓN en script.js
-async function handleWelcomeModal() {
-    const overlay = document.getElementById('welcome-modal-overlay');
-    if (!overlay) return { active: false, timer: Promise.resolve() };
+    async function handleWelcomeModal() {
+        const overlay = document.getElementById('welcome-modal-overlay');
+        // Si no encontramos el overlay por alguna razón, no hacemos nada.
+        if (!overlay) return { active: false, timer: Promise.resolve() };
 
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/config`);
-        const config = await response.json();
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/config`);
+            const config = await response.json();
 
-        if (config && config.welcomeModal_enabled) {
-            const sponsorLink = document.getElementById('sponsor-link');
-            const sponsorLogo = document.getElementById('sponsor-logo');
-
-            if (sponsorLink && sponsorLogo) {
-                sponsorLink.href = config.sponsor_website_url || '#';
-                sponsorLogo.src = config.sponsor_logo_url;
-                sponsorLogo.alt = `Logo de ${config.sponsor_name}`;
-
-                const bannerContainer = document.getElementById('welcome-banner-container');
-                const bannerLink = document.getElementById('banner-link');
-                const bannerImage = document.getElementById('banner-image');
-
-                if (config.banner_enabled && config.banner_imageUrl && bannerContainer && bannerLink && bannerImage) {
-                    bannerLink.href = config.banner_linkUrl || '#';
-                    bannerImage.src = config.banner_imageUrl;
-                    bannerImage.alt = config.banner_altText || 'Banner promocional';
-                    bannerContainer.style.display = 'block'; // Mostramos el banner
+            // Si el modal está HABILITADO, rellenamos los datos
+            if (config && config.welcomeModal_enabled) {
+                // (La lógica para rellenar el logo y el banner se queda igual)
+                const sponsorLink = document.getElementById('sponsor-link');
+                const sponsorLogo = document.getElementById('sponsor-logo');
+                if (sponsorLink && sponsorLogo) {
+                    sponsorLink.href = config.sponsor_website_url || '#';
+                    sponsorLogo.src = config.sponsor_logo_url;
+                    sponsorLogo.alt = `Logo de ${config.sponsor_name}`;
                 }
-
-                overlay.classList.add('visible');
+                const bannerContainer = document.getElementById('welcome-banner-container');
+                if (config.banner_enabled && bannerContainer) {
+                    document.getElementById('banner-link').href = config.banner_linkUrl || '#';
+                    document.getElementById('banner-image').src = config.banner_imageUrl;
+                    bannerContainer.classList.remove('hidden');
+                }
 
                 const timerPromise = new Promise(resolve => setTimeout(resolve, config.welcomeModal_minDuration_ms || 2000));
                 return { active: true, timer: timerPromise };
             }
+
+            // NUEVA LÓGICA: Si el modal está DESHABILITADO, lo ocultamos
+            else {
+                overlay.classList.remove('visible');
+                return { active: false, timer: Promise.resolve() };
+            }
+        } catch (error) {
+            console.error("No se pudo cargar la configuración del modal, ocultándolo por seguridad:", error);
+            overlay.classList.remove('visible');
+            return { active: false, timer: Promise.resolve() };
         }
-    } catch (error) {
-        console.error("No se pudo cargar la configuración del modal:", error);
     }
-    return { active: false, timer: Promise.resolve() };
+} catch (error) {
+    console.error("No se pudo cargar la configuración del modal:", error);
+}
+return { active: false, timer: Promise.resolve() };
 }
 
 // REEMPLAZA TU FUNCIÓN init() ACTUAL POR ESTA
@@ -499,6 +506,6 @@ async function init() {
     }
 }
 
-    // Tu script debe terminar llamando a la función principal
-    init()
+// Tu script debe terminar llamando a la función principal
+init()
 });
