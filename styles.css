@@ -1,6 +1,6 @@
 /* ==========================================================================
-   1. VARIABLES Y TEMAS
-   ========================================================================== */
+   1. VARIABLES Y TEMAS
+   ========================================================================== */
 :root {
     /* (Tus variables de color se quedan igual) */
     --color-fondo-dark: #121212;
@@ -40,8 +40,8 @@
 }
 
 /* ==========================================================================
-   2. ESTILOS GLOBALES Y ESTRUCTURA
-   ========================================================================== */
+   2. ESTILOS GLOBALES Y ESTRUCTURA
+   ========================================================================== */
 html {
     box-sizing: border-box;
     scroll-behavior: smooth;
@@ -72,8 +72,8 @@ body {
 }
 
 /* ==========================================================================
-   3. CABECERA Y TÍTULO
-   ========================================================================== */
+   3. CABECERA Y TÍTULO
+   ========================================================================== */
 header.header-main {
     position: sticky;
     top: 0;
@@ -620,8 +620,8 @@ ion-icon {
 }
 
 /* ==========================================================================
-    ESTILOS PARA ENLACES EN TEMA OSCURO
-   ========================================================================== */
+   ESTILOS PARA ENLACES EN TEMA OSCURO
+   ========================================================================== */
 
 /* Estilo para todos los enlaces cuando el tema oscuro está activo */
 [data-theme="dark"] a {
@@ -655,10 +655,14 @@ ion-icon {
     /* Un poco más pequeño que el texto normal */
     color: #888;
     /* Un color gris para que no compita con el título */
+    opacity: 0;
+    /* Empieza invisible */
+
 }
 
 /* Clase que se añade con JS para activar la animación */
 .subtitle-counter.loaded {
+    animation: bounce-in 0.7s ease-out forwards;
 }
 
 /* Define la animación de rebote */

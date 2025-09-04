@@ -62,7 +62,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             const totalEvents = data.total;
 
-            counterElement.textContent = `+${totalEvents.toLocaleString('es-ES')} eventos de flamenco verificados`;
+            const options = {
+                prefix: '+',
+                suffix: ` eventos de flamenco verificados`,
+                duration: 2.5,
+                separator: '.',
+                useEasing: true,
+            };
+
+            const countUp = new CountUp(counterElement, totalEvents, options);
+
+            if (!countUp.error) {
+                countUp.start();
+            } else {
+                console.error(countUp.error);
+                counterElement.textContent = `+${totalEvents.toLocaleString('es-ES')} eventos de flamenco verificados`;
+            }
 
             // AÑADIMOS LA CLASE PARA HACERLO VISIBLE
             counterElement.classList.add('loaded');
