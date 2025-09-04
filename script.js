@@ -46,7 +46,49 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 2. DEFINICIÓN DE TODAS LAS FUNCIONES
     // =========================================================================
+    /**
+     * Gestiona el ID de sesión del usuario para agrupar todas las acciones de una misma visita.
+     */
+    function getSessionId() {
+        let sessionId = sessionStorage.getItem('duendeFinderSessionId');
+        if (!sessionId) {
+            // Genera un ID simple: timestamp + número aleatorio
+            sessionId = Date.now().toString() + Math.random().toString(36).substring(2);
+            sessionStorage.setItem('duendeFinderSessionId', sessionId);
+        }
+        return sessionId;
+    }
 
+    /**
+     * Envía un evento de tracking a nuestra API de analíticas.
+     * @param {string} type - El tipo de interacción (ej: 'eventView').
+     * @param {object} details - Un objeto con los detalles de la interacción.
+     */
+    async function trackInteraction(type, details) {
+        const sessionId = getSessionId();
+        // Usamos la URL de la API en producción para el tracking
+        const apiUrl = 'https://duende-api.vercel.app/api/analytics/track';
+
+        try {
+            // Usamos navigator.sendBeacon para no afectar el rendimiento de la página
+            if (navigator.sendBeacon) {
+                const blob = new Blob([JSON.stringify({ type, sessionId, details })], { type: 'application/json' });
+                navigator.sendBeacon(apiUrl, blob);
+                console.log(`Tracking event sent via Beacon: ${type}`);
+            } else {
+                // Fetch como alternativa si sendBeacon no está disponible
+                await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type, sessionId, details }),
+                    keepalive: true
+                });
+                console.log(`Tracking event sent via Fetch: ${type}`);
+            }
+        } catch (error) {
+            console.error('Error sending tracking event:', error);
+        }
+    }
     // =======================================================
     // == NUEVA FUNCIÓN PARA EL CONTADOR ANIMADO ==
     // =======================================================
@@ -317,6 +359,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     latitude,
                     longitude
                 } = position.coords;
+                trackInteraction('nearMeSearch', {
+                    location: {
+                        lat: latitude,
+                        lng: longitude
+                    }
+                });
                 try {
                     const response = await fetch(`${API_BASE_URL}/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`);
                     if (!response.ok) throw new Error('Error en la petición');
@@ -375,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const eventData = await response.json();
                         eventsCache[eventId] = eventData;
                         console.log("Event data fetched, about to render modal");
+                        trackInteraction('eventView', { eventId: eventData._id });
                         renderEventDetailModal(eventData);
                     } catch (error) {
                         console.error('Error al cargar detalles del evento:', error);
@@ -383,6 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (geminiBtn) {
                 const eventId = geminiBtn.dataset.eventId;
                 const eventData = eventsCache[eventId];
+                trackInteraction('planNightRequest', { eventId: eventData._id });
                 if (eventData) getAndShowNightPlan(eventData);
             } else if (requestLocationBtn) {
                 fetchNearbyEvents();
