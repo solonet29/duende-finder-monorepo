@@ -1,3 +1,5 @@
+import { CountUp } from './libs/countup.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 1. CONFIGURACIÓN Y SELECTORES
