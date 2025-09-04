@@ -59,7 +59,7 @@ var CountUp = /** @class */ (function () {
                     _this.frameVal = _this.startVal + (_this.endVal - _this.startVal) * (progress / _this.duration);
                 }
             }
-            // don't go past endVal since progress can exceed duration in the last frame
+            // don't go the past endVal since progress can exceed duration in the last frame
             if (_this.countDown) {
                 _this.frameVal = (_this.frameVal < _this.endVal) ? _this.endVal : _this.frameVal;
             }
