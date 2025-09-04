@@ -639,3 +639,49 @@ ion-icon {
     text-decoration: underline;
     /* Opcional: añadimos el subrayado en hover */
 }
+
+/* ============================ */
+/* ==   COMPONENTES & FX     == */
+/* ============================ */
+
+.subtitle-counter {
+    text-align: center;
+    /* Centra el texto */
+    margin-top: -10px;
+    /* Sube un poco el texto para que quede más cerca del título */
+    margin-bottom: 20px;
+    /* Añade espacio antes del siguiente contenido */
+    font-size: 0.9em;
+    /* Un poco más pequeño que el texto normal */
+    color: #888;
+    /* Un color gris para que no compita con el título */
+    opacity: 0;
+    /* Empieza invisible */
+
+}
+
+/* Clase que se añade con JS para activar la animación */
+.subtitle-counter.loaded {
+    animation: bounce-in 0.7s ease-out forwards;
+}
+
+/* Define la animación de rebote */
+@keyframes bounce-in {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    80% {
+        transform: scale(0.95);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

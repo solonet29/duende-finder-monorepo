@@ -45,6 +45,45 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. DEFINICIÓN DE TODAS LAS FUNCIONES
     // =========================================================================
 
+    // =======================================================
+    // == NUEVA FUNCIÓN PARA EL CONTADOR ANIMADO ==
+    // =======================================================
+    async function displayEventCount() {
+        const counterElement = document.getElementById('event-counter');
+        if (!counterElement) return; // Si el elemento no existe, no hacemos nada
+
+        try {
+            // Usamos el endpoint que ya existía: /api/events/count
+            const response = await fetch(`${API_BASE_URL}/api/events/count`);
+            if (!response.ok) throw new Error('Error en la respuesta de la API');
+
+            const data = await response.json();
+            const totalEvents = data.total;
+
+            const options = {
+                prefix: '+',
+                suffix: ` eventos de flamenco verificados`,
+                duration: 2.5,
+                separator: '.',
+                useEasing: true,
+            };
+
+            const countUp = new CountUp(counterElement, totalEvents, options);
+
+            if (!countUp.error) {
+                countUp.start();
+            } else {
+                console.error(countUp.error);
+                counterElement.textContent = `+${totalEvents.toLocaleString('es-ES')} eventos de flamenco verificados`;
+            }
+
+        } catch (error) {
+            console.error('Error al cargar el contador de eventos:', error);
+            counterElement.style.display = 'none'; // Ocultamos si hay error
+        }
+    }
+
+
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('duende-theme', theme);
@@ -67,7 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleWelcomeModal() {
         const overlay = document.getElementById('welcome-modal-overlay');
-        if (!overlay) return { active: false, timer: Promise.resolve() };
+        if (!overlay) return {
+            active: false,
+            timer: Promise.resolve()
+        };
         try {
             const response = await fetch(`${API_BASE_URL}/api/config`);
             const config = await response.json();
@@ -86,15 +128,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     bannerContainer.classList.remove('hidden');
                 }
                 const timerPromise = new Promise(resolve => setTimeout(resolve, config.welcomeModal_minDuration_ms || 2500));
-                return { active: true, timer: timerPromise };
+                return {
+                    active: true,
+                    timer: timerPromise
+                };
             } else {
                 overlay.classList.remove('visible');
-                return { active: false, timer: Promise.resolve() };
+                return {
+                    active: false,
+                    timer: Promise.resolve()
+                };
             }
         } catch (error) {
             console.error("Error al cargar config del modal, se ocultará:", error);
             overlay.classList.remove('visible');
-            return { active: false, timer: Promise.resolve() };
+            return {
+                active: false,
+                timer: Promise.resolve()
+            };
         }
     }
 
@@ -139,7 +190,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const events = monthlyGroups[monthKey];
             const [year, month] = monthKey.split('-');
             const monthDate = new Date(year, parseInt(month, 10) - 1);
-            const monthName = monthDate.toLocaleString('es-ES', { month: 'long' });
+            const monthName = monthDate.toLocaleString('es-ES', {
+                month: 'long'
+            });
             const titleText = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
             const section = document.createElement('section');
             section.className = 'sliders-section';
@@ -177,7 +230,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const artistName = sanitizeField(event.artist, 'Artista por confirmar');
         const description = sanitizeField(event.description, 'Sin descripción disponible.');
         const eventTime = sanitizeField(event.time, 'No disponible');
-        const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
+        const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }) : 'Fecha no disponible';
         const venue = sanitizeField(event.venue || (event.location && event.location.venue), '');
         const city = sanitizeField(event.city || (event.location && event.location.city), '');
         let displayLocation = 'Ubicación no disponible';
@@ -226,8 +283,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
         const elementPosition = cercaSection.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-        navigator.permissions.query({ name: 'geolocation' }).then(result => {
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+        });
+        navigator.permissions.query({
+            name: 'geolocation'
+        }).then(result => {
             if (result.state === 'granted') fetchNearbyEvents();
             else if (result.state === 'prompt') renderGeolocationPrompt();
             else if (result.state === 'denied') renderGeolocationDenied();
@@ -246,7 +308,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (nearbySlider) nearbySlider.innerHTML = `<div class="skeleton-card" style="width: 100%;"></div>`;
         navigator.geolocation.getCurrentPosition(
             async position => {
-                const { latitude, longitude } = position.coords;
+                const {
+                    latitude,
+                    longitude
+                } = position.coords;
                 try {
                     const response = await fetch(`${API_BASE_URL}/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`);
                     if (!response.ok) throw new Error('Error en la petición');
@@ -340,12 +405,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
                         const elementPosition = targetSection.getBoundingClientRect().top;
                         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: "smooth"
+                        });
                     }
                 }
             });
         }
-        if (navHomeBtn) navHomeBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        if (navHomeBtn) navHomeBtn.addEventListener('click', () => window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        }));
         if (navThemeToggle) navThemeToggle.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
@@ -362,6 +433,11 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(savedTheme);
         setupEventListeners();
         populateInfoModals();
+
+        // =======================================================
+        // == LLAMADA A LA NUEVA FUNCIÓN DEL CONTADOR ==
+        // =======================================================
+        displayEventCount();
 
         const modalPromise = handleWelcomeModal();
         const dashboardPromise = initializeDashboard();
