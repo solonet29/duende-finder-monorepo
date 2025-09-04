@@ -79,6 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 counterElement.textContent = `+${totalEvents.toLocaleString('es-ES')} eventos de flamenco verificados`;
             }
 
+            // AÑADIMOS LA CLASE PARA HACERLO VISIBLE
+            counterElement.classList.add('loaded');
+
         } catch (error) {
             console.error('Error al cargar el contador de eventos:', error);
             counterElement.style.display = 'none'; // Ocultamos si hay error
