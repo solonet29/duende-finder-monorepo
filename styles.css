@@ -665,7 +665,7 @@ ion-icon {
     animation: bounce-in 0.7s ease-out forwards;
 }
 
-/* Define la animación de rebote */
+/* Define la animación de rebotes */
 @keyframes bounce-in {
     0% {
         transform: scale(0.5);
