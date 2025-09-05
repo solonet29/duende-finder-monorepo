@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
         today.setHours(0, 0, 0, 0);
         return events.reduce((acc, event) => {
             if (!event.date) return acc;
-            const eventDate = new Date(event.date);
+            const eventDate = new Date(event.date + 'T00:00:00');
             const isToday = eventDate.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
             const diffDays = (eventDate - today) / (1000 * 60 * 60 * 24);
             if (!isToday && diffDays >= 0 && diffDays < 7) {
