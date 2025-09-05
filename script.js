@@ -304,13 +304,27 @@ document.addEventListener('DOMContentLoaded', () => {
         today.setHours(0, 0, 0, 0);
         return events.reduce((acc, event) => {
             if (!event.date) return acc;
+
             const eventDate = new Date(event.date + 'T00:00:00');
-            const isToday = eventDate.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
-            const diffDays = (eventDate - today) / (1000 * 60 * 60 * 24);
-            if (!isToday && diffDays >= 0 && diffDays < 7) {
+
+            // Comprobamos si la fecha es válida antes de continuar
+            if (isNaN(eventDate.getTime())) {
+                console.warn('Fecha inválida encontrada para el evento:', event);
                 return acc;
             }
-            const monthKey = event.date.substring(0, 7);
+
+            // ▼▼▼ CAMBIO IMPORTANTE: HEMOS DESACTIVADO EL FILTRO DE "PRÓXIMA SEMANA" ▼▼▼
+            // const isToday = eventDate.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
+            // const diffDays = (eventDate - today) / (1000 * 60 * 60 * 24);
+            // if (!isToday && diffDays >= 0 && diffDays < 7) {
+            //     // Esta lógica descartaba los eventos de los próximos 7 días.
+            //     // La hemos comentado para que no se aplique.
+            //     return acc;
+            // }
+            // ▲▲▲ FIN DEL CAMBIO ▲▲▲
+
+            // Ahora todos los eventos futuros se agruparán por mes
+            const monthKey = event.date.substring(0, 7); // ej: "2025-09"
             if (!acc[monthKey]) {
                 acc[monthKey] = [];
             }
