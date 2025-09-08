@@ -4,7 +4,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 1. CONFIGURACIÓN Y SELECTORES
     // =========================================================================
-    const API_BASE_URL = window.location.hostname.includes('localhost') ? 'http://localhost:3000' : 'https://duende-api.vercel.app';
+    // Función para determinar la URL de la API dinámicamente
+    const getApiBaseUrl = () => {
+        const hostname = window.location.hostname;
+
+        if (hostname.includes('localhost')) {
+            return 'http://localhost:3000'; // Para desarrollo local
+        }
+
+        if (hostname.includes('nuevobuscador.afland.es')) {
+            return 'https://api-v2.afland.es'; // Para nuestro nuevo buscador de pruebas
+        }
+
+        // Para todo lo demás (es decir, el buscador de producción), usamos la API antigua
+        return 'https://duende-api.vercel.app';
+    };
+
+    const API_BASE_URL = getApiBaseUrl();
     let eventsCache = {};
 
     const modalContent = {
