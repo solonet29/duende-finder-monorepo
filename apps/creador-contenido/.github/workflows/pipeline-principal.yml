@@ -39,7 +39,7 @@ jobs:
         working-directory: ./apps/creador-contenido
     steps:
       - name: Checkout repository
-        uses: actions/checkout@vv4
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
