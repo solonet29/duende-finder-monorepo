@@ -1,0 +1,16 @@
+{
+  "name": "ingestor",
+  "version": "1.0.0",
+  "description": "Servicio de ingesta de eventos.",
+  "main": "ingesta.js",
+  "scripts": {
+    "start": "node ingesta.js"
+  },
+  "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.3.42",
+    "dotenv": "^16.4.5",
+    "mongodb": "^6.5.0",
+    "db-client": "workspace:*",
+    "sanitizers": "workspace:*"
+  }
+}

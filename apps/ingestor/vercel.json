@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    {
+      "source": "/ingest",
+      "destination": "/api/index.js"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/ingest",
+      "schedule": "30 */6 * * *"
+    }
+  ]
+}

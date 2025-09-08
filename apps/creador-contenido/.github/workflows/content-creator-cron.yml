@@ -1,0 +1,38 @@
+# .github/workflows/content-creator.yml
+
+name: Content Creator
+
+on:
+  schedule:
+    # Ejecuta el flujo de trabajo cada seis horas
+    - cron: '0 */6 * * *' 
+  workflow_dispatch:
+
+jobs:
+  run-content-creator:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Content Creator
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          WORDPRESS_URL: ${{ secrets.WORDPRESS_URL }}
+          WORDPRESS_USER: ${{ secrets.WORDPRESS_USER }}
+          WORDPRESS_APP_PASSWORD: ${{ secrets.WORDPRESS_APP_PASSWORD }}
+          AFLAND_API_KEY: ${{ secrets.AFLAND_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          DAILY_TOKEN_LIMIT: 500000
+          GROQ_MODEL: 'llama3-8b-8192'
+        run: node content-creator.js
+        

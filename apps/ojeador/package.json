@@ -1,0 +1,25 @@
+{
+  "name": "duende-ojeador-worker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "api/getArtists.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node api/getArtists.js",
+    "dev": "node api/findArtists.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.15.0",
+    "@upstash/qstash": "^2.8.2",
+    "@vercel/kv": "^3.0.0",
+    "axios": "^1.7.2",
+    "cheerio": "^1.1.2",
+    "dotenv": "^16.4.5",
+    "googleapis": "^156.0.0",
+    "groq-sdk": "^0.30.0",
+    "ioredis": "^5.7.0",
+    "mongodb": "^6.8.0",
+    "openai": "^5.12.0",
+    "uuid": "^11.1.0"
+  }
+}
