@@ -12,12 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return 'http://localhost:3000'; // Para desarrollo local
         }
 
-        if (hostname.includes('nuevobuscador.afland.es')) {
-            return 'https://api-v2.afland.es'; // Para nuestro nuevo buscador de pruebas
-        }
-
-        // Para todo lo demás (es decir, el buscador de producción), usamos la API antigua
-        return 'https://duende-api.vercel.app';
+        // Para despliegues de Vercel (incluyendo previews) o el dominio de producción
+        // Usamos la nueva API v2
+        return 'https://api-v2.afland.es';
     };
 
     const API_BASE_URL = getApiBaseUrl();
@@ -83,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function trackInteraction(type, details) {
         const sessionId = getSessionId();
         // Usamos la URL de la API en producción para el tracking
-        const apiUrl = 'https://duende-api.vercel.app/api/analytics/track';
+        const apiUrl = 'https://api-v2.afland.es/api/analytics/track';
 
         try {
             // Usamos navigator.sendBeacon para no afectar el rendimiento de la página
