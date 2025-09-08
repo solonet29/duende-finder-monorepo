@@ -46,7 +46,7 @@ Thumbs.db
 *.pem
 
 # Lockfiles
-pnpm-lock.yaml
+
 
 # debug
 .pnpm-debug.log*
