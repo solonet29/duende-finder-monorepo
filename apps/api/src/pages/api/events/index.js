@@ -8,7 +8,6 @@ import cors from 'cors';
 const corsMiddleware = cors({
     // Modificamos el valor de 'origin' para que sea una función
     origin: function (origin, callback) {
-        // Orígenes locales y de producción que siempre deben estar permitidos
         const allowedOrigins = [
             'https://buscador.afland.es',
             'https://afland.es',
@@ -19,16 +18,15 @@ const corsMiddleware = cors({
             'https://nuevobuscador.afland.es'
         ];
 
-        // Lógica de CORS:
-        // 1. Si la petición no tiene origen (p.ej. Postman, llamadas internas), la permitimos.
-        // 2. Si el origen termina en '.vercel.app', la permitimos automáticamente.
-        // 3. Si el origen está en nuestra lista de orígenes permitidos, la permitimos.
-        if (!origin || origin.endsWith('.vercel.app') || allowedOrigins.includes(origin)) {
-            callback(null, true);
+        if (!origin) { // For requests with no origin (like Postman, internal calls)
+            return callback(null, true);
+        }
+
+        if (origin.endsWith('.vercel.app') || allowedOrigins.includes(origin)) {
+            return callback(null, origin); // Allow the specific origin
         } else {
-            // Si el origen no cumple ninguna de las condiciones, rechazamos la petición.
             console.error(`CORS: Origen no permitido: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
+            return callback(new Error('Not allowed by CORS'));
         }
     },
     methods: ['GET', 'POST', 'OPTIONS'],
