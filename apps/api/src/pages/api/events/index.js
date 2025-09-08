@@ -61,7 +61,7 @@ export default async function handler(req, res) {
 
         const featuredArtists = [
             'Farruquito', 'Pedro el Granaino', 'Miguel Poveda', 'Argentina',
-            'Marina Heredia', 'Tomatito', 'Alba Heredia', 'Ivan Vargas'
+            'Marina Heredia', 'Tomatito', 'Alba Heredia', 'Ivan Vargas', 'Estrella Morente',
         ];
         const paises = [
             'Japón', 'China', 'Corea del Sur', 'Alemania', 'EEUU', 'Reino Unido', 'Suecia', 'España', 'Francia', 'Italia', 'Portugal', 'Países Bajos', 'Bélgica', 'Austria', 'Bulgaria', 'Croacia', 'Chipre', 'República Checa', 'Dinamarca', 'Estonia', 'Finlandia', 'Grecia', 'Hungría', 'Irlanda', 'Letonia', 'Lituania', 'Luxemburgo', 'Malta', 'Polonia', 'Rumanía', 'Eslovaquia', 'Eslovenia', 'Suiza', 'Noruega', 'Argentina'
