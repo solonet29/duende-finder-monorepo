@@ -1,5 +1,6 @@
 // RUTA: /src/pages/api/events/index.js
 // VERSIÓN FINAL DE PRODUCCIÓN CON CORS A NUEVO BUSCADOR
+// AÑADIENDO UN COMENTARIO PARA FORZAR EL DESPLIEGUE
 
 import { getEventModel } from '@/lib/database.js';
 import cors from 'cors';
