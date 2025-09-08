@@ -4,13 +4,14 @@
   "description": "Servicio de ingesta de eventos.",
   "main": "ingesta.js",
   "scripts": {
-    "start": "node ingesta.js"
+    "start": "node ingesta.js",
+    "build": "echo \"No build required\""
   },
   "dependencies": {
     "@googlemaps/google-maps-services-js": "^3.3.42",
     "dotenv": "^16.4.5",
     "mongodb": "^6.5.0",
-    "db-client": "workspace:*",
+    "@duende-finder/db-client": "workspace:*",
     "sanitizers": "workspace:*"
   }
 }
