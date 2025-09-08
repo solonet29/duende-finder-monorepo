@@ -1,0 +1,26 @@
+{
+  "name": "duende-frontend",
+  "version": "1.0.0",
+  "main": "script.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/solonet29/duende-frontend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/solonet29/duende-frontend/issues"
+  },
+  "homepage": "https://github.com/solonet29/duende-frontend#readme",
+  "description": "",
+  "devDependencies": {
+    "vite": "^5.3.1"
+  }
+}
