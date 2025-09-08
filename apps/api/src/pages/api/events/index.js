@@ -1,32 +1,39 @@
 // RUTA: /src/pages/api/events/index.js
 // VERSIÓN FINAL DE PRODUCCIÓN
 
-
 import { getEventModel } from '@/lib/database.js';
 import cors from 'cors';
 
-
 // --- CONFIGURACIÓN DE CORS ---
 const corsMiddleware = cors({
-    origin: [
-        'https://buscador.afland.es',
-        'https://duende-frontend.vercel.app',
-        'https://afland.es',
-        'http://localhost:3000',
-        'http://127.0.0.1:5500',
-        'http://0.0.0.0:5500',
-        'http://localhost:5173',
-        'https://duende-frontend-git-new-fro-50ee05-angel-picon-caleros-projects.vercel.app',
-        'https://duende-control-panel.vercel.app',
-        'https://duende-frontend-zklp-git-co-a60b5c-angel-picon-caleros-projects.vercel.app',
-        'https://nuevobuscador.afland.es'
+    // Modificamos el valor de 'origin' para que sea una función
+    origin: function (origin, callback) {
+        // Orígenes locales y de producción que siempre deben estar permitidos
+        const allowedOrigins = [
+            'https://buscador.afland.es',
+            'https://afland.es',
+            'http://localhost:3000',
+            'http://127.0.0.1:5500',
+            'http://0.0.0.0:5500',
+            'http://localhost:5173',
+            'https://nuevobuscador.afland.es'
+        ];
 
-
-    ],
+        // Lógica de CORS:
+        // 1. Si la petición no tiene origen (p.ej. Postman, llamadas internas), la permitimos.
+        // 2. Si el origen termina en '.vercel.app', la permitimos automáticamente.
+        // 3. Si el origen está en nuestra lista de orígenes permitidos, la permitimos.
+        if (!origin || origin.endsWith('.vercel.app') || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            // Si el origen no cumple ninguna de las condiciones, rechazamos la petición.
+            console.error(`CORS: Origen no permitido: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 });
-
 
 function runMiddleware(req, res, fn) {
     return new Promise((resolve, reject) => {
@@ -39,22 +46,18 @@ function runMiddleware(req, res, fn) {
     });
 }
 
-
 // --- MANEJADOR PRINCIPAL DE LA API ---
 export default async function handler(req, res) {
     await runMiddleware(req, res, corsMiddleware);
 
-
     try {
         const Event = await getEventModel();
-
 
         const {
             search = null, artist = null, city = null, country = null,
             dateFrom = null, dateTo = null, timeframe = null, lat = null,
             lon = null, radius = null, sort = null, featured = null
         } = req.query;
-
 
         const featuredArtists = [
             'Farruquito', 'Pedro el Granaino', 'Miguel Poveda', 'Argentina',
@@ -67,9 +70,7 @@ export default async function handler(req, res) {
             'Sevilla', 'Málaga', 'Granada', 'Cádiz', 'Ceuta', 'Córdoba', 'Huelva', 'Jaén', 'Almería', 'Madrid', 'Barcelona', 'Valencia', 'Murcia', 'Alicante', 'Bilbao', 'Zaragoza', 'Jerez', 'Úbeda', 'Baeza', 'Ronda', 'Estepona', 'Lebrija', 'Morón de la Frontera', 'Utrera', 'Algeciras', 'Cartagena', 'Logroño', 'Santander', 'Vitoria', 'Pamplona', 'Vigo', 'A Coruña', 'Oviedo', 'Gijón', 'León', 'Salamanca', 'Valladolid', 'Burgos', 'Cáceres', 'Badajoz', 'Toledo', 'Cuenca', 'Guadalajara', 'Albacete'
         ];
 
-
         let aggregationPipeline = [];
-
 
         if (lat && lon) {
             const latitude = parseFloat(lat);
@@ -87,19 +88,14 @@ export default async function handler(req, res) {
             }
         }
 
-
         const matchFilter = {};
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-
-        // --- FILTRO DE FECHA REACTIVADO Y CORREGIDO ---
         const todayString = today.toISOString().split('T')[0];
         matchFilter.date = { $gte: todayString };
 
-
         matchFilter.name = { $ne: null, $nin: ["", "N/A"] };
-
 
         if (search && !lat) {
             const normalizedSearch = search.trim().toLowerCase();
@@ -128,30 +124,23 @@ export default async function handler(req, res) {
             matchFilter.date.$lte = nextWeek.toISOString().split('T')[0];
         }
 
-
         aggregationPipeline.push({ $match: matchFilter });
         aggregationPipeline.push({ $group: { _id: { date: "$date", artist: "$artist", name: "$name" }, firstEvent: { $first: "$$ROOT" } } });
         aggregationPipeline.push({ $replaceRoot: { newRoot: "$firstEvent" } });
         aggregationPipeline.push({ $addFields: { contentStatus: '$contentStatus', blogPostUrl: '$blogPostUrl' } });
-
 
         let sortOrder = { date: 1 };
         if (sort === 'date' && req.query.order === 'desc') sortOrder = { date: -1 };
         if (search && !lat) sortOrder = { score: { $meta: "textScore" } };
         if (!lat) aggregationPipeline.push({ $sort: sortOrder });
 
-
         const events = await Event.aggregate(aggregationPipeline);
-
 
         res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
         res.status(200).json({ events, isAmbiguous: false });
 
-
     } catch (err) {
         console.error("Error en /api/events:", err);
         res.status(500).json({ error: "Internal Server Error", details: err.message });
-
-
     }
 }
