@@ -1,0 +1,687 @@
+/* ==========================================================================
+   1. VARIABLES Y TEMAS
+   ========================================================================== */
+:root {
+    /* (Tus variables de color se quedan igual) */
+    --color-fondo-dark: #121212;
+    --color-superficie-dark: #181818;
+    --color-texto-principal-dark: #e0e0e0;
+    --color-texto-secundario-dark: #a0a0a0;
+    --color-borde-dark: #282828;
+    --color-acento-marca-dark: #E58A2D;
+    --color-nav-fondo-dark: rgba(18, 18, 18, 0.85);
+    --color-fondo-light: #f4f4f5;
+    --color-superficie-light: #ffffff;
+    --color-texto-principal-light: #181818;
+    --color-texto-secundario-light: #71717a;
+    --color-borde-light: #d4d4d8;
+    --color-acento-marca-light: #D47F26;
+    --color-nav-fondo-light: rgba(244, 244, 245, 0.85);
+}
+
+[data-theme="dark"] {
+    --color-fondo: var(--color-fondo-dark);
+    --color-superficie: var(--color-superficie-dark);
+    --color-borde: var(--color-borde-dark);
+    --color-texto-principal: var(--color-texto-principal-dark);
+    --color-texto-secundario: var(--color-texto-secundario-dark);
+    --color-acento: var(--color-acento-marca-dark);
+    --color-nav-fondo: var(--color-nav-fondo-dark);
+}
+
+[data-theme="light"] {
+    --color-fondo: var(--color-fondo-light);
+    --color-superficie: var(--color-superficie-light);
+    --color-borde: var(--color-borde-light);
+    --color-texto-principal: var(--color-texto-principal-light);
+    --color-texto-secundario: var(--color-texto-secundario-light);
+    --color-acento: var(--color-acento-marca-light);
+    --color-nav-fondo: var(--color-nav-fondo-light);
+}
+
+/* ==========================================================================
+   2. ESTILOS GLOBALES Y ESTRUCTURA
+   ========================================================================== */
+html {
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--color-fondo);
+    color: var(--color-texto-principal);
+    margin: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Contenedor principal para centrar el contenido */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* ==========================================================================
+   3. CABECERA Y TÍTULO
+   ========================================================================== */
+header.header-main {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: var(--color-nav-fondo);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-borde);
+    padding: 8px 0;
+    /* Padding vertical, el horizontal lo dará el .container */
+}
+
+/* El título principal de la página */
+.main-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    text-align: center;
+    color: var(--color-texto-principal);
+    margin: 2rem 0;
+}
+
+/* La barra de filtros dentro de la cabecera */
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    scrollbar-width: none;
+    /* Oculta scrollbar en Firefox */
+}
+
+.filter-bar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Oculta scrollbar en Chrome/Safari */
+
+.filter-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--color-borde);
+    background-color: var(--color-superficie);
+    color: var(--color-texto-principal);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.3s, color 0.3s;
+    text-decoration: none;
+}
+
+.filter-chip:hover {
+    background-color: var(--color-borde);
+}
+
+.filter-chip.active {
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+    border-color: var(--color-acento);
+}
+
+
+/* ==========================================================================
+   4. SLIDERS
+   ========================================================================== */
+.sliders-section {
+    width: 100%;
+    margin: 30px 0;
+}
+
+.sliders-section h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--color-texto-principal);
+    margin-bottom: 20px;
+}
+
+.slider-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding-bottom: 15px;
+    scroll-snap-type: x mandatory;
+    align-items: flex-start;
+    /* CORRECCIÓN: Evita que las tarjetas se estiren */
+}
+
+.slider-container::-webkit-scrollbar {
+    display: none;
+}
+
+.slider-container .event-card {
+    flex: 0 0 220px;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-superficie);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.slider-container .event-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+.slider-container .event-card .card-image {
+    width: 100%;
+    height: 125px;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.slider-container .event-card .card-content {
+    text-align: center;
+    padding: 12px 5px;
+}
+
+.slider-container .event-card .card-title {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-texto-principal);
+    max-width: 95%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.slider-container .event-card:hover .card-title {
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+}
+
+/* ==========================================================================
+   5. MODALES
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background-color: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    color: var(--color-texto-principal);
+    border-radius: 12px;
+    width: 95%;
+    max-width: 700px;
+    max-height: 90vh;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transform: scale(0.95);
+    transition: transform 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
+}
+
+.modal-overlay.visible .modal {
+    transform: scale(1);
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--color-texto-secundario);
+    font-size: 1.8rem;
+    cursor: pointer;
+    line-height: 1;
+    z-index: 10;
+}
+
+.modal-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.modal-content>* {
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+}
+
+.modal-content h2,
+.modal-content h3 {
+    color: var(--color-acento);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.modal-content h2:first-child,
+.modal-content h3:first-child {
+    margin-top: 0;
+}
+
+.modal-content p,
+.modal-content li {
+    line-height: 1.7;
+    color: var(--color-texto-secundario);
+}
+
+.modal-content strong {
+    color: var(--color-texto-principal);
+}
+
+.modal-content ol {
+    padding-left: 20px;
+}
+
+.modal-event-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.modal-event-details .evento-card-img-container {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--color-borde);
+    margin-bottom: 1rem;
+}
+
+.modal-event-details .evento-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.modal-event-details .card-header .titulo-truncado {
+    font-size: 1.6rem;
+}
+
+.modal-event-details .card-detalles {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 1px solid var(--color-borde);
+    padding-top: 1rem;
+    margin-top: 0;
+}
+
+.modal-event-details .evento-detalle a {
+    color: var(--color-texto-secundario);
+    transition: color 0.2s;
+}
+
+.modal-event-details .evento-detalle a:hover {
+    color: var(--color-acento);
+}
+
+.modal-event-details .card-actions-primary {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+#gemini-modal-overlay {
+    z-index: 3000;
+}
+
+.modal-overlay.modal-stacked .modal {
+    transform: scale(0.9) translateY(-10px);
+    opacity: 0.7;
+    filter: blur(2px);
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   6. BARRA DE NAVEGACIÓN INFERIOR
+   ========================================================================== */
+#bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--color-nav-fondo);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    z-index: 1000;
+    border-top: 1px solid var(--color-borde);
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    color: var(--color-texto-secundario);
+    font-size: 24px;
+    padding: 10px;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.2s;
+    text-decoration: none;
+}
+
+.nav-btn:hover {
+    color: var(--color-texto-principal);
+    transform: translateY(-3px);
+}
+
+.nav-btn.active {
+    color: var(--color-acento);
+}
+
+/* ==========================================================================
+   7. COMPONENTES Y OTROS
+   ========================================================================== */
+ion-icon {
+    font-size: 1.2em;
+    vertical-align: middle;
+}
+
+.evento-detalle ion-icon {
+    font-size: 18px;
+    color: var(--color-acento);
+}
+
+.card-actions-primary button,
+.card-actions-primary a {
+    padding: 10px;
+    border-radius: 25px;
+    border: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.card-actions-primary button:hover,
+.card-actions-primary a:hover {
+    transform: scale(1.05);
+}
+
+.gemini-btn {
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+}
+
+.btn-blog-explorar,
+.blog-link-btn {
+    background-color: var(--color-borde);
+    color: var(--color-texto-principal);
+}
+
+.skeleton-card {
+    background-color: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.skeleton {
+    background-color: var(--color-borde);
+    border-radius: 4px;
+    animation: shimmer 1.5s infinite linear;
+    background-image: linear-gradient(to right, var(--color-borde) 0%, var(--color-superficie) 50%, var(--color-borde) 100%);
+    background-repeat: no-repeat;
+    background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -100% 0;
+    }
+
+    100% {
+        background-position: 100% 0;
+    }
+}
+
+.skeleton.title {
+    height: 24px;
+    width: 70%;
+    margin-bottom: 1rem;
+}
+
+.skeleton.text {
+    height: 16px;
+    margin-bottom: 0.5rem;
+}
+
+.cta-section {
+    text-align: center;
+    background-color: var(--color-superficie);
+    padding: 2.5rem 1.5rem;
+    border-radius: 12px;
+    margin: 40px 0;
+    border: 1px solid var(--color-borde);
+}
+
+.cta-section h2 {
+    margin-top: 0;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.cta-section p {
+    color: var(--color-texto-secundario);
+    max-width: 450px;
+    margin: 0 auto 1.5rem auto;
+}
+
+.cta-btn {
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.cta-btn:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+
+/* --- ESTILOS DEL MODAL DE BIENVENIDA --- */
+#welcome-modal-overlay .modal {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    width: auto;
+    /* Ajustar al contenido */
+    max-width: 90%;
+}
+
+.welcome-modal-content {
+    background-color: var(--color-superficie);
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    width: 350px;
+    max-width: 100%;
+    /* Relativo al .modal auto-ajustado */
+    border: 1px solid var(--color-borde);
+}
+
+#welcome-banner-container {
+    width: 100%;
+}
+
+.sponsor-container p {
+    margin: 0 0 10px 0;
+    color: var(--color-texto-secundario);
+    font-size: 0.9rem;
+}
+
+.sponsor-logo {
+    max-height: 75px;
+    width: auto;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+    transition: transform 0.2s ease;
+}
+
+.sponsor-container a:hover .sponsor-logo {
+    transform: scale(1.05);
+}
+
+.banner-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.sponsor-container a,
+.banner-container a {
+    color: transparent;
+}
+
+.loading-indicator {
+    margin-top: 15px;
+    color: var(--color-acento);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.loading-indicator ion-icon {
+    font-size: 2.5rem;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+/* ==========================================================================
+   ESTILOS PARA ENLACES EN TEMA OSCURO
+   ========================================================================== */
+
+/* Estilo para todos los enlaces cuando el tema oscuro está activo */
+[data-theme="dark"] a {
+    /* Usamos el color de acento que ya tienes definido para el tema oscuro */
+    color: var(--color-acento);
+    text-decoration: none;
+    /* Opcional: quita el subrayado por defecto */
+    transition: filter 0.2s ease;
+}
+
+/* Estilo para cuando el usuario pasa el ratón sobre un enlace */
+[data-theme="dark"] a:hover {
+    /* Aclaramos un poco el color para dar feedback visual */
+    filter: brightness(1.2);
+    text-decoration: underline;
+    /* Opcional: añadimos el subrayado en hover */
+}
+
+/* ============================ */
+/* ==   COMPONENTES & FX     == */
+/* ============================ */
+
+.subtitle-counter {
+    text-align: center;
+    /* Centra el texto */
+    margin-top: -10px;
+    /* Sube un poco el texto para que quede más cerca del título */
+    margin-bottom: 20px;
+    /* Añade espacio antes del siguiente contenido */
+    font-size: 0.9em;
+    /* Un poco más pequeño que el texto normal */
+    color: #888;
+    /* Un color gris para que no compita con el título */
+    opacity: 0;
+    /* Empieza invisible */
+
+}
+
+/* Clase que se añade con JS para activar la animación */
+.subtitle-counter.loaded {
+    animation: bounce-in 0.7s ease-out forwards;
+}
+
+/* Define la animación de rebotes */
+@keyframes bounce-in {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    80% {
+        transform: scale(0.95);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

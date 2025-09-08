@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de Conciertos Flamencos - Duende Finder</title>
+    <meta name="description"
+        content="Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por todo el Mundo.">
+    <meta property="og:image"
+        content="https://www.afland.es/wp-content/uploads/2024/04/DUENDE-FINDER-LOGO-1200-X-630-PX.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&family=Montserrat:wght@700&display=swap"
+        rel="stylesheet">
+
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+
+    <div id="welcome-modal-overlay" class="modal-overlay visible">
+        <div class="modal">
+            <div class="modal-content welcome-modal-content">
+                <div class="sponsor-container">
+                    <p>Un proyecto de:</p>
+                    <a id="sponsor-link" href="#" target="_blank" rel="noopener noreferrer"><img id="sponsor-logo"
+                            src="" alt="Logo del Patrocinador" class="sponsor-logo"></a>
+                </div>
+                <div id="welcome-banner-container" class="banner-container hidden">
+                    <a id="banner-link" href="#" target="_blank" rel="noopener noreferrer"><img id="banner-image" src=""
+                            alt="Banner promocional" class="banner-image"></a>
+                </div>
+                <div class="loading-indicator">
+                    <ion-icon name="flame-outline"></ion-icon>
+                    <p>Cargando tablaos...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <header class="header-main">
+        <div class="container">
+            <nav class="filter-bar">
+                <a href="#destacados-section" class="filter-chip active">Destacados</a>
+                <a href="#semana-section" class="filter-chip">Esta Semana</a>
+                <a href="#hoy-section" class="filter-chip">Hoy</a>
+                <a href="#cerca-section" class="filter-chip" data-filter="cerca">Cerca de Mí</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1 class="main-title">Duende Finder</h1>
+        <p id="event-counter" class="subtitle-counter">Cargando eventos...</p>
+        <section id="destacados-section" class="sliders-section">
+
+            <h2>Eventos Destacados ✨</h2>
+            <div class="slider-container" id="featured-events-slider"></div>
+        </section>
+        <section id="semana-section" class="sliders-section">
+            <h2>Esta Semana 🔥</h2>
+            <div class="slider-container" id="week-events-slider"></div>
+        </section>
+        <section id="hoy-section" class="sliders-section">
+            <h2>Eventos para Hoy 📅</h2>
+            <div class="slider-container" id="today-events-slider"></div>
+        </section>
+        <section id="cerca-section" class="sliders-section" style="display: none;">
+            <h2>Cerca de Ti 📍</h2>
+            <div class="slider-container" id="nearby-events-slider"></div>
+        </section>
+        <div id="monthly-sliders-container"></div>
+    </main>
+
+    <div id="how-it-works-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close-btn">&times;</button>
+            <div class="modal-content">
+                <h2><i class="fas fa-question-circle"></i> ¿Cómo funciona?</h2>
+                <div id="how-it-works-text-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="terms-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close-btn">&times;</button>
+            <div class="modal-content">
+                <h2><i class="fas fa-file-contract"></i> Términos y Condiciones</h2>
+                <div id="terms-text-container"></div>
+            </div>
+        </div>
+    </div>
+    <div id="gemini-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close-btn">×</button>
+            <div class="modal-content">
+                <div id="gemini-modal-content"></div>
+            </div>
+        </div>
+    </div>
+    <div id="event-detail-modal-overlay" class="modal-overlay"></div>
+    <div id="image-modal-overlay" class="modal-overlay">
+        <button class="modal-close-btn">&times;</button><img id="image-modal-content" src="" alt="Imagen ampliada">
+    </div>
+    <nav id="bottom-nav">
+        <button class="nav-btn active" id="nav-home-btn" title="Inicio"><ion-icon name="home"></ion-icon></button>
+        <button class="nav-btn" id="nav-how-it-works-btn" title="Cómo Funciona"><ion-icon
+                name="help-circle-outline"></ion-icon></button>
+        <button class="nav-btn" id="nav-terms-btn" title="Términos"><ion-icon
+                name="document-text-outline"></ion-icon></button>
+        <button class="nav-btn" id="nav-theme-toggle" title="Tema"><ion-icon name="moon-outline"></ion-icon></button>
+        <a href="https://afland.es" target="_blank" rel="noopener noreferrer" class="nav-btn"
+            title="Visitar Afland.es"><ion-icon name="flame-outline"></ion-icon></a>
+    </nav>
+    <script type="module" src="script.js"></script>
+
+</body>
+
+</html>
