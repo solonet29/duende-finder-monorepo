@@ -8,6 +8,13 @@ lerna-debug.log*
 
 # Dependency directories
 node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
 # Runtime data
 pids
@@ -25,6 +32,8 @@ dist
 build
 .next/
 /dist
+/coverage
+/out/
 
 # OS generated files
 .DS_Store
@@ -34,6 +43,17 @@ build
 .Trashes
 ehthumbs.db
 Thumbs.db
+*.pem
 
 # Lockfiles
 pnpm-lock.yaml
+
+# debug
+.pnpm-debug.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
