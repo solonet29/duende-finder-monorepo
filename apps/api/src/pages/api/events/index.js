@@ -18,8 +18,10 @@ const corsMiddleware = cors({
         'http://localhost:5173',
         'https://duende-frontend-git-new-fro-50ee05-angel-picon-caleros-projects.vercel.app',
         'https://duende-control-panel.vercel.app',
-        'https://duende-frontend-zklp-byru9i3nw-angel-picon-caleros-projects.vercel.app',
+        'https://duende-frontend-zklp-git-co-a60b5c-angel-picon-caleros-projects.vercel.app',
         'https://nuevobuscador.afland.es'
+
+
     ],
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
