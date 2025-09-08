@@ -1,7 +1,8 @@
 {
   "name": "duende-finder-monorepo",
   "private": true,
-  "packageManager": "pnpm@9.6.0""version": "1.0.0",
+  "packageManager": "pnpm@9.6.0",
+  "version": "1.0.0",
   "description": "Monorepo para el proyecto Duende Finder",
   "scripts": {
     "dev": "pnpm --filter \"./apps/*\" dev",
