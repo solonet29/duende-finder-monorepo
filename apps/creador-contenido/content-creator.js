@@ -23,11 +23,11 @@ async function main() {
         await enrichEvents();
         console.log("--- FIN PASO 1 ---");
 
-        // --- PASO 2: Publicar Contenido ---
-        console.log("\n---");
-        console.log("PASO 2: Buscando contenido enriquecido para publicar en WordPress...");
-        await publishPosts();
-        console.log("--- FIN PASO 2 ---");
+        // --- PASO 2: Publicar Contenido (DESACTIVADO - Ahora se gestiona en un workflow diario independiente) ---
+        // console.log("\n---");
+        // console.log("PASO 2: Buscando contenido enriquecido para publicar en WordPress...");
+        // await publishPosts();
+        // console.log("--- FIN PASO 2 ---");
 
         // --- PASO 3: Distribuir en Redes Sociales (DESACTIVADO) ---
         // console.log("\n---");

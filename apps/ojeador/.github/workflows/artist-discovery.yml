@@ -3,7 +3,7 @@ name: Descubridor de Nuevos Artistas
 on:
   schedule:
     # Se ejecuta todos los días a las 4:00 AM (UTC)
-    - cron: '0 4 * * *'
+    - cron: '0 3 * * 1'
   workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
 
 jobs:

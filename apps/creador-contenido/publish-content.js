@@ -1,93 +1,93 @@
-// publish-content.js (Refactorizado como Módulo)
-// OBJETIVO: Tomar eventos enriquecidos, crear su imagen final y publicarlos en WordPress.
+// publish-content.js
+// OBJETIVO: Tomar eventos con contenido listo y programarlos en WordPress de forma escalonada.
 
 require('dotenv').config();
 const { connectToDatabase } = require('./lib/database.js');
-const { publishToWordPress, uploadImage } = require('./lib/wordpressClient.js');
-const { createPostImage } = require('./lib/imageGenerator.js');
-const config = require('./config.js'); // Importar la configuración central
+const { publishToWordPress } = require('./lib/wordpressClient.js');
+const config = require('./config.js');
 
-/**
- * Función principal del módulo.
- * Procesa un lote de eventos para publicarlos en WordPress.
- */
 async function publishPosts() {
     const db = await connectToDatabase();
     const eventsCollection = db.collection('events');
 
-    // Buscamos eventos que fueron enriquecidos por el paso anterior
+    // 1. Buscar eventos con contenido listo para ser publicados.
     const query = {
-        status: 'enriched',
+        status: 'content_ready',
         wordpressPostId: { $exists: false }
     };
 
-    // --- CAMBIO 1: Usamos la nueva variable de config para el lote de publicación ---
-    const eventsToPublish = await eventsCollection.find(query).limit(config.PUBLISH_BATCH_SIZE).toArray();
+    // Publicar 12 al día. El workflow se ejecuta una vez al día.
+    const BATCH_SIZE = 12; 
+    const eventsToPublish = await eventsCollection.find(query).limit(BATCH_SIZE).toArray();
 
     if (eventsToPublish.length === 0) {
-        console.log('✅ No hay contenido nuevo para publicar en WordPress.');
+        console.log('✅ No hay contenido nuevo para programar en WordPress.');
         return;
     }
 
-    console.log(`⚙️ Se encontraron ${eventsToPublish.length} eventos para publicar.`);
+    console.log(`⚙️ Se encontraron ${eventsToPublish.length} eventos para programar en WordPress.`);
 
-    for (const event of eventsToPublish) { // Eliminado 'index' porque ya no lo necesitamos
+    // 2. Lógica para escalonar la publicación a lo largo del día.
+    const now = new Date();
+    // Empezar a publicar en 1 hora desde ahora para dar margen.
+    let publicationDate = new Date(now.getTime() + 1 * 60 * 60 * 1000); 
+    // Intervalo entre posts. Si son 12 posts en 24h, es uno cada 2 horas.
+    const intervalHours = 2; 
+
+    for (const event of eventsToPublish) {
         try {
-            // --- BLOQUEO: Marcar el evento como 'publishing' para evitar duplicados ---
+            // Marcar el evento para evitar que otro proceso lo tome.
             await eventsCollection.updateOne({ _id: event._id }, { $set: { status: 'publishing' } });
 
-            console.log(`   -> Publicando: "${event.blogPostTitle}"`);
+            console.log(`   -> Programando: "${event.blogPostTitle}" para las ${publicationDate.toISOString()}`);
 
-            // 1. Crear y subir la imagen social para el post
-            console.log(`      -> 1/3: Creando imagen social...`);
-            const imagePath = await createPostImage(event);
-            const imageUploadResponse = await uploadImage(imagePath, event.name);
-            if (!imageUploadResponse || !imageUploadResponse.imageId) {
-                throw new Error('La subida de la imagen a WordPress falló.');
-            }
-            const imageId = imageUploadResponse.imageId;
-            const imageUrl = imageUploadResponse.imageUrl;
-
-            // 2. Preparar el contenido final del post
-            console.log(`      -> 2/3: Preparando contenido final...`);
-            const footer = config.htmlBlocks.postFooter(event);
-            const finalHtmlContent = event.blogPostHtml + footer;
-
+            // 3. Preparar los datos para WordPress.
             const postData = {
                 title: event.blogPostTitle,
-                content: finalHtmlContent,
-                status: 'publish', 
+                content: event.blogPostHtml,
+                status: 'future', // <-- CLAVE: Programar en lugar de publicar.
+                date: publicationDate.toISOString(), // <-- CLAVE: Fecha de publicación futura.
                 categories: [config.WORDPRESS_EVENTS_CATEGORY_ID],
-                featured_media: imageId,
+                featured_media: event.imageId, // Usamos el ID de la imagen ya subida.
             };
 
-            // 3. Publicar en WordPress y actualizar la BBDD
-            console.log(`      -> 3/3: Publicando en WordPress...`);
+            // 4. Publicar (programar) en WordPress.
             const wordpressResponse = await publishToWordPress(postData);
 
+            // 5. Actualizar nuestro evento en la BBDD.
             await eventsCollection.updateOne(
                 { _id: event._id },
                 {
                     $set: {
-                        status: 'published',
+                        status: 'published', // Marcado como finalizado en nuestro sistema.
                         wordpressPostId: wordpressResponse.id,
-                        publicationDate: new Date(),
+                        publicationDate: publicationDate,
                         blogPostUrl: wordpressResponse.link,
-                        featuredImageId: imageId,
-                        featuredImageUrl: imageUrl
                     }
                 }
             );
 
-            console.log(`   ✅ Post para "${event.name}" publicado. URL: ${wordpressResponse.link}`);
+            console.log(`   ✅ Post para "${event.name}" programado. URL: ${wordpressResponse.link}`);
+
+            // Incrementar la fecha para el siguiente post.
+            publicationDate = new Date(publicationDate.getTime() + intervalHours * 60 * 60 * 1000);
 
         } catch (error) {
-            console.error(`   ❌ Error procesando la publicación de "${event.name}":`, error.message);
-            // --- DESBLOQUEO: Si algo falla, revertir el estado a 'enriched' ---
-            await eventsCollection.updateOne({ _id: event._id }, { $set: { status: 'enriched' } });
+            console.error(`   ❌ Error programando "${event.name}":`, error.message);
+            // Si algo falla, revertir el estado para que pueda ser reintentado en la siguiente ejecución.
+            await eventsCollection.updateOne({ _id: event._id }, { $set: { status: 'content_ready' } });
         }
     }
 }
 
-// Exportar la función principal
+// Exportar la función principal para que el orquestador pueda usarla
 module.exports = { publishPosts };
+
+// Permitir la ejecución directa del script
+if (require.main === module) {
+    console.log("Ejecutando el publicador de WordPress de forma manual...");
+    publishPosts().finally(() => {
+        // Asumimos que la conexión se gestiona dentro de los módulos o se cierra en el orquestador principal
+        console.log("Proceso de publicación manual finalizado.");
+    });
+}
