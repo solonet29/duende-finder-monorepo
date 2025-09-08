@@ -15,8 +15,21 @@ function runMiddleware(req, res, fn) {
 }
 
 const corsMiddleware = cors({
-  origin: ['https://buscador.afland.es', 'https://duende-frontend.vercel.app', 'http://localhost:3000', 'https://afland.es', 'http://127.0.0.1:5500', 'http://localhost:5173'],
-  methods: ['GET', 'OPTIONS'],
+    origin: [
+        'https://buscador.afland.es',
+        'https://duende-frontend.vercel.app',
+        'https://afland.es',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500',
+        'http://0.0.0.0:5500',
+        'http://localhost:5173',
+        'https://duende-frontend-git-new-fro-50ee05-angel-picon-caleros-projects.vercel.app',
+        'https://duende-control-panel.vercel.app',
+        'https://duende-frontend-zklp-byru9i3nw-angel-picon-caleros-projects.vercel.app',
+        'https://nuevobuscador.afland.es'
+    ],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 });
 
 export default async function handler(req, res) {

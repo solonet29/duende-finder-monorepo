@@ -1,6 +1,38 @@
 import { connectToMainDb } from '@/lib/database.js';
+import cors from 'cors';
+
+function runMiddleware(req, res, fn) {
+    return new Promise((resolve, reject) => {
+        fn(req, res, (result) => {
+            if (result instanceof Error) {
+                return reject(result);
+            }
+            return resolve(result);
+        });
+    });
+}
+
+const corsMiddleware = cors({
+    origin: [
+        'https://buscador.afland.es',
+        'https://duende-frontend.vercel.app',
+        'https://afland.es',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500',
+        'http://0.0.0.0:5500',
+        'http://localhost:5173',
+        'https://duende-frontend-git-new-fro-50ee05-angel-picon-caleros-projects.vercel.app',
+        'https://duende-control-panel.vercel.app',
+        'https://duende-frontend-zklp-byru9i3nw-angel-picon-caleros-projects.vercel.app',
+        'https://nuevobuscador.afland.es'
+    ],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+});
 
 export default async function handler(req, res) {
+    await runMiddleware(req, res, corsMiddleware);
+
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Método no permitido' });
     }
