@@ -1,5 +1,5 @@
 // RUTA: /src/pages/api/events/index.js
-// VERSIÓN FINAL DE PRODUCCIÓN
+// VERSIÓN FINAL DE PRODUCCIÓN CON CORS A NUEVO BUSCADOR
 
 import { getEventModel } from '@/lib/database.js';
 import cors from 'cors';
