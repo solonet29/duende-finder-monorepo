@@ -3,47 +3,7 @@
 // AÑADIENDO UN COMENTARIO PARA FORZAR EL DESPLIEGUE
 
 import { getEventModel } from '@/lib/database.js';
-import cors from 'cors';
-
-// --- CONFIGURACIÓN DE CORS ---
-const corsMiddleware = cors({
-    // Modificamos el valor de 'origin' para que sea una función
-    origin: function (origin, callback) {
-        const allowedOrigins = [
-            'https://buscador.afland.es',
-            'https://afland.es',
-            'http://localhost:3000',
-            'http://127.0.0.1:5500',
-            'http://0.0.0.0:5500',
-            'http://localhost:5173',
-            'https://nuevobuscador.afland.es'
-        ];
-
-        if (!origin) { // For requests with no origin (like Postman, internal calls)
-            return callback(null, true);
-        }
-
-        if (origin.endsWith('.vercel.app') || allowedOrigins.includes(origin)) {
-            return callback(null, origin); // Allow the specific origin
-        } else {
-            console.error(`CORS: Origen no permitido: ${origin}`);
-            return callback(new Error('Not allowed by CORS'));
-        }
-    },
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-});
-
-function runMiddleware(req, res, fn) {
-    return new Promise((resolve, reject) => {
-        fn(req, res, (result) => {
-            if (result instanceof Error) {
-                return reject(result);
-            }
-            return resolve(result);
-        });
-    });
-}
+import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
 
 // --- MANEJADOR PRINCIPAL DE LA API ---
 export default async function handler(req, res) {

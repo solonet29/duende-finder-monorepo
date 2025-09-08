@@ -1,30 +1,5 @@
 import { connectToMainDb } from '@/lib/database.js';
-import Cors from 'cors';
-
-// --- MIDDLEWARE DE CORS ---
-// Configuración para permitir peticiones desde tus dominios específicos.
-const corsMiddleware = Cors({
-    origin: [
-        'https://buscador.afland.es',
-        'https://duende-frontend.vercel.app',
-        'http://localhost:3000',
-        'https://afland.es',
-        'http://127.0.0.1:5500'
-    ],
-    methods: ['POST', 'OPTIONS'], // Solo se permiten estos métodos
-});
-
-// Función helper para ejecutar el middleware de forma asíncrona
-function runMiddleware(req, res, fn) {
-    return new Promise((resolve, reject) => {
-        fn(req, res, (result) => {
-            if (result instanceof Error) {
-                return reject(result);
-            }
-            return resolve(result);
-        });
-    });
-}
+import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
 
 // --- HANDLER PRINCIPAL DE LA RUTA ---
 export default async function handler(req, res) {
@@ -62,7 +37,20 @@ export default async function handler(req, res) {
             const eventList = events.map(ev => `- ${new Date(ev.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })}: "${ev.name}" con ${ev.artist} en ${ev.venue}.`).join('\n');
 
             // 5. Construye el prompt detallado para Gemini.
-            const tripPrompt = `Actúa como el mejor planificador de viajes de flamenco de Andalucía. Eres amigable, experto y apasionado. Un viajero quiere visitar ${destination} desde el ${startDate} hasta el ${endDate}. Su lista de espectáculos disponibles es:\n${eventList}\n\nTu tarea es crear un itinerario detallado y profesional. Sigue ESTRICTAMENTE estas reglas:\n\n1.  **Estructura por Días:** Organiza el plan por día.\n2.  **Títulos Temáticos:** Dale a cada día un título temático y evocador (ej. "Martes: Inmersión en el Sacromonte", "Miércoles: Noche de Cante Jondo").\n3.  **Días con Eventos:** Haz que el espectáculo de la lista sea el punto culminante del día, sugiriendo actividades que lo complementen.\n4.  **Días Libres:** Para los días sin espectáculos, ofrece dos alternativas claras: un "Plan A" (una actividad cultural principal como visitar un museo, un barrio emblemático o una tienda de guitarras) y un "Plan B" (una opción más relajada o diferente, como una clase de compás o un lugar con vistas para relajarse).\n5.  **Glosario Final:** Al final de todo el itinerario, incluye una sección \`### Glosario Flamenco para el Viajero\` donde expliques brevemente 2-3 términos clave que hayas usado (ej. peña, tablao, duende, tercio).\n\nUsa un tono inspirador y práctico. Sigue envolviendo los nombres de lugares recomendados entre corchetes: [Nombre del Lugar].`;
+            const tripPrompt = `Actúa como el mejor planificador de viajes de flamenco de Andalucía. Eres amigable, experto y apasionado. Un viajero quiere visitar ${destination} desde el ${startDate} hasta el ${endDate}. Su lista de espectáculos disponibles es:
+${eventList}
+
+Tu tarea es crear un itinerario detallado y profesional. Sigue ESTRICTAMENTE estas reglas:
+
+1.  **Estructura por Días:** Organiza el plan por día.
+2.  **Títulos Temáticos:** Dale a cada día un título temático y evocador (ej. "Martes: Inmersión en el Sacromonte", "Miércoles: Noche de Cante Jondo").
+3.  **Días con Eventos:** Haz que el espectáculo de la lista sea el punto culminante del día, sugiriendo actividades que lo complementen.
+4.  **Días Libres:** Para los días sin espectáculos, ofrece dos alternativas claras: un "Plan A" (una actividad cultural principal como visitar un museo, un barrio emblemático o una tienda de guitarras) y un "Plan B" (una opción más relajada o diferente, como una clase de compás o un lugar con vistas para relajarse).
+5.  **Glosario Final:** Al final de todo el itinerario, incluye una sección 
+### Glosario Flamenco para el Viajero 
+ donde expliques brevemente 2-3 términos clave que hayas usado (ej. peña, tablao, duende, tercio).
+
+Usa un tono inspirador y práctico. Sigue envolviendo los nombres de lugares recomendados entre corchetes: [Nombre del Lugar].`;
 
             // 6. Llama a la API de Gemini.
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;

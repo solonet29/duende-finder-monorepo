@@ -1,40 +1,10 @@
 // src/pages/api/analytics/peak-weekdays.js
 
 import { connectToAnalyticsDb } from '@/lib/database.js';
-import cors from 'cors';
-
-// Helper para ejecutar middleware
-function runMiddleware(req, res, fn) {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (result) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-      return resolve(result);
-    });
-  });
-}
-
-// Configuración de CORS
-const corsMiddleware = cors({
-  origin: [
-    'https://buscador.afland.es', 
-    'https://duende-frontend.vercel.app', 
-    'http://localhost:3000', 
-    'https://afland.es', 
-    'http://127.0.0.1:5500', 
-    'http://localhost:5173',
-    'https://dashboard-analiticas-duende.vercel.app'
-  ],
-  methods: ['GET', 'OPTIONS'],
-});
+import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
 
 export default async function handler(req, res) {
   await runMiddleware(req, res, corsMiddleware);
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
 
   res.setHeader('Cache-control', 's-maxage=3600, stale-while-revalidate'); // Cache por 1 hora
 
