@@ -29,11 +29,11 @@ async function main() {
         await publishPosts();
         console.log("--- FIN PASO 2 ---");
 
-        // --- PASO 3: Distribuir en Redes Sociales ---
-        console.log("\n---");
-        console.log("PASO 3: Buscando posts publicados para distribuir en redes sociales...");
-        await distributePosts();
-        console.log("--- FIN PASO 3 ---");
+        // --- PASO 3: Distribuir en Redes Sociales (DESACTIVADO) ---
+        // console.log("\n---");
+        // console.log("PASO 3: Buscando posts publicados para distribuir en redes sociales...");
+        // await distributePosts();
+        // console.log("--- FIN PASO 3 ---");
 
     } catch (error) {
         console.error('❌ Ha ocurrido un error fatal en el orquestador:', error);

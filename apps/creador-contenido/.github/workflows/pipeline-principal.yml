@@ -1,19 +1,45 @@
-# .github/workflows/content-creator.yml
-
-name: Content Creator
+name: Pipeline Principal de Contenido
 
 on:
   schedule:
-    # Ejecuta el flujo de trabajo cada seis horas
-    - cron: '0 */6 * * *' 
+    # Se ejecuta cada 6 horas
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 jobs:
-  run-content-creator:
+  run-ingestor:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/ingestor
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Ingestor
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        run: node ingesta.js
+
+  run-creator:
+    runs-on: ubuntu-latest
+    needs: run-ingestor # Depende del éxito del job anterior
+    defaults:
+      run:
+        working-directory: ./apps/creador-contenido
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@vv4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -35,4 +61,3 @@ jobs:
           DAILY_TOKEN_LIMIT: 500000
           GROQ_MODEL: 'llama3-8b-8192'
         run: node content-creator.js
-        

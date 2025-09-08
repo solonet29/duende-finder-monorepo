@@ -3,7 +3,7 @@
 
 require('dotenv').config();
 const { MongoClient } = require('mongodb');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Groq = require('groq-sdk');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { verifySignature } = require("@upstash/qstash/nextjs");
@@ -12,13 +12,13 @@ const { verifySignature } = require("@upstash/qstash/nextjs");
 const mongoUri = process.env.MONGO_URI;
 const dbName = process.env.DB_NAME || 'DuendeDB';
 const eventsCollectionName = 'events';
-const geminiApiKey = process.env.GEMINI_API_KEY;
+const groqApiKey = process.env.GROQ_API_KEY;
 
 // --- Inicialización de Servicios ---
-const genAI = new GoogleGenerativeAI(geminiApiKey);
-const geminiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash', generationConfig: { responseMimeType: 'application/json' } });
+if (!groqApiKey) throw new Error("La variable de entorno GROQ_API_KEY es obligatoria.");
+const groq = new Groq({ apiKey: groqApiKey });
 
-// --- PROMPT PARA GEMINI (El mismo que usaba el orquestador) ---
+// --- PROMPT PARA GROQ ---
 const eventExtractionPrompt = (artistName, url, content) => {
     const currentYear = new Date().getFullYear();
 
@@ -54,7 +54,7 @@ const eventExtractionPrompt = (artistName, url, content) => {
 `;
 };
 
-function cleanHtmlForGemini(html) {
+function cleanHtmlForAI(html) {
     const $ = cheerio.load(html);
     $('script, style, nav, footer, header, aside').remove();
     return $('body').text().replace(/\s\s+/g, ' ').trim().substring(0, 15000);
@@ -67,7 +67,7 @@ async function processUrl(url, artistName) {
 
     try {
         const pageResponse = await axios.get(url, { timeout: 15000 });
-        const cleanedContent = cleanHtmlForGemini(pageResponse.data);
+        const cleanedContent = cleanHtmlForAI(pageResponse.data);
 
         if (cleanedContent.length < 100) {
             console.log('   -> Contenido demasiado corto, saltando.');
@@ -75,8 +75,17 @@ async function processUrl(url, artistName) {
         }
 
         const prompt = eventExtractionPrompt(artistName, url, cleanedContent);
-        const geminiResult = await geminiModel.generateContent(prompt);
-        const responseText = geminiResult.response.text();
+        
+        const chatCompletion = await groq.chat.completions.create({
+            messages: [{
+                role: 'user',
+                content: prompt,
+            }],
+            model: 'llama-3.1-8b-instant',
+            response_format: { type: "json_object" },
+        });
+
+        const responseText = chatCompletion.choices[0]?.message?.content || '[]';
         let eventsFromPage = [];
 
         try {

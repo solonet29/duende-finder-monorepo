@@ -2,7 +2,7 @@
 
 require('dotenv').config();
 const { MongoClient } = require('mongodb');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Groq = require('groq-sdk');
 const { google } = require('googleapis');
 const axios = require('axios');
 const cheerio = require('cheerio');
@@ -11,18 +11,17 @@ const cheerio = require('cheerio');
 const mongoUri = process.env.MONGO_URI;
 const dbName = process.env.DB_NAME || 'DuendeDB';
 const artistsCollectionName = 'artists';
-const geminiApiKey = process.env.GEMINI_API_KEY;
+const groqApiKey = process.env.GROQ_API_KEY;
 const googleApiKey = process.env.GOOGLE_API_KEY;
 const customSearchEngineId = process.env.GOOGLE_CX;
 
 // Verificación de variables de entorno
-if (!mongoUri || !geminiApiKey || !googleApiKey || !customSearchEngineId) {
+if (!mongoUri || !groqApiKey || !googleApiKey || !customSearchEngineId) {
     throw new Error('Faltan variables de entorno críticas.');
 }
 
 // --- Inicialización de Servicios ---
-const genAI = new GoogleGenerativeAI(geminiApiKey);
-const geminiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest', generationConfig: { responseMimeType: 'application/json' } });
+const groq = new Groq({ apiKey: groqApiKey });
 const customsearch = google.customsearch('v1');
 
 // --- Búsquedas de Descubrimiento ---
@@ -34,7 +33,7 @@ const discoverySearchQueries = [
     'bailaoras de flamenco revelación'
 ];
 
-// --- Prompt para Gemini (enfocado solo en artistas) ---
+// --- Prompt para Groq (enfocado solo en artistas) ---
 const artistExtractionPrompt = (url, content) => `
     Eres un bot experto en identificar artistas de flamenco.
     Analiza el texto de la URL "${url}" y devuelve un array JSON de objetos, cada uno con un artista que encuentres.
@@ -48,7 +47,7 @@ const artistExtractionPrompt = (url, content) => `
     ${content}
 `;
 
-function cleanHtmlForGemini(html) {
+function cleanHtmlForAI(html) {
     const $ = cheerio.load(html);
     $('script, style, nav, footer, header, aside').remove();
     return $('body').text().replace(/\s\s+/g, ' ').trim().substring(0, 15000);
@@ -80,13 +79,22 @@ async function findNewArtists() {
             try {
                 console.log(`   -> Analizando URL: ${result.link}`);
                 const pageResponse = await axios.get(result.link, { timeout: 8000 });
-                const cleanedContent = cleanHtmlForGemini(pageResponse.data);
+                const cleanedContent = cleanHtmlForAI(pageResponse.data);
 
                 if (cleanedContent.length < 100) return [];
 
                 const prompt = artistExtractionPrompt(result.link, cleanedContent);
-                const geminiResult = await geminiModel.generateContent(prompt);
-                const responseText = geminiResult.response.text();
+                
+                const chatCompletion = await groq.chat.completions.create({
+                    messages: [{
+                        role: 'user',
+                        content: prompt,
+                    }],
+                    model: 'llama-3.1-8b-instant',
+                    response_format: { type: "json_object" },
+                });
+
+                const responseText = chatCompletion.choices[0]?.message?.content || '[]';
 
                 try {
                     const artistsFromPage = JSON.parse(responseText);
@@ -105,8 +113,8 @@ async function findNewArtists() {
         };
 
         for (const query of discoverySearchQueries) {
-            console.log(`---------------------------------\n🔍 Buscando con la consulta: "${query}"`);
-            console.time(`[TIMER] Búsqueda y análisis para "${query}"`);
+            console.log(`---------------------------------\n🔍 Buscando con la consulta: "${query}".`);
+            console.time(`[TIMER] Búsqueda y análisis para "${query}".`);
 
             const searchRes = await customsearch.cse.list({ cx: customSearchEngineId, q: query, auth: googleApiKey, num: 5 });
             const searchResults = searchRes.data.items || [];
@@ -119,7 +127,7 @@ async function findNewArtists() {
                     allFoundArtists.push(...artistsFromQuery);
                 }
             }
-            console.timeEnd(`[TIMER] Búsqueda y análisis para "${query}"`);
+            console.timeEnd(`[TIMER] Búsqueda y análisis para "${query}".`);
         }
 
         console.log(`\n---------------------------------\n🎉 Descubrimiento finalizado. Total de artistas encontrados: ${allFoundArtists.length}`);
@@ -129,17 +137,12 @@ async function findNewArtists() {
         let newArtistsCount = 0;
         const uniqueArtists = [...new Map(allFoundArtists.map(item => [item.name.toLowerCase(), item])).values()];
         
-        // 1. Obtenemos solo los nombres de los artistas encontrados
-        // --- FIX: Expresión regular corregida ---
         const foundArtistNames = uniqueArtists.map(artist => new RegExp(`^${artist.name.trim()}`, 'i'));
-        // ---------------------------------------
 
-        // 2. Hacemos UNA SOLA consulta a la BD para encontrar cuáles de esos nombres YA EXISTEN
         const existingArtistsCursor = artistsCollection.find({ name: { $in: foundArtistNames } });
         const existingArtists = await existingArtistsCursor.toArray();
         const existingArtistNamesSet = new Set(existingArtists.map(artist => artist.name.toLowerCase()));
 
-        // 3. Comparamos en memoria (mucho más rápido)
         const artistsToInsert = [];
         for (const artist of uniqueArtists) {
             if (!artist.name || typeof artist.name !== 'string') continue;
@@ -154,12 +157,10 @@ async function findNewArtists() {
                     updatedAt: new Date(),
                     lastScrapedAt: null
                 });
-                // Para no añadir duplicados de la misma ejecución
                 existingArtistNamesSet.add(artist.name.trim().toLowerCase()); 
             }
         }
 
-        // 4. Hacemos UNA SOLA operación de inserción múltiple si hay artistas que añadir
         if (artistsToInsert.length > 0) {
             await artistsCollection.insertMany(artistsToInsert);
             newArtistsCount = artistsToInsert.length;
