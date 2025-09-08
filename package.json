@@ -1,7 +1,7 @@
 {
   "name": "duende-finder-monorepo",
   "private": true,
-  "version": "1.0.0",
+  "packageManager": "pnpm@9.6.0""version": "1.0.0",
   "description": "Monorepo para el proyecto Duende Finder",
   "scripts": {
     "dev": "pnpm --filter \"./apps/*\" dev",
@@ -10,7 +10,11 @@
     "lint": "pnpm --filter \"./apps/*\" lint",
     "test": "pnpm --filter \"./apps/*\" test"
   },
-  "keywords": ["monorepo", "pnpm", "duende-finder"],
+  "keywords": [
+    "monorepo",
+    "pnpm",
+    "duende-finder"
+  ],
   "author": "",
   "license": "ISC"
 }
