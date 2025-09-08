@@ -1,7 +1,10 @@
 import { connectToMainDb } from '@/lib/database.js';
 import { ObjectId } from 'mongodb'; // Importante para buscar por ID
+import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
 
 export default async function handler(req, res) {
+    await runMiddleware(req, res, corsMiddleware);
+
     // Obtenemos el ID del evento desde la URL (ej. /api/events/ID_AQUI)
     const { id } = req.query;
 
