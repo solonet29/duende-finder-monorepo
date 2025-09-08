@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const modalContent = {
         howItWorks: `
-        <p><strong>Duende Finder es tu asistente inteligente para descubrir el flamenco a tu alrededor.</strong></p>
+        <p><strong>Duende Finder es tu asistente inteligente para descubrir el flamenco a tu alrededor y en todo el mundo.</strong></p>
         <ol>
             <li><strong>Encuentra Eventos Cerca de Ti:</strong> Pulsa el botón <strong>"Cerca de mí"</strong> para que el buscador te muestre al instante los tablaos y eventos más próximos a tu ubicación actual.</li>
             <li><strong>Explora el Resto:</strong> Navega por la lista completa de eventos. Usamos IA para encontrar y organizar actuaciones de múltiples fuentes públicas.</li>
