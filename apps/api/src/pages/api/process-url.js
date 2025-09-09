@@ -152,16 +152,16 @@ async function processUrl(url, artistName) {
 // --- Endpoint para Vercel (Consumidor) ---
 async function handler(req, res) {
     try {
-        const { url, artistName } = req.body;
-        if (!url || !artistName) {
-            return res.status(400).send('Falta la URL o el nombre del artista en el cuerpo de la petición.');
+        const { url, artistName, artistId } = req.body;
+        if (!url || !artistName || !artistId) {
+            return res.status(400).send('Falta la URL, el nombre del artista o el ID del artista en el cuerpo de la petición.');
         }
 
-        await processUrl(url, artistName);
+        await processUrl(url, artistName, artistId);
         res.status(200).send(`URL procesada con éxito: ${url}`);
     } catch (error) {
         res.status(500).send(`Error en el consumidor: ${error.message}`);
     }
 }
 
-module.exports = verifySignature(handler);
+export default verifySignature(handler);
