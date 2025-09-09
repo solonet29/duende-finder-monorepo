@@ -1,8 +1,19 @@
+// /api/orchestrator.js - PRODUCTOR
+// Misión: Encontrar URLs de eventos usando una estrategia de dos niveles basada en el día de la semana.
+
+require('dotenv').config();
+const { MongoClient } = require('mongodb');
+const { google } = require('googleapis');
+const { Client } = require('@upstash/qstash'); // <-- ESTA ES LA LÍNEA QUE FALTABA
+
 // --- Configuración de Lotes y Búsquedas ---
 const TIER1_EVENT_COUNT_THRESHOLD = 3;
 const TIER1_BATCH_SIZE = 30;
-const TIER2_BATCH_SIZE = 3;
-const SEARCHES_PER_ARTIST = 3;
+const TIER1_SEARCHES_PER_ARTIST = 3;
+
+const TIER2_PROMISING_BATCH_SIZE = 5;
+const TIER2_LOTTERY_BATCH_SIZE = 5;
+const TIER2_SEARCHES_PER_ARTIST = 3;
 
 // --- Configuración de Conexiones ---
 const mongoUri = process.env.MONGO_URI;
@@ -23,15 +34,10 @@ const searchQueries = (artistName) => ([
 ]);
 
 // --- Función Refactorizada para Procesar un Lote de Artistas ---
-async function processArtistBatch(artists, db, artistsCollection) {
+async function processArtistBatch(artists, db, artistsCollection, searchesPerArtist) {
     let urlsEnqueuedInBatch = 0;
 
     for (const artist of artists) {
-        if (!artist.name) {
-            console.log('⏭️ Saltando artista con nombre no definido.');
-            continue;
-        }
-
         console.log(`
 ---------------------------------
 🎤 Buscando URLs para: ${artist.name} (eventCount: ${artist.eventCount || 0})`);
@@ -40,7 +46,7 @@ async function processArtistBatch(artists, db, artistsCollection) {
         const urlsToProcess = new Set();
         const searchPromises = [];
 
-        for (const query of queriesForArtist.slice(0, SEARCHES_PER_ARTIST)) {
+        for (const query of queriesForArtist.slice(0, searchesPerArtist)) {
             searchPromises.push(
                 customsearch.cse.list({ cx: customSearchEngineId, q: query, auth: googleApiKey, num: 3 })
                     .then(res => {
@@ -80,7 +86,7 @@ async function processArtistBatch(artists, db, artistsCollection) {
 
 // --- Flujo Principal del Orquestador ---
 async function findAndQueueUrls() {
-    console.log('🚀 Orquestador-Productor iniciado con lógica de dos niveles...');
+    console.log('🚀 Orquestador-Productor iniciado con lógica condicional por día...');
     const client = new MongoClient(mongoUri);
 
     try {
@@ -89,39 +95,49 @@ async function findAndQueueUrls() {
         const artistsCollection = db.collection(artistsCollectionName);
         console.log("✅ Conectado a MongoDB.");
 
+        const dayOfWeek = new Date().getDay(); // Domingo=0, Lunes=1, Martes=2, ...
         let totalUrlsEnqueued = 0;
         let totalArtistsProcessed = 0;
+        let artistsToProcess = [];
 
-        // --- Nivel 1: Artistas Prioritarios ---
-        console.log("\n--- Buscando Lote de Nivel 1 (eventCount >= 3) ---");
-        const tier1Artists = await artistsCollection
-            .find({ eventCount: { $gte: TIER1_EVENT_COUNT_THRESHOLD } })
-            .sort({ lastScrapedAt: 1 })
-            .limit(TIER1_BATCH_SIZE)
-            .toArray();
+        const validNameFilter = { name: { $exists: true, $ne: null, $ne: "" } };
 
-        if (tier1Artists.length > 0) {
-            console.log(`🔍 Lote de ${tier1Artists.length} artistas de Nivel 1 obtenido.`);
-            totalUrlsEnqueued += await processArtistBatch(tier1Artists, db, artistsCollection);
-            totalArtistsProcessed += tier1Artists.length;
-        } else {
-            console.log("📪 No se encontraron artistas de Nivel 1 para procesar.");
-        }
+        // --- Lógica condicional basada en el día de la semana ---
+        if (dayOfWeek === 2 || dayOfWeek === 5) { // Martes o Viernes: Foco en el Nivel 1
+            console.log("✅ Hoy es Martes o Viernes. Buscando artistas de Nivel 1...");
+            const query = { ...validNameFilter, eventCount: { $gte: TIER1_EVENT_COUNT_THRESHOLD } };
+            artistsToProcess = await artistsCollection.find(query).sort({ lastScrapedAt: 1 }).limit(TIER1_BATCH_SIZE).toArray();
 
-        // --- Nivel 2: Artistas de Oportunidad ---
-        console.log("\n--- Buscando Lote de Nivel 2 (eventCount < 3) ---");
-        const tier2Artists = await artistsCollection
-            .find({ eventCount: { $lt: TIER1_EVENT_COUNT_THRESHOLD } })
-            .sort({ lastScrapedAt: 1 })
-            .limit(TIER2_BATCH_SIZE)
-            .toArray();
+            if (artistsToProcess.length > 0) {
+                console.log(`🔍 Lote de ${artistsToProcess.length} artistas de Nivel 1 obtenido.`);
+                totalUrlsEnqueued += await processArtistBatch(artistsToProcess, db, artistsCollection, TIER1_SEARCHES_PER_ARTIST);
+                totalArtistsProcessed += artistsToProcess.length;
+            } else {
+                console.log("📪 No se encontraron artistas de Nivel 1 para procesar.");
+            }
 
-        if (tier2Artists.length > 0) {
-            console.log(`🔍 Lote de ${tier2Artists.length} artistas de Nivel 2 obtenido.`);
-            totalUrlsEnqueued += await processArtistBatch(tier2Artists, db, artistsCollection);
-            totalArtistsProcessed += tier2Artists.length;
-        } else {
-            console.log("📪 No se encontraron artistas de Nivel 2 para procesar.");
+        } else { // Resto de la semana: Foco en el Nivel 2 (Oportunidad)
+            console.log("✅ Hoy es día de oportunidad. Buscando artistas de Nivel 2...");
+
+            // Grupo A: "Prometedores" (1 o 2 eventos), selección aleatoria
+            const promisingQuery = { ...validNameFilter, eventCount: { $in: [1, 2] } };
+            const promisingArtists = await artistsCollection.aggregate([{ $match: promisingQuery }, { $sample: { size: TIER2_PROMISING_BATCH_SIZE } }]).toArray();
+            console.log(`   -> Encontrados ${promisingArtists.length} artistas 'prometedores'.`);
+
+            // Grupo B: "Lotería" (0 eventos), selección aleatoria
+            const lotteryQuery = { ...validNameFilter, eventCount: 0 };
+            const lotteryArtists = await artistsCollection.aggregate([{ $match: lotteryQuery }, { $sample: { size: TIER2_LOTTERY_BATCH_SIZE } }]).toArray();
+            console.log(`   -> Encontrados ${lotteryArtists.length} artistas de 'lotería'.`);
+
+            artistsToProcess = [...promisingArtists, ...lotteryArtists];
+
+            if (artistsToProcess.length > 0) {
+                console.log(`🔍 Lote de ${artistsToProcess.length} artistas de Nivel 2 obtenido.`);
+                totalUrlsEnqueued += await processArtistBatch(artistsToProcess, db, artistsCollection, TIER2_SEARCHES_PER_ARTIST);
+                totalArtistsProcessed += artistsToProcess.length;
+            } else {
+                console.log("📪 No se encontraron artistas de Nivel 2 para procesar.");
+            }
         }
 
         console.log(`\n🎉 Orquestador-Productor finalizado. Total de URLs encoladas: ${totalUrlsEnqueued}. Artistas procesados: ${totalArtistsProcessed}.`);
