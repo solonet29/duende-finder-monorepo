@@ -52,8 +52,9 @@ async function findAndQueueUrls() {
             .toArray();
 
         if (artistsToSearch.length === 0) {
-            console.log('📪 No hay artistas que necesiten ser procesados.');
-            return;
+            const msg = '📪 No hay artistas que necesiten ser procesados.';
+            console.error(msg); // Use console.error for visibility
+            return { message: msg, urlsEnqueued: 0, artistsProcessed: 0 }; // Return details
         }
         console.log(`🔍 Lote de ${artistsToSearch.length} artistas obtenido. Empezando búsqueda de URLs...`);
 
@@ -105,6 +106,7 @@ async function findAndQueueUrls() {
 
         console.log(`
 🎉 Orquestador-Productor finalizado. Total de URLs encoladas: ${urlsEnqueued}.`);
+        return { message: 'Proceso de orquestación finalizado.', urlsEnqueued: urlsEnqueued, artistsProcessed: artistsToSearch.length };
 
     } catch (error) {
         console.error('💥 Error fatal en el Orquestador-Productor:', error);
@@ -119,10 +121,16 @@ async function findAndQueueUrls() {
 
 // Endpoint para Vercel
 module.exports = async (req, res) => {
+    let result = { status: 'success', message: 'Orquestador-Productor ejecutado con éxito.', details: {} };
     try {
-        await findAndQueueUrls();
-        res.status(200).send('Orquestador-Productor ejecutado con éxito.');
+        const executionDetails = await findAndQueueUrls(); // findAndQueueUrls will now return details
+        result.details = executionDetails;
+        res.status(200).json(result);
     } catch (error) {
-        res.status(500).send(`Error en el Orquestador-Productor: ${error.message}`);
+        console.error('💥 Error en el endpoint del Orquestador:', error); // Log the error in Vercel logs
+        result.status = 'error';
+        result.message = `Error en el Orquestador-Productor: ${error.message}`;
+        result.details = { error: error.message, stack: error.stack };
+        res.status(500).json(result);
     }
 };
