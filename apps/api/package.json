@@ -21,7 +21,9 @@
     "node-fetch": "^3.3.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "cheerio": "^1.1.2",
+    "@upstash/qstash": "^2.8.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

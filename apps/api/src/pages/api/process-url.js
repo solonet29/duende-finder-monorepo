@@ -130,6 +130,8 @@ async function processUrl(url, artistName) {
                         updatedAt: new Date(),
                     };
                     eventsToInsert.push(newEventDoc);
+                } else {
+                    console.log(`   -> 🤫 Evento duplicado omitido: ${event.name} en ${event.venue} el ${event.date}`);
                 }
             }
 
