@@ -91,11 +91,19 @@ async function findAndQueueUrls() {
                     body: JSON.stringify({ url, artistName: artist.name }),
                 }));
 
-                await qstashClient.publishJSON({
-                    url: `${process.env.VERCEL_URL}/api/process-url`,
-                    messages: messages,
-                });
-                urlsEnqueued += messages.length;
+                try {
+                    const response = await qstashClient.publishJSON({
+                        url: `${process.env.VERCEL_URL}/api/process-url`,
+                        messages: messages,
+                    });
+                    urlsEnqueued += messages.length;
+                    const messageIds = Array.isArray(response) ? response.map(r => r.messageId).join(', ') : response.messageId;
+                    console.log(`   ✅ ${messages.length} URLs encoladas con éxito en QStash. Message IDs: [${messageIds}]`);
+                } catch (qstashError) {
+                    console.error(`   ❌ Error al publicar en QStash para ${artist.name}: ${qstashError.message}`);
+                }
+            } else {
+                console.log(`   -> No se encontraron URLs nuevas para ${artist.name} en esta ejecución.`);
             }
 
             await artistsCollection.updateOne(
