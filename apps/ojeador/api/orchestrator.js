@@ -101,6 +101,12 @@ async function processArtistBatch(artists, db, artistsCollection, searchesPerArt
         await artistsCollection.updateOne({ _id: artist._id }, { $set: { lastScrapedAt: new Date() } });
         // Añadimos un pequeño delay para no saturar la API de Google en el siguiente artista
         await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Check if the limit has been reached
+        if (urlsEnqueuedInBatch >= MAX_URLS_TO_ENQUEUE_PER_RUN) {
+            console.log(`🛑 Límite de URLs encoladas (${MAX_URLS_TO_ENQUEUE_PER_RUN}) alcanzado. Deteniendo procesamiento de artistas.`);
+            break; // Exit the loop
+        }
     }
     return urlsEnqueuedInBatch;
 }
