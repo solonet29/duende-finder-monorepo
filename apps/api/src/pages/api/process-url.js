@@ -3,7 +3,7 @@
 
 import { getTempScrapedEventModel } from '@/lib/database.js';
 
-export default verifySignature(handler);
+async function handler(req, res) {
     if (req.method !== 'POST') {
         res.setHeader('Allow', ['POST']);
         return res.status(405).end(`Method ${req.method} Not Allowed`);
@@ -49,3 +49,5 @@ export default verifySignature(handler);
         res.status(500).json({ error: "Error interno del servidor.", details: error.message });
     }
 }
+
+export default verifySignature(handler);
