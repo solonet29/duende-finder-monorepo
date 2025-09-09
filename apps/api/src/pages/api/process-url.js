@@ -1,5 +1,5 @@
 // RUTA: /src/pages/api/process-url.js
-// VERSIÓN FINAL CON ARQUITECTURA CORRECTA Y LÓGICA DE NEGOCIO INTEGRADA
+// VERSIÓN FINAL CON FRENO DE SEGURIDAD (SLEEP) PARA RATE LIMITING
 
 import { verifySignature } from "@upstash/qstash/nextjs";
 import { connectToDatabase } from '@/lib/database.js';
@@ -19,6 +19,10 @@ export const config = {
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // --- HELPERS ---
+
+// ▼▼▼ FUNCIÓN AÑADIDA ▼▼▼
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+// ▲▲▲ FIN DE LA FUNCIÓN AÑADIDA ▲▲▲
 
 // Función para leer el body crudo, necesaria para la verificación de firma
 async function parseRawBody(req) {
@@ -75,7 +79,7 @@ export default async function handler(req, res) {
             return res.status(200).json({ success: true, message: 'Contenido demasiado corto.' });
         }
 
-        const prompt = eventExtractionPrompt(artistName, url, cleanedContent); // Asumiendo que esta función está definida arriba o importada
+        const prompt = eventExtractionPrompt(artistName, url, cleanedContent);
 
         const chatCompletion = await groq.chat.completions.create({
             messages: [{ role: 'user', content: prompt }],
@@ -110,6 +114,11 @@ export default async function handler(req, res) {
             await tempCollection.insertMany(eventsToInsert);
             console.log(`✅ ${eventsToInsert.length} nuevos eventos temporales añadidos a la base de datos.`);
         }
+
+        // ▼▼▼ PAUSA ESTRATÉGICA AÑADIDA ▼▼▼
+        // Forzamos una pequeña pausa para no saturar la API de Groq con la siguiente petición.
+        await sleep(2000); // Pausa de 2 segundos
+        // ▲▲▲ FIN DE LA PAUSA ▲▲▲
 
         res.status(200).json({ success: true, message: `URL procesada, ${eventsToInsert.length} eventos guardados.` });
 
