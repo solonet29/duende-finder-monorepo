@@ -9,7 +9,7 @@ const { ObjectId } = require('mongodb');
 const { Client } = require("@googlemaps/google-maps-services-js");
 
 // --- Paquetes del Monorepo ---
-const { getClient } = require('db-client');
+const { getClient } = require('@duende-finder/db-client');
 const { sanitizeEvent } = require('sanitizers');
 
 // --- Configuración ---
