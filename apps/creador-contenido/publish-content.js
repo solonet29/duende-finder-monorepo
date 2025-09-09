@@ -2,7 +2,7 @@
 // OBJETIVO: Tomar eventos con contenido listo y programarlos en WordPress de forma escalonada.
 
 require('dotenv').config();
-const { connectToDatabase } = require('./lib/database.js');
+const { connectToDatabase, closeDatabaseConnection } = require('./lib/database.js');
 const { publishToWordPress } = require('./lib/wordpressClient.js');
 const config = require('./config.js');
 
@@ -81,13 +81,18 @@ async function publishPosts() {
 }
 
 // Exportar la función principal para que el orquestador pueda usarla
-module.exports = { publishPosts };
+module.s = { publishPosts };
 
 // Permitir la ejecución directa del script
 if (require.main === module) {
     console.log("Ejecutando el publicador de WordPress de forma manual...");
-    publishPosts().finally(() => {
-        // Asumimos que la conexión se gestiona dentro de los módulos o se cierra en el orquestador principal
-        console.log("Proceso de publicación manual finalizado.");
-    });
+    publishPosts()
+        .catch(err => {
+            console.error("Ocurrió un error durante la publicación manual:", err);
+            process.exit(1); // Salir con código de error para que el runner falle.
+        })
+        .finally(async () => {
+            console.log("Proceso de publicación manual finalizado.");
+            await closeDatabaseConnection(); // <-- CLAVE: Cerrar la conexión.
+        });
 }
