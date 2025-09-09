@@ -13,4 +13,4 @@ jobs:
       - name: Llamar al endpoint del orquestador
         run: |
           # Usamos --fail para que el workflow falle si la API devuelve un error (4xx o 5xx)
-          curl --fail -X GET "https://duende-ojeador-worker.vercel.app/api/orchestrator"
+          curl --fail -X GET "${{ secrets.VERCEL_URL }}/api/orchestrator"

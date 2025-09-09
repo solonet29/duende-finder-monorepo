@@ -13,4 +13,4 @@ jobs:
       - name: Llamar al endpoint de descubrimiento de artistas
         run: |
           # Usamos --fail para que el workflow falle si la API devuelve un error
-          curl --fail -X GET "https://duende-ojeador-worker.vercel.app/api/findArtists"
+          curl --fail -X GET "${{ secrets.VERCEL_URL }}/api/findArtists"
