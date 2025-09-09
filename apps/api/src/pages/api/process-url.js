@@ -13,7 +13,7 @@ const groqApiKey = process.env.GROQ_API_KEY;
 
 // --- Inicialización de Servicios ---
 if (!groqApiKey) throw new Error("La variable de entorno GROQ_API_KEY es obligatoria.");
-const groq = new Groq({ apiKey: groqApiKey });
+import Groq from 'groq-sdk';
 
 // --- PROMPT PARA GROQ ---
 const eventExtractionPrompt = (artistName, url, content) => {
