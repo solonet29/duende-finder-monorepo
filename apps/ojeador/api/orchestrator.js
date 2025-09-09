@@ -76,7 +76,7 @@ async function findAndQueueUrls() {
                                 items.forEach(item => urlsToProcess.add(item.link));
                             })
                             .catch(err => {
-                                console.error(`   ❌ Error en búsqueda para "${query}": ${err.message}`);
+                                console.error(`   ❌ Error en búsqueda para \"${query}\": ${err.message}`);
                             })
                     );
                 }
@@ -92,8 +92,11 @@ async function findAndQueueUrls() {
                 }));
 
                 try {
+                    // Usamos la nueva variable de entorno aquí
+                    const destinationUrl = `${process.env.QSTASH_DESTINATION_URL}/api/process-url`;
+
                     const response = await qstashClient.publishJSON({
-                        url: `${process.env.VERCEL_URL}/api/process-url`,
+                        url: destinationUrl,
                         messages: messages,
                     });
                     urlsEnqueued += messages.length;
