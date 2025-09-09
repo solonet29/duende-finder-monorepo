@@ -6,7 +6,14 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.6.1
+      mongodb:
+        specifier: ^6.8.0
+        version: 6.19.0
 
   apps/api:
     dependencies:
