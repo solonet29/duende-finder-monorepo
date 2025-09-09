@@ -12,7 +12,5 @@ jobs:
     steps:
       - name: Llamar al endpoint del orquestador
         run: |
-                    # Usamos -L para seguir redirecciones y -v para obtener logs detallados
-          run: |
           # Usamos -L para seguir redirecciones y -v para obtener logs detallados
           curl --fail -v -L -X GET "${{ secrets.VERCEL_URL }}/api/orchestrator"
