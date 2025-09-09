@@ -67,7 +67,11 @@ async function processArtistBatch(artists, db, artistsCollection, searchesPerArt
 
             try {
                 const destinationUrl = `${process.env.QSTASH_DESTINATION_URL}/api/process-url`;
-                const response = await qstashClient.publishJSON({ url: destinationUrl, messages: messages });
+                // Simplemente cambiamos el nombre del método a "publish"
+                const response = await qstashClient.publish({
+                    url: destinationUrl,
+                    messages: messages // "messages" es el array de objetos { body: "..." }
+                }); // <-- MÉTODO CORRECTO
                 urlsEnqueuedInBatch += messages.length;
                 const messageIds = Array.isArray(response) ? response.map(r => r.messageId).join(', ') : response.messageId;
                 console.log(`   ✅ ${messages.length} URLs encoladas con éxito en QStash. Message IDs: [${messageIds}]`);
