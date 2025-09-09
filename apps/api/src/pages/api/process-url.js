@@ -164,4 +164,4 @@ async function handler(req, res) {
     }
 }
 
-export default verifySignature(handler);
+export default handler;
