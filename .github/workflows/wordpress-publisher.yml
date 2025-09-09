@@ -2,7 +2,7 @@ name: Publicador Diario de WordPress
 
 on:
   schedule:
-    # Se ejecuta todos los días a las 08:00 UTC
+    # Se ejecuta una vez al día (a las 08:00 AM UTC) para programar publicaciones en WordPress
     - cron: '0 8 * * *'
   workflow_dispatch:
 
