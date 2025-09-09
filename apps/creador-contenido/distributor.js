@@ -111,8 +111,7 @@ async function publishToX(title, link, imageUrl) {
         console.warn('   - (X) Credenciales incompletas. Saltando...');
         return;
     }
-    console.log('   -> Publicando en X (Twitter)...
-');
+    console.log('   -> Publicando en X (Twitter)...');
     try {
         const xClient = new XClient();
         const tweetText = generateSocialText(title, link);
