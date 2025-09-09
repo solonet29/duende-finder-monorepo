@@ -50,4 +50,4 @@ async function handler(req, res) {
     }
 }
 
-export default verifySignature(handler);
+import { verifySignature } from "@upstash/qstash/nextjs";
