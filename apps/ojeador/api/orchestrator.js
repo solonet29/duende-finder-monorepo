@@ -34,6 +34,8 @@ const searchQueries = (artistName) => ([
 ]);
 
 // --- Función Refactorizada para Procesar un Lote de Artistas ---
+// Dentro de tu script Orquestador/Ojeador.js
+
 async function processArtistBatch(artists, db, artistsCollection, searchesPerArtist) {
     let urlsEnqueuedInBatch = 0;
 
@@ -61,28 +63,44 @@ async function processArtistBatch(artists, db, artistsCollection, searchesPerArt
 
         if (urlsToProcess.size > 0) {
             console.log(`   -> Encontradas ${urlsToProcess.size} URLs únicas para ${artist.name}. Encolando...`);
+
+            // ▼▼▼ INICIO DE LA CORRECCIÓN CLAVE ▼▼▼
+
+            // 1. Definimos la URL de destino una sola vez.
+            const destinationUrl = `${process.env.QSTASH_DESTINATION_URL}/api/process-url`;
+
+            // 2. Creamos un array de mensajes. Cada objeto DEBE tener un 'body'
+            // que sea un string JSON.
             const messages = Array.from(urlsToProcess).map(url => ({
-                body: JSON.stringify({ url, artistName: artist.name, artistId: artist._id.toString() }),
+                url: destinationUrl,
+                // El body DEBE ser un string. Usamos JSON.stringify.
+                body: JSON.stringify({
+                    url: url,
+                    artistName: artist.name,
+                    artistId: artist._id.toString()
+                })
             }));
 
             try {
-                const destinationUrl = `${process.env.QSTASH_DESTINATION_URL}/api/process-url`;
-                // Simplemente cambiamos el nombre del método a "publish"
-                const response = await qstashClient.publish({
-                    url: destinationUrl,
-                    messages: messages // "messages" es el array de objetos { body: "..." }
-                }); // <-- MÉTODO CORRECTO
+                // 3. Usamos el método 'batch' que está diseñado específicamente para enviar lotes.
+                const response = await qstashClient.batch(messages);
+
                 urlsEnqueuedInBatch += messages.length;
-                const messageIds = Array.isArray(response) ? response.map(r => r.messageId).join(', ') : response.messageId;
+                const messageIds = response.map(r => r.messageId).join(', ');
                 console.log(`   ✅ ${messages.length} URLs encoladas con éxito en QStash. Message IDs: [${messageIds}]`);
+
             } catch (qstashError) {
                 console.error(`   ❌ Error al publicar en QStash para ${artist.name}: ${qstashError.message}`);
             }
+            // ▲▲▲ FIN DE LA CORRECCIÓN CLAVE ▲▲▲
+
         } else {
             console.log(`   -> No se encontraron URLs nuevas para ${artist.name} en esta ejecución.`);
         }
 
         await artistsCollection.updateOne({ _id: artist._id }, { $set: { lastScrapedAt: new Date() } });
+        // Añadimos un pequeño delay para no saturar la API de Google en el siguiente artista
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
     return urlsEnqueuedInBatch;
 }
