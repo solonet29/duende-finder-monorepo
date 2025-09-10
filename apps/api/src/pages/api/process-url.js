@@ -71,7 +71,12 @@ export default async function handler(req, res) {
         console.log(`🤖 Procesando URL: ${url} para el artista ${artistName}`);
 
         // --- Lógica de Scraping y Extracción con IA ---
-        const pageResponse = await axios.get(url, { timeout: 15000 });
+        const pageResponse = await axios.get(url, {
+            timeout: 15000,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+            }
+        });
         const cleanedContent = cleanHtmlForAI(pageResponse.data);
 
         if (cleanedContent.length < 100) {
