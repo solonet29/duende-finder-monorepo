@@ -13,69 +13,69 @@ jobs:
       - name: 1. Llamar al endpoint del Estratega y guardar las consultas
         id: get_queries
         run: |
-          # Usamos -w para escribir el código de estado HTTP en stdout y lo capturamos
-          HTTP_CODE=$(curl -s -L -w '%{http_code}' -o search_queries.json "${{ secrets.VERCEL_URL }}/api/orchestrator")
+          # Guardamos la respuesta de la API en un fichero de texto.
+          HTTP_CODE=$(curl -s -L -w '%{http_code}' -o search_queries.txt "${{ secrets.VERCEL_URL }}/api/orchestrator")
           echo "Código de estado HTTP recibido: $HTTP_CODE"
 
-          # Comprobamos si el código de estado NO es de éxito (fuera del rango 200-299)
           if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
             echo "curl falló con el código de estado: $HTTP_CODE"
-            echo "curl_failed=true" >> $GITHUB_ENV
+            # Forzamos el fallo del paso para que el workflow se detenga aquí
+            exit 1
           fi
 
       - name: 2. Formatear consultas para el cuerpo del Issue
         id: format_body
+        outputs:
+          format_success: "false"
         run: |
-          # Si el curl falló, no continuamos
-          if [ "${{ env.curl_failed }}" == "true" ]; then
-            echo "La llamada con curl falló. La API devolvió un código de error HTTP."
-            echo "jq_success=false" >> $GITHUB_OUTPUT
-            exit 0
+          # Si el fichero está vacío, no hay queries.
+          if [ ! -s search_queries.txt ]; then
+            echo "El fichero de queries está vacío. No se creará ningún issue."
+            echo "format_success=false" >> $GITHUB_OUTPUT
+            exit 0 # Salimos con éxito, no es un error.
           fi
 
-          # Si el fichero está vacío (p.ej. respuesta 204), lo consideramos un caso a revisar, pero no un error de JQ.
-          if [ ! -s search_queries.json ]; then
-            echo "El fichero de queries está vacío (posiblemente una respuesta 204 de la API)."
-            # Decidimos si esto es un fallo o no. Por ahora, lo tratamos como un caso sin queries.
-            # Para que el workflow no falle, salimos con éxito pero sin crear issue.
-            echo "jq_success=false" >> $GITHUB_OUTPUT # Evita que se cree el Issue
-            exit 0
+          # Formateamos cada línea del fichero de texto a formato Markdown
+          while IFS= read -r line || [ -n "$line" ]; do
+            # Ignoramos líneas vacías
+            if [ -n "$line" ]; then
+              echo "- 
+$line" >> formatted_body.md
+            fi
+          done < search_queries.txt
+          
+          # Comprobamos si se generó algún contenido
+          if [ ! -s formatted_body.md ]; then
+            echo "El fichero de queries solo contenía líneas vacías. No se creará ningún issue."
+            echo "format_success=false" >> $GITHUB_OUTPUT
+            exit 0 # Salimos con éxito, no es un error.
           fi
 
-          # Intentamos formatear. Si jq falla, el siguiente paso mostrará el contenido.
-          if jq -r '.searchQueries | .[] | "- `" + . + "`"' search_queries.json > formatted_body.md; then
-            echo "Contenido formateado con éxito."
-            {
-              echo 'QUERIES_BODY<<EOF';
-              echo '### 🤖 Estrategias de Búsqueda Generadas';
-              echo '';
-              echo 'Esta es la lista de consultas de búsqueda optimizadas generadas por el Estratega. La tarea consiste en ejecutar estas búsquedas en Google y analizar los resultados en busca de nuevos eventos.';
-              echo '';
-              cat formatted_body.md;
-              echo 'EOF';
-            } >> "$GITHUB_ENV"
-            echo "jq_success=true" >> $GITHUB_OUTPUT
-          else
-            echo "Error de JQ: El contenido de la respuesta de la API probablemente no es un JSON válido."
-            echo "jq_success=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Debug - Mostrar contenido de la respuesta en caso de error
-        if: steps.format_body.outputs.jq_success == 'false'
-        run: |
-          echo "El paso de formateo no tuvo éxito. Contenido del fichero 'search_queries.json':"
-          cat search_queries.json
-          # Decidimos si esto debe ser un fallo. Si el fichero está vacío, puede que no sea un error.
-          if [ -s search_queries.json ]; then
-            exit 1 # Falla solo si hay contenido que no es JSON
-          fi
-
+          echo "Contenido formateado con éxito."
+          {
+            echo 'QUERIES_BODY<<EOF'
+            echo '### 🤖 Estrategias de Búsqueda Generadas'
+            echo ''
+            echo 'Esta es la lista de consultas de búsqueda optimizadas generadas por el Estratega. La tarea consiste en ejecutar estas búsquedas en Google y analizar los resultados en busca de nuevos eventos.'
+            echo ''
+            cat formatted_body.md
+            echo 'EOF'
+          } >> "$GITHUB_ENV"
+          echo "format_success=true" >> $GITHUB_OUTPUT
 
       - name: 3. Crear Issue en GitHub con la lista de consultas
-        if: steps.format_body.outputs.jq_success == 'true'
+        if: steps.format_body.outputs.format_success == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
           ISSUE_TITLE="Estrategias de Búsqueda de Eventos - $(date +'%Y-%m-%d')"
           gh issue create --title "$ISSUE_TITLE" --body "$QUERIES_BODY" --repo $REPO
+      
+      - name: Debug - Mostrar contenido si no se crea issue
+        # Se ejecuta si el workflow falla o si el formateo decide no continuar.
+        if: failure() || steps.format_body.outputs.format_success == 'false'
+        run: |
+          echo "Debug: No se creó ningún issue. Contenido del fichero de respuesta de la API ('search_queries.txt'):"
+          # Usamos cat de forma segura por si el fichero no existe
+          cat search_queries.txt || echo "El fichero search_queries.txt no existe."
