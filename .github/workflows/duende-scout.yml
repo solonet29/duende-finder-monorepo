@@ -1,16 +1,48 @@
-name: Disparador del Ojeador de Duendes
+name: Generador de Estrategias de Búsqueda (Ojeador)
 
 on:
   schedule:
-    # Se ejecuta dos veces por semana (Martes y Viernes a las 5:00 AM UTC)
-    - cron: '0 5 * * *' # Se ejecuta todos los días a las 5:00 AM
+    # Se ejecuta todos los días a las 5:00 AM UTC
+    - cron: '0 5 * * *'
   workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
 
 jobs:
-  trigger-scout:
+  generate-search-strategy:
     runs-on: ubuntu-latest
     steps:
-      - name: Llamar al endpoint del orquestador
+      - name: 1. Llamar al endpoint del Estratega y guardar las consultas
+        id: get_queries
         run: |
-          # Usamos -L para seguir redirecciones y -v para obtener logs detallados
-          curl --fail -v -L -X GET "${{ secrets.VERCEL_URL }}/api/orchestrator"
+          # Usamos -s para modo silencioso y -o para guardar en un fichero
+          curl -s -L -X GET "${{ secrets.VERCEL_URL }}/api/orchestrator" -o search_queries.json
+
+          # Comprobamos si el fichero tiene contenido
+          if [ ! -s search_queries.json ]; then
+            echo "El fichero de queries está vacío. No se creará ningún issue."
+            echo "::set-output name=queries_exist::false"
+            exit 0
+          fi
+          echo "::set-output name=queries_exist::true"
+
+      - name: 2. Formatear consultas para el cuerpo del Issue
+        if: steps.get_queries.outputs.queries_exist == 'true'
+        id: format_body
+        run: |
+          # Extraemos las queries con jq, las formateamos como una lista Markdown y las guardamos en una variable de entorno para el siguiente paso
+          # Usamos un delimitador EOF para manejar strings multilínea
+          echo "QUERIES_BODY<<EOF" >> $GITHUB_ENV
+          echo "### 🤖 Estrategias de Búsqueda Generadas\n\nEsta es la lista de consultas de búsqueda optimizadas generadas por el Estratega. La tarea consiste en ejecutar estas búsquedas en Google y analizar los resultados en busca de nuevos eventos.\n" >> $GITHUB_ENV
+          jq -r '.searchQueries | .[] | "- `" + . + "`"' search_queries.json >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: 3. Crear Issue en GitHub con la lista de consultas
+        if: steps.get_queries.outputs.queries_exist == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Creamos un título para el Issue con la fecha actual
+          ISSUE_TITLE="Estrategias de Búsqueda de Eventos - $(date +'%Y-%m-%d')"
+
+          # Creamos el Issue usando la CLI de GitHub
+          gh issue create --title "$ISSUE_TITLE" --body "$QUERIES_BODY" --repo $REPO
