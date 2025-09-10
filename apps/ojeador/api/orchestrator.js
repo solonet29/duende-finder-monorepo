@@ -4,16 +4,16 @@
 require('dotenv').config();
 const { MongoClient } = require('mongodb');
 const { google } = require('googleapis');
-const { Client } = require('@upstash/qstash'); // <-- ESTA ES LA LÍNEA QUE FALTABA
+const { Client } = require('@upstash/qstash');
 
 // --- Configuración de Lotes y Búsquedas ---
 const TIER1_EVENT_COUNT_THRESHOLD = 3;
 const TIER1_BATCH_SIZE = 30;
-const TIER1_SEARCHES_PER_ARTIST = 3;
+const TIER1_SEARCHES_PER_ARTIST = 4; // Ajustado a 4 para cubrir las nuevas queries
 
 const TIER2_PROMISING_BATCH_SIZE = 5;
 const TIER2_LOTTERY_BATCH_SIZE = 5;
-const TIER2_SEARCHES_PER_ARTIST = 3;
+const TIER2_SEARCHES_PER_ARTIST = 2; // Reducido para Nivel 2
 
 // --- Configuración de Conexiones ---
 const mongoUri = process.env.MONGO_URI;
@@ -26,16 +26,31 @@ const customSearchEngineId = process.env.GOOGLE_CX;
 const qstashClient = new Client({ token: process.env.QSTASH_TOKEN });
 const customsearch = google.customsearch('v1');
 
-// --- Lógica de búsqueda (3 variaciones) ---
-const searchQueries = (artistName) => ([
-    `"${artistName}" "entradas" OR "concierto" OR "gira"`,
-    `"${artistName}" "eventos" site:facebook.com OR site:instagram.com`,
-    `"${artistName}" "agenda" site:songkick.com OR site:bandsintown.com`
-]);
+// --- Lógica de búsqueda (4 variaciones de alta calidad) ---
+const searchQueries = (artistName) => {
+    const currentYear = new Date().getFullYear();
+    const nextYear = currentYear + 1;
+
+    // Creamos un bloque de palabras clave genéricas para reutilizar
+    const keywords = `"actuacion" OR "recital" OR "concierto" OR "espectaculo" OR "gala" OR "festival" OR "entradas"`;
+
+    return [
+        // 1. Búsqueda ultra-precisa en los portales de flamenco más importantes
+        `"${artistName}" site:deflamenco.com OR site:globalflamenco.com OR site:jondoweb.com`,
+        
+        // 2. Búsqueda en la agenda oficial de la Junta de Andalucía
+        `"${artistName}" site:juntadeandalucia.es/cultura/flamenco`,
+        
+        // 3. Búsqueda en los grandes vendedores de entradas
+        `"${artistName}" site:ticketmaster.es OR site:elcorteingles.es OR site:dice.fm`,
+        
+        // 4. Búsqueda genérica "inteligente" combinando el nombre del artista con nuestro bloque de palabras clave
+        `"${artistName}" (${keywords} OR "gira ${currentYear}" OR "gira ${nextYear}") -site:facebook.com -site:instagram.com -site:twitter.com`
+    ];
+};
+
 
 // --- Función Refactorizada para Procesar un Lote de Artistas ---
-// Dentro de tu script Orquestador/Ojeador.js
-
 async function processArtistBatch(artists, db, artistsCollection, searchesPerArtist) {
     let urlsEnqueuedInBatch = 0;
 
@@ -64,16 +79,9 @@ async function processArtistBatch(artists, db, artistsCollection, searchesPerArt
         if (urlsToProcess.size > 0) {
             console.log(`   -> Encontradas ${urlsToProcess.size} URLs únicas para ${artist.name}. Encolando...`);
 
-            // ▼▼▼ INICIO DE LA CORRECCIÓN CLAVE ▼▼▼
-
-            // 1. Definimos la URL de destino una sola vez.
             const destinationUrl = `${process.env.QSTASH_DESTINATION_URL}/api/process-url`;
-
-            // 2. Creamos un array de mensajes. Cada objeto DEBE tener un 'body'
-            // que sea un string JSON.
             const messages = Array.from(urlsToProcess).map(url => ({
                 url: destinationUrl,
-                // El body DEBE ser un string. Usamos JSON.stringify.
                 body: JSON.stringify({
                     url: url,
                     artistName: artist.name,
@@ -82,31 +90,20 @@ async function processArtistBatch(artists, db, artistsCollection, searchesPerArt
             }));
 
             try {
-                // 3. Usamos el método 'batch' que está diseñado específicamente para enviar lotes.
                 const response = await qstashClient.batch(messages);
-
                 urlsEnqueuedInBatch += messages.length;
                 const messageIds = response.map(r => r.messageId).join(', ');
                 console.log(`   ✅ ${messages.length} URLs encoladas con éxito en QStash. Message IDs: [${messageIds}]`);
-
             } catch (qstashError) {
                 console.error(`   ❌ Error al publicar en QStash para ${artist.name}: ${qstashError.message}`);
             }
-            // ▲▲▲ FIN DE LA CORRECCIÓN CLAVE ▲▲▲
 
         } else {
             console.log(`   -> No se encontraron URLs nuevas para ${artist.name} en esta ejecución.`);
         }
 
         await artistsCollection.updateOne({ _id: artist._id }, { $set: { lastScrapedAt: new Date() } });
-        // Añadimos un pequeño delay para no saturar la API de Google en el siguiente artista
         await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Check if the limit has been reached
-        if (urlsEnqueuedInBatch >= MAX_URLS_TO_ENQUEUE_PER_RUN) {
-            console.log(`🛑 Límite de URLs encoladas (${MAX_URLS_TO_ENQUEUE_PER_RUN}) alcanzado. Deteniendo procesamiento de artistas.`);
-            break; // Exit the loop
-        }
     }
     return urlsEnqueuedInBatch;
 }
@@ -114,7 +111,7 @@ async function processArtistBatch(artists, db, artistsCollection, searchesPerArt
 
 // --- Flujo Principal del Orquestador ---
 async function findAndQueueUrls() {
-    console.log('🚀 Orquestador-Productor iniciado con lógica condicional por día...');
+    console.log('🚀 Orquestador-Productor iniciado...');
     const client = new MongoClient(mongoUri);
 
     try {
@@ -123,14 +120,45 @@ async function findAndQueueUrls() {
         const artistsCollection = db.collection(artistsCollectionName);
         console.log("✅ Conectado a MongoDB.");
 
-        const dayOfWeek = new Date().getDay(); // Domingo=0, Lunes=1, Martes=2, ...
         let totalUrlsEnqueued = 0;
         let totalArtistsProcessed = 0;
-        let artistsToProcess = [];
 
-        const validNameFilter = { name: { $exists: true, $ne: null, $ne: "" } };
+        // --- INICIO: Ataque Directo a URLs de Alta Prioridad ---
+        console.log('🎯 Iniciando ataque directo a URLs de alta prioridad...');
+        const highPriorityUrls = [
+            { url: 'https://www.corraldelamoreria.com/espectaculos-y-eventos/', artistName: 'Corral de la Morería' },
+            { url: 'https://www.tablaoelarenal.com/espectaculos-flamenco-sevilla.html', artistName: 'Tablao El Arenal' },
+            { url: 'https://www.juntadeandalucia.es/cultura/flamenco/actividades', artistName: 'Junta de Andalucía' }
+        ];
+
+        const destinationUrl = `${process.env.QSTASH_DESTINATION_URL}/api/process-url`;
+        const directMessages = highPriorityUrls.map(item => ({
+            url: destinationUrl,
+            body: JSON.stringify({
+                url: item.url,
+                artistName: item.artistName,
+                artistId: 'direct-scrape' // ID especial para estos scrapes
+            })
+        }));
+
+        try {
+            if (directMessages.length > 0) {
+                const response = await qstashClient.batch(directMessages);
+                totalUrlsEnqueued += directMessages.length;
+                const messageIds = response.map(r => r.messageId).join(', ');
+                console.log(`   ✅ ${directMessages.length} URLs de alta prioridad encoladas con éxito. Message IDs: [${messageIds}]`);
+            }
+        } catch (qstashError) {
+            console.error(`   ❌ Error al encolar URLs de alta prioridad en QStash: ${qstashError.message}`);
+        }
+        // --- FIN: Ataque Directo ---
 
         // --- Lógica condicional basada en el día de la semana ---
+        console.log('🧠 Iniciando búsqueda basada en artistas y día de la semana...');
+        const dayOfWeek = new Date().getDay(); // Domingo=0, Lunes=1, Martes=2, ...
+        let artistsToProcess = [];
+        const validNameFilter = { name: { $exists: true, $ne: null, $ne: "" } };
+
         if (dayOfWeek === 2 || dayOfWeek === 5) { // Martes o Viernes: Foco en el Nivel 1
             console.log("✅ Hoy es Martes o Viernes. Buscando artistas de Nivel 1...");
             const query = { ...validNameFilter, eventCount: { $gte: TIER1_EVENT_COUNT_THRESHOLD } };
@@ -147,12 +175,10 @@ async function findAndQueueUrls() {
         } else { // Resto de la semana: Foco en el Nivel 2 (Oportunidad)
             console.log("✅ Hoy es día de oportunidad. Buscando artistas de Nivel 2...");
 
-            // Grupo A: "Prometedores" (1 o 2 eventos), selección aleatoria
             const promisingQuery = { ...validNameFilter, eventCount: { $in: [1, 2] } };
             const promisingArtists = await artistsCollection.aggregate([{ $match: promisingQuery }, { $sample: { size: TIER2_PROMISING_BATCH_SIZE } }]).toArray();
             console.log(`   -> Encontrados ${promisingArtists.length} artistas 'prometedores'.`);
 
-            // Grupo B: "Lotería" (0 eventos), selección aleatoria
             const lotteryQuery = { ...validNameFilter, eventCount: 0 };
             const lotteryArtists = await artistsCollection.aggregate([{ $match: lotteryQuery }, { $sample: { size: TIER2_LOTTERY_BATCH_SIZE } }]).toArray();
             console.log(`   -> Encontrados ${lotteryArtists.length} artistas de 'lotería'.`);
@@ -168,7 +194,8 @@ async function findAndQueueUrls() {
             }
         }
 
-        console.log(`\n🎉 Orquestador-Productor finalizado. Total de URLs encoladas: ${totalUrlsEnqueued}. Artistas procesados: ${totalArtistsProcessed}.`);
+        console.log(`
+🎉 Orquestador-Productor finalizado. Total de URLs encoladas: ${totalUrlsEnqueued}. Artistas procesados: ${totalArtistsProcessed}.`);
         return { message: 'Proceso de orquestación finalizado.', urlsEnqueued: totalUrlsEnqueued, artistsProcessed: totalArtistsProcessed };
 
     } catch (error) {

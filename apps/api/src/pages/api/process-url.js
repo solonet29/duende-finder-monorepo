@@ -131,15 +131,47 @@ export default async function handler(req, res) {
 
 // No olvides definir esta función en el mismo archivo
 const eventExtractionPrompt = (artistName, url, content) => {
-    const currentYear = new Date().getFullYear();
+    const currentDate = new Date().toISOString().split('T')[0];
     return `
-    Tu tarea es actuar como un asistente experto en extracción de datos de eventos de flamenco.
-    Analiza el siguiente contenido de la URL "${url}" para encontrar los próximos conciertos o actuaciones en vivo del artista "${artistName}".
-    El año de referencia es ${currentYear}. Extrae únicamente eventos que ocurran en ${currentYear} o en años posteriores.
-    Devuelve un array JSON de objetos de evento bajo la clave "events". Si no hay eventos, devuelve { "events": [] }.
-    El esquema del objeto es: { "name": "...", "description": "...", "date": "YYYY-MM-DD", "time": "HH:MM", "venue": "...", "city": "...", "country": "..." }.
-    Ignora talleres, clases o eventos pasados. Asegúrate de que la fecha es completa.
-    Contenido a analizar:
-    ${content}
-    `;
+# CONTEXTO
+Eres un asistente de IA especializado en la extracción de datos estructurados (ETL) desde contenido web no estructurado. Tu dominio es el mundo del flamenco.
+
+- FECHA_ACTUAL: ${currentDate}
+- ARTISTA_OBJETIVO: ${artistName}
+- URL_FUENTE: ${url}
+
+# TAREA
+Analiza el CONTENIDO_WEB proporcionado para extraer todos los eventos futuros (conciertos, actuaciones, recitales) del ARTISTA_OBJETIVO.
+
+# REGLAS
+1.  **FILTRO DE FECHA**: Extrae únicamente eventos cuya fecha de inicio sea igual o posterior a la FECHA_ACTUAL. Descarta categóricamente cualquier evento pasado.
+2.  **FILTRO DE RELEVANCIA**: Extrae únicamente eventos explícitamente relacionados con el flamenco (menciones a cante, baile, toque, etc.). Si no es claro, descarta el evento.
+3.  **FILTRO DE TIPO DE EVENTO**: Ignora talleres, clases, cursos, entrevistas o eventos online.
+4.  **RIGOR DE DATOS**: No inventes información. Si un campo no puede ser extraído, usa los valores por defecto del esquema. La fecha DEBE ser completa (año, mes y día).
+5.  **GENERACIÓN DE ID**: El campo "id" debe generarse en minúsculas, sin acentos, uniendo artista, ciudad y fecha (YYYY-MM-DD) con guiones. Ejemplo: "miguel-poveda-sevilla-2025-10-20".
+
+# FORMATO DE SALIDA
+Tu respuesta debe ser ÚNICAMENTE un bloque de código con un array JSON válido bajo la clave "events". No incluyas explicaciones ni texto adicional. Si no encuentras eventos, devuelve 
+    { "events": [] }.
+
+El esquema para cada objeto debe ser:
+{
+    "id": "string (generado según la REGLA 5)",
+    "name": "string (nombre del evento; si no existe, usa el nombre del artista)",
+    "artist": "string (el ARTISTA_OBJETIVO)",
+    "description": "string (descripción concisa, máx 150 caracteres)",
+    "date": "string (formato YYYY-MM-DD, OBLIGATORIO)",
+    "time": "string (formato HH:MM, usa '00:00' como defecto)",
+    "venue": "string (nombre del recinto, OBLIGATORIO)",
+    "city": "string (ciudad del evento, OBLIGATORIO)",
+    "country": "string (país del evento)",
+    "address": "string (dirección postal completa, si se encuentra)",
+    "location": { "type": "Point", "coordinates": [] },
+    "verified": false,
+    "referenceURL": "string (la URL_FUENTE)"
+}
+
+# CONTENIDO A ANALIZAR
+${content}
+`;
 };
