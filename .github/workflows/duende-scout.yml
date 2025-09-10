@@ -9,6 +9,8 @@ on:
 jobs:
   generate-search-strategy:
     runs-on: ubuntu-latest
+    outputs:
+      jq_success: ${{ steps.format_body.outputs.jq_success }}
     steps:
       - name: 1. Llamar al endpoint del Estratega y guardar las consultas
         id: get_queries
@@ -18,18 +20,20 @@ jobs:
 
       - name: 2. Formatear consultas para el cuerpo del Issue
         id: format_body
+        outputs:
+          jq_success: "false"
         run: |
           # Si el curl falló, no continuamos
-          if [ "$curl_failed" == "true" ]; then
+          if [ "${{ env.curl_failed }}" == "true" ]; then
             echo "La llamada con curl falló. La API devolvió un código de error HTTP."
-            echo "::set-output name=jq_success::false"
+            echo "jq_success=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           # Comprobamos si el fichero tiene contenido
           if [ ! -s search_queries.json ]; then
             echo "El fichero de queries está vacío."
-            echo "::set-output name=jq_success::false"
+            echo "jq_success=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
@@ -37,16 +41,19 @@ jobs:
           if jq -r '.searchQueries | .[] | "- `" + . + "`"' search_queries.json > formatted_body.md; then
             echo "Contenido formateado con éxito."
             {
-              echo 'QUERIES_BODY<<EOF'; 
-              echo '### 🤖 Estrategias de Búsqueda Generadas\n\nEsta es la lista de consultas de búsqueda optimizadas generadas por el Estratega. La tarea consiste en ejecutar estas búsquedas en Google y analizar los resultados en busca de nuevos eventos.\n'; 
-              echo ''; 
-              cat formatted_body.md; 
-              echo 'EOF'; 
+              echo 'QUERIES_BODY<<EOF';
+              echo '### 🤖 Estrategias de Búsqueda Generadas
+
+Esta es la lista de consultas de búsqueda optimizadas generadas por el Estratega. La tarea consiste en ejecutar estas búsquedas en Google y analizar los resultados en busca de nuevos eventos.
+';
+              echo '';
+              cat formatted_body.md;
+              echo 'EOF';
             } >> "$GITHUB_ENV"
-            echo "::set-output name=jq_success::true"
+            echo "jq_success=true" >> $GITHUB_OUTPUT
           else
             echo "Error de JQ: El contenido de la respuesta de la API probablemente no es un JSON válido."
-            echo "::set-output name=jq_success::false"
+            echo "jq_success=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Debug - Mostrar contenido de la respuesta en caso de error
