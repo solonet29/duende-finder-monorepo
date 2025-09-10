@@ -9,8 +9,6 @@ on:
 jobs:
   generate-search-strategy:
     runs-on: ubuntu-latest
-    outputs:
-      jq_success: ${{ steps.format_body.outputs.jq_success }}
     steps:
       - name: 1. Llamar al endpoint del Estratega y guardar las consultas
         id: get_queries
@@ -42,9 +40,8 @@ jobs:
             echo "Contenido formateado con éxito."
             {
               echo 'QUERIES_BODY<<EOF';
-              echo '### 🤖 Estrategias de Búsqueda Generadas';
-              echo '';
-              echo 'Esta es la lista de consultas de búsqueda optimizadas generadas por el Estratega. La tarea consiste en ejecutar estas búsquedas en Google y analizar los resultados en busca de nuevos eventos.';
+              echo '### 🤖 Estrategias de Búsqueda Generadas
+
               echo '';
               cat formatted_body.md;
               echo 'EOF';
