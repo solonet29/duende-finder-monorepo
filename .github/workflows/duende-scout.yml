@@ -18,8 +18,6 @@ jobs:
 
       - name: 2. Formatear consultas para el cuerpo del Issue
         id: format_body
-        outputs:
-          jq_success: "false"
         run: |
           # Si el curl falló, no continuamos
           if [ "${{ env.curl_failed }}" == "true" ]; then
@@ -40,8 +38,9 @@ jobs:
             echo "Contenido formateado con éxito."
             {
               echo 'QUERIES_BODY<<EOF';
-              echo '### 🤖 Estrategias de Búsqueda Generadas
-
+              echo '### 🤖 Estrategias de Búsqueda Generadas';
+              echo '';
+              echo 'Esta es la lista de consultas de búsqueda optimizadas generadas por el Estratega. La tarea consiste en ejecutar estas búsquedas en Google y analizar los resultados en busca de nuevos eventos.';
               echo '';
               cat formatted_body.md;
               echo 'EOF';
