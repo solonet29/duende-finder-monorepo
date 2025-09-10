@@ -25,8 +25,6 @@ jobs:
 
       - name: 2. Formatear consultas para el cuerpo del Issue
         id: format_body
-        outputs:
-          format_success: "false"
         run: |
           # Si el fichero está vacío, no hay queries.
           if [ ! -s search_queries.txt ]; then
@@ -39,8 +37,7 @@ jobs:
           while IFS= read -r line || [ -n "$line" ]; do
             # Ignoramos líneas vacías
             if [ -n "$line" ]; then
-              echo "- 
-$line" >> formatted_body.md
+              echo "- \`$line\`" >> formatted_body.md
             fi
           done < search_queries.txt
           
@@ -53,13 +50,13 @@ $line" >> formatted_body.md
 
           echo "Contenido formateado con éxito."
           {
-            echo 'QUERIES_BODY<<EOF'
-            echo '### 🤖 Estrategias de Búsqueda Generadas'
-            echo ''
-            echo 'Esta es la lista de consultas de búsqueda optimizadas generadas por el Estratega. La tarea consiste en ejecutar estas búsquedas en Google y analizar los resultados en busca de nuevos eventos.'
-            echo ''
-            cat formatted_body.md
-            echo 'EOF'
+            echo 'QUERIES_BODY<<EOF';
+            echo '### 🤖 Estrategias de Búsqueda Generadas';
+            echo '';
+            echo 'Esta es la lista de consultas de búsqueda optimizadas generadas por el Estratega. La tarea consiste en ejecutar estas búsquedas en Google y analizar los resultados en busca de nuevos eventos.';
+            echo '';
+            cat formatted_body.md;
+            echo 'EOF';
           } >> "$GITHUB_ENV"
           echo "format_success=true" >> $GITHUB_OUTPUT
 
