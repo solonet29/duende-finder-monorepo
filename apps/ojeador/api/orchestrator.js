@@ -9,11 +9,11 @@ const { Client } = require('@upstash/qstash');
 // --- Configuración de Lotes y Búsquedas ---
 const TIER1_EVENT_COUNT_THRESHOLD = 3;
 const TIER1_BATCH_SIZE = 30;
-const TIER1_SEARCHES_PER_ARTIST = 4; // Ajustado a 4 para cubrir las nuevas queries
+const TIER1_SEARCHES_PER_ARTIST = 4;
 
 const TIER2_PROMISING_BATCH_SIZE = 5;
 const TIER2_LOTTERY_BATCH_SIZE = 5;
-const TIER2_SEARCHES_PER_ARTIST = 2; // Reducido para Nivel 2
+const TIER2_SEARCHES_PER_ARTIST = 2;
 
 // --- Configuración de Conexiones ---
 const mongoUri = process.env.MONGO_URI;
@@ -31,24 +31,28 @@ const searchQueries = (artistName) => {
     const currentYear = new Date().getFullYear();
     const nextYear = currentYear + 1;
 
-    // Creamos un bloque de palabras clave genéricas para reutilizar
-    const keywords = `"actuacion" OR "recital" OR "concierto" OR "espectaculo" OR "gala" OR "festival" OR "entradas"`;
-
     return [
-        // 1. Búsqueda ultra-precisa en los portales de flamenco más importantes
-        `"${artistName}" site:deflamenco.com OR site:globalflamenco.com OR site:jondoweb.com`,
-        
-        // 2. Búsqueda en la agenda oficial de la Junta de Andalucía
+        // Búsqueda específica en los portales de flamenco más importantes
+        `"${artistName}" "agenda" OR "programacion" OR "calendario" site:deflamenco.com OR site:globalflamenco.com OR site:jondoweb.com`,
+
+        // Búsqueda en la agenda oficial de la Junta de Andalucía
         `"${artistName}" site:juntadeandalucia.es/cultura/flamenco`,
-        
-        // 3. Búsqueda en los grandes vendedores de entradas
-        `"${artistName}" site:ticketmaster.es OR site:elcorteingles.es OR site:dice.fm`,
-        
-        // 4. Búsqueda genérica "inteligente" combinando el nombre del artista con nuestro bloque de palabras clave
-        `"${artistName}" (${keywords} OR "gira ${currentYear}" OR "gira ${nextYear}") -site:facebook.com -site:instagram.com -site:twitter.com`
+
+        // Búsqueda en los grandes vendedores de entradas
+        `"${artistName}" "entradas" OR "tickets" site:ticketmaster.es OR site:elcorteingles.es OR site:dice.fm`,
+
+        // Búsqueda genérica "inteligente" con palabras clave, excluyendo fuentes de baja calidad
+        `"${artistName}" "concierto" OR "actuacion" OR "recital" OR "gira ${currentYear}" OR "gira ${nextYear}" -site:facebook.com -site:instagram.com -site:twitter.com -site:biografiasyvidas.com -site:wikipedia.org`
     ];
 };
 
+// --- Helpers ---
+function isUrlValid(url) {
+    const forbiddenKeywords = ['biografia', 'biography', 'historia', 'history', 'discografia', 'vida-y-obra', 'about', 'sobre-el-artista', 'artist-info'];
+    const lowerCaseUrl = url.toLowerCase();
+    // Devuelve 'true' si la URL NO contiene ninguna palabra prohibida
+    return !forbiddenKeywords.some(keyword => lowerCaseUrl.includes(keyword));
+}
 
 // --- Función Refactorizada para Procesar un Lote de Artistas ---
 async function processArtistBatch(artists, db, artistsCollection, searchesPerArtist) {
@@ -77,27 +81,37 @@ async function processArtistBatch(artists, db, artistsCollection, searchesPerArt
         await Promise.all(searchPromises);
 
         if (urlsToProcess.size > 0) {
-            console.log(`   -> Encontradas ${urlsToProcess.size} URLs únicas para ${artist.name}. Encolando...`);
+            console.log(`   -> Encontradas ${urlsToProcess.size} URLs únicas para ${artist.name}. Aplicando filtro de validez...`);
 
-            const destinationUrl = `${process.env.QSTASH_DESTINATION_URL}/api/process-url`;
-            const messages = Array.from(urlsToProcess).map(url => ({
-                url: destinationUrl,
-                body: JSON.stringify({
-                    url: url,
-                    artistName: artist.name,
-                    artistId: artist._id.toString()
-                })
-            }));
+            const initialUrls = Array.from(urlsToProcess);
+            const validUrls = initialUrls.filter(isUrlValid); // <-- APLICAMOS EL NUEVO FILTRO
 
-            try {
-                const response = await qstashClient.batch(messages);
-                urlsEnqueuedInBatch += messages.length;
-                const messageIds = response.map(r => r.messageId).join(', ');
-                console.log(`   ✅ ${messages.length} URLs encoladas con éxito en QStash. Message IDs: [${messageIds}]`);
-            } catch (qstashError) {
-                console.error(`   ❌ Error al publicar en QStash para ${artist.name}: ${qstashError.message}`);
+            if (validUrls.length > 0) {
+                console.log(`   -> ${validUrls.length} URLs válidas restantes. Encolando...`);
+
+                const destinationUrl = `${process.env.QSTASH_DESTINATION_URL}/api/process-url`;
+                // Importante: Ahora usamos 'validUrls' para crear los mensajes
+                const messages = validUrls.map(url => ({
+                    url: destinationUrl,
+                    body: JSON.stringify({
+                        url: url,
+                        artistName: artist.name,
+                        artistId: artist._id.toString()
+                    })
+                }));
+
+                try {
+                    const response = await qstashClient.batch(messages);
+                    urlsEnqueuedInBatch += messages.length;
+                    const messageIds = response.map(r => r.messageId).join(', ');
+                    console.log(`   ✅ ${messages.length} URLs encoladas con éxito en QStash. Message IDs: [${messageIds}]`);
+                } catch (qstashError) {
+                    console.error(`   ❌ Error al publicar en QStash para ${artist.name}: ${qstashError.message}`);
+                }
+
+            } else {
+                console.log(`   -> Ninguna URL pasó el filtro de validez para ${artist.name}.`);
             }
-
         } else {
             console.log(`   -> No se encontraron URLs nuevas para ${artist.name} en esta ejecución.`);
         }
