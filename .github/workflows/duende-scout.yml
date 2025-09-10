@@ -13,8 +13,15 @@ jobs:
       - name: 1. Llamar al endpoint del Estratega y guardar las consultas
         id: get_queries
         run: |
-          # Usamos -s para modo silencioso, -f para que falle si hay error HTTP, y -o para guardar
-          curl -sfL -X GET "${{ secrets.VERCEL_URL }}/api/orchestrator" -o search_queries.json || echo "curl_failed=true" >> $GITHUB_ENV
+          # Usamos -w para escribir el código de estado HTTP en stdout y lo capturamos
+          HTTP_CODE=$(curl -s -L -w '%{http_code}' -o search_queries.json "${{ secrets.VERCEL_URL }}/api/orchestrator")
+          echo "Código de estado HTTP recibido: $HTTP_CODE"
+
+          # Comprobamos si el código de estado NO es de éxito (fuera del rango 200-299)
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            echo "curl falló con el código de estado: $HTTP_CODE"
+            echo "curl_failed=true" >> $GITHUB_ENV
+          fi
 
       - name: 2. Formatear consultas para el cuerpo del Issue
         id: format_body
@@ -26,10 +33,12 @@ jobs:
             exit 0
           fi
 
-          # Comprobamos si el fichero tiene contenido
+          # Si el fichero está vacío (p.ej. respuesta 204), lo consideramos un caso a revisar, pero no un error de JQ.
           if [ ! -s search_queries.json ]; then
-            echo "El fichero de queries está vacío."
-            echo "jq_success=false" >> $GITHUB_OUTPUT
+            echo "El fichero de queries está vacío (posiblemente una respuesta 204 de la API)."
+            # Decidimos si esto es un fallo o no. Por ahora, lo tratamos como un caso sin queries.
+            # Para que el workflow no falle, salimos con éxito pero sin crear issue.
+            echo "jq_success=false" >> $GITHUB_OUTPUT # Evita que se cree el Issue
             exit 0
           fi
 
@@ -54,9 +63,13 @@ jobs:
       - name: Debug - Mostrar contenido de la respuesta en caso de error
         if: steps.format_body.outputs.jq_success == 'false'
         run: |
-          echo "Contenido del fichero 'search_queries.json' que causó el error:"
+          echo "El paso de formateo no tuvo éxito. Contenido del fichero 'search_queries.json':"
           cat search_queries.json
-          exit 1 # Forzar el fallo del workflow para que sea visible
+          # Decidimos si esto debe ser un fallo. Si el fichero está vacío, puede que no sea un error.
+          if [ -s search_queries.json ]; then
+            exit 1 # Falla solo si hay contenido que no es JSON
+          fi
+
 
       - name: 3. Crear Issue en GitHub con la lista de consultas
         if: steps.format_body.outputs.jq_success == 'true'
