@@ -41,7 +41,7 @@ async function parseRawBody(req) {
 function cleanHtmlForAI(html) {
     const $ = cheerio.load(html);
     $('script, style, nav, footer, header, aside, form, iframe').remove();
-    return $('body').text().replace(/\s\s+/g, ' ').trim().substring(0, 15000);
+    return $('body').text().replace(/\s\s+/g, ' ').trim().substring(0, 4000);
 }
 
 // --- LÓGICA PRINCIPAL ---
