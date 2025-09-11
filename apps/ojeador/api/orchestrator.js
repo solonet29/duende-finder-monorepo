@@ -1,16 +1,12 @@
-// RUTA: apps/ojeador/api/orchestrator.js
+// RUTA: /apps/api/src/pages/api/orchestrator.js
 // VERSIÓN FINAL Y COMPLETA DEL "INVESTIGADOR"
 
-require('dotenv').config();
-const { MongoClient } = require('mongodb');
-const { google } = require('googleapis');
-const Groq = require('groq-sdk');
+import { connectToDatabase } from '@/lib/database.js';
+import { google } from 'googleapis';
+import Groq from 'groq-sdk';
 
 // --- Configuración ---
 const TIER1_BATCH_SIZE = 5; // Lotes pequeños para ejecuciones frecuentes
-const mongoUri = process.env.MONGO_URI;
-const dbName = process.env.DB_NAME || 'DuendeDB';
-const artistsCollectionName = 'artists';
 const googleApiKey = process.env.GOOGLE_API_KEY;
 const customSearchEngineId = process.env.GOOGLE_CX;
 
@@ -23,10 +19,11 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const searchQueries = (artistName) => {
     const currentYear = new Date().getFullYear();
     const nextYear = currentYear + 1;
+    const keywords = `"actuacion" OR "recital" OR "concierto" OR "espectaculo" OR "gala" OR "festival" OR "entradas"`;
     return [
-        `\"${artistName}\" \"agenda\" OR \"programacion\" site:deflamenco.com OR site:globalflamenco.com OR site:juntadeandalucia.es/cultura/flamenco`,
-        `\"${artistName}\" \"entradas\" OR \"tickets\" site:ticketmaster.es OR site:elcorteingles.es OR site:dice.fm`,
-        `\"${artistName}\" \"concierto\" OR \"gira ${currentYear}\" OR \"gira ${nextYear}\" -site:facebook.com -site:instagram.com -site:biografiasyvidas.com -site:wikipedia.org`
+        `"${artistName}" "agenda" OR "programacion" site:deflamenco.com OR site:globalflamenco.com OR site:juntadeandalucia.es/cultura/flamenco`,
+        `"${artistName}" "entradas" OR "tickets" site:ticketmaster.es OR site:elcorteingles.es OR site:dice.fm`,
+        `"${artistName}" (${keywords} OR "gira ${currentYear}" OR "gira ${nextYear}") -site:facebook.com -site:instagram.com -site:twitter.com`
     ];
 };
 
@@ -42,11 +39,11 @@ Analiza la siguiente URL. Extrae las palabras clave o "slugs" más relevantes qu
 2. Limpia los "slugs": reemplaza guiones ("-") por espacios.
 3. Devuelve el resultado como un objeto JSON con una clave "clues" que contenga un array de strings. Si no encuentras nada, el array debe estar vacío.
 # FORMATO DE SALIDA
-\\\`\\\`\\\`json
+\`\`\`json
 {
   "clues": ["palabra clave 1", "palabra clave 2"]
 }
-\\\`\\\`\\\`
+\`\`\`
 # URL A ANALIZAR
 ${urlToAnalyze}
 `;
@@ -55,8 +52,9 @@ ${urlToAnalyze}
             model: 'llama-3.1-8b-instant',
             response_format: { type: "json_object" },
         });
-        const responseText = chatCompletion.choices[0]?.message?.content || '{\"clues\":[]}';
-        return JSON.parse(responseText).clues || [];
+        const responseText = chatCompletion.choices[0]?.message?.content || '{"clues":[]}';
+        const parsed = JSON.parse(responseText);
+        return Array.isArray(parsed.clues) ? parsed.clues : [];
     } catch (error) {
         console.error(`   -> ⚠️ Error analizando la URL ${urlToAnalyze}:`, error.message);
         return [];
@@ -66,12 +64,10 @@ ${urlToAnalyze}
 // --- Flujo Principal del Orquestador ---
 async function findAndPrepareSearches() {
     console.log('🚀 Estratega de Búsqueda iniciado...');
-    const client = new MongoClient(mongoUri);
+    const { db } = await connectToDatabase('main');
 
     try {
-        await client.connect();
-        const db = client.db(dbName);
-        const artistsCollection = db.collection(artistsCollectionName);
+        const artistsCollection = db.collection('artists');
         console.log("✅ Conectado a MongoDB.");
 
         const artistsToProcess = await artistsCollection.find({ name: { $exists: true, $ne: null, $ne: "" } })
@@ -94,23 +90,25 @@ async function findAndPrepareSearches() {
             const searchPromises = initialQueries.map(query =>
                 customsearch.cse.list({ cx: customSearchEngineId, q: query, auth: googleApiKey, num: 2 })
                     .then(res => (res.data.items || []).forEach(item => initialUrls.add(item.link)))
-                    .catch(err => console.error(`   ❌ Error en búsqueda inicial para \"${artist.name}\": ${err.message}`))
+                    .catch(err => console.error(`   ❌ Error en búsqueda inicial para "${artist.name}": ${err.message}`))
             );
             await Promise.all(searchPromises);
         }
         console.log(`📄 Fase 1 completada. ${initialUrls.size} URLs iniciales encontradas.`);
 
         // FASE 2: Análisis de Pistas y Búsqueda Secundaria
-        const cluePromises = Array.from(initialUrls).map(url => extractCluesFromUrl(url));
-        const cluesResults = await Promise.all(cluePromises);
-        const discoveredClues = new Set(cluesResults.flat());
+        if (initialUrls.size > 0) {
+            const cluePromises = Array.from(initialUrls).map(url => extractCluesFromUrl(url));
+            const cluesResults = await Promise.all(cluePromises);
+            const discoveredClues = new Set(cluesResults.flat());
 
-        console.log(`🧠 Fase 2 completada. ${discoveredClues.size} pistas únicas extraídas de las URLs.`);
+            console.log(`🧠 Fase 2 completada. ${discoveredClues.size} pistas únicas extraídas de las URLs.`);
 
-        if (discoveredClues.size > 0) {
-            for (const clue of discoveredClues) {
-                if (clue.length > 3) { // Evitar pistas demasiado cortas
-                    allGeneratedQueries.add(`\"${clue}\" programacion OR cartel OR entradas`);
+            if (discoveredClues.size > 0) {
+                for (const clue of discoveredClues) {
+                    if (clue.length > 3) {
+                        allGeneratedQueries.add(`"${clue}" programacion OR cartel OR entradas`);
+                    }
                 }
             }
         }
@@ -123,14 +121,12 @@ async function findAndPrepareSearches() {
     } catch (error) {
         console.error('💥 Error fatal en el Orquestador:', error);
         throw error;
-    } finally {
-        await client.close();
-        console.log("🔚 Conexión con MongoDB cerrada.");
     }
+    // La conexión a la base de datos es gestionada por el helper, no necesitamos cerrarla aquí.
 }
 
-// Endpoint para Vercel (Serverless Function)
-module.exports = async (req, res) => {
+// --- Endpoint para Vercel ---
+export default async function handler(req, res) {
     try {
         const executionDetails = await findAndPrepareSearches();
         res.status(200).json({ status: 'success', details: executionDetails });
