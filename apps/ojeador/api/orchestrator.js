@@ -1,7 +1,7 @@
 // RUTA: /apps/ojeador/api/orchestrator.js
 // OBJETIVO: Devolver un listado paginado de artistas para búsqueda manual, ordenado por ranking de eventos.
 
-import { connectToDatabase } from '../../../api/lib/database.js';
+import { connectToMainDb } from '../../api/lib/database.js';
 
 const BATCH_SIZE = 50;
 
@@ -12,7 +12,7 @@ const BATCH_SIZE = 50;
  */
 async function getRankedArtistsBatch(page = 1) {
     console.log(`🚀 Solicitud para obtener el lote de artistas por ranking. Página: ${page}`);
-    const { db } = await connectToDatabase('main');
+    const db = await connectToMainDb();
 
     try {
         const artistsCollection = db.collection('artists');
