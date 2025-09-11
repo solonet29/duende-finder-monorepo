@@ -1,6 +1,8 @@
 // RUTA: apps/ojeador/api/orchestrator.js
 // VERSIÓN FINAL Y COMPLETA DEL "INVESTIGADOR"
 
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 const { MongoClient } = require('mongodb');
 const { google } = require('googleapis');
@@ -30,33 +32,36 @@ const searchQueries = (artistName) => {
     ];
 };
 
+const fs = require('fs');
+const path = require('path');
+
+// ... (resto de tus imports y configuraciones) ...
+
+
+// --- Helpers ---
+
+// ... (la función searchQueries se mantiene igual) ...
+
+
+// Reemplaza tu función 'extractCluesFromUrl' por esta nueva versión:
 async function extractCluesFromUrl(urlToAnalyze) {
     try {
-        const prompt = `
-# CONTEXTO
-Eres un asistente de IA experto en SEO y análisis de URLs, especializado en eventos de flamenco.
-# TAREA
-Analiza la siguiente URL. Extrae las palabras clave o "slugs" más relevantes que podrían usarse para encontrar otros eventos relacionados. Ignora palabras genéricas como "www", "https://", ".com", ".es", "es", "evento", "agenda".
-# REGLAS
-1. Identifica nombres de festivales, artistas, tablaos o ciudades.
-2. Limpia los "slugs": reemplaza guiones ("-") por espacios.
-3. Devuelve el resultado como un objeto JSON con una clave "clues" que contenga un array de strings. Si no encuentras nada, el array debe estar vacío.
-# FORMATO DE SALIDA
-```json
-{
-  "clues": ["palabra clave 1", "palabra clave 2"]
-}
-```
-# URL A ANALIZAR
-${urlToAnalyze}
-`;
+        // 1. Leemos la plantilla del prompt desde nuestro nuevo archivo de texto.
+        const promptTemplatePath = path.join(process.cwd(), 'prompts', 'url_clue_extractor.prompt.txt');
+        const promptTemplate = fs.readFileSync(promptTemplatePath, 'utf8');
+
+        // 2. Reemplazamos la variable en la plantilla con la URL real.
+        const prompt = promptTemplate.replace('{URL_A_ANALIZAR}', urlToAnalyze);
+
+        // 3. El resto de la lógica es la misma.
         const chatCompletion = await groq.chat.completions.create({
             messages: [{ role: 'user', content: prompt }],
             model: 'llama-3.1-8b-instant',
             response_format: { type: "json_object" },
         });
         const responseText = chatCompletion.choices[0]?.message?.content || '{"clues":[]}';
-        return JSON.parse(responseText).clues || [];
+        const parsed = JSON.parse(responseText);
+        return Array.isArray(parsed.clues) ? parsed.clues : [];
     } catch (error) {
         console.error(`   -> ⚠️ Error analizando la URL ${urlToAnalyze}:`, error.message);
         return [];
