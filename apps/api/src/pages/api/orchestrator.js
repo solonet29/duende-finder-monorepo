@@ -42,12 +42,10 @@ Analiza la siguiente URL. Extrae las palabras clave o "slugs" más relevantes qu
 2. Limpia los "slugs": reemplaza guiones ("-") por espacios.
 3. Devuelve el resultado como un objeto JSON con una clave "clues" que contenga un array de strings. Si no encuentras nada, el array debe estar vacío.
 # FORMATO DE SALIDA
-\
 ```json
 {
   "clues": ["palabra clave 1", "palabra clave 2"]
 }
-\
 ```
 # URL A ANALIZAR
 ${urlToAnalyze}
