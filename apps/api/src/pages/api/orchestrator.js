@@ -11,6 +11,7 @@ export default async function handler(req, res) {
     try {
         const page = parseInt(req.query.page) || 1;
         const result = await getRankedArtistsBatch(page);
+        res.setHeader('Cache-Control', 'no-store, max-age=0');
         res.status(200).json({ status: 'success', ...result });
     } catch (error) {
         console.error("ERROR EN EL HANDLER DEL ORCHESTRATOR:", error);
