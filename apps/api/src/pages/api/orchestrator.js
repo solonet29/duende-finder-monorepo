@@ -5,6 +5,30 @@ import { connectToDatabase } from '@/lib/database.js';
 
 const BATCH_SIZE = 50;
 
+// --- Endpoint para Vercel ---
+export default async function handler(req, res) {
+    // PRUEBA DE DEPURACIÓN:
+    // Devolvemos un mensaje fijo para verificar si el nuevo código se está ejecutando.
+    res.status(200).json({
+        message: "TEST DE DEPURACIÓN v2: Si ves este mensaje, el nuevo código se está desplegando correctamente.",
+        timestamp: new Date().toISOString()
+    });
+
+    /*
+    try {
+        // Obtenemos el número de página de la query string, por defecto 1
+        const page = parseInt(req.query.page) || 1;
+
+        const result = await getRankedArtistsBatch(page);
+        
+        res.status(200).json({ status: 'success', ...result });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+    */
+}
+
+
 /**
  * Obtiene una lista paginada de artistas de la base de datos, ordenados por su ranking de eventos.
  * @param {number} page - El número de página a obtener.
@@ -51,17 +75,3 @@ async function getRankedArtistsBatch(page = 1) {
         throw error;
     }
 }
-
-// --- Endpoint para Vercel ---
-export default async function handler(req, res) {
-    try {
-        // Obtenemos el número de página de la query string, por defecto 1
-        const page = parseInt(req.query.page) || 1;
-
-        const result = await getRankedArtistsBatch(page);
-        
-        res.status(200).json({ status: 'success', ...result });
-    } catch (error) {
-        res.status(500).json({ status: 'error', message: error.message });
-    }
-};
