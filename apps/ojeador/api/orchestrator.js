@@ -30,6 +30,7 @@ async function getRankedArtistsBatch(page = 1) {
         
         const artists = await artistsCollection.find(query)
             .sort({ eventCount: -1 }) // Ordenamos por eventCount descendente (más alto primero)
+            .project({ name: 1, eventCount: 1 })
             .skip(skip)
             .limit(BATCH_SIZE)
             .toArray();
