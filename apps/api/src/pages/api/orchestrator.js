@@ -32,18 +32,6 @@ const searchQueries = (artistName) => {
     ];
 };
 
-const fs = require('fs');
-const path = require('path');
-
-// ... (resto de tus imports y configuraciones) ...
-
-
-// --- Helpers ---
-
-// ... (la función searchQueries se mantiene igual) ...
-
-
-// Reemplaza tu función 'extractCluesFromUrl' por esta nueva versión:
 async function extractCluesFromUrl(urlToAnalyze) {
     try {
         // 1. Leemos la plantilla del prompt desde nuestro nuevo archivo de texto.
