@@ -123,11 +123,11 @@ async function findAndPrepareSearches() {
 }
 
 // Endpoint para Vercel (Serverless Function)
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
     try {
         const executionDetails = await findAndPrepareSearches();
         res.status(200).json({ status: 'success', details: executionDetails });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
     }
-};
+}
