@@ -38,6 +38,9 @@ importers:
       dotenv:
         specifier: ^17.2.1
         version: 17.2.2
+      googleapis:
+        specifier: ^159.0.0
+        version: 159.0.0
       groq-sdk:
         specifier: ^0.30.0
         version: 0.30.0
@@ -2286,6 +2289,10 @@ packages:
 
   googleapis@156.0.0:
     resolution: {integrity: sha512-Th401jKVdtrIaAc/b5iv8dfNVN2O7EgU/32Zvb2zxK3hiRrBU8hNbF7wMmOAEsvqnEKssq6XlXMaCBKazrvakw==}
+    engines: {node: '>=18'}
+
+  googleapis@159.0.0:
+    resolution: {integrity: sha512-halby2+lQwHNxUDk70aQNXP1BlBwdwr7svTJZvDi7vKwrWbVMKhVrZ86h8p3zRcWbO4qAgLQ4ODAf8TgD3DhGQ==}
     engines: {node: '>=18'}
 
   gopd@1.2.0:
@@ -5915,6 +5922,13 @@ snapshots:
       - supports-color
 
   googleapis@156.0.0:
+    dependencies:
+      google-auth-library: 10.3.0
+      googleapis-common: 8.0.0
+    transitivePeerDependencies:
+      - supports-color
+
+  googleapis@159.0.0:
     dependencies:
       google-auth-library: 10.3.0
       googleapis-common: 8.0.0
