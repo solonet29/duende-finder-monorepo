@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "echo \"No build required\""
+    "build": "echo \"No build required\"",
+    "retry-failed": "node scripts-utility/retry-failed-enrichments.js"
   },
   "repository": {
     "type": "git",
