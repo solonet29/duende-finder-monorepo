@@ -9,6 +9,9 @@ on:
 jobs:
   generate-search-strategy:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
     steps:
       - name: 1. Llamar al endpoint del Estratega y guardar las consultas
         id: get_queries
