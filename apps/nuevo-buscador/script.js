@@ -1,19 +1,15 @@
 import { CountUp } from './libs/countup.js';
+import { initPushNotifications } from './notifications.js'; // <-- Módulo de notificaciones
 
 document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 1. CONFIGURACIÓN Y SELECTORES
     // =========================================================================
-    // Función para determinar la URL de la API dinámicamente
     const getApiBaseUrl = () => {
         const hostname = window.location.hostname;
-
         if (hostname.includes('localhost')) {
-            return 'http://localhost:3000'; // Para desarrollo local
+            return 'http://localhost:3000';
         }
-
-        // Para despliegues de Vercel (incluyendo previews) o el dominio de producción
-        // Usamos la nueva API v2
         return 'https://api-v2.afland.es';
     };
 
@@ -51,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const navHowItWorksBtn = document.getElementById('nav-how-it-works-btn');
     const navTermsBtn = document.getElementById('nav-terms-btn');
     const navThemeToggle = document.getElementById('nav-theme-toggle');
-    const navNotificationsBtn = document.getElementById('nav-notifications-btn'); // <-- Botón de notificaciones
     const eventDetailModalOverlay = document.getElementById('event-detail-modal-overlay');
     const howItWorksModal = document.getElementById('how-it-works-modal-overlay');
     const termsModal = document.getElementById('terms-modal-overlay');
@@ -60,195 +55,53 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 2. DEFINICIÓN DE TODAS LAS FUNCIONES
     // =========================================================================
-
-    // --- Funciones de Notificaciones Push ---
-
-    /**
-     * Convierte una cadena base64 (URL-safe) a un Uint8Array.
-     * Necesario para la suscripción push.
-     */
-    function urlBase64ToUint8Array(base64String) {
-        const padding = '='.repeat((4 - base64String.length % 4) % 4);
-        const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-        const rawData = window.atob(base64);
-        const outputArray = new Uint8Array(rawData.length);
-        for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
-        }
-        return outputArray;
-    }
-
-    /**
-     * Actualiza la apariencia del botón de notificaciones según el estado del permiso.
-     */
-    async function updateNotificationButtonUI() {
-        if (!navNotificationsBtn) return;
-        const permission = await navigator.permissions.query({ name: 'notifications' });
-        const icon = navNotificationsBtn.querySelector('ion-icon');
-
-        if (permission.state === 'granted') {
-            icon.setAttribute('name', 'notifications'); // Icono relleno
-            navNotificationsBtn.classList.add('active');
-            navNotificationsBtn.title = 'Notificaciones activadas';
-        } else if (permission.state === 'denied') {
-            icon.setAttribute('name', 'notifications-off-outline');
-            navNotificationsBtn.classList.add('disabled');
-            navNotificationsBtn.title = 'Notificaciones bloqueadas';
-        } else {
-            icon.setAttribute('name', 'notifications-outline'); // Icono normal
-            navNotificationsBtn.classList.remove('active', 'disabled');
-            navNotificationsBtn.title = 'Activar notificaciones';
-        }
-    }
-
-    /**
-     * Gestiona el proceso completo de suscripción a notificaciones push.
-     */
-    async function handlePushSubscription() {
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            alert('Tu navegador no soporta notificaciones push.');
-            return;
-        }
-
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-            console.log('Permiso de notificación no concedido.');
-            updateNotificationButtonUI();
-            return;
-        }
-
-        try {
-            // 1. Obtener la VAPID public key de nuestro servidor
-            const response = await fetch(`${API_BASE_URL}/api/notifications/vapid-public-key`);
-            const { publicKey } = await response.json();
-            if (!publicKey) throw new Error('No se pudo obtener la VAPID public key.');
-
-            const applicationServerKey = urlBase64ToUint8Array(publicKey);
-
-            // 2. Suscribir al usuario
-            const swRegistration = await navigator.serviceWorker.ready;
-            const subscription = await swRegistration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey
-            });
-
-            // 3. Enviar la suscripción al backend
-            await fetch(`${API_BASE_URL}/api/notifications/subscribe`, {
-                method: 'POST',
-                body: JSON.stringify(subscription),
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            console.log('Usuario suscrito a notificaciones push con éxito.');
-            updateNotificationButtonUI();
-
-        } catch (error) {
-            console.error('Fallo al suscribirse a las notificaciones push:', error);
-        }
-    }
-
-    /**
-     * Inicializa el botón y la lógica de notificaciones.
-     */
-    function initializePushNotifications() {
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            if (navNotificationsBtn) navNotificationsBtn.style.display = 'none';
-            return;
-        }
-        if (navNotificationsBtn) {
-            navNotificationsBtn.addEventListener('click', handlePushSubscription);
-            updateNotificationButtonUI();
-        }
-    }
-
-    // --- Fin de Funciones de Notificaciones Push ---
-
-    /**
-     * Gestiona el ID de sesión del usuario para agrupar todas las acciones de una misma visita.
-     */
+    
     function getSessionId() {
         let sessionId = sessionStorage.getItem('duendeFinderSessionId');
         if (!sessionId) {
-            // Genera un ID simple: timestamp + número aleatorio
             sessionId = Date.now().toString() + Math.random().toString(36).substring(2);
             sessionStorage.setItem('duendeFinderSessionId', sessionId);
         }
         return sessionId;
     }
 
-    /**
-     * Envía un evento de tracking a nuestra API de analíticas.
-     * @param {string} type - El tipo de interacción (ej: 'eventView').
-     * @param {object} details - Un objeto con los detalles de la interacción.
-     */
     async function trackInteraction(type, details) {
         const sessionId = getSessionId();
-        // Usamos la URL de la API en producción para el tracking
         const apiUrl = 'https://api-v2.afland.es/api/analytics/track';
-
         try {
-            // Usamos navigator.sendBeacon para no afectar el rendimiento de la página
             if (navigator.sendBeacon) {
                 const blob = new Blob([JSON.stringify({ type, sessionId, details })], { type: 'application/json' });
                 navigator.sendBeacon(apiUrl, blob);
-                console.log(`Tracking event sent via Beacon: ${type}`);
             } else {
-                // Fetch como alternativa si sendBeacon no está disponible
                 await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type, sessionId, details }),
                     keepalive: true
                 });
-                console.log(`Tracking event sent via Fetch: ${type}`);
             }
         } catch (error) {
             console.error('Error sending tracking event:', error);
         }
     }
-    // =======================================================
-    // == NUEVA FUNCIÓN PARA EL CONTADOR ANIMADO ==
-    // =======================================================
+
     async function displayEventCount() {
         const counterElement = document.getElementById('event-counter');
-        if (!counterElement) return; // Si el elemento no existe, no hacemos nada
-
+        if (!counterElement) return;
         try {
-            // Usamos el endpoint que ya existía: /api/events/count
             const response = await fetch(`${API_BASE_URL}/api/events/count`);
             if (!response.ok) throw new Error('Error en la respuesta de la API');
-
             const data = await response.json();
             const totalEvents = data.total;
-
-            const options = {
-                prefix: '+',
-                suffix: ` eventos de flamenco verificados`,
-                duration: 2.5,
-                separator: '.',
-                useEasing: true,
-            };
-
-            const countUp = new CountUp(counterElement, totalEvents, options);
-
-            if (!countUp.error) {
-                countUp.start();
-            } else {
-                console.error(countUp.error);
-                counterElement.textContent = `+${totalEvents.toLocaleString('es-ES')} eventos de flamenco verificados`;
-            }
-
-            // AÑADIMOS LA CLASE PARA HACERLO VISIBLE
+            const countUp = new CountUp(counterElement, totalEvents, { prefix: '+', suffix: ' eventos de flamenco verificados', duration: 2.5, separator: '.', useEasing: true });
+            if (!countUp.error) countUp.start();
+            else counterElement.textContent = `+${totalEvents.toLocaleString('es-ES')} eventos de flamenco verificados`;
             counterElement.classList.add('loaded');
-
         } catch (error) {
             console.error('Error al cargar el contador de eventos:', error);
-            counterElement.style.display = 'none'; // Ocultamos si hay error
+            counterElement.style.display = 'none';
         }
     }
-
 
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
@@ -262,20 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateInfoModals() {
         const howItWorksContainer = document.getElementById('how-it-works-text-container');
         const termsContainer = document.getElementById('terms-text-container');
-        if (howItWorksContainer) {
-            howItWorksContainer.innerHTML = modalContent.howItWorks;
-        }
-        if (termsContainer) {
-            termsContainer.innerHTML = modalContent.terms;
-        }
+        if (howItWorksContainer) howItWorksContainer.innerHTML = modalContent.howItWorks;
+        if (termsContainer) termsContainer.innerHTML = modalContent.terms;
     }
 
     async function handleWelcomeModal() {
         const overlay = document.getElementById('welcome-modal-overlay');
-        if (!overlay) return {
-            active: false,
-            timer: Promise.resolve()
-        };
+        if (!overlay) return { active: false, timer: Promise.resolve() };
         try {
             const response = await fetch(`${API_BASE_URL}/api/config`);
             const config = await response.json();
@@ -294,24 +140,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     bannerContainer.classList.remove('hidden');
                 }
                 const timerPromise = new Promise(resolve => setTimeout(resolve, config.welcomeModal_minDuration_ms || 2500));
-                return {
-                    active: true,
-                    timer: timerPromise
-                };
+                return { active: true, timer: timerPromise };
             } else {
                 overlay.classList.remove('visible');
-                return {
-                    active: false,
-                    timer: Promise.resolve()
-                };
+                return { active: false, timer: Promise.resolve() };
             }
         } catch (error) {
             console.error("Error al cargar config del modal, se ocultará:", error);
             overlay.classList.remove('visible');
-            return {
-                active: false,
-                timer: Promise.resolve()
-            };
+            return { active: false, timer: Promise.resolve() };
         }
     }
 
@@ -356,9 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const events = monthlyGroups[monthKey];
             const [year, month] = monthKey.split('-');
             const monthDate = new Date(year, parseInt(month, 10) - 1);
-            const monthName = monthDate.toLocaleString('es-ES', {
-                month: 'long'
-            });
+            const monthName = monthDate.toLocaleString('es-ES', { month: 'long' });
             const titleText = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
             const section = document.createElement('section');
             section.className = 'sliders-section';
@@ -387,20 +222,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderEventDetailModal(event) {
-        console.log("renderEventDetailModal function called");
-        if (!eventDetailModalOverlay) {
-            console.error("eventDetailModalOverlay not found");
-            return;
-        }
+        if (!eventDetailModalOverlay) return;
         const eventName = sanitizeField(event.name, 'Evento sin título');
         const artistName = sanitizeField(event.artist, 'Artista por confirmar');
         const description = sanitizeField(event.description, 'Sin descripción disponible.');
         const eventTime = sanitizeField(event.time, 'No disponible');
-        const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        }) : 'Fecha no disponible';
+        const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
         const venue = sanitizeField(event.venue || (event.location && event.location.venue), '');
         const city = sanitizeField(event.city || (event.location && event.location.city), '');
         let displayLocation = 'Ubicación no disponible';
@@ -414,7 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
         const eventImageUrl = event.imageUrl || './assets/flamenco-placeholder.png';
         eventDetailModalOverlay.innerHTML = `<div class="modal"><button class="modal-close-btn">×</button><div class="modal-content modal-event-details">${event.imageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}<div class="card-header"><h2 class="titulo-truncado" title="${eventName}">${eventName}</h2></div><div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div><p class="descripcion-corta">${description}</p><div class="card-detalles"><div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div><div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div><div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><ion-icon name="location-outline"></ion-icon><span>${displayLocation}</span></a></div></div><div class="card-actions"><div class="card-actions-primary"><button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button><a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a></div></div></div></div>`;
-        console.log("Adding .visible class to modal");
         eventDetailModalOverlay.classList.add('visible');
     }
 
@@ -423,30 +249,10 @@ document.addEventListener('DOMContentLoaded', () => {
         today.setHours(0, 0, 0, 0);
         return events.reduce((acc, event) => {
             if (!event.date) return acc;
-
             const eventDate = new Date(event.date + 'T00:00:00');
-
-            // Comprobamos si la fecha es válida antes de continuar
-            if (isNaN(eventDate.getTime())) {
-                console.warn('Fecha inválida encontrada para el evento:', event);
-                return acc;
-            }
-
-            // ▼▼▼ CAMBIO IMPORTANTE: HEMOS DESACTIVADO EL FILTRO DE "PRÓXIMA SEMANA" ▼▼▼
-            // const isToday = eventDate.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
-            // const diffDays = (eventDate - today) / (1000 * 60 * 60 * 24);
-            // if (!isToday && diffDays >= 0 && diffDays < 7) {
-            //     // Esta lógica descartaba los eventos de los próximos 7 días.
-            //     // La hemos comentado para que no se aplique.
-            //     return acc;
-            // }
-            // ▲▲▲ FIN DEL CAMBIO ▲▲▲
-
-            // Ahora todos los eventos futuros se agruparán por mes
-            const monthKey = event.date.substring(0, 7); // ej: "2025-09"
-            if (!acc[monthKey]) {
-                acc[monthKey] = [];
-            }
+            if (isNaN(eventDate.getTime())) return acc;
+            const monthKey = event.date.substring(0, 7);
+            if (!acc[monthKey]) acc[monthKey] = [];
             acc[monthKey].push(event);
             return acc;
         }, {});
@@ -463,13 +269,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
         const elementPosition = cercaSection.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-        window.scrollTo({
-            top: offsetPosition,
-            behavior: "smooth"
-        });
-        navigator.permissions.query({
-            name: 'geolocation'
-        }).then(result => {
+        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+        navigator.permissions.query({ name: 'geolocation' }).then(result => {
             if (result.state === 'granted') fetchNearbyEvents();
             else if (result.state === 'prompt') renderGeolocationPrompt();
             else if (result.state === 'denied') renderGeolocationDenied();
@@ -488,16 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (nearbySlider) nearbySlider.innerHTML = `<div class="skeleton-card" style="width: 100%;"></div>`;
         navigator.geolocation.getCurrentPosition(
             async position => {
-                const {
-                    latitude,
-                    longitude
-                } = position.coords;
-                trackInteraction('nearMeSearch', {
-                    location: {
-                        lat: latitude,
-                        lng: longitude
-                    }
-                });
+                const { latitude, longitude } = position.coords;
+                trackInteraction('nearMeSearch', { location: { lat: latitude, lng: longitude } });
                 try {
                     const response = await fetch(`${API_BASE_URL}/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`);
                     if (!response.ok) throw new Error('Error en la petición');
@@ -547,7 +340,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const requestLocationBtn = e.target.closest('#request-location-btn');
 
             if (sliderCard) {
-                console.log("Slider card clicked");
                 const eventId = sliderCard.dataset.eventId;
                 if (eventId) {
                     try {
@@ -555,7 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (!response.ok) throw new Error('Evento no encontrado');
                         const eventData = await response.json();
                         eventsCache[eventId] = eventData;
-                        console.log("Event data fetched, about to render modal");
                         trackInteraction('eventView', { eventId: eventData._id });
                         renderEventDetailModal(eventData);
                     } catch (error) {
@@ -571,9 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchNearbyEvents();
             } else if (modalCloseBtn || (modalOverlay && e.target === modalOverlay)) {
                 const overlayToClose = modalCloseBtn ? modalCloseBtn.closest('.modal-overlay') : modalOverlay;
-                if (overlayToClose) {
-                    overlayToClose.classList.remove('visible');
-                }
+                if (overlayToClose) overlayToClose.classList.remove('visible');
             }
         });
         if (filterBar) {
@@ -593,18 +382,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
                         const elementPosition = targetSection.getBoundingClientRect().top;
                         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                        window.scrollTo({
-                            top: offsetPosition,
-                            behavior: "smooth"
-                        });
+                        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                     }
                 }
             });
         }
-        if (navHomeBtn) navHomeBtn.addEventListener('click', () => window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        }));
+        if (navHomeBtn) navHomeBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
         if (navThemeToggle) navThemeToggle.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
@@ -620,11 +403,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedTheme = localStorage.getItem('duende-theme') || 'dark';
         applyTheme(savedTheme);
         setupEventListeners();
+        initPushNotifications(); // <-- Inicializar notificaciones
         populateInfoModals();
-
-        // =======================================================
-        // == LLAMADA A LA NUEVA FUNCIÓN DEL CONTADOR ==
-        // =======================================================
         displayEventCount();
 
         const modalPromise = handleWelcomeModal();
