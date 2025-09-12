@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navHowItWorksBtn = document.getElementById('nav-how-it-works-btn');
     const navTermsBtn = document.getElementById('nav-terms-btn');
     const navThemeToggle = document.getElementById('nav-theme-toggle');
+    const navNotificationsBtn = document.getElementById('nav-notifications-btn'); // <-- Botón de notificaciones
     const eventDetailModalOverlay = document.getElementById('event-detail-modal-overlay');
     const howItWorksModal = document.getElementById('how-it-works-modal-overlay');
     const termsModal = document.getElementById('terms-modal-overlay');
@@ -59,6 +60,111 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 2. DEFINICIÓN DE TODAS LAS FUNCIONES
     // =========================================================================
+
+    // --- Funciones de Notificaciones Push ---
+
+    /**
+     * Convierte una cadena base64 (URL-safe) a un Uint8Array.
+     * Necesario para la suscripción push.
+     */
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+
+    /**
+     * Actualiza la apariencia del botón de notificaciones según el estado del permiso.
+     */
+    async function updateNotificationButtonUI() {
+        if (!navNotificationsBtn) return;
+        const permission = await navigator.permissions.query({ name: 'notifications' });
+        const icon = navNotificationsBtn.querySelector('ion-icon');
+
+        if (permission.state === 'granted') {
+            icon.setAttribute('name', 'notifications'); // Icono relleno
+            navNotificationsBtn.classList.add('active');
+            navNotificationsBtn.title = 'Notificaciones activadas';
+        } else if (permission.state === 'denied') {
+            icon.setAttribute('name', 'notifications-off-outline');
+            navNotificationsBtn.classList.add('disabled');
+            navNotificationsBtn.title = 'Notificaciones bloqueadas';
+        } else {
+            icon.setAttribute('name', 'notifications-outline'); // Icono normal
+            navNotificationsBtn.classList.remove('active', 'disabled');
+            navNotificationsBtn.title = 'Activar notificaciones';
+        }
+    }
+
+    /**
+     * Gestiona el proceso completo de suscripción a notificaciones push.
+     */
+    async function handlePushSubscription() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            alert('Tu navegador no soporta notificaciones push.');
+            return;
+        }
+
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            console.log('Permiso de notificación no concedido.');
+            updateNotificationButtonUI();
+            return;
+        }
+
+        try {
+            // 1. Obtener la VAPID public key de nuestro servidor
+            const response = await fetch(`${API_BASE_URL}/api/notifications/vapid-public-key`);
+            const { publicKey } = await response.json();
+            if (!publicKey) throw new Error('No se pudo obtener la VAPID public key.');
+
+            const applicationServerKey = urlBase64ToUint8Array(publicKey);
+
+            // 2. Suscribir al usuario
+            const swRegistration = await navigator.serviceWorker.ready;
+            const subscription = await swRegistration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey
+            });
+
+            // 3. Enviar la suscripción al backend
+            await fetch(`${API_BASE_URL}/api/notifications/subscribe`, {
+                method: 'POST',
+                body: JSON.stringify(subscription),
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            console.log('Usuario suscrito a notificaciones push con éxito.');
+            updateNotificationButtonUI();
+
+        } catch (error) {
+            console.error('Fallo al suscribirse a las notificaciones push:', error);
+        }
+    }
+
+    /**
+     * Inicializa el botón y la lógica de notificaciones.
+     */
+    function initializePushNotifications() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            if (navNotificationsBtn) navNotificationsBtn.style.display = 'none';
+            return;
+        }
+        if (navNotificationsBtn) {
+            navNotificationsBtn.addEventListener('click', handlePushSubscription);
+            updateNotificationButtonUI();
+        }
+    }
+
+    // --- Fin de Funciones de Notificaciones Push ---
+
     /**
      * Gestiona el ID de sesión del usuario para agrupar todas las acciones de una misma visita.
      */
