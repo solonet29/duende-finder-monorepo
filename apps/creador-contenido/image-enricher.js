@@ -1,7 +1,7 @@
 // image-enricher.js - Módulo para generar y subir imágenes
 
 require('dotenv').config();
-const { createFinderImage } = require('./lib/imageGenerator.js');
+const { createPostImage } = require('./lib/imageGenerator.js');
 const { uploadImage } = require('./lib/wordpressClient.js');
 const fs = require('fs').promises;
 
@@ -16,7 +16,7 @@ async function generateAndUploadImage(event) {
     try {
         // 1. Crear la imagen localmente
         console.log("      1/3: Creando imagen con Sharp...");
-        imagePath = await createFinderImage(event);
+        imagePath = await createPostImage(event);
         if (!imagePath) throw new Error("La creación de la imagen falló.");
 
         // 2. Subir la imagen a WordPress

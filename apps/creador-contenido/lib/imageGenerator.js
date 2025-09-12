@@ -22,7 +22,7 @@ async function createPostImage(event) {
         const eventDate = new Date(event.date);
         const dateOptions = { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Madrid' };
         const dateText = eventDate.toLocaleDateString('es-ES', dateOptions);
-        const cityText = event.city.toUpperCase();
+        const cityText = event.city ? event.city.toUpperCase() : '';
 
         const textAreaXCenter = 720; // Centro del área de texto
 

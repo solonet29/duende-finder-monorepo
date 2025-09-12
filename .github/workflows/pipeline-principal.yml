@@ -69,3 +69,38 @@ jobs:
           DAILY_TOKEN_LIMIT: 500000
           GROQ_MODEL: 'llama3-8b-8192'
         run: node content-creator.js
+
+  sanitize-images:
+    runs-on: ubuntu-latest
+    needs: run-creator # Depende del éxito del creador de contenido
+    defaults:
+      run:
+        working-directory: ./apps/creador-contenido
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run Image Sanitizer
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          WORDPRESS_URL: ${{ secrets.WORDPRESS_URL }}
+          WORDPRESS_USER: ${{ secrets.WORDPRESS_USER }}
+          WORDPRESS_APP_PASSWORD: ${{ secrets.WORDPRESS_APP_PASSWORD }}
+          AFLAND_API_KEY: ${{ secrets.AFLAND_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          DAILY_TOKEN_LIMIT: 500000
+          GROQ_MODEL: 'llama3-8b-8192'
+        run: node regenerate-images.js
