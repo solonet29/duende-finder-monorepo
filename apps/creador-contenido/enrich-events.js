@@ -24,8 +24,10 @@ async function enrichEvents() {
     const eventsCollection = db.collection('events');
 
     // Buscamos eventos validados por el ingestor que estén pendientes de creación de contenido.
+    // Un evento necesita enriquecerse si está en 'pending' y le falta el título del post (señal de que no se ha procesado).
     const query = {
-        status: 'pending' 
+        status: 'pending',
+        blogPostTitle: { $exists: false }
     };
 
     const eventsToProcess = await eventsCollection.find(query).limit(config.ENRICH_BATCH_SIZE).toArray();
