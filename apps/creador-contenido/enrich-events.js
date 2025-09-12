@@ -26,7 +26,7 @@ async function enrichEvents() {
     // Buscamos eventos validados por el ingestor que estén pendientes de creación de contenido.
     // Un evento necesita enriquecerse si está en 'pending' y le falta el título del post (señal de que no se ha procesado).
     const query = {
-        status: 'pending',
+        contentStatus: 'pending',
         blogPostTitle: { $exists: false }
     };
 
@@ -72,7 +72,7 @@ async function enrichEvents() {
 
                 } catch (error) {
                     lastError = error;
-                    console.warn(`      ⚠️ Intento de texto ${i + 1}/${MAX_RETries} fallido. Reintentando...`);
+                    console.warn(`      ⚠️ Intento de texto ${i + 1}/${MAX_RETRIES} fallido. Reintentando...`);
                     if (i < MAX_RETRIES - 1) await delay(RETRY_DELAY);
                 }
             }
@@ -101,7 +101,7 @@ async function enrichEvents() {
                 imageId: imageData.imageId,
                 imageUrl: imageData.imageUrl,
                 contentGenerationDate: new Date(),
-                status: 'content_ready'
+                contentStatus: 'content_ready'
             };
 
             await eventsCollection.updateOne({ _id: new ObjectId(event._id) }, { $set: updates });
@@ -109,9 +109,23 @@ async function enrichEvents() {
 
         } catch (error) {
             console.error(`   ❌ Error fatal enriqueciendo "${event.name}":`, error.message);
-            await eventsCollection.updateOne({ _id: new ObjectId(event._id) }, { $set: { status: 'enrichment_failed' } });
+            await eventsCollection.updateOne({ _id: new ObjectId(event._id) }, { $set: { contentStatus: 'enrichment_failed' } });
         }
     }
 }
 
 module.exports = { enrichEvents };
+
+if (require.main === module) {
+    console.log("Ejecutando el enriquecedor de eventos de forma manual...");
+    enrichEvents()
+        .catch(err => {
+            console.error("Ocurrió un error durante el enriquecimiento manual:", err);
+            process.exit(1);
+        })
+        .finally(async () => {
+            console.log("Proceso de enriquecimiento manual finalizado.");
+            const { closeDatabaseConnection } = require('./lib/database.js');
+            await closeDatabaseConnection();
+        });
+}

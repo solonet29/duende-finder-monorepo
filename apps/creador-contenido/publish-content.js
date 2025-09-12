@@ -12,7 +12,7 @@ async function publishPosts() {
 
     // 1. Buscar eventos con contenido listo para ser publicados.
     const query = {
-        status: 'content_ready',
+        contentStatus: 'content_ready',
         wordpressPostId: { $exists: false }
     };
 
@@ -37,7 +37,7 @@ async function publishPosts() {
     for (const event of eventsToPublish) {
         try {
             // Marcar el evento para evitar que otro proceso lo tome.
-            await eventsCollection.updateOne({ _id: event._id }, { $set: { status: 'publishing' } });
+            await eventsCollection.updateOne({ _id: event._id }, { $set: { contentStatus: 'publishing' } });
 
             console.log(`   -> Programando: "${event.blogPostTitle}" para las ${publicationDate.toISOString()}`);
 
@@ -59,7 +59,7 @@ async function publishPosts() {
                 { _id: event._id },
                 {
                     $set: {
-                        status: 'published', // Marcado como finalizado en nuestro sistema.
+                        contentStatus: 'published', // Marcado como finalizado en nuestro sistema.
                         wordpressPostId: wordpressResponse.id,
                         publicationDate: publicationDate,
                         blogPostUrl: wordpressResponse.link,
@@ -75,7 +75,7 @@ async function publishPosts() {
         } catch (error) {
             console.error(`   ❌ Error programando "${event.name}":`, error.message);
             // Si algo falla, revertir el estado para que pueda ser reintentado en la siguiente ejecución.
-            await eventsCollection.updateOne({ _id: event._id }, { $set: { status: 'content_ready' } });
+            await eventsCollection.updateOne({ _id: event._id }, { $set: { contentStatus: 'content_ready' } });
         }
     }
 }
