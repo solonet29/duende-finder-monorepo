@@ -16,8 +16,8 @@ async function publishPosts() {
         wordpressPostId: { $exists: false }
     };
 
-    // Publicar 12 al día. El workflow se ejecuta una vez al día.
-    const BATCH_SIZE = 12; 
+    // Usar el tamaño de lote desde el fichero de configuración.
+    const BATCH_SIZE = config.PUBLISH_BATCH_SIZE;
     const eventsToPublish = await eventsCollection.find(query).limit(BATCH_SIZE).toArray();
 
     if (eventsToPublish.length === 0) {
@@ -28,11 +28,16 @@ async function publishPosts() {
     console.log(`⚙️ Se encontraron ${eventsToPublish.length} eventos para programar en WordPress.`);
 
     // 2. Lógica para escalonar la publicación a lo largo del día.
-    const now = new Date();
-    // Empezar a publicar en 1 hora desde ahora para dar margen.
-    let publicationDate = new Date(now.getTime() + 1 * 60 * 60 * 1000); 
-    // Intervalo entre posts. Si son 12 posts en 24h, es uno cada 2 horas.
-    const intervalHours = 2; 
+    // El primer post se programa para el día siguiente a las 6:00 AM UTC.
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    let publicationDate = new Date(tomorrow);
+    publicationDate.setUTCHours(6, 0, 0, 0);
+
+    // Intervalo de 90 minutos (1.5 horas) entre posts.
+    const intervalMinutes = 90;
 
     for (const event of eventsToPublish) {
         try {
@@ -70,7 +75,7 @@ async function publishPosts() {
             console.log(`   ✅ Post para "${event.name}" programado. URL: ${wordpressResponse.link}`);
 
             // Incrementar la fecha para el siguiente post.
-            publicationDate = new Date(publicationDate.getTime() + intervalHours * 60 * 60 * 1000);
+            publicationDate = new Date(publicationDate.getTime() + intervalMinutes * 60 * 1000);
 
         } catch (error) {
             console.error(`   ❌ Error programando "${event.name}":`, error.message);
@@ -81,7 +86,7 @@ async function publishPosts() {
 }
 
 // Exportar la función principal para que el orquestador pueda usarla
-module.s = { publishPosts };
+module.exports = { publishPosts };
 
 // Permitir la ejecución directa del script
 if (require.main === module) {

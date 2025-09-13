@@ -7,7 +7,7 @@ const config = {
     // Lote para el ENRIQUECEDOR (Paso 1): Cuántos eventos procesar para añadir texto/imagen.
     ENRICH_BATCH_SIZE: 5,
     // Lote para el PUBLICADOR (Paso 2): Cuántos posts crear en WordPress por ejecución.
-    PUBLISH_BATCH_SIZE: 4,
+    PUBLISH_BATCH_SIZE: 12,
     // Lote para el DISTRIBUIDOR (Paso 3): Cuántos posts enviar a redes sociales por ejecución.
     DISTRIBUTE_BATCH_SIZE: 4,
 
