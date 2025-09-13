@@ -23,14 +23,22 @@ async function enrichEvents() {
     const db = await connectToDatabase();
     const eventsCollection = db.collection('events');
 
+    // Obtener la fecha de hoy en formato YYYY-MM-DD para la consulta.
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+
     // Buscamos eventos validados por el ingestor que estén pendientes de creación de contenido.
-    // Un evento necesita enriquecerse si está en 'pending' y le falta el título del post (señal de que no se ha procesado).
     const query = {
         contentStatus: 'pending',
-        blogPostTitle: { $exists: false }
+        blogPostTitle: { $exists: false },
+        date: { $gte: todayString } // Solo procesar eventos futuros o de hoy.
     };
 
-    const eventsToProcess = await eventsCollection.find(query).limit(config.ENRICH_BATCH_SIZE).toArray();
+    // Ordenamos por ID descendente para procesar los más recientes primero.
+    const eventsToProcess = await eventsCollection.find(query)
+        .sort({ _id: -1 })
+        .limit(config.ENRICH_BATCH_SIZE)
+        .toArray();
 
     if (eventsToProcess.length === 0) {
         console.log("✅ No se encontraron eventos nuevos para enriquecer.");
