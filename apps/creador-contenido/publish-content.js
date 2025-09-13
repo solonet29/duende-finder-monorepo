@@ -11,14 +11,21 @@ async function publishPosts() {
     const eventsCollection = db.collection('events');
 
     // 1. Buscar eventos con contenido listo para ser publicados.
+    // Obtener la fecha de hoy en formato YYYY-MM-DD para la consulta.
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+
     const query = {
         contentStatus: 'content_ready',
-        wordpressPostId: { $exists: false }
+        wordpressPostId: { $exists: false },
+        date: { $gte: todayString } // Solo procesar eventos futuros o de hoy.
     };
 
-    // Usar el tamaño de lote desde el fichero de configuración.
-    const BATCH_SIZE = config.PUBLISH_BATCH_SIZE;
-    const eventsToPublish = await eventsCollection.find(query).limit(BATCH_SIZE).toArray();
+    // Ordenamos por ID descendente para procesar los más recientes primero.
+    const eventsToPublish = await eventsCollection.find(query)
+        .sort({ _id: -1 })
+        .limit(config.PUBLISH_BATCH_SIZE)
+        .toArray();
 
     if (eventsToPublish.length === 0) {
         console.log('✅ No hay contenido nuevo para programar en WordPress.');
