@@ -1,7 +1,7 @@
 // publish-content.js
 // OBJETIVO: Tomar eventos con contenido listo y programarlos en WordPress de forma escalonada.
 
-require('dotenv').config({ path: '../../.env' });
+require('dotenv').config();
 const { connectToDatabase, closeDatabaseConnection } = require('./lib/database.js');
 const { publishToWordPress } = require('./lib/wordpressClient.js');
 const config = require('./config.js');

@@ -1,7 +1,7 @@
 // enrich-events.js
 // OBJETIVO: Tomar eventos con estado 'pending' y enriquecerlos con un paquete de contenido completo (texto e imagen).
 
-require('dotenv').config({ path: '../../.env' });
+require('dotenv').config();
 const { connectToDatabase } = require('./lib/database.js');
 const Groq = require('groq-sdk');
 const { ObjectId } = require('mongodb');
