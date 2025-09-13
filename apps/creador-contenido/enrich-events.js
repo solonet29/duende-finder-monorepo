@@ -40,6 +40,11 @@ async function enrichEvents() {
     console.log(`⚙️ Se encontraron ${eventsToProcess.length} eventos para enriquecer.`);
 
     for (const event of eventsToProcess) {
+        // Normalizar el objeto del evento para asegurar que `name` siempre exista.
+        if (event.title && !event.name) {
+            event.name = event.title;
+        }
+
         try {
             console.log(`   -> Enriqueciendo: "${event.name}".`);
 
