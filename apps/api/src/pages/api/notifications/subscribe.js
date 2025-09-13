@@ -1,6 +1,6 @@
 // /pages/api/notifications/subscribe.js
 
-import { connectToDatabase } from '../../../lib/database';
+import { connectToDatabase } from '../../../../lib/database';
 
 // Este endpoint recibe una suscripción push del cliente y la guarda en la BBDD.
 export default async function handler(req, res) {

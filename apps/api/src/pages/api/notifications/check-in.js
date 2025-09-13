@@ -1,6 +1,6 @@
 // /pages/api/notifications/check-in.js
 
-import { connectToDatabase } from '../../../lib/database';
+import { connectToDatabase } from '../../../../lib/database';
 
 // Este endpoint registra la actividad de un usuario.
 // El frontend lo llamará cada vez que se inicie la aplicación.
