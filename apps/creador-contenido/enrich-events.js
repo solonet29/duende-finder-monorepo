@@ -45,6 +45,11 @@ async function enrichEvents() {
             event.name = event.title;
         }
 
+        // Normalizar el objeto del artista para asegurar que `artist` sea un string.
+        if (typeof event.artist === 'object' && event.artist !== null && event.artist.name) {
+            event.artist = event.artist.name;
+        }
+
         try {
             console.log(`   -> Enriqueciendo: "${event.name}".`);
 
