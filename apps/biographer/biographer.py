@@ -29,6 +29,12 @@ def get_config():
             sys.exit(1)
     return config
 
+def clean_gemini_response(text):
+    """Limpia los caracteres extraños y marcadores de código de la respuesta de Gemini."""
+    cleaned_text = text.replace('«`html', '').replace('`»', '').strip()
+    cleaned_text = cleaned_text.replace('```html', '').replace('```', '').strip()
+    return cleaned_text
+
 def generate_long_biography(artist_name, api_key):
     """Genera una biografía larga y estructurada usando Gemini."""
     print(f"Generando biografía LARGA para {artist_name}..." )
@@ -39,7 +45,7 @@ REGLA DE ESTRUCTURA CRÍTICA: Tu respuesta debe ser un bloque de código HTML. E
 REGLA DE CONTENIDO CRÍTICA: No utilices frases genéricas o de relleno. Céntrate solo en información verificable y no incluyas frases al final invitando a visitar redes sociales.
 La salida debe ser únicamente el HTML de los párrafos y los subtítulos."""
     response = model.generate_content(prompt)
-    return response.text
+    return clean_gemini_response(response.text)
 
 def generate_short_biography(artist_name, api_key):
     """Genera una biografía corta de una frase usando Gemini."""
@@ -48,7 +54,7 @@ def generate_short_biography(artist_name, api_key):
     model = genai.GenerativeModel('gemini-1.5-flash')
     prompt = f"Resume la carrera del artista flamenco {artist_name} en una sola frase impactante y concisa de no más de 25 palabras."
     response = model.generate_content(prompt)
-    return response.text.strip()
+    return clean_gemini_response(response.text)
 
 def find_youtube_videos(artist_name, api_key):
     """Busca videos de YouTube del artista."""
@@ -91,7 +97,7 @@ def create_wordpress_page(config, artist_name, short_bio, long_bio_html, main_im
 
     # b. Construye el Contenido Final de la Página
     gutenberg_content = f"""
-<style>.artist-profile-content p {{color: #333333 !important;}}</style>
+<style>.artist-profile-content p {{color: #333333 !important;}} .artist-profile-content h2 {{color: #26145F !important;}}</style>
 <div class="wp-block-group artist-profile-content">
   <div class="wp-block-columns"><div class="wp-block-column" style="flex-basis:33.33%"><figure class="wp-block-image size-large"><img src="{main_image_url}" alt="{artist_name}"/></figure>
   </div>
