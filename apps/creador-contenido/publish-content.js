@@ -36,9 +36,9 @@ async function publishPosts() {
 
     // 2. Lógica para escalonar la publicación a lo largo del día.
     // El primer post se programa para el día siguiente a las 6:00 AM UTC.
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
+    const scheduleBaseDate = new Date();
+    scheduleBaseDate.setUTCHours(0, 0, 0, 0);
+    const tomorrow = new Date(scheduleBaseDate);
     tomorrow.setDate(tomorrow.getDate() + 1);
     let publicationDate = new Date(tomorrow);
     publicationDate.setUTCHours(6, 0, 0, 0);
