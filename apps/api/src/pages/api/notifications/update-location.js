@@ -1,6 +1,6 @@
 // /pages/api/notifications/update-location.js
 
-import { connectToDatabase } from '../../../lib/database';
+import { connectToDatabase } from '../../../../lib/database';
 import webpush from '../../../../lib/webPush';
 
 // Este endpoint es el cerebro de las notificaciones por geolocalización.
