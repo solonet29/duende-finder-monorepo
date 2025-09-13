@@ -83,7 +83,6 @@ def create_wordpress_page(config, artist_name, short_bio, long_bio_html, main_im
     """Publica una nueva página en WordPress usando la plantilla de contenido final."""
     print("Construyendo contenido final y publicando en WordPress...")
     wp_api_url = f"{config['WP_URL']}/wp-json/wp/v2/pages"
-    artist_category_id = 96
 
     # a. Prepara el HTML de los Vídeos
     videos_html = "<h2>Actuaciones Destacadas</h2>"
@@ -117,7 +116,7 @@ def create_wordpress_page(config, artist_name, short_bio, long_bio_html, main_im
         "title": artist_name,
         "status": "publish",
         "content": gutenberg_content,
-        "categories": [artist_category_id],
+        "wf_page_folders": [40], # ID 40 para la carpeta "ARTISTAS"
         "meta": {"main_artist_image_url": main_image_url or ""}
     }
     
