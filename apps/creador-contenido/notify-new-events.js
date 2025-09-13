@@ -10,20 +10,17 @@ async function notifyAboutNewEvents() {
     const db = await connectToDatabase();
     
     try {
-        // PASO 1: Buscar eventos creados en la última hora
+        // PASO 1: Buscar eventos pendientes de notificar.
         const eventsCollection = db.collection('events');
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        const query = { notificationStatus: 'pending' };
+        const eventsToNotify = await eventsCollection.find(query).toArray();
 
-        const newEventsCount = await eventsCollection.countDocuments({ 
-            contentGenerationDate: { $gte: oneHourAgo },
-            status: 'content_ready' // Asegurarnos de que solo contamos los que están listos
-        });
-
-        if (newEventsCount === 0) {
-            console.log('✅ No se encontraron eventos nuevos en la última hora. No se enviarán notificaciones.');
+        if (eventsToNotify.length === 0) {
+            console.log('✅ No se encontraron eventos nuevos para notificar.');
             return;
         }
 
+        const newEventsCount = eventsToNotify.length;
         console.log(`🔍 Se encontraron ${newEventsCount} eventos nuevos. Preparando notificación...`);
 
         // PASO 2: Obtener todos los suscriptores
@@ -64,6 +61,14 @@ async function notifyAboutNewEvents() {
         });
 
         await Promise.all(notificationPromises);
+
+        // PASO 4: Actualizar el estado de notificación de los eventos.
+        const eventIdsToUpdate = eventsToNotify.map(event => event._id);
+        await eventsCollection.updateMany(
+            { _id: { $in: eventIdsToUpdate } },
+            { $set: { notificationStatus: 'sent' } }
+        );
+        console.log(`   -> ${eventIdsToUpdate.length} eventos actualizados a 'notificationStatus: sent'.`);
 
         console.log(`
 🎉 Proceso de envío finalizado.`);

@@ -119,7 +119,8 @@ async function enrichEvents() {
                 imageId: imageData.imageId,
                 imageUrl: imageData.imageUrl,
                 contentGenerationDate: new Date(),
-                contentStatus: 'content_ready'
+                contentStatus: 'content_ready',
+                notificationStatus: 'pending' // <-- NUEVO: Marcar para notificación.
             };
 
             await eventsCollection.updateOne({ _id: new ObjectId(event._id) }, { $set: updates });
