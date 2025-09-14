@@ -94,17 +94,31 @@ def find_youtube_videos(artist_name, api_key):
     return video_urls
 
 def find_main_image(artist_name, api_key, cx_id):
-    """Busca una imagen principal usando Google Custom Search."""
-    print(f"Buscando imagen principal para {artist_name}...")
+    """Busca una imagen principal usando Google Custom Search con varias consultas."""
+    print(f"Buscando imagen principal para {artist_name} con consultas mejoradas...")
+    
+    search_queries = [
+        f"{artist_name} flamenco retrato primer plano",
+        f"{artist_name} actuando en directo",
+        f"{artist_name} flamenco"
+    ]
+    
     service = build("customsearch", "v1", developerKey=api_key)
-    res = service.cse().list(q=f"{artist_name} flamenco", cx=cx_id, searchType='image', num=1).execute()
-    if 'items' in res and len(res['items']) > 0:
-        image_url = res['items'][0]['link']
-        print("Imagen encontrada.")
-        return image_url
-    else:
-        print("No se encontró ninguna imagen.")
-        return None
+    
+    for query in search_queries:
+        try:
+            print(f"  - Intentando con la consulta: '{query}'")
+            res = service.cse().list(q=query, cx=cx_id, searchType='image', num=1).execute()
+            if 'items' in res and len(res['items']) > 0:
+                image_url = res['items'][0]['link']
+                print(f"  ✅ Imagen encontrada con éxito.")
+                return image_url
+        except Exception as e:
+            print(f"    - Error en la consulta: {e}")
+            continue
+            
+    print("  - No se encontró ninguna imagen tras varios intentos.")
+    return None
 
 def create_wordpress_page(config, artist_name, short_bio, long_bio_html, main_image_url, video_urls):
     """Publica una nueva página completa en WordPress."""

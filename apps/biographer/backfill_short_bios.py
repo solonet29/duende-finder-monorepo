@@ -32,12 +32,14 @@ def get_config():
     return config
 
 def get_artists_to_update(db):
-    """Obtiene artistas con URL de perfil pero sin biografía corta."""
+    """Obtiene artistas con perfil completo a los que les falta la bio corta o la imagen."""
     print("Buscando artistas para actualizar...")
     query = {
-        "profilePageUrl": {"$exists": True, "$ne": ""},
-        "short_bio": {"$exists": False},
-        "profileStatus": "complete"
+        "profileStatus": "complete",
+        "$or": [
+            {"short_bio": {"$exists": False}},
+            {"meta.main_artist_image_url": {"$exists": False}}
+        ]
     }
     artists = list(db.artists.find(query))
     print(f"Se encontraron {len(artists)} artistas para actualizar.")
@@ -50,8 +52,8 @@ def extract_slug_from_url(url):
     except:
         return None
 
-def extract_short_bio_from_api(slug, config):
-    """Extrae la biografía corta usando la API REST de WordPress."""
+def extract_info_from_api(slug, artist_name, config):
+    """Extrae la bio corta y la URL de la imagen usando la API REST de WordPress."""
     wp_api_url = f"{config['WP_URL']}/wp-json/wp/v2/pages"
     auth = (config['WP_USER'], config['WP_PASSWORD'])
     params = {'slug': slug}
@@ -65,11 +67,22 @@ def extract_short_bio_from_api(slug, config):
             content_html = pages[0].get('content', {}).get('rendered', '')
             if content_html:
                 soup = BeautifulSoup(content_html, 'html.parser')
-                title_box = soup.find('div', class_='artist-title-box')
-                if title_box:
-                    p_tag = title_box.find('p')
+                
+                # Extract short bio
+                short_bio = None
+                h2_artist = soup.find('h2', string=re.compile(artist_name, re.IGNORECASE))
+                if h2_artist:
+                    p_tag = h2_artist.find_next_sibling('p')
                     if p_tag and p_tag.text:
-                        return p_tag.text.strip()
+                        short_bio = p_tag.text.strip()
+
+                # Extract image url
+                main_image_url = None
+                img_tag = soup.find('img')
+                if img_tag and img_tag.has_attr('src'):
+                    main_image_url = img_tag['src']
+                
+                return {"short_bio": short_bio, "main_image_url": main_image_url}
                         
     except requests.exceptions.RequestException as e:
         print(f"  - Error al llamar a la API de WordPress para el slug '{slug}': {e}")
@@ -80,14 +93,14 @@ def extract_short_bio_from_api(slug, config):
 
 def main():
     """Flujo principal del script."""
-    print("--- Iniciando script para rellenar biografías cortas (vía API) ---")
+    print("--- Iniciando script para rellenar datos de artistas (vía API) ---")
     config = get_config()
     
     try:
         client = pymongo.MongoClient(config['MONGO_URI'])
         db = client[config['DB_NAME']]
         artists_collection = db["artists"]
-        print("✅ Conectado a MongoDB.")
+        print("Conectado a MongoDB.")
     except pymongo.errors.ConnectionFailure as e:
         print(f"Error de conexión a MongoDB: {e}")
         sys.exit(1)
@@ -103,8 +116,12 @@ def main():
     for artist in artists_to_update:
         artist_name = artist.get("name", "ID Desconocido")
         artist_id = artist["_id"]
-        profile_url = artist["profilePageUrl"]
+        profile_url = artist.get("profilePageUrl")
         
+        if not profile_url:
+            print(f"  - El artista {artist_name} no tiene URL de perfil. Saltando.")
+            continue
+
         print(f"\nProcesando a: {artist_name}...")
         
         slug = extract_slug_from_url(profile_url)
@@ -113,17 +130,29 @@ def main():
             print(f"  - No se pudo extraer el slug de la URL: {profile_url}")
             continue
             
-        short_bio = extract_short_bio_from_api(slug, config)
+        extracted_info = extract_info_from_api(slug, artist_name, config)
         
-        if short_bio:
-            artists_collection.update_one(
-                {"_id": artist_id},
-                {"$set": {"short_bio": short_bio}}
-            )
-            print(f"  ✅ Biografía corta encontrada y guardada: \"{short_bio}\"" )
-            updated_count += 1
+        if extracted_info:
+            update_set = {}
+            if extracted_info["short_bio"] and not artist.get("short_bio"):
+                update_set["short_bio"] = extracted_info["short_bio"]
+                print(f"  - Biografía corta encontrada: \"{extracted_info['short_bio']}\"" )
+
+            if extracted_info["main_image_url"] and not artist.get("meta", {}).get("main_artist_image_url"):
+                update_set["meta"] = {"main_artist_image_url": extracted_info["main_image_url"]}
+                print(f"  - Imagen encontrada: {extracted_info['main_image_url']}")
+
+            if update_set:
+                artists_collection.update_one(
+                    {"_id": artist_id},
+                    {"$set": update_set}
+                )
+                print(f"  -> Base de datos actualizada para {artist_name}.")
+                updated_count += 1
+            else:
+                print("  - Los datos ya estaban presentes en la base de datos.")
         else:
-            print("  - No se pudo encontrar la biografía corta en la página (vía API).")
+            print("  - No se pudo encontrar información en la página (vía API).")
             
         time.sleep(0.5) # Pausa breve para no saturar la API
 

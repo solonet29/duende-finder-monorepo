@@ -41,9 +41,8 @@ def get_artists_from_db(config):
         artists_collection = db["artists"]
         
         query = {"hasProfilePage": True, "profilePageUrl": {"$exists": True}}
-        projection = {"name": 1, "profilePageUrl": 1, "profileStatus": 1, "eventCount": 1, "meta": 1}
         
-        artists = list(artists_collection.find(query, projection).sort("eventCount", -1))
+        artists = list(artists_collection.find(query).sort("eventCount", -1))
         client.close()
         print(f"Se encontraron {len(artists)} artistas con perfil.")
         return artists
@@ -87,7 +86,7 @@ def build_artist_index_html(artists, config):
     .artist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px; max-width: 1200px; margin: auto; }
     .artist-card { position: relative; background-color: #fff; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; }
     .artist-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
-    .artist-card-image { width: 100%; height: 200px; object-fit: cover; }
+    .artist-card-image { width: 100%; height: 200px; object-fit: cover; object-position: center top; }
     .artist-card-flames { position: absolute; top: 15px; right: 15px; font-size: 1.8em; text-shadow: 0 0 3px rgba(0,0,0,0.5); }
     .artist-card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
     .artist-card-title { font-size: 1.5em; font-weight: bold; color: #26145F; margin: 0 0 10px 0; padding-right: 40px; } /* Espacio para las llamas */
@@ -141,7 +140,7 @@ def get_page_by_slug(config, slug):
     auth = (config['WP_USER'], config['WP_PASSWORD'])
     params = {'slug': slug, 'per_page': 1}
     try:
-        response = requests.get(wp_api_url, auth=auth, params=params, timeout=30)
+        response = requests.get(wp_api_url, auth=auth, params=params, timeout=60)
         response.raise_for_status()
         pages = response.json()
         if pages:

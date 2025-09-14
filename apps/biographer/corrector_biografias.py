@@ -102,17 +102,30 @@ def find_youtube_videos(artist_name, api_key):
         return []
 
 def find_main_image(artist_name, api_key, cx_id):
-    """Busca una imagen principal usando Google Custom Search."""
-    print(f"Buscando imagen principal para {artist_name}...")
-    try:
-        service = build("customsearch", "v1", developerKey=api_key)
-        res = service.cse().list(q=f"{artist_name} flamenco", cx=cx_id, searchType='image', num=1).execute()
-        if 'items' in res and len(res['items']) > 0:
-            image_url = res['items'][0]['link']
-            print("Imagen encontrada.")
-            return image_url
-    except Exception as e:
-        print(f"No se pudo buscar la imagen: {e}")
+    """Busca una imagen principal usando Google Custom Search con varias consultas."""
+    print(f"Buscando imagen principal para {artist_name} con consultas mejoradas...")
+    
+    search_queries = [
+        f"{artist_name} flamenco retrato primer plano",
+        f"{artist_name} actuando en directo",
+        f"{artist_name} flamenco"
+    ]
+    
+    service = build("customsearch", "v1", developerKey=api_key)
+    
+    for query in search_queries:
+        try:
+            print(f"  - Intentando con la consulta: '{query}'")
+            res = service.cse().list(q=query, cx=cx_id, searchType='image', num=1).execute()
+            if 'items' in res and len(res['items']) > 0:
+                image_url = res['items'][0]['link']
+                print(f"  ✅ Imagen encontrada con éxito.")
+                return image_url
+        except Exception as e:
+            print(f"    - Error en la consulta: {e}")
+            continue
+            
+    print("  - No se encontró ninguna imagen tras varios intentos.")
     return None
 
 def get_page_by_title(config, artist_name):
