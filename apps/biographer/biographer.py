@@ -131,6 +131,7 @@ def create_wordpress_page(config, artist_name, short_bio, long_bio_html, main_im
 
     gutenberg_content = f"""
 <style>
+h1.entry-title {{ color: #000000 !important; }}
 .artist-profile-content p {{color: #333333 !important;}}
 .artist-profile-content h2 {{color: #26145F !important;}}
 .artist-title-box {{ background-color: #26145F; border-radius: 15px; padding: 20px; margin-bottom: 20px; }}
@@ -179,7 +180,7 @@ def create_wordpress_placeholder_page(config, artist_name):
     wp_api_url = f"{config['WP_URL']}/wp-json/wp/v2/pages"
     image_url = "https://buscador.afland.es/assets/flamenco-placeholder.png"
 
-    verified_image_html = f'<figure class="wp-block-image size-large"><img src="{image_url}" alt="Imagen no disponible"/></figure>'
+    verified_image_html = f'<figure class="wp-block-image size-large artist-placeholder-image"><img src="{image_url}" alt="Imagen no disponible"/></figure>'
 
     placeholder_text = f"""
 <p>En Andalucía Flamenco Land, estamos continuamente comprobando y verificando datos y biografías de los artistas flamencos de todo el mundo.</p>
@@ -190,6 +191,11 @@ def create_wordpress_placeholder_page(config, artist_name):
 
     gutenberg_content_placeholder = f"""
 <style>
+h1.entry-title {{ color: #000000 !important; }}
+.artist-placeholder-image {{
+    max-width: 300px;
+    margin: auto;
+}}
 .artist-profile-content p {{color: #333333 !important;}}
 .artist-title-box {{ background-color: #26145F; border-radius: 15px; padding: 20px; margin-bottom: 20px; }}
 .artist-title-box h2 {{ color: #FFFFFF !important; }}
