@@ -53,7 +53,7 @@ def strip_html(html_string):
 def sanitize_name(name):
     """Quita acentos de un string."""
     nfkd_form = unicodedata.normalize('NFKD', name)
-    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
+    return u''.join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 def extract_slug_from_url(url):
     """Extrae el slug de una URL de WordPress."""
@@ -461,6 +461,9 @@ def main():
                     }
                     artists_collection.update_one({"_id": artist["_id"]}, {"$set": update_set})
                     print(f"Base de datos actualizada para {artist_name}.")
+
+        print("\n--- Regenerando el índice de artistas ---")
+        os.system("python apps/biographer/generate_artist_index.py")
 
     except Exception as e:
         print(f"Ocurrió un error general: {e}")

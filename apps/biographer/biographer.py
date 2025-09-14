@@ -257,7 +257,7 @@ def main():
         sys.exit(1)
 
     try:
-        artists_to_process_cursor = artists_collection.find({"hasProfilePage": {"$ne": True}}).limit(5)
+        artists_to_process_cursor = artists_collection.find({"hasProfilePage": {"$ne": True}}).sort("eventCount", -1).limit(5)
         artists_to_process = list(artists_to_process_cursor)
         artist_count = len(artists_to_process)
 
@@ -328,6 +328,9 @@ def main():
                     continue
 
             print("Procesamiento del lote finalizado.")
+
+        print("\n--- Regenerando el índice de artistas ---")
+        os.system("python apps/biographer/generate_artist_index.py")
 
     except Exception as e:
         print(f"Ocurrió un error general durante la ejecución: {e}")
