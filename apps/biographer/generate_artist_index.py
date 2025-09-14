@@ -6,6 +6,7 @@ import requests
 from pathlib import Path
 import google.generativeai as genai
 import time
+import numpy as np
 
 # Carga las variables de entorno desde la carpeta del script
 env_path = Path(__file__).parent / '.env'
@@ -40,7 +41,7 @@ def get_artists_from_db(config):
         artists_collection = db["artists"]
         
         query = {"hasProfilePage": True, "profilePageUrl": {"$exists": True}}
-        projection = {"name": 1, "profilePageUrl": 1, "profileStatus": 1, "eventCount": 1}
+        projection = {"name": 1, "profilePageUrl": 1, "profileStatus": 1, "eventCount": 1, "meta": 1}
         
         artists = list(artists_collection.find(query, projection).sort("eventCount", -1))
         client.close()
@@ -70,16 +71,26 @@ def generate_seo_sentence(artist_name, api_key):
 def build_artist_index_html(artists, config):
     """Construye el HTML para la página de índice de artistas."""
     print("Construyendo el HTML del índice de artistas...")
-    
+
+    # Calcula los umbrales de popularidad para las llamas
+    event_counts = [artist.get('eventCount', 0) for artist in artists if artist.get('eventCount', 0) > 0]
+    if event_counts:
+        p90 = np.percentile(event_counts, 90)
+        p70 = np.percentile(event_counts, 70)
+        p40 = np.percentile(event_counts, 40)
+    else:
+        p90, p70, p40 = 0, 0, 0
+
     styles = """
 <style>
     h1.entry-title { color: #000000 !important; }
     .artist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px; max-width: 1200px; margin: auto; }
-    .artist-card { background-color: #fff; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; }
+    .artist-card { position: relative; background-color: #fff; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; }
     .artist-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
     .artist-card-image { width: 100%; height: 200px; object-fit: cover; }
+    .artist-card-flames { position: absolute; top: 15px; right: 15px; font-size: 1.8em; text-shadow: 0 0 3px rgba(0,0,0,0.5); }
     .artist-card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
-    .artist-card-title { font-size: 1.5em; font-weight: bold; color: #26145F; margin: 0 0 10px 0; }
+    .artist-card-title { font-size: 1.5em; font-weight: bold; color: #26145F; margin: 0 0 10px 0; padding-right: 40px; } /* Espacio para las llamas */
     .artist-card-bio { font-size: 1em; color: #333; margin-bottom: 20px; flex-grow: 1; }
     .artist-card-button { display: inline-block; background-color: #E53935; color: #fff !important; padding: 10px 20px; border-radius: 5px; text-align: center; text-decoration: none; font-weight: bold; transition: background-color 0.3s ease; }
     .artist-card-button:hover { background-color: #C62828; }
@@ -92,6 +103,7 @@ def build_artist_index_html(artists, config):
         artist_name = artist.get("name", "Artista Desconocido")
         profile_url = artist.get("profilePageUrl", "#")
         profile_status = artist.get("profileStatus")
+        event_count = artist.get("eventCount", 0)
         image_url = artist.get("meta", {}).get("main_artist_image_url") or "https://buscador.afland.es/assets/flamenco-placeholder.png"
 
         if profile_status == "complete":
@@ -99,9 +111,19 @@ def build_artist_index_html(artists, config):
         else:
             short_bio = "Biografía no disponible."
 
+        flames = ""
+        if event_count > 0:
+            if event_count >= p90:
+                flames = "🔥🔥🔥"
+            elif event_count >= p70:
+                flames = "🔥🔥"
+            elif event_count >= p40:
+                flames = "🔥"
+
         cards_html += f"""
         <div class="artist-card">
             <img src="{image_url}" alt="Imagen de {artist_name}" class="artist-card-image">
+            <div class="artist-card-flames">{flames}</div>
             <div class="artist-card-content">
                 <h3 class="artist-card-title">{artist_name}</h3>
                 <p class="artist-card-bio">{short_bio}</p>

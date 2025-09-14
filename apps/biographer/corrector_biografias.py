@@ -1,4 +1,3 @@
-
 import os
 import sys
 import time
@@ -305,6 +304,8 @@ def main():
                     }
                     if short_bio:
                         update_set["short_bio"] = short_bio
+                    if new_meta.get("main_artist_image_url"):
+                        update_set["meta"] = new_meta
 
                     artists_collection.update_one(
                         {"_id": artist["_id"]},

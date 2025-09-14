@@ -174,11 +174,11 @@ h1.entry-title {{ color: #000000 !important; }}
         print(f"Error al publicar en WordPress: {e}")
         return None
 
-def create_wordpress_placeholder_page(config, artist_name):
+def create_wordpress_placeholder_page(config, artist_name, main_image_url):
     """Publica una página 'placeholder' en WordPress."""
     print(f"Creando página PLACEHOLDER para {artist_name}...")
     wp_api_url = f"{config['WP_URL']}/wp-json/wp/v2/pages"
-    image_url = "https://buscador.afland.es/assets/flamenco-placeholder.png"
+    image_url = main_image_url or "https://buscador.afland.es/assets/flamenco-placeholder.png"
 
     verified_image_html = f'<figure class="wp-block-image size-large artist-placeholder-image"><img src="{image_url}" alt="Imagen no disponible"/></figure>'
 
@@ -263,6 +263,7 @@ def main():
                     new_page_url = None
                     profile_status = "failed"
                     short_bio = None
+                    main_image_url = None
 
                     if artist_exists:
                         # CASO A: El artista existe, crear perfil completo
@@ -283,8 +284,6 @@ def main():
                         print(f"No se encontró información suficiente para {artist_name}. Creando perfil placeholder.")
                         main_image_url = find_main_image(artist_name, config['GOOGLE_API_KEY'], config['CUSTOM_SEARCH_ENGINE_ID'])
                         
-                        # (Opcional) Aquí se podría añadir la verificación de la imagen si se desea
-                        
                         new_page_url = create_wordpress_placeholder_page(config, artist_name, main_image_url)
                         if new_page_url:
                             profile_status = "placeholder"
@@ -298,6 +297,8 @@ def main():
                         }
                         if short_bio:
                             update_set["short_bio"] = short_bio
+                        if main_image_url:
+                            update_set["meta"] = {"main_artist_image_url": main_image_url}
 
                         artists_collection.update_one(
                             {"_id": artist["_id"]},
