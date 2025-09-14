@@ -1,7 +1,7 @@
-
 import os
 import sys
 import time
+import json
 from dotenv import load_dotenv
 import pymongo
 import requests
@@ -31,9 +31,29 @@ def get_config():
 
 def clean_gemini_response(text):
     """Limpia los caracteres extraños y marcadores de código de la respuesta de Gemini."""
+    text = text.replace('```json', '').replace('```', '').strip()
     cleaned_text = text.replace('«`html', '').replace('`»', '').strip()
     cleaned_text = cleaned_text.replace('```html', '').replace('```', '').strip()
     return cleaned_text
+
+def verify_artist_existence(artist_name, api_key):
+    """Verifica con Gemini si existe información pública sobre un artista."""
+    print(f"Verificando existencia de información para {artist_name}...")
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    prompt = f"Basándote en tu conocimiento público, ¿existe información verificable y suficiente para escribir una biografía detallada sobre un/a artista de flamenco llamado/a '{artist_name}'? Responde únicamente con un objeto JSON con dos claves: 'artistExists' (true o false) y 'confidence' ('high', 'medium', o 'low')."
+    response = model.generate_content(prompt)
+    
+    try:
+        # Limpiar y parsear la respuesta JSON
+        cleaned_response = clean_gemini_response(response.text)
+        data = json.loads(cleaned_response)
+        print(f"Verificación completada: {data}")
+        return data
+    except (json.JSONDecodeError, KeyError) as e:
+        print(f"Error al decodificar la respuesta de verificación de Gemini: {e}")
+        print(f"Respuesta recibida: {response.text}")
+        return {"artistExists": False, "confidence": "low"} # Fallback seguro
 
 def generate_long_biography(artist_name, api_key):
     """Genera una biografía larga y estructurada usando Gemini."""
@@ -80,11 +100,10 @@ def find_main_image(artist_name, api_key, cx_id):
         return None
 
 def create_wordpress_page(config, artist_name, short_bio, long_bio_html, main_image_url, video_urls):
-    """Publica una nueva página en WordPress usando la plantilla de contenido final."""
-    print("Construyendo contenido final y publicando en WordPress...")
+    """Publica una nueva página completa en WordPress."""
+    print("Construyendo contenido COMPLETO y publicando en WordPress...")
     wp_api_url = f"{config['WP_URL']}/wp-json/wp/v2/pages"
 
-    # a. Prepara el HTML de los Vídeos
     videos_html = "<h2>Actuaciones Destacadas</h2>"
     if video_urls:
         for url in video_urls:
@@ -94,7 +113,6 @@ def create_wordpress_page(config, artist_name, short_bio, long_bio_html, main_im
 <iframe src="{embed_url}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe>
 </div>'''
 
-    # b. Construye el Contenido Final de la Página
     gutenberg_content = f"""
 <style>.artist-profile-content p {{color: #333333 !important;}} .artist-profile-content h2 {{color: #26145F !important;}}</style>
 <div class="wp-block-group artist-profile-content">
@@ -106,18 +124,12 @@ def create_wordpress_page(config, artist_name, short_bio, long_bio_html, main_im
   </div>
   <hr class="wp-block-separator has-alpha-channel-opacity"/>
   {long_bio_html}
-  
   {videos_html}
-  
 </div>
 """
-
     data = {
-        "title": artist_name,
-        "status": "publish",
-        "content": gutenberg_content,
-        "wf_page_folders": [40], # ID 40 para la carpeta "ARTISTAS"
-        "meta": {"main_artist_image_url": main_image_url or ""}
+        "title": artist_name, "status": "publish", "content": gutenberg_content,
+        "wf_page_folders": [40], "meta": {"main_artist_image_url": main_image_url or ""}
     }
     
     auth = (config['WP_USER'], config['WP_PASSWORD'])
@@ -129,6 +141,47 @@ def create_wordpress_page(config, artist_name, short_bio, long_bio_html, main_im
         return page_data['link']
     else:
         print(f"Error al publicar en WordPress para {artist_name}: {response.status_code}")
+        print(response.text)
+        return None
+
+def create_wordpress_placeholder_page(config, artist_name, image_url):
+    """Publica una página 'placeholder' en WordPress."""
+    print(f"Creando página PLACEHOLDER para {artist_name}...")
+    wp_api_url = f"{config['WP_URL']}/wp-json/wp/v2/pages"
+
+    verified_image_html = ""
+    if image_url:
+        verified_image_html = f'<figure class="wp-block-image size-large"><img src="{image_url}" alt="{artist_name}"/></figure>'
+
+    placeholder_text = f"""
+<p>En Andalucía Flamenco Land, estamos continuamente comprobando y verificando datos y biografías de los artistas flamencos de todo el mundo.</p>
+<p>Actualmente no disponemos de información biográfica detallada para <strong>{artist_name}</strong>. Nuestro equipo está trabajando para ampliar nuestro archivo.</p>
+<p>Mientras tanto, te invitamos a buscar sus próximas actuaciones y eventos en nuestro buscador especializado:</p>
+<div class="wp-block-buttons"><div class="wp-block-button is-style-fill"><a class="wp-block-button__link has-white-color has-vivid-red-background-color has-text-color has-background" href="https://buscador.afland.es/?q={artist_name.replace(' ', '%20')}" target="_blank" rel="noreferrer noopener">Buscar eventos de {artist_name}</a></div>
+</div>"""
+
+    gutenberg_content_placeholder = f"""
+<style>.artist-profile-content p {{color: #333333 !important;}}</style>
+<div class="wp-block-group artist-profile-content">
+  <h2>{artist_name}</h2>
+  {verified_image_html}
+  {placeholder_text}
+  </div>
+"""
+    data = {
+        "title": artist_name, "status": "publish", "content": gutenberg_content_placeholder,
+        "wf_page_folders": [40], "meta": {"main_artist_image_url": image_url or ""}
+    }
+
+    auth = (config['WP_USER'], config['WP_PASSWORD'])
+    response = requests.post(wp_api_url, auth=auth, json=data, headers={"Content-Type": "application/json"})
+
+    if response.status_code == 201:
+        page_data = response.json()
+        print(f"¡Página placeholder para {artist_name} creada! URL: {page_data['link']}")
+        return page_data['link']
+    else:
+        print(f"Error al publicar placeholder en WordPress para {artist_name}: {response.status_code}")
         print(response.text)
         return None
 
@@ -159,25 +212,49 @@ def main():
                     artist_name = artist["name"]
                     print(f"--- Procesando a: {artist_name} (ID: {artist['_id']}) ---")
 
-                    # 1. Generar contenido
-                    long_bio_html = generate_long_biography(artist_name, config['GEMINI_API_KEY'])
-                    short_bio = generate_short_biography(artist_name, config['GEMINI_API_KEY'])
-                    
-                    video_urls = find_youtube_videos(artist_name, config['GOOGLE_API_KEY'])
-                    main_image_url = find_main_image(artist_name, config['GOOGLE_API_KEY'], config['CUSTOM_SEARCH_ENGINE_ID'])
+                    # 1. Verificación previa con Gemini
+                    verification_data = verify_artist_existence(artist_name, config['GEMINI_API_KEY'])
+                    artist_exists = verification_data.get("artistExists", False)
 
-                    # 2. Publicar en WordPress
-                    new_page_url = create_wordpress_page(
-                        config, artist_name, short_bio, long_bio_html, main_image_url, video_urls
-                    )
+                    new_page_url = None
+                    profile_status = "failed"
+
+                    if artist_exists:
+                        # CASO A: El artista existe, crear perfil completo
+                        print(f"Información encontrada para {artist_name}. Creando perfil completo.")
+                        long_bio_html = generate_long_biography(artist_name, config['GEMINI_API_KEY'])
+                        short_bio = generate_short_biography(artist_name, config['GEMINI_API_KEY'])
+                        video_urls = find_youtube_videos(artist_name, config['GOOGLE_API_KEY'])
+                        main_image_url = find_main_image(artist_name, config['GOOGLE_API_KEY'], config['CUSTOM_SEARCH_ENGINE_ID'])
+                        
+                        new_page_url = create_wordpress_page(
+                            config, artist_name, short_bio, long_bio_html, main_image_url, video_urls
+                        )
+                        if new_page_url:
+                            profile_status = "complete"
+
+                    else:
+                        # CASO B: El artista no existe o no hay info, crear placeholder
+                        print(f"No se encontró información suficiente para {artist_name}. Creando perfil placeholder.")
+                        main_image_url = find_main_image(artist_name, config['GOOGLE_API_KEY'], config['CUSTOM_SEARCH_ENGINE_ID'])
+                        
+                        # (Opcional) Aquí se podría añadir la verificación de la imagen si se desea
+                        
+                        new_page_url = create_wordpress_placeholder_page(config, artist_name, main_image_url)
+                        if new_page_url:
+                            profile_status = "placeholder"
 
                     # 3. Actualizar la base de datos si la publicación fue exitosa
                     if new_page_url:
                         artists_collection.update_one(
                             {"_id": artist["_id"]},
-                            {"$set": {"hasProfilePage": True, "profilePageUrl": new_page_url}}
+                            {"$set": {
+                                "hasProfilePage": True, 
+                                "profilePageUrl": new_page_url,
+                                "profileStatus": profile_status
+                            }}
                         )
-                        print(f"Base de datos actualizada para {artist_name}.")
+                        print(f"Base de datos actualizada para {artist_name} con estado '{profile_status}'.")
 
                     print("Pausando 15 segundos antes del siguiente artista...")
                     time.sleep(15)
@@ -191,8 +268,9 @@ def main():
     except Exception as e:
         print(f"Ocurrió un error general durante la ejecución: {e}")
     finally:
-        client.close()
-        print("Conexión a MongoDB cerrada.")
+        if 'client' in locals() and client:
+            client.close()
+            print("Conexión a MongoDB cerrada.")
 
 if __name__ == "__main__":
     main()
