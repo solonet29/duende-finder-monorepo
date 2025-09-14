@@ -55,6 +55,13 @@ def sanitize_name(name):
     nfkd_form = unicodedata.normalize('NFKD', name)
     return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
+def extract_slug_from_url(url):
+    """Extrae el slug de una URL de WordPress."""
+    try:
+        return url.strip('/').split('/')[-1]
+    except:
+        return None
+
 # --- FUNCIONES DE API (GEMINI, GOOGLE, WORDPRESS) ---
 
 def verify_artist_existence(artist_name, api_key):
@@ -146,39 +153,21 @@ def find_main_image(artist_name, api_key, cx_id):
     print("  - No se encontró ninguna imagen tras varios intentos.")
     return None
 
-def get_page_by_title(config, artist_name):
-    """Obtiene los datos de una página de WordPress por su título, con y sin acentos."""
-    print(f"Buscando página en WordPress para '{artist_name}'...")
+def get_page_by_slug(config, slug):
+    """Obtiene una página de WordPress por su slug."""
+    print(f"Buscando página en WordPress con slug '{slug}'...")
     wp_api_url = f"{config['WP_URL']}/wp-json/wp/v2/pages"
     auth = (config['WP_USER'], config['WP_PASSWORD'])
-    
-    # Intenta con el nombre original
-    params = {'search': artist_name, 'per_page': 1}
+    params = {'slug': slug, 'per_page': 1}
     try:
-        response = requests.get(wp_api_url, auth=auth, params=params, timeout=30)
+        response = requests.get(wp_api_url, auth=auth, params=params, timeout=60)
         response.raise_for_status()
         pages = response.json()
-        if pages and pages[0]['title']['rendered'] == artist_name:
+        if pages:
             print(f"Página encontrada con ID: {pages[0]['id']}")
             return pages[0]
     except requests.exceptions.RequestException as e:
         print(f"Error al buscar página en WordPress: {e}")
-
-    # Si no, intenta con el nombre sin acentos
-    sanitized_name = sanitize_name(artist_name)
-    if sanitized_name != artist_name:
-        print(f"No se encontró con el nombre original. Intentando con: '{sanitized_name}'...")
-        params = {'search': sanitized_name, 'per_page': 1}
-        try:
-            response = requests.get(wp_api_url, auth=auth, params=params, timeout=30)
-            response.raise_for_status()
-            pages = response.json()
-            if pages and pages[0]['title']['rendered'] == sanitized_name:
-                print(f"Página encontrada con ID: {pages[0]['id']}")
-                return pages[0]
-        except requests.exceptions.RequestException as e:
-            print(f"Error al buscar página en WordPress: {e}")
-
     print("No se encontró una página coincidente.")
     return None
 
@@ -400,14 +389,17 @@ def main():
         artist_name = artist["name"]
         print(f"--- Procesando a: {artist_name} (ID: {artist['_id']}) ---")
 
-        page_data = get_page_by_title(config, artist_name)
+        slug = extract_slug_from_url(artist.get("profilePageUrl", ""))
+        page_data = None
+        if slug:
+            page_data = get_page_by_slug(config, slug)
         
         if page_data:
             # --- UPDATE LOGIC ---
             page_id = page_data['id']
             print("Artista encontrado. Reformateando y enriqueciendo perfil...")
             
-            long_bio_html = reformat_biography(artist_name, strip_html(page_data.get('content', {}).get('raw', '')), config['GEMINI_API_KEY'])
+            long_bio_html = reformat_biography(artist_name, strip_html(page_data.get('content', {}).get('rendered', '')), config['GEMINI_API_KEY'])
             short_bio = generate_short_biography(artist_name, config['GEMINI_API_KEY'])
             video_urls = find_youtube_videos(artist_name, config['GOOGLE_API_KEY'])
             main_image_url = find_main_image(artist_name, config['GOOGLE_API_KEY'], config['CUSTOM_SEARCH_ENGINE_ID'])
