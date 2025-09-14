@@ -264,6 +264,7 @@ def main():
                 new_content = ""
                 new_meta = {}
                 profile_status = "failed"
+                short_bio = None
 
                 if verification.get("artistExists"):
                     # CASO A: El artista existe -> Reformatear y enriquecer
@@ -292,9 +293,16 @@ def main():
 
                 if updated_url:
                     # Actualizar MongoDB
+                    update_set = {
+                        "profileStatus": profile_status,
+                        "profilePageUrl": updated_url
+                    }
+                    if short_bio:
+                        update_set["short_bio"] = short_bio
+
                     artists_collection.update_one(
                         {"_id": artist["_id"]},
-                        {"$set": {"profileStatus": profile_status, "profilePageUrl": updated_url}}
+                        {"$set": update_set}
                     )
                     print(f"Base de datos actualizada para {artist_name} con estado '{profile_status}'.")
 

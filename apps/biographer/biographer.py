@@ -256,6 +256,7 @@ def main():
 
                     new_page_url = None
                     profile_status = "failed"
+                    short_bio = None
 
                     if artist_exists:
                         # CASO A: El artista existe, crear perfil completo
@@ -284,13 +285,17 @@ def main():
 
                     # 3. Actualizar la base de datos si la publicación fue exitosa
                     if new_page_url:
+                        update_set = {
+                            "hasProfilePage": True, 
+                            "profilePageUrl": new_page_url,
+                            "profileStatus": profile_status
+                        }
+                        if short_bio:
+                            update_set["short_bio"] = short_bio
+
                         artists_collection.update_one(
                             {"_id": artist["_id"]},
-                            {"$set": {
-                                "hasProfilePage": True, 
-                                "profilePageUrl": new_page_url,
-                                "profileStatus": profile_status
-                            }}
+                            {"$set": update_set}
                         )
                         print(f"Base de datos actualizada para {artist_name} con estado '{profile_status}'.")
 
