@@ -1,10 +1,11 @@
-
 import os
 import sys
 from dotenv import load_dotenv
 import pymongo
 import requests
 from pathlib import Path
+import google.generativeai as genai
+import time
 
 # Carga las variables de entorno desde la carpeta del script
 env_path = Path(__file__).parent / '.env'
@@ -18,6 +19,7 @@ def get_config():
         "WP_URL": os.getenv("WP_URL"),
         "WP_USER": os.getenv("WP_USER"),
         "WP_PASSWORD": os.getenv("WP_PASSWORD"),
+        "GEMINI_API_KEY": os.getenv("GEMINI_API_KEY"),
     }
     for key, value in config.items():
         if not value:
@@ -38,7 +40,7 @@ def get_artists_from_db(config):
         artists_collection = db["artists"]
         
         query = {"hasProfilePage": True, "profilePageUrl": {"$exists": True}}
-        projection = {"name": 1, "profilePageUrl": 1, "meta.main_artist_image_url": 1, "short_bio": 1, "eventCount": 1}
+        projection = {"name": 1, "profilePageUrl": 1, "profileStatus": 1, "eventCount": 1}
         
         artists = list(artists_collection.find(query, projection).sort("eventCount", -1))
         client.close()
@@ -51,89 +53,51 @@ def get_artists_from_db(config):
         print(f"Error al obtener artistas de la base de datos: {e}")
         return []
 
-def build_artist_index_html(artists):
+def generate_seo_sentence(artist_name, api_key):
+    """Genera una frase SEO única para un artista usando Gemini."""
+    print(f"Generando frase SEO para {artist_name}...")
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    prompt = f"Genera una frase corta (máximo 25 palabras), atractiva y única para el/la artista flamenco/a {artist_name}. El objetivo es animar al usuario a hacer clic para leer su biografía completa. La frase debe ser optimizada para SEO. No incluyas el nombre del artista en la respuesta."
+    try:
+        response = model.generate_content(prompt)
+        time.sleep(1) # Pausa para no exceder los límites de la API
+        return response.text.strip()
+    except Exception as e:
+        print(f"  - Error al generar frase SEO para {artist_name}: {e}")
+        return f"Descubre la biografía completa de {artist_name} y su impacto en el mundo del flamenco."
+
+def build_artist_index_html(artists, config):
     """Construye el HTML para la página de índice de artistas."""
     print("Construyendo el HTML del índice de artistas...")
     
-    # CSS para el diseño responsive y de tarjetas
     styles = """
 <style>
-    h1.entry-title {
-        color: #000000 !important;
-    }
-    .artist-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 20px;
-        padding: 20px;
-        max-width: 1200px;
-        margin: auto;
-    }
-    .artist-card {
-        background-color: #fff;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        display: flex;
-        flex-direction: column;
-    }
-    .artist-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-    }
-    .artist-card-image {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-    }
-    .artist-card-content {
-        padding: 20px;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-    }
-    .artist-card-title {
-        font-size: 1.5em;
-        font-weight: bold;
-        color: #26145F;
-        margin: 0 0 10px 0;
-    }
-    .artist-card-bio {
-        font-size: 1em;
-        color: #333;
-        margin-bottom: 20px;
-        flex-grow: 1;
-    }
-    .artist-card-button {
-        display: inline-block;
-        background-color: #E53935; /* Un rojo vibrante */
-        color: #fff !important;
-        padding: 10px 20px;
-        border-radius: 5px;
-        text-align: center;
-        text-decoration: none;
-        font-weight: bold;
-        transition: background-color 0.3s ease;
-    }
-    .artist-card-button:hover {
-        background-color: #C62828; /* Un rojo más oscuro */
-    }
-    @media (max-width: 600px) {
-        .artist-grid {
-            padding: 10px;
-        }
-    }
+    h1.entry-title { color: #000000 !important; }
+    .artist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px; max-width: 1200px; margin: auto; }
+    .artist-card { background-color: #fff; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; }
+    .artist-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+    .artist-card-image { width: 100%; height: 200px; object-fit: cover; }
+    .artist-card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+    .artist-card-title { font-size: 1.5em; font-weight: bold; color: #26145F; margin: 0 0 10px 0; }
+    .artist-card-bio { font-size: 1em; color: #333; margin-bottom: 20px; flex-grow: 1; }
+    .artist-card-button { display: inline-block; background-color: #E53935; color: #fff !important; padding: 10px 20px; border-radius: 5px; text-align: center; text-decoration: none; font-weight: bold; transition: background-color 0.3s ease; }
+    .artist-card-button:hover { background-color: #C62828; }
+    @media (max-width: 600px) { .artist-grid { padding: 10px; } }
 </style>
 """
 
-    # HTML para las tarjetas de artistas
     cards_html = ""
     for artist in artists:
-        image_url = artist.get("meta", {}).get("main_artist_image_url") or "https://buscador.afland.es/assets/flamenco-placeholder.png"
         artist_name = artist.get("name", "Artista Desconocido")
         profile_url = artist.get("profilePageUrl", "#")
-        short_bio = artist.get("short_bio", "Biografía no disponible.")
+        profile_status = artist.get("profileStatus")
+        image_url = artist.get("meta", {}).get("main_artist_image_url") or "https://buscador.afland.es/assets/flamenco-placeholder.png"
+
+        if profile_status == "complete":
+            short_bio = generate_seo_sentence(artist_name, config['GEMINI_API_KEY'])
+        else:
+            short_bio = "Biografía no disponible."
 
         cards_html += f"""
         <div class="artist-card">
@@ -208,7 +172,7 @@ def main():
         print("No hay artistas para generar el índice. Saliendo.")
         return
 
-    index_html = build_artist_index_html(artists)
+    index_html = build_artist_index_html(artists, config)
     
     page_title = "Índice de Artistas"
     page_slug = "artistas"
