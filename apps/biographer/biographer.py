@@ -2,14 +2,16 @@ import os
 import sys
 import time
 import json
+from pathlib import Path
 from dotenv import load_dotenv
 import pymongo
 import requests
 import google.generativeai as genai
 from googleapiclient.discovery import build
 
-# Carga las variables de entorno desde un archivo .env en el mismo directorio
-load_dotenv()
+# Carga las variables de entorno desde la carpeta del script
+env_path = Path(__file__).parent / '.env'
+load_dotenv(dotenv_path=env_path, override=True)
 
 def get_config():
     """Carga y valida la configuración desde las variables de entorno."""
@@ -27,6 +29,11 @@ def get_config():
         if not value:
             print(f"Error: La variable de entorno {key} no está configurada.")
             sys.exit(1)
+    
+    # Asegurarse de que la URL de WP no tenga una barra al final
+    if config["WP_URL"]:
+        config["WP_URL"] = config["WP_URL"].rstrip('/')
+        
     return config
 
 def clean_gemini_response(text):
@@ -113,14 +120,32 @@ def create_wordpress_page(config, artist_name, short_bio, long_bio_html, main_im
 <iframe src="{embed_url}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe>
 </div>'''
 
+    image_html = ""
+    if main_image_url:
+        image_html = f'''<div class="wp-block-column" style="flex-basis:33.33%"><figure class="wp-block-image size-large"><img src="{main_image_url}" alt="{artist_name}"/></figure></div>'''
+    
+    column_style = "66.66%" if main_image_url else "100%"
+    text_column_style = f"flex-basis:{column_style};"
+    if main_image_url:
+        text_column_style += " margin-left: 20px;"
+
     gutenberg_content = f"""
-<style>.artist-profile-content p {{color: #333333 !important;}} .artist-profile-content h2 {{color: #26145F !important;}}</style>
+<style>
+.artist-profile-content p {{color: #333333 !important;}}
+.artist-profile-content h2 {{color: #26145F !important;}}
+.artist-title-box {{ background-color: #26145F; border-radius: 15px; padding: 20px; margin-bottom: 20px; }}
+.artist-title-box h2 {{ color: #FFFFFF !important; }}
+.artist-title-box p {{ color: #FFFFFF !important; font-style:italic; font-weight:700; }}
+</style>
 <div class="wp-block-group artist-profile-content">
-  <div class="wp-block-columns"><div class="wp-block-column" style="flex-basis:33.33%"><figure class="wp-block-image size-large"><img src="{main_image_url}" alt="{artist_name}"/></figure>
-  </div>
-  <div class="wp-block-column" style="flex-basis:66.66%"><h2>{artist_name}</h2>
-  <p style="font-style:italic;font-weight:700">{short_bio}</p>
-  </div>
+  <div class="wp-block-columns">
+    {image_html}
+    <div class="wp-block-column" style="{text_column_style}">
+      <div class="artist-title-box">
+        <h2>{artist_name}</h2>
+        <p>{short_bio}</p>
+      </div>
+    </div>
   </div>
   <hr class="wp-block-separator has-alpha-channel-opacity"/>
   {long_bio_html}
@@ -133,56 +158,69 @@ def create_wordpress_page(config, artist_name, short_bio, long_bio_html, main_im
     }
     
     auth = (config['WP_USER'], config['WP_PASSWORD'])
-    response = requests.post(wp_api_url, auth=auth, json=data, headers={"Content-Type": "application/json"})
-    
-    if response.status_code == 201:
-        page_data = response.json()
-        print(f"¡Página para {artist_name} creada! URL: {page_data['link']}")
-        return page_data['link']
-    else:
-        print(f"Error al publicar en WordPress para {artist_name}: {response.status_code}")
-        print(response.text)
+    try:
+        response = requests.post(wp_api_url, auth=auth, json=data, headers={"Content-Type": "application/json"}, timeout=30)
+        
+        if response.status_code == 201:
+            page_data = response.json()
+            print(f"¡Página para {artist_name} creada! URL: {page_data['link']}")
+            return page_data['link']
+        else:
+            print(f"Error al publicar en WordPress para {artist_name}: {response.status_code}")
+            print(response.text)
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Error al publicar en WordPress: {e}")
         return None
 
-def create_wordpress_placeholder_page(config, artist_name, image_url):
+def create_wordpress_placeholder_page(config, artist_name):
     """Publica una página 'placeholder' en WordPress."""
     print(f"Creando página PLACEHOLDER para {artist_name}...")
     wp_api_url = f"{config['WP_URL']}/wp-json/wp/v2/pages"
+    image_url = "https://buscador.afland.es/assets/flamenco-placeholder.png"
 
-    verified_image_html = ""
-    if image_url:
-        verified_image_html = f'<figure class="wp-block-image size-large"><img src="{image_url}" alt="{artist_name}"/></figure>'
+    verified_image_html = f'<figure class="wp-block-image size-large"><img src="{image_url}" alt="Imagen no disponible"/></figure>'
 
     placeholder_text = f"""
 <p>En Andalucía Flamenco Land, estamos continuamente comprobando y verificando datos y biografías de los artistas flamencos de todo el mundo.</p>
 <p>Actualmente no disponemos de información biográfica detallada para <strong>{artist_name}</strong>. Nuestro equipo está trabajando para ampliar nuestro archivo.</p>
 <p>Mientras tanto, te invitamos a buscar sus próximas actuaciones y eventos en nuestro buscador especializado:</p>
-<div class="wp-block-buttons"><div class="wp-block-button is-style-fill"><a class="wp-block-button__link has-white-color has-vivid-red-background-color has-text-color has-background" href="https://buscador.afland.es/?q={artist_name.replace(' ', '%20')}" target="_blank" rel="noreferrer noopener">Buscar eventos de {artist_name}</a></div>
-</div>"""
+<div class="wp-block-buttons"><div class="wp-block-button is-style-fill"><a class="wp-block-button__link has-white-color has-vivid-red-background-color has-text-color has-background" href="https://buscador.afland.es/?q={artist_name.replace(' ', '%20')}" target="_blank" rel="noreferrer noopener">Buscar eventos de {artist_name}</a></div></div>
+"""
 
     gutenberg_content_placeholder = f"""
-<style>.artist-profile-content p {{color: #333333 !important;}}</style>
+<style>
+.artist-profile-content p {{color: #333333 !important;}}
+.artist-title-box {{ background-color: #26145F; border-radius: 15px; padding: 20px; margin-bottom: 20px; }}
+.artist-title-box h2 {{ color: #FFFFFF !important; }}
+</style>
 <div class="wp-block-group artist-profile-content">
-  <h2>{artist_name}</h2>
+    <div class="artist-title-box">
+        <h2>{artist_name}</h2>
+    </div>
   {verified_image_html}
   {placeholder_text}
-  </div>
+</div>
 """
     data = {
         "title": artist_name, "status": "publish", "content": gutenberg_content_placeholder,
-        "wf_page_folders": [40], "meta": {"main_artist_image_url": image_url or ""}
+        "wf_page_folders": [40], "meta": {"main_artist_image_url": image_url}
     }
 
     auth = (config['WP_USER'], config['WP_PASSWORD'])
-    response = requests.post(wp_api_url, auth=auth, json=data, headers={"Content-Type": "application/json"})
+    try:
+        response = requests.post(wp_api_url, auth=auth, json=data, headers={"Content-Type": "application/json"}, timeout=30)
 
-    if response.status_code == 201:
-        page_data = response.json()
-        print(f"¡Página placeholder para {artist_name} creada! URL: {page_data['link']}")
-        return page_data['link']
-    else:
-        print(f"Error al publicar placeholder en WordPress para {artist_name}: {response.status_code}")
-        print(response.text)
+        if response.status_code == 201:
+            page_data = response.json()
+            print(f"¡Página placeholder para {artist_name} creada! URL: {page_data['link']}")
+            return page_data['link']
+        else:
+            print(f"Error al publicar placeholder en WordPress para {artist_name}: {response.status_code}")
+            print(response.text)
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Error al publicar placeholder en WordPress: {e}")
         return None
 
 def main():

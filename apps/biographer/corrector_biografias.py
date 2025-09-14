@@ -175,12 +175,22 @@ def build_complete_content(artist_name, short_bio, long_bio_html, main_image_url
     column_style = "66.66%" if main_image_url else "100%"
 
     return f"""
-<style>.artist-profile-content p {{color: #333333 !important;}} .artist-profile-content h2 {{color: #26145F !important;}}</style>
+<style>
+.artist-profile-content p {{color: #333333 !important;}}
+.artist-profile-content h2 {{color: #26145F !important;}}
+.artist-title-box {{ background-color: #26145F; border-radius: 15px; padding: 20px; margin-bottom: 20px; }}
+.artist-title-box h2 {{ color: #FFFFFF !important; }}
+.artist-title-box p {{ color: #FFFFFF !important; font-style:italic; font-weight:700; }}
+</style>
 <div class="wp-block-group artist-profile-content">
-  <div class="wp-block-columns">{image_html}
-  <div class="wp-block-column" style="flex-basis:{column_style}"><h2>{artist_name}</h2>
-  <p style="font-style:italic;font-weight:700">{short_bio}</p>
-  </div>
+  <div class="wp-block-columns">
+    {image_html}
+    <div class="wp-block-column" style="flex-basis:{column_style}">
+      <div class="artist-title-box">
+        <h2>{artist_name}</h2>
+        <p>{short_bio}</p>
+      </div>
+    </div>
   </div>
   <hr class="wp-block-separator has-alpha-channel-opacity"/>
   {long_bio_html}
@@ -200,9 +210,15 @@ def build_placeholder_content(artist_name):
 <div class="wp-block-buttons"><div class="wp-block-button is-style-fill"><a class="wp-block-button__link has-white-color has-vivid-red-background-color has-text-color has-background" href="https://buscador.afland.es/?q={artist_name.replace(' ', '%20')}" target="_blank" rel="noreferrer noopener">Buscar eventos de {artist_name}</a></div></div>
 """
     return f"""
-<style>.artist-profile-content p {{color: #333333 !important;}}</style>
+<style>
+.artist-profile-content p {{color: #333333 !important;}}
+.artist-title-box {{ background-color: #26145F; border-radius: 15px; padding: 20px; margin-bottom: 20px; }}
+.artist-title-box h2 {{ color: #FFFFFF !important; }}
+</style>
 <div class="wp-block-group artist-profile-content">
-  <h2>{artist_name}</h2>
+    <div class="artist-title-box">
+        <h2>{artist_name}</h2>
+    </div>
   {verified_image_html}
   {placeholder_text}
 </div>
