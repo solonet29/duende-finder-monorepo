@@ -80,7 +80,7 @@ async function enrichEvents() {
                     const responseText = chatCompletion.choices[0]?.message?.content || '{}';
                     const parsedResponse = JSON.parse(responseText);
 
-                    if (parsedResponse.blogTitle && parsedResponse.nightPlanMarkdown && parsedResponse.tweetText && parsedResponse.instagramText) {
+                    if (parsedResponse.blogTitle && parsedResponse.blogPostMarkdown && parsedResponse.nightPlanMarkdown && parsedResponse.tweetText && parsedResponse.instagramText) {
                         generatedContentPackage = parsedResponse;
                         lastError = null;
                         break; 
@@ -105,13 +105,14 @@ async function enrichEvents() {
             }
 
             // PASO 3: Combinar y guardar todo
-            const nightPlanHtml = converter.makeHtml(generatedContentPackage.nightPlanMarkdown);
+            const blogPostContentHtml = converter.makeHtml(generatedContentPackage.blogPostMarkdown);
             const introHtml = config.htmlBlocks.postIntro(event);
             const ctaHtml = config.htmlBlocks.ctaBanners;
-            const finalHtmlContent = introHtml + nightPlanHtml + ctaHtml;
+            const finalHtmlContent = introHtml + blogPostContentHtml + ctaHtml;
 
             const updates = {
                 blogPostTitle: generatedContentPackage.blogTitle,
+                blogPostMarkdown: generatedContentPackage.blogPostMarkdown,
                 nightPlanMarkdown: generatedContentPackage.nightPlanMarkdown,
                 blogPostHtml: finalHtmlContent,
                 tweetText: generatedContentPackage.tweetText,

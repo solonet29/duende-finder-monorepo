@@ -23,6 +23,7 @@ Tu tarea es actuar como un experto en marketing de eventos de flamenco y generar
 La respuesta DEBE ser un único objeto JSON válido con la siguiente estructura y NADA MÁS:
 {
   "blogTitle": "string",
+  "blogPostMarkdown": "string",
   "nightPlanMarkdown": "string",
   "tweetText": "string",
   "instagramText": "string"
@@ -40,17 +41,22 @@ Instrucciones para cada campo del JSON:
 
 1.  **blogTitle**: Crea un título SEO amigable y atractivo para un post de blog sobre el evento. Máximo 70 caracteres.
 
-2.  **nightPlanMarkdown**: Genera un "plan de noche" en formato Markdown. Debe ser útil y evocador. Sigue esta estructura:
+2.  **blogPostMarkdown**: Escribe un artículo para el blog sobre el evento. El tono debe ser evocador y periodístico, como un crítico de flamenco escribiendo para una revista cultural. El objetivo es generar expectación y mostrar la relevancia del evento. El texto debe tener al menos 250 palabras y estar estructurado en varios párrafos. No uses la estructura de "La Previa / El Evento / Post-Espectáculo". En su lugar, enfócate en:
+    - **Introducción**: Presenta al artista y su importancia en el mundo del flamenco. Si el evento es especial (ej. un festival, un estreno), menciónalo.
+    - **Desarrollo**: Describe la propuesta artística del espectáculo. ¿Qué lo hace único? ¿Qué emociones o experiencias puede esperar el público? Usa un lenguaje rico y metafórico para hablar de la música y el baile.
+    - **Conclusión**: Cierra con una reflexión sobre la importancia de no perderse esta oportunidad y una invitación a vivir la experiencia del flamenco en directo.
+
+3.  **nightPlanMarkdown**: Genera un "plan de noche" en formato Markdown. Debe ser útil y evocador. Sigue esta estructura concisa:
     ### La Previa: Ambiente y Sabor
     Sugiere el tipo de ambiente o barrio para buscar un bar de tapas antes del evento. No des nombres específicos.
     ### El Evento: ${event.name}
-    Crea expectación sobre el espectáculo. Habla del artista o del tipo de flamenco.
+    Crea expectación sobre el espectáculo. Habla del artista o del tipo de flamenco de forma breve.
     ### Post-Espectáculo: La Última Copa
     Sugiere un tipo de lugar para tomar una copa después y comentar la actuación.
 
-3.  **tweetText**: Escribe un tweet para X. Debe ser corto, impactante y menor de 280 caracteres. Incluye el nombre del evento, la ciudad y la fecha. Usa los hashtags #flamenco y #${event.city ? event.city.replace(/\s/g, '') : 'evento'}.
+4.  **tweetText**: Escribe un tweet para X. Debe ser corto, impactante y menor de 280 caracteres. Incluye el nombre del evento, la ciudad y la fecha. Usa los hashtags #flamenco y #${event.city ? event.city.replace(/\s/g, '') : 'evento'}.
 
-4.  **instagramText**: Escribe un post para Instagram/Facebook. Debe ser más descriptivo y emocional. Usa emojis flamencos (💃, 🎸, 👏). Estructúralo con párrafos cortos. Termina con una pregunta para fomentar la interacción. Incluye los hashtags #flamenco #${event.city ? event.city.replace(/\s/g, '') : 'evento'} #musicaenvivo #${event.artist ? event.artist.replace(/\s/g, '') : 'arte'}.
+5.  **instagramText**: Escribe un post para Instagram/Facebook. Debe ser más descriptivo y emocional. Usa emojis flamencos (💃, 🎸, 👏). Estructúralo con párrafos cortos. Termina con una pregunta para fomentar la interacción. Incluye los hashtags #flamenco #${event.city ? event.city.replace(/\s/g, '') : 'evento'} #musicaenvivo #${event.artist ? event.artist.replace(/\s/g, '') : 'arte'}.
 `
     },
 
