@@ -8,7 +8,7 @@ const ASSETS_TO_CACHE = [
     '/styles.css',
     '/script.js',
     '/assets/favicon.png',
-    '/manifest.json',
+    '/assets/manifest.json',
     '/assets/flamenco-placeholder.png',
     'https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&family=Montserrat:wght@700&display=swap',
     'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js',
