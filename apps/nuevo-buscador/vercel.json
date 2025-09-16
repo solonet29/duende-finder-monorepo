@@ -10,6 +10,11 @@
       "headers": { "Content-Type": "application/manifest+json" }
     },
     {
+      "src": "/assets/manifest.json",
+      "dest": "/assets/manifest.json",
+      "headers": { "Content-Type": "application/manifest+json" }
+    },
+    {
       "src": "/(.*)",
       "dest": "/$1"
     }
