@@ -1,30 +1,28 @@
-// RUTA: /src/pages/api/generate-night-plan.js (Versión Final Corregida)
+// RUTA: /src/pages/api/generate-night-plan.js
 
 import { connectToMainDb } from '@/lib/database.js';
 import { ObjectId } from 'mongodb';
-import Groq from 'groq-sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
 
 // --- INICIALIZACIÓN DE SERVICIOS ---
-if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY no está definida.');
+if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY no está definida.');
 
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 
 // =======================================================================
-// --- LÓGICA DE GENERACIÓN DE CONTENIDO (SECCIÓN CORREGIDA) ---
+// --- LÓGICA DE GENERACIÓN DE CONTENIDO ---
 // =======================================================================
 
 async function generateAndSavePlan(db, event) {
-    console.log(`🔥 Generando nuevo contenido con Groq para: ${event.name}`);
+    console.log(`🔥 Generando nuevo contenido con Gemini para: ${event.name}`);
 
     // --- LÓGICA DE FECHAS Y ENLACE DE GOOGLE MAPS ---
     const eventDate = new Date(event.date);
     const dateOptions = { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Madrid' };
     const formattedDate = eventDate.toLocaleDateString('es-ES', dateOptions);
 
-    // Reconstruimos aquí la lógica para el enlace de Google Maps
     const mapQuery = [
         event.name,
         event.venue,
@@ -34,21 +32,14 @@ async function generateAndSavePlan(db, event) {
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
 
     // --- LLAMADA AL PROMPT ---
-    // Pasamos la 'mapsUrl' como un nuevo argumento a la plantilla
     const prompt = nightPlanPromptTemplate(event, formattedDate, mapsUrl);
 
-    const chatCompletion = await groq.chat.completions.create({
-        messages: [{
-            role: 'user',
-            content: prompt,
-        }],
-        model: 'llama-3.1-8b-instant',
-    });
-
-    let generatedContent = chatCompletion.choices[0]?.message?.content || '';
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const generatedContent = response.text();
 
     if (!generatedContent || !generatedContent.includes('---')) {
-        console.warn("La respuesta de Groq no tiene el formato esperado. Contenido recibido:", generatedContent);
+        console.warn("La respuesta de Gemini no tiene el formato esperado. Contenido recibido:", generatedContent);
         throw new Error("La respuesta de la IA no tiene el formato esperado.");
     }
 
@@ -56,19 +47,19 @@ async function generateAndSavePlan(db, event) {
         { _id: event._id },
         { $set: { nightPlan: generatedContent } }
     );
-    console.log(`💾 Contenido de Groq para \"${event.name}\" guardado en la base de datos.`);
+    console.log(`💾 Contenido de Gemini para \"${event.name}\" guardado en la base de datos.`);
     return generatedContent;
 }
 
 // =======================================================================
-// --- PROMPT MAESTRO (VERSIÓN FINAL CON PRINCIPIO DE PRUDENCIA) ---
+// --- PROMPT MAESTRO ---
 // =======================================================================
 const nightPlanPromptTemplate = (event, formattedDate, mapsUrl) => `
 # REGLA DE ORO: FORMATO Y ESTRUCTURA
-Tu misión principal es generar una respuesta que siga ESTRICTAMENTE el formato Markdown y la estructura de 3 secciones separadas por \"---\". No añadas texto antes de la primera sección o después de la última. La estructura es INNEGOCIABLE.
+Tu misión principal es generar una respuesta que siga ESTRICTAMENTE el formato Markdown y la estructura de 3 secciones separadas por "---". No añadas texto antes de la primera sección o después de la última. La estructura es INNEGOCIABLE.
 
 # INSTRUCCIONES
-Eres \"Duende Planner\", un asistente experto en flamenco y cultura andaluza. Tu objetivo es crear un plan de noche atractivo y útil para un usuario que asistirá a un evento de flamenco. El tono debe ser cercano, apasionado y un poco poético, usando lenguaje que evoque la magia del flamenco.
+Eres "Duende Planner", un asistente experto en flamenco y cultura andaluza. Tu objetivo es crear un plan de noche atractivo y útil para un usuario que asistirá a un evento de flamenco. El tono debe ser cercano, apasionado y un poco poético, usando lenguaje que evoque la magia del flamenco.
 
 // --- NUEVA DIRECTRIZ DE CALIDAD ---
 - **Principio de Prudencia:** Tu credibilidad es clave. Si no tienes información 100% segura sobre un dato fáctico del artista (biografía, familia, lugar de nacimiento, etc.), **NO LO INVENTES**. En su lugar, enfócate en la emoción del arte flamenco: habla del duende, la pasión, el sentimiento del cante o la fuerza del baile. Tu misión es generar expectación, no ser una enciclopedia.
@@ -83,15 +74,15 @@ Eres \"Duende Planner\", un asistente experto en flamenco y cultura andaluza. Tu
 # ESTRUCTURA DE LA RESPUESTA (OBLIGATORIA)
 
 ### 🔮 Una Noche con Duende: ${event.artist || event.name}
-* **La Previa Perfecta:** Describe el ambiente ideal para empezar la noche, como una taberna andaluza o un bar de tapas animado. Sugiere una o dos tapas y una bebida típica (ej: \"un buen vino de Jerez\"). Indícale al usuario que puede encontrar lugares así explorando los alrededores del recinto en el mapa. **No inventes un nombre específico para el bar.**
-* **El Atuendo Ideal:** Sugiere un código de vestimenta. Debe ser elegante pero cómodo, algo que respete la ocasión sin ser excesivamente formal. Piensa en el \"smart casual\" con un toque andaluz.
-* **El Momento Cumbre:** Describe con emoción qué puede esperar el espectador del artista o del evento. Usa lenguaje evocador. Si no tienes datos concretos del artista, aplica el \"Principio de Prudencia\" y habla sobre la magia del palo flamenco (si se conoce) o del flamenco en general.
+* **La Previa Perfecta:** Describe el ambiente ideal para empezar la noche, como una taberna andaluza o un bar de tapas animado. Sugiere una o dos tapas y una bebida típica (ej: "un buen vino de Jerez"). Indícale al usuario que puede encontrar lugares así explorando los alrededores del recinto en el mapa. **No inventes un nombre específico para el bar.**
+* **El Atuendo Ideal:** Sugiere un código de vestimenta. Debe ser elegante pero cómodo, algo que respete la ocasión sin ser excesivamente formal. Piensa en el "smart casual" con un toque andaluz.
+* **El Momento Cumbre:** Describe con emoción qué puede esperar el espectador del artista o del evento. Usa lenguaje evocador. Si no tienes datos concretos del artista, aplica el "Principio de Prudencia" y habla sobre la magia del palo flamenco (si se conoce) o del flamenco en general.
 * **Después de los Aplausos:** De forma similar a la previa, describe un tipo de lugar con encanto para tomar la última copa y anímale a explorar el mapa para encontrarlo. **No inventes un nombre específico.**
 
 ---
 ### 💡 Consejos del Duende
 - **Puntualidad:** Recomienda llegar con tiempo para encontrar un buen sitio y disfrutar del ambiente previo.
-- **Respeto y Silencio:** Menciona la importancia de guardar silencio durante el espectáculo para respetar a los artistas y al \"duende\".
+- **Respeto y Silencio:** Menciona la importancia de guardar silencio durante el espectáculo para respetar a los artistas y al "duende".
 - **Disfruta el Momento:** Anima al usuario a dejarse llevar por la música y la emoción.
 
 ---
@@ -132,7 +123,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ content: generatedContent, source: 'generated' });
 
     } catch (error) {
-        console.error("Error en el endpoint de 'Planear Noche' con Groq:", error);
+        console.error("Error en el endpoint de 'Planear Noche' con Gemini:", error);
         return res.status(500).json({ error: 'Error al generar el contenido.' });
     }
 }
