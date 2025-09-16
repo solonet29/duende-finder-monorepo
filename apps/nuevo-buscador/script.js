@@ -314,14 +314,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalContent) modalContent.innerHTML = `<div class="loading-container"><div class="loader"></div><p>Planeando tu noche...</p></div>`;
         try {
             const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
-            if (!response.ok) throw new Error(`La respuesta del servidor no fue OK: ${response.statusText}`);
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: "Error desconocido en el servidor" }));
+                throw new Error(errorData.error);
+            }
             const data = await response.json();
             const footerHtml = `<footer class="ai-footer"><p class="ai-disclaimer"><em>Contenido generado por IA. La información puede no ser exacta.</em></p><a href="https://afland.es/contact" target="_blank" rel="noopener noreferrer" class="business-cta">¿Quieres ver tu negocio aquí? Contacta</a></footer>`;
             const aiHtmlContent = window.marked ? window.marked.parse(data.content) : `<pre>${data.content}</pre>`;
             if (modalContent) modalContent.innerHTML = aiHtmlContent + footerHtml;
         } catch (error) {
             console.error("Error al generar Plan Noche:", error);
-            if (modalContent) modalContent.innerHTML = `<div class="error-container"><h3>¡Vaya! Algo ha fallado</h3><p>No hemos podido generar el plan en este momento.</p></div>`;
+            if (modalContent) modalContent.innerHTML = `<div class="error-container"><h3>¡Vaya! Algo ha fallado</h3><p>${error.message}</p></div>`;
         }
     }
 

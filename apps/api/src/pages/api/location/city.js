@@ -1,9 +1,11 @@
 // /pages/api/location/city.js
+import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
 
 // Este endpoint convierte coordenadas (lat, lon) en un nombre de ciudad
 // utilizando la API de Geocodificación de Google Maps de forma segura en el servidor.
 
 export default async function handler(req, res) {
+    await runMiddleware(req, res, corsMiddleware);
     if (req.method !== 'GET') {
         res.setHeader('Allow', ['GET']);
         return res.status(405).end(`Method ${req.method} Not Allowed`);

@@ -7,7 +7,7 @@ const ASSETS_TO_CACHE = [
     '/index.html',
     '/styles.css',
     '/script.js',
-    '/favicon.png',
+    '/assets/favicon.png',
     '/manifest.json',
     '/assets/flamenco-placeholder.png',
     'https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&family=Montserrat:wght@700&display=swap',
