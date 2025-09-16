@@ -23,7 +23,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Configuración de geolocalización incompleta en el servidor.' });
     }
 
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}&language=es&result_type=locality`;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}&language=es`;
 
     try {
         const geoResponse = await fetch(url);
@@ -36,7 +36,16 @@ export default async function handler(req, res) {
 
         // Extraer el nombre de la ciudad del primer resultado
         const addressComponents = geoData.results[0].address_components;
-        const cityComponent = addressComponents.find(c => c.types.includes('locality'));
+        let cityComponent = addressComponents.find(c => c.types.includes('locality'));
+        if (!cityComponent) {
+            cityComponent = addressComponents.find(c => c.types.includes('administrative_area_level_3'));
+        }
+        if (!cityComponent) {
+            cityComponent = addressComponents.find(c => c.types.includes('administrative_area_level_2'));
+        }
+        if (!cityComponent) {
+            cityComponent = addressComponents.find(c => c.types.includes('administrative_area_level_1'));
+        }
 
         const cityName = cityComponent ? cityComponent.long_name : null;
 
