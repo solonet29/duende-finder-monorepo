@@ -60,10 +60,31 @@ const eventSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    // --- Campos para el pipeline de contenido ---
     contentStatus: {
         type: String,
-        enum: ['pending', 'published'],
-        default: 'pending',
+        enum: ['pending_enrichment', 'enrichment_failed', 'content_ready', 'publishing', 'published', 'publishing_failed'],
+        default: 'pending_enrichment',
+        index: true
+    },
+    night_plan: { // El plan detallado del evento generado por IA
+        type: String,
+    },
+    blogPostTitle: { // Título generado para el post de WordPress
+        type: String,
+    },
+    blogPostHtml: { // Contenido HTML generado para el post de WordPress
+        type: String,
+    },
+    imageId: { // ID de la imagen destacada en WordPress
+        type: Number,
+    },
+    wordpressPostId: { // ID del post creado en WordPress
+        type: Number,
+        index: true
+    },
+    publicationDate: { // Fecha en la que se programó la publicación
+        type: Date,
     }
 }, {
     timestamps: true, // Añade automáticamente createdAt y updatedAt

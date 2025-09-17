@@ -3,38 +3,125 @@
 
 require('dotenv').config();
 const { connectToDatabase } = require('./lib/database.js');
-const Groq = require('groq-sdk');
 const { ObjectId } = require('mongodb');
 const showdown = require('showdown');
 const config = require('./config.js');
-const { generateAndUploadImage } = require('./image-enricher.js'); // <-- Importar la nueva función
+const { generateAndUploadImage } = require('./image-enricher.js');
+const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
 
 // --- INICIALIZACIÓN DE SERVICIOS ---
-if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY no está definida.');
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY
-});
-const GROQ_MODEL = 'llama-3.1-8b-instant';
+if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY no está definida.');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 const converter = new showdown.Converter();
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// --- PROMPT PARA GEMINI ---
+const contentGenerationPrompt = (event) => `
+Tu tarea es actuar como un experto en marketing de eventos de flamenco y generar un paquete de contenido completo para el siguiente evento.
+La respuesta DEBE ser un único objeto JSON válido con la siguiente estructura y NADA MÁS:
+{
+  "blogTitle": "string",
+  "blogPostMarkdown": "string",
+  "nightPlanMarkdown": "string"
+}
+
+Aquí están los detalles del evento:
+- Nombre: ${event.name}
+- Artista: ${event.artist || 'Artista por confirmar'}
+- Ciudad: ${event.city}
+- Lugar: ${event.venue || 'Lugar por confirmar'}
+- Fecha: ${event.date}
+- Hora: ${event.time}
+
+Instrucciones para cada campo del JSON:
+
+1.  **blogTitle**: Crea un título SEO amigable y atractivo para un post de blog sobre el evento. Máximo 70 caracteres.
+
+2.  **blogPostMarkdown**: Escribe un artículo para el blog sobre el evento. El tono debe ser evocador y periodístico. El objetivo es generar expectación. El texto debe tener al menos 250 palabras y estar estructurado en varios párrafos. Enfócate en:
+    - Introducción: Presenta al artista y su importancia.
+    - Desarrollo: Describe la propuesta artística del espectáculo.
+    - Conclusión: Cierra con una invitación a vivir la experiencia.
+
+3.  **nightPlanMarkdown**: Genera un "plan de noche" en formato Markdown. Debe ser útil y evocador. Sigue esta estructura concisa:
+    ### La Previa: Ambiente y Sabor
+    Sugiere un tipo de ambiente para tapear antes del evento (sin dar nombres de locales).
+    ### El Evento: ${event.name}
+    Crea expectación sobre el espectáculo.
+    ### Post-Espectáculo: La Última Copa
+    Sugiere un tipo de lugar para tomar una copa después (sin dar nombres de locales).
+`;
+
+async function generateContentForEvent(event, db) {
+    const eventsCollection = db.collection('events');
+
+    // Normalizar datos del evento
+    if (event.title && !event.name) event.name = event.title;
+    if (typeof event.artist === 'object' && event.artist !== null && event.artist.name) event.artist = event.artist.name;
+
+    try {
+        console.log(`   -> Enriqueciendo: "${event.name}" con Gemini.`);
+
+        // PASO 1: Generar contenido de texto con Gemini
+        console.log(`      -> ✍️  Generando paquete de texto con Gemini...`);
+        const prompt = contentGenerationPrompt(event);
+        const result = await geminiModel.generateContent(prompt);
+        const responseText = result.response.text().replace(/```json|```/g, '').trim();
+        const generatedContentPackage = JSON.parse(responseText);
+
+        if (!generatedContentPackage.blogTitle || !generatedContentPackage.blogPostMarkdown || !generatedContentPackage.nightPlanMarkdown) {
+            throw new Error('La respuesta JSON de Gemini no contiene todos los campos esperados.');
+        }
+        console.log(`      ✅ Textos generados por Gemini.`);
+
+        // PASO 2: Generar y subir la imagen (sin cambios)
+        const imageData = await generateAndUploadImage(event);
+        if (!imageData) {
+            throw new Error('El proceso de generación de imagen falló.');
+        }
+
+        // PASO 3: Combinar y guardar todo
+        const blogPostContentHtml = converter.makeHtml(generatedContentPackage.blogPostMarkdown);
+        const finalHtmlContent = blogPostContentHtml; // Simplificado, se pueden añadir bloques HTML si se desea
+
+        const updates = {
+            blogPostTitle: generatedContentPackage.blogTitle,
+            blogPostMarkdown: generatedContentPackage.blogPostMarkdown,
+            eventSummaryMarkdown: generatedContentPackage.eventSummaryMarkdown,
+            nightPlanMarkdown: generatedContentPackage.nightPlanMarkdown,
+            nightPlan: generatedContentPackage.nightPlanMarkdown, // Guardamos también en el campo que usa el API
+            blogPostHtml: finalHtmlContent,
+            imageId: imageData.imageId,
+            imageUrl: imageData.imageUrl,
+            contentGenerationDate: new Date(),
+            contentStatus: 'content_ready',
+        };
+
+        await eventsCollection.updateOne({ _id: new ObjectId(event._id) }, { $set: updates });
+        console.log(`   💾 Paquete de contenido COMPLETO para "${event.name}" guardado.`);
+
+        return await eventsCollection.findOne({ _id: new ObjectId(event._id) });
+
+    } catch (error) {
+        console.error(`   ❌ Error fatal enriqueciendo "${event.name}" con Gemini:`, error.message);
+        await eventsCollection.updateOne({ _id: new ObjectId(event._id) }, { $set: { contentStatus: 'enrichment_failed' } });
+        return await eventsCollection.findOne({ _id: new ObjectId(event._id) });
+    }
+}
+
 async function enrichEvents() {
     const db = await connectToDatabase();
     const eventsCollection = db.collection('events');
-
-    // Obtener la fecha de hoy en formato YYYY-MM-DD para la consulta.
+    
     const today = new Date();
     const todayString = today.toISOString().split('T')[0];
 
-    // Buscamos eventos validados por el ingestor que estén pendientes de creación de contenido.
     const query = {
-        contentStatus: 'pending',
-        blogPostTitle: { $exists: false },
-        date: { $gte: todayString } // Solo procesar eventos futuros o de hoy.
+        contentStatus: 'pending_enrichment',
+        date: { $gte: todayString }
     };
 
-    // Ordenamos por ID descendente para procesar los más recientes primero.
     const eventsToProcess = await eventsCollection.find(query)
         .sort({ _id: -1 })
         .limit(config.ENRICH_BATCH_SIZE)
@@ -45,96 +132,14 @@ async function enrichEvents() {
         return;
     }
 
-    console.log(`⚙️ Se encontraron ${eventsToProcess.length} eventos para enriquecer.`);
+    console.log(`⚙️ Se encontraron ${eventsToProcess.length} eventos para enriquecer con Gemini.`);
 
     for (const event of eventsToProcess) {
-        // Normalizar el objeto del evento para asegurar que `name` siempre exista.
-        if (event.title && !event.name) {
-            event.name = event.title;
-        }
-
-        // Normalizar el objeto del artista para asegurar que `artist` sea un string.
-        if (typeof event.artist === 'object' && event.artist !== null && event.artist.name) {
-            event.artist = event.artist.name;
-        }
-
-        try {
-            console.log(`   -> Enriqueciendo: "${event.name}".`);
-
-            // PASO 1: Generar contenido de texto
-            console.log(`      -> ✍️  Generando paquete de texto...`);
-            const MAX_RETRIES = 3;
-            const RETRY_DELAY = 5000;
-            let generatedContentPackage = null;
-            let lastError = null;
-
-            for (let i = 0; i < MAX_RETRIES; i++) {
-                try {
-                    const prompt = config.prompts.generateFullContentPackage(event);
-                    const chatCompletion = await groq.chat.completions.create({
-                        messages: [{ role: "user", content: prompt }],
-                        model: GROQ_MODEL,
-                        response_format: { type: "json_object" },
-                    });
-                    
-                    const responseText = chatCompletion.choices[0]?.message?.content || '{}';
-                    const parsedResponse = JSON.parse(responseText);
-
-                    if (parsedResponse.blogTitle && parsedResponse.blogPostMarkdown && parsedResponse.nightPlanMarkdown && parsedResponse.tweetText && parsedResponse.instagramText) {
-                        generatedContentPackage = parsedResponse;
-                        lastError = null;
-                        break; 
-                    } else {
-                        throw new Error('La respuesta JSON de la IA no contiene todos los campos esperados.');
-                    }
-
-                } catch (error) {
-                    lastError = error;
-                    console.warn(`      ⚠️ Intento de texto ${i + 1}/${MAX_RETRIES} fallido. Reintentando...`);
-                    if (i < MAX_RETRIES - 1) await delay(RETRY_DELAY);
-                }
-            }
-
-            if (lastError) throw lastError;
-            console.log(`      ✅ Textos generados.`);
-
-            // PASO 2: Generar y subir la imagen
-            const imageData = await generateAndUploadImage(event);
-            if (!imageData) {
-                throw new Error('El proceso de generación de imagen falló y es un paso crítico.');
-            }
-
-            // PASO 3: Combinar y guardar todo
-            const blogPostContentHtml = converter.makeHtml(generatedContentPackage.blogPostMarkdown);
-            const introHtml = config.htmlBlocks.postIntro(event);
-            const ctaHtml = config.htmlBlocks.ctaBanners;
-            const finalHtmlContent = introHtml + blogPostContentHtml + ctaHtml;
-
-            const updates = {
-                blogPostTitle: generatedContentPackage.blogTitle,
-                blogPostMarkdown: generatedContentPackage.blogPostMarkdown,
-                nightPlanMarkdown: generatedContentPackage.nightPlanMarkdown,
-                blogPostHtml: finalHtmlContent,
-                tweetText: generatedContentPackage.tweetText,
-                instagramText: generatedContentPackage.instagramText,
-                imageId: imageData.imageId,
-                imageUrl: imageData.imageUrl,
-                contentGenerationDate: new Date(),
-                contentStatus: 'content_ready',
-                notificationStatus: 'pending' // <-- NUEVO: Marcar para notificación.
-            };
-
-            await eventsCollection.updateOne({ _id: new ObjectId(event._id) }, { $set: updates });
-            console.log(`   💾 Paquete de contenido COMPLETO para "${event.name}" guardado.`);
-
-        } catch (error) {
-            console.error(`   ❌ Error fatal enriqueciendo "${event.name}":`, error.message);
-            await eventsCollection.updateOne({ _id: new ObjectId(event._id) }, { $set: { contentStatus: 'enrichment_failed' } });
-        }
+        await generateContentForEvent(event, db);
     }
 }
 
-module.exports = { enrichEvents };
+module.exports = { enrichEvents, generateContentForEvent };
 
 if (require.main === module) {
     console.log("Ejecutando el enriquecedor de eventos de forma manual...");
