@@ -1,7 +1,8 @@
 require('regenerator-runtime/runtime'); // Polyfill para async/await en dependencias antiguas
 // content-creator.js
 // Orquestador principal del flujo de trabajo de creación y publicación de contenido.
-require('dotenv').config(); // Cargar variables de entorno PRIMERO
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') }); // Cargar variables de entorno desde la carpeta del script
 
 console.log("🚀 Iniciando el Orquestador de Contenido...");
 
