@@ -51,6 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const howItWorksModal = document.getElementById('how-it-works-modal-overlay');
     const termsModal = document.getElementById('terms-modal-overlay');
     const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
+    const tripCityInput = document.getElementById('trip-city');
+    const tripStartDateInput = document.getElementById('trip-start-date');
+    const tripEndDateInput = document.getElementById('trip-end-date');
+    const tripSearchBtn = document.getElementById('trip-search-btn');
+    const tripResultsSlider = document.getElementById('trip-results-slider');
+    const tripResultsMessage = document.getElementById('trip-results-message');
 
     // =========================================================================
     // 2. DEFINICIÓN DE TODAS LAS FUNCIONES
@@ -307,6 +313,48 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
+    async function fetchTripEvents() {
+        if (!tripCityInput || !tripStartDateInput || !tripEndDateInput || !tripResultsSlider || !tripResultsMessage) return;
+
+        const city = tripCityInput.value.trim();
+        const startDate = tripStartDateInput.value;
+        const endDate = tripEndDateInput.value;
+
+        if (!city || !startDate || !endDate) {
+            tripResultsMessage.textContent = 'Por favor, completa todos los campos: ciudad y fechas.';
+            tripResultsMessage.style.display = 'block';
+            tripResultsSlider.style.display = 'none';
+            return;
+        }
+
+        tripResultsSlider.innerHTML = `<div class="skeleton-card" style="width: 100%;"></div>`;
+        tripResultsSlider.style.display = 'block';
+        tripResultsMessage.style.display = 'none';
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/events?city=${encodeURIComponent(city)}&startDate=${startDate}&endDate=${endDate}&limit=20`);
+            if (!response.ok) throw new Error('Error en la respuesta del servidor.');
+            
+            const data = await response.json();
+            
+            if (data.events && data.events.length > 0) {
+                renderSlider(tripResultsSlider, data.events);
+                // The renderSlider function will set display to block if there are events
+            } else {
+                tripResultsMessage.textContent = 'No se encontraron eventos para esa ciudad y fechas.';
+                tripResultsMessage.style.display = 'block';
+                tripResultsSlider.innerHTML = '';
+                tripResultsSlider.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error en la búsqueda de viaje:', error);
+            tripResultsMessage.textContent = 'Ocurrió un error al realizar la búsqueda. Inténtalo de nuevo.';
+            tripResultsMessage.style.display = 'block';
+            tripResultsSlider.innerHTML = '';
+            tripResultsSlider.style.display = 'none';
+        }
+    }
+
     async function getAndShowNightPlan(event) {
         if (!geminiModalOverlay) return;
         const modalContent = geminiModalOverlay.querySelector('.modal-content');
@@ -397,6 +445,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (navHowItWorksBtn) navHowItWorksBtn.addEventListener('click', () => howItWorksModal?.classList.add('visible'));
         if (navTermsBtn) navTermsBtn.addEventListener('click', () => termsModal?.classList.add('visible'));
+        if (tripSearchBtn) {
+            tripSearchBtn.addEventListener('click', fetchTripEvents);
+        }
     }
 
     // =========================================================================

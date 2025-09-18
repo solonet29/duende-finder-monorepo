@@ -63,8 +63,20 @@
     <main class="container">
         <h1 class="main-title">Duende Finder</h1>
         <p id="event-counter" class="subtitle-counter">Cargando eventos...</p>
-        <section id="destacados-section" class="sliders-section">
 
+        <section id="trip-planner-section" class="trip-planner-section">
+            <h2>Planificador de Viaje 🗺️</h2>
+            <div class="trip-planner-form">
+                <input type="text" id="trip-city" placeholder="Escribe una ciudad o región...">
+                <input type="date" id="trip-start-date">
+                <input type="date" id="trip-end-date">
+                <button id="trip-search-btn">Buscar Eventos</button>
+            </div>
+            <div class="slider-container" id="trip-results-slider" style="display: none;"></div>
+             <p id="trip-results-message" class="results-message" style="display: none;"></p>
+        </section>
+
+        <section id="destacados-section" class="sliders-section">
             <h2>Eventos Destacados ✨</h2>
             <div class="slider-container" id="featured-events-slider"></div>
         </section>
