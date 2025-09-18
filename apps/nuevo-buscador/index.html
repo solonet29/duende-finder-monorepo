@@ -67,9 +67,18 @@
         <section id="trip-planner-section" class="trip-planner-section">
             <h2>Planificador de Viaje 🗺️</h2>
             <div class="trip-planner-form">
-                <input type="text" id="trip-city" placeholder="Escribe una ciudad o región...">
-                <input type="date" id="trip-start-date">
-                <input type="date" id="trip-end-date">
+                <div class="form-group">
+                    <label for="trip-city">Destino</label>
+                    <input type="text" id="trip-city" placeholder="Escribe una ciudad o región...">
+                </div>
+                <div class="form-group">
+                    <label for="trip-start-date">Desde</label>
+                    <input type="date" id="trip-start-date">
+                </div>
+                <div class="form-group">
+                    <label for="trip-end-date">Hasta</label>
+                    <input type="date" id="trip-end-date">
+                </div>
                 <button id="trip-search-btn">Buscar Eventos</button>
             </div>
             <div class="slider-container" id="trip-results-slider" style="display: none;"></div>

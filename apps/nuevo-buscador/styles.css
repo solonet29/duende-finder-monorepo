@@ -144,6 +144,84 @@ header.header-main {
     margin: 30px 0;
 }
 
+/* ==========================================================================
+   X. PLANIFICADOR DE VIAJE
+   ========================================================================== */
+.trip-planner-section {
+    background-color: var(--color-superficie);
+    padding: 20px;
+    border-radius: 12px;
+    margin: 30px 0;
+    border: 1px solid var(--color-borde);
+}
+
+.trip-planner-section h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.6rem;
+}
+
+.trip-planner-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end; /* Alinea la parte inferior de los elementos */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1; /* Permite que los grupos crezcan */
+    min-width: 150px; /* Ancho mínimo para evitar que se aplasten demasiado */
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-texto-secundario);
+}
+
+.trip-planner-form input[type="text"],
+.trip-planner-form input[type="date"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--color-borde);
+    background-color: var(--color-fondo);
+    color: var(--color-texto-principal);
+    border-radius: 8px;
+    font-size: 1rem;
+    height: 45px; /* Altura fija */
+}
+
+.trip-planner-form button {
+    padding: 10px 20px;
+    height: 45px; /* Misma altura que los inputs */
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.trip-planner-form button:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+.results-message {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: var(--color-fondo);
+    border-radius: 8px;
+    text-align: center;
+    color: var(--color-texto-secundario);
+}
+
+
 .sliders-section h2 {
     font-family: 'Montserrat', sans-serif;
     font-size: 1.6rem;
