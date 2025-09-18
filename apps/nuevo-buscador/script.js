@@ -410,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     .catch(error => console.error('Error al registrar el Service Worker:', error));
             });
         }
-        const savedTheme = localStorage.getItem('duende-theme') || 'dark';
+        const savedTheme = localStorage.getItem('duende-theme') || 'light';
         applyTheme(savedTheme);
         setupEventListeners();
         initPushNotifications(); // <-- Inicializar notificaciones
