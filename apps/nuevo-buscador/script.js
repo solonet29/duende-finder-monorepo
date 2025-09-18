@@ -328,11 +328,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         tripResultsSlider.innerHTML = `<div class="skeleton-card" style="width: 100%;"></div>`;
-        tripResultsSlider.style.display = 'block';
+        tripResultsSlider.style.display = 'flex';
         tripResultsMessage.style.display = 'none';
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/events?city=${encodeURIComponent(city)}&startDate=${startDate}&endDate=${endDate}&limit=20`);
+            const response = await fetch(`${API_BASE_URL}/api/events?city=${encodeURIComponent(city)}&dateFrom=${startDate}&dateTo=${endDate}&limit=20`);
             if (!response.ok) throw new Error('Error en la respuesta del servidor.');
             
             const data = await response.json();
