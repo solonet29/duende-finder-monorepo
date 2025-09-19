@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (APP_CONFIG.USAR_PAGINAS_DE_EVENTOS) {
                         const eventName = sliderCard.dataset.eventName || 'evento';
                         const slug = `${eventId}-${eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
-                        window.location.href = `/eventos/${slug}`;
+                        window.location.href = `https://api-v2.afland.es/eventos/${slug}`;
                     } else {
                         try {
                             let eventData = eventsCache[eventId];
