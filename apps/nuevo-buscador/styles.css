@@ -763,3 +763,90 @@ ion-icon {
         transform: scale(1);
     }
 }
+
+/* ==========================================================================
+   8. PÁGINA DE DETALLE DE EVENTO
+   ========================================================================== */
+
+/* Contenedor principal de la página de evento */
+.event-page-container {
+    max-width: 700px; /* Ancho máximo similar al modal */
+    margin: 2rem auto; /* Centrado y con margen superior/inferior */
+    padding: 1rem;
+    background-color: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Contenedor de la imagen del evento */
+.event-page-container .evento-card-img-container {
+    width: 100%;
+    max-height: 350px; /* Altura máxima para la imagen */
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--color-borde);
+}
+
+.event-page-container .evento-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Título del evento en la página de detalle */
+.event-page-container .card-header h1 {
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+/* Resto de detalles (artista, fecha, etc.) */
+.event-page-container .artista,
+.event-page-container .evento-detalle {
+    font-size: 1rem;
+}
+
+.event-page-container .card-detalles {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 1px solid var(--color-borde);
+    padding-top: 1rem;
+    margin-top: 0;
+}
+
+.event-page-container .card-actions-primary {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+
+/* Navegación para la página de evento (Botón Volver) */
+.event-page-nav {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background-color: var(--color-superficie);
+    color: var(--color-texto-principal);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--color-borde);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.back-button:hover {
+    background-color: var(--color-borde);
+}

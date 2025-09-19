@@ -338,6 +338,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         mainContainer.innerHTML = pageHtml;
         window.scrollTo(0, 0); // Scroll to top
+
+        // Modificar la cabecera para mostrar el botón de "Volver"
+        const headerContainer = document.querySelector('header.header-main .container');
+        if (headerContainer) {
+            headerContainer.innerHTML = `
+                <nav class="event-page-nav">
+                    <a href="/" class="back-button">&larr; Volver a la lista</a>
+                </nav>
+            `;
+        }
     }
 
     function renderEventDetailModal(event) {
