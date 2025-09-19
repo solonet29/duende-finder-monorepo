@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Script from 'next/script';
 
 // Esta es la plantilla para cada página de evento individual.
 const EventoPage = ({ event }) => {
@@ -57,8 +58,8 @@ const EventoPage = ({ event }) => {
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
                 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&family=Montserrat:wght@700&display=swap" rel="stylesheet" />
-                <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-                <script nomodule="" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+                <Script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js" />
+                <Script nomodule="" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js" />
                 <link rel="icon" type="image/png" href="https://nuevobuscador.afland.es/assets/favicon.png" />
                 <link rel="stylesheet" href="https://nuevobuscador.afland.es/styles.css" />
                 <link rel="stylesheet" href="https://nuevobuscador.afland.es/chatbot.css" />
