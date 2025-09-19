@@ -90,6 +90,7 @@ export default async function handler(req, res) {
         // Proyección explícita para asegurar que todos los campos necesarios están presentes
         aggregationPipeline.push({
             $project: {
+                _id: 1,
                 name: 1,
                 artist: 1,
                 date: 1,
