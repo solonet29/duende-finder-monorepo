@@ -50,6 +50,19 @@ const EventoPage = ({ event }) => {
             <Head>
                 <title>{pageTitle}</title>
                 <meta name="description" content={pageDescription} />
+
+                {/* Assets para que la página se vea bien */}
+                <meta charSet="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
+                <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&family=Montserrat:wght@700&display=swap" rel="stylesheet" />
+                <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+                <script nomodule="" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+                <link rel="icon" type="image/png" href="https://nuevobuscador.afland.es/assets/favicon.png" />
+                <link rel="stylesheet" href="https://nuevobuscador.afland.es/styles.css" />
+                <link rel="stylesheet" href="https://nuevobuscador.afland.es/chatbot.css" />
+
                 {/* Open Graph / Facebook */}
                 <meta property="og:title" content={pageTitle} />
                 <meta property="og:description" content={pageDescription} />
