@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
         CHROME_DOWNLOAD_URL: 'https://www.google.com/chrome/',
         defaultLanguage: 'es-ES',
         avatarPlaceholders: {
-            female: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzkwOTA5MCI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNjcgMC01LTEuMjYtNi42Ny0zLjIzLjk5LTEuNjcgMy45OS0yLjc3IDYuNjctMi43N3MyLjY4IDEuMSA2LjY3IDIuNzdjLTEuNjcgMS45Ny00IDIuMjMtNi42NyAyLjIzeiIvPjwvc3ZnPg==',
-            male: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzkwOTA5MCI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNjcgMC01LTEuMjYtNi42Ny0zLjIzLjk5LTEuNjcgMy45OS0yLjc3IDYuNjctMi43N3MyLjY4IDEuMSA2LjY3IDIuNzdjLTEuNjcgMS45Ny00IDIuMjMtNi42NyAyLjIzeiIvPjwvc3ZnPg=='
+            female: 'assets/avatar_mujer.png',
+            male: 'assets/avatar_hombre.png'
         },
         knowledgeBase: `
         Información sobre Duende Finder:
