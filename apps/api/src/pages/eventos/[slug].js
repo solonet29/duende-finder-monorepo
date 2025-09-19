@@ -59,8 +59,9 @@ const EventoPage = ({ event }) => {
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
                 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&family=Montserrat:wght@700&display=swap" rel="stylesheet" />
                 <link rel="icon" type="image/png" href="https://nuevobuscador.afland.es/assets/favicon.png" />
-                <link rel="stylesheet" href="https://nuevobuscador.afland.es/styles.css" />
-                <link rel="stylesheet" href="https://nuevobuscador.afland.es/chatbot.css" />
+                <link rel="manifest" href="https://nuevobuscador.afland.es/assets/manifest.json" />
+                <link rel="stylesheet" href="https://nuevobuscador.afland.es/assets/styles.css" />
+                <link rel="stylesheet" href="https://nuevobuscador.afland.es/assets/chatbot.css" />
 
                 {/* Open Graph / Facebook */}
                 <meta property="og:title" content={pageTitle} />
