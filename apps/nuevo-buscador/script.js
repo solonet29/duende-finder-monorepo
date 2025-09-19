@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `
     };
 
-    const mainContainer = document.querySelector('.container');
+    const mainContainer = document.querySelector('main.container');
     const featuredSlider = document.getElementById('featured-events-slider');
     const weekSlider = document.getElementById('week-events-slider');
     const todaySlider = document.getElementById('today-events-slider');
