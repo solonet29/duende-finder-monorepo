@@ -7,16 +7,20 @@
     {
       "src": "/manifest.json",
       "dest": "/manifest.json",
-      "headers": { "Content-Type": "application/manifest+json" }
+      "headers": {
+        "Content-Type": "application/manifest+json"
+      }
     },
     {
       "src": "/assets/manifest.json",
       "dest": "/assets/manifest.json",
-      "headers": { "Content-Type": "application/manifest+json" }
+      "headers": {
+        "Content-Type": "application/manifest+json"
+      }
     },
     {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/index.html"
     }
   ]
 }
