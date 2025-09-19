@@ -1,6 +1,6 @@
 // /pages/api/notifications/update-location.js
 
-import { connectToDatabase } from '../../../../lib/database';
+import { connectToMainDb } from '../../../../lib/database';
 import webpush from '../../../../lib/webPush';
 
 // Este endpoint es el cerebro de las notificaciones por geolocalización.
@@ -18,9 +18,9 @@ export default async function handler(req, res) {
     }
 
     try {
-        const db = await connectToDatabase();
-        const subscriptionsCollection = db.collection('push_subscriptions');
-        const eventsCollection = db.collection('events');
+        const mainConnection = await connectToMainDb();
+        const subscriptionsCollection = mainConnection.collection('push_subscriptions');
+        const eventsCollection = mainConnection.collection('events');
 
         // 1. Buscar la suscripción del usuario
         const userSubscription = await subscriptionsCollection.findOne({ "endpoint": subscription.endpoint });
@@ -90,7 +90,7 @@ export default async function handler(req, res) {
         // Si la suscripción es inválida, la eliminamos
         if (error.statusCode === 410 || error.statusCode === 404) {
             console.log(`Suscripción caducada. Eliminando: ${subscription.endpoint.substring(0, 50)}...`);
-            await db.collection('push_subscriptions').deleteOne({ "endpoint": subscription.endpoint });
+            await subscriptionsCollection.deleteOne({ "endpoint": subscription.endpoint });
         }
         res.status(500).json({ error: 'Error interno del servidor.' });
     }

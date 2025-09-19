@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 
@@ -9,11 +8,16 @@ const EventCard = ({ event }) => {
     const slug = `${event._id}-${eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
     const eventUrl = `/eventos/${slug}`;
 
+    // Manejo del campo artist: si es un objeto, usa event.artist.name
+    const artistDisplayName = typeof event.artist === 'object' && event.artist !== null 
+                              ? event.artist.name 
+                              : event.artist || 'Artista por confirmar';
+
     return (
         <a href={eventUrl} className="event-card">
-            <img src={event.imageUrl || '/assets/flamenco-placeholder.png'} alt={event.artist || 'Artista'} className="card-image" onError={(e) => { e.target.onerror = null; e.target.src='/assets/flamenco-placeholder.png'}} />
+            <img src={event.imageUrl || '/assets/flamenco-placeholder.png'} alt={artistDisplayName} className="card-image" onError={(e) => { e.target.onerror = null; e.target.src='/assets/flamenco-placeholder.png'}} />
             <div className="card-content">
-                <h3 className="card-title">{event.artist || 'Artista por confirmar'}</h3>
+                <h3 className="card-title">{artistDisplayName}</h3>
             </div>
         </a>
     );
@@ -28,7 +32,27 @@ const EventSlider = ({ events }) => {
     );
 };
 
-// --- Página Principal ---
+// --- Funciones de Ayuda para Geolocalización ---
+const getUserLocation = () => {
+    return new Promise((resolve, reject) => {
+        if (typeof navigator !== 'undefined' && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+        } else {
+            reject(new Error('Geolocation not supported'));
+        }
+    });
+};
+
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 0.5 - Math.cos(dLat)/2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon))/2;
+    return R * 2 * Math.asin(Math.sqrt(a));
+};
+
+
+// --- Componente Principal de la Página ---
 const HomePage = ({ staticProps }) => {
     const { circuitoEvents: initialCircuitoEvents, weekEvents, todayEvents, allEvents, eventCount } = staticProps;
 
@@ -42,20 +66,29 @@ const HomePage = ({ staticProps }) => {
     useEffect(() => {
         const sortEventsByProximity = async () => {
             try {
-                const position = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject));
-                const { latitude, longitude } = position.coords;
-                const sorted = [...initialCircuitoEvents].map(event => {
-                    const [eventLon, eventLat] = event.location?.coordinates || [0, 0];
-                    const distance = calculateDistance(latitude, longitude, eventLat, eventLon);
-                    return { ...event, distance };
+                const userLocation = await getUserLocation();
+                const { latitude, longitude } = userLocation.coords;
+
+                const sortedEvents = [...initialCircuitoEvents].map(event => {
+                    if (event.location?.coordinates?.length === 2) {
+                        const [eventLon, eventLat] = event.location.coordinates;
+                        return { ...event, distance: calculateDistance(latitude, longitude, eventLat, eventLon) };
+                    } else {
+                        return { ...event, distance: Infinity };
+                    }
                 }).sort((a, b) => a.distance - b.distance);
-                setCircuitoEvents(sorted);
+
+                setCircuitoEvents(sortedEvents);
+
             } catch (error) {
-                console.warn("No se pudo obtener la ubicación para ordenar eventos.");
+                console.warn("No se pudo obtener la ubicación para ordenar eventos cercanos.");
             }
         };
-        if (initialCircuitoEvents.length > 0) sortEventsByProximity();
-    }, [initialCircuitoEvents]);
+
+        if (initialCircuitoEvents.length > 0) {
+            sortEventsByProximity();
+        }
+    }, [initialCircuitoEvents]); // Se ejecuta si los eventos iniciales cambian
 
     // Efecto para agrupar eventos por mes
     useEffect(() => {
@@ -113,13 +146,7 @@ const HomePage = ({ staticProps }) => {
 };
 
 // --- Funciones de Ayuda ---
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 0.5 - Math.cos(dLat)/2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon))/2;
-    return R * 2 * Math.asin(Math.sqrt(a));
-};
+// (calculateDistance ya está definida arriba)
 
 // --- Carga de Datos del Lado del Servidor ---
 export async function getStaticProps() {

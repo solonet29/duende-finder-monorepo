@@ -1,6 +1,6 @@
 // /pages/api/notifications/subscribe.js
 
-import { connectToDatabase } from '../../../../lib/database';
+import { connectToMainDb } from '../../../../lib/database';
 
 // Este endpoint recibe una suscripción push del cliente y la guarda en la BBDD.
 export default async function handler(req, res) {
@@ -17,8 +17,8 @@ export default async function handler(req, res) {
     }
 
     try {
-        const db = await connectToDatabase();
-        const subscriptionsCollection = db.collection('push_subscriptions');
+        const mainConnection = await connectToMainDb();
+        const subscriptionsCollection = mainConnection.collection('push_subscriptions');
 
         // Evitar duplicados: si ya existe una suscripción con el mismo endpoint, no la insertamos de nuevo.
         const existingSubscription = await subscriptionsCollection.findOne({ "endpoint": subscription.endpoint });

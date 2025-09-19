@@ -1,6 +1,6 @@
 // /pages/api/notifications/check-in.js
 
-import { connectToDatabase } from '../../../../lib/database';
+import { connectToMainDb } from '../../../../lib/database';
 
 // Este endpoint registra la actividad de un usuario.
 // El frontend lo llamará cada vez que se inicie la aplicación.
@@ -17,8 +17,8 @@ export default async function handler(req, res) {
     }
 
     try {
-        const db = await connectToDatabase();
-        const subscriptionsCollection = db.collection('push_subscriptions');
+        const mainConnection = await connectToMainDb();
+        const subscriptionsCollection = mainConnection.collection('push_subscriptions');
 
         const updateResult = await subscriptionsCollection.updateOne(
             { "endpoint": subscription.endpoint },
