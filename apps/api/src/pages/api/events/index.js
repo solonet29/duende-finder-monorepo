@@ -84,9 +84,27 @@ export default async function handler(req, res) {
         }
 
         aggregationPipeline.push({ $match: matchFilter });
-        aggregationPipeline.push({ $group: { _id: { date: "$date", artist: "$artist", name: "$name" }, firstEvent: { $first: "$$ROOT" } } });
+        aggregationPipeline.push({ $group: { _id: { date: "$date", artist: "$artist", name: "$name" }, firstEvent: { $first: "$ROOT" } } });
         aggregationPipeline.push({ $replaceRoot: { newRoot: "$firstEvent" } });
-        aggregationPipeline.push({ $addFields: { contentStatus: '$contentStatus', blogPostUrl: '$blogPostUrl' } });
+
+        // Proyección explícita para asegurar que todos los campos necesarios están presentes
+        aggregationPipeline.push({
+            $project: {
+                name: 1,
+                artist: 1,
+                date: 1,
+                imageUrl: 1,
+                location: 1,
+                city: 1,
+                country: 1,
+                venue: 1,
+                time: 1,
+                description: 1,
+                blogPostUrl: 1,
+                contentStatus: 1,
+                dist: 1
+            }
+        });
 
         let sortOrder = { date: 1 };
         if (sort === 'date' && req.query.order === 'desc') sortOrder = { date: -1 };
