@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. CONFIGURACIÓN Y SELECTORES
     // =========================================================================
     const APP_CONFIG = {
-        USAR_PAGINAS_DE_EVENTOS: true // Poner en false para volver al modo modal
+        USAR_PAGINAS_DE_EVENTOS: false // Poner en false para volver al modo modal
     };
 
     const getApiBaseUrl = () => {
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 2. DEFINICIÓN DE TODAS LAS FUNCIONES
     // =========================================================================
-    
+
     function getSessionId() {
         let sessionId = sessionStorage.getItem('duendeFinderSessionId');
         if (!sessionId) {
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const R = 6371; // km
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = 0.5 - Math.cos(dLat)/2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon))/2;
+        const a = 0.5 - Math.cos(dLat) / 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon)) / 2;
         return R * 2 * Math.asin(Math.sqrt(a));
     }
 
@@ -377,9 +377,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/events?city=${encodeURIComponent(city)}&dateFrom=${startDate}&dateTo=${endDate}&limit=20`);
             if (!response.ok) throw new Error('Error en la respuesta del servidor.');
-            
+
             const data = await response.json();
-            
+
             if (data.events && data.events.length > 0) {
                 renderSlider(tripResultsSlider, data.events);
             } else {
