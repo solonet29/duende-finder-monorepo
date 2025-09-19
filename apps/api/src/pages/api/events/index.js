@@ -84,7 +84,8 @@ export default async function handler(req, res) {
         }
 
         aggregationPipeline.push({ $match: matchFilter });
-        aggregationPipeline.push({ $group: { _id: { date: "$date", artist: "$artist", name: "$name" }, firstEvent: { $first: "$ROOT" } } });
+        aggregationPipeline.push({ $group: { _id: { date: "$date", artist: "$artist", name: "$name" }, firstEvent: { $first: "$$ROOT" } } });
+        aggregationPipeline.push({ $match: { firstEvent: { $ne: null } } }); // FIX: Filter out null events
         aggregationPipeline.push({ $replaceRoot: { newRoot: "$firstEvent" } });
         aggregationPipeline.push({ $addFields: { contentStatus: '$contentStatus', blogPostUrl: '$blogPostUrl' } });
 
