@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. CONFIGURACIÓN Y SELECTORES
     // =========================================================================
     const APP_CONFIG = {
-        USAR_PAGINAS_DE_EVENTOS: false // Poner en false para volver al modo modal
+        USAR_PAGINAS_DE_EVENTOS: true // Poner en false para volver al modo modal
     };
 
     const getApiBaseUrl = () => {
@@ -275,6 +275,71 @@ document.addEventListener('DOMContentLoaded', () => {
         return eventCard;
     }
 
+    function renderEventPage(event) {
+        if (!mainContainer) return;
+
+        const eventName = sanitizeField(event.name, 'Evento sin título');
+        const artistName = sanitizeField(event.artist, 'Artista por confirmar');
+        const description = sanitizeField(event.description, 'Sin descripción disponible.');
+        const eventTime = sanitizeField(event.time, 'No disponible');
+        const eventDate = event.date ? new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible';
+        const venue = sanitizeField(event.venue || (event.location && event.location.venue), '');
+        const city = sanitizeField(event.city || (event.location && event.location.city), '');
+        let displayLocation = 'Ubicación no disponible';
+        if (venue && city) displayLocation = `${venue}, ${city}`;
+        else if (venue || city) displayLocation = venue || city;
+        const mapQuery = [eventName, venue, city, sanitizeField(event.country || (event.location && event.location.country), '')].filter(Boolean).join(', ');
+        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+        const blogUrl = event.blogPostUrl || 'https://afland.es/';
+        const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
+        const blogIcon = event.blogPostUrl ? 'book-outline' : 'newspaper-outline';
+        const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
+
+        let imageHtml = '';
+        if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim().startsWith('http')) {
+            imageHtml = `<div class="evento-card-img-container"><img src="${event.imageUrl.trim()}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
+        }
+
+        const pageHtml = `
+            <div class="event-page-container">
+                ${imageHtml}
+                <div class="card-header">
+                    <h1 class="titulo-truncado" title="${eventName}">${eventName}</h1>
+                </div>
+                <div class="artista">
+                    <ion-icon name="person-outline"></ion-icon> <span>${artistName}</span>
+                </div>
+                <p class="descripcion-corta">${description}</p>
+                <div class="card-detalles">
+                    <div class="evento-detalle">
+                        <ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span>
+                    </div>
+                    <div class="evento-detalle">
+                        <ion-icon name="time-outline"></ion-icon><span>${eventTime}</span>
+                    </div>
+                    <div class="evento-detalle">
+                        <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">
+                            <ion-icon name="location-outline"></ion-icon><span>${displayLocation}</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <div class="card-actions-primary">
+                        <button class="gemini-btn" data-event-id="${event._id}">
+                            <ion-icon name="sparkles-outline"></ion-icon> Planear Noche
+                        </button>
+                        <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}">
+                            <ion-icon name="${blogIcon}"></ion-icon> ${blogText}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        mainContainer.innerHTML = pageHtml;
+        window.scrollTo(0, 0); // Scroll to top
+    }
+
     function renderEventDetailModal(event) {
         if (!eventDetailModalOverlay) return;
         const eventName = sanitizeField(event.name, 'Evento sin título');
@@ -435,6 +500,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 header.classList.toggle('scrolled', window.scrollY > 10);
             });
         }
+
+        // Listener para la precarga en mouseover
+        document.body.addEventListener('mouseover', async (e) => {
+            const sliderCard = e.target.closest('.slider-container .event-card');
+            if (sliderCard) {
+                const eventId = sliderCard.dataset.eventId;
+                if (eventId && !eventsCache[eventId]) {
+                    // Pre-cargamos los datos del evento en cache
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`);
+                        if (!response.ok) return;
+                        const eventData = await response.json();
+                        eventsCache[eventId] = eventData;
+                    } catch (error) {
+                        // Fallo silencioso. Si el usuario hace clic, el manejador del clic se encargará.
+                    }
+                }
+            }
+        });
+
         document.body.addEventListener('click', async (e) => {
             const sliderCard = e.target.closest('.slider-container .event-card');
             const geminiBtn = e.target.closest('.gemini-btn');
@@ -515,7 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. FUNCIÓN PRINCIPAL DE ORQUESTACIÓN
     // =========================================================================
     async function handleInitialPageLoadRouting() {
-        if (!APP_CONFIG.USAR_PAGINAS_DE_EVENTOS) return;
+        if (!APP_CONFIG.USAR_PAGINAS_DE_EVENTOS) return false;
 
         const path = window.location.pathname;
         const eventPageMatch = path.match(/^\/eventos\/([a-f0-9]{24})-/);
@@ -523,10 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (eventPageMatch && eventPageMatch[1]) {
             const eventId = eventPageMatch[1];
             try {
-                if (eventDetailModalOverlay) {
-                    eventDetailModalOverlay.innerHTML = `<div class="modal"><div class="modal-content" style="text-align: center;">Cargando evento...</div></div>`;
-                    eventDetailModalOverlay.classList.add('visible');
-                }
+                mainContainer.innerHTML = `<div class="loading-container"><div class="loader"></div><p>Cargando evento...</p></div>`;
 
                 let eventData = eventsCache[eventId];
                 if (!eventData) {
@@ -536,15 +618,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     eventsCache[eventId] = eventData;
                 }
                 trackInteraction('eventView', { eventId: eventData._id, source: 'directURL' });
-                renderEventDetailModal(eventData);
+                renderEventPage(eventData); // <-- USAMOS LA NUEVA FUNCIÓN
+                return true; // Indicamos que se ha cargado una página de evento
             } catch (error) {
                 console.error('Error al cargar el evento desde la URL:', error);
-                if (eventDetailModalOverlay) {
-                    eventDetailModalOverlay.innerHTML = `<div class="modal"><div class="modal-content" style="text-align: center;"><h3>Evento no encontrado</h3><p>El evento que buscas no existe o ha sido eliminado.</p><button class="modal-close-btn">×</button></div></div>`;
-                    eventDetailModalOverlay.classList.add('visible');
+                if (mainContainer) {
+                    mainContainer.innerHTML = `<div class="error-container"><h3>Evento no encontrado</h3><p>El evento que buscas no existe o ha sido eliminado.</p></div>`;
                 }
+                return true; // Aunque hay un error, seguimos en una URL de evento, no cargar dashboard.
             }
         }
+        return false; // No es una URL de evento, proceder con la carga normal.
     }
 
     async function init() {
@@ -553,22 +637,24 @@ document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
         initPushNotifications();
         populateInfoModals();
-        displayEventCount();
+        
+        const isEventPage = await handleInitialPageLoadRouting();
 
-        // We handle routing before loading the dashboard to show the event modal quickly
-        await handleInitialPageLoadRouting();
+        if (!isEventPage) {
+            // Si NO es una página de evento, cargar el dashboard y el contador
+            displayEventCount();
+            const modalPromise = handleWelcomeModal();
+            const dashboardPromise = initializeDashboard();
 
-        const modalPromise = handleWelcomeModal();
-        const dashboardPromise = initializeDashboard();
+            const modalInfo = await modalPromise;
+            await modalInfo.timer;
 
-        const modalInfo = await modalPromise;
-        await modalInfo.timer;
+            await dashboardPromise;
 
-        await dashboardPromise;
-
-        const overlay = document.getElementById('welcome-modal-overlay');
-        if (overlay && modalInfo.active) {
-            overlay.classList.remove('visible');
+            const overlay = document.getElementById('welcome-modal-overlay');
+            if (overlay && modalInfo.active) {
+                overlay.classList.remove('visible');
+            }
         }
     }
 
