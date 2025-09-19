@@ -933,3 +933,50 @@ ion-icon {
     overflow: hidden;
     border: 1px solid var(--color-borde);
 }
+
+/* ==========================================================================
+   11. SPONSORED BANNER & FOOTER
+   ========================================================================== */
+
+.sponsored-banner {
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.sponsored-banner span {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-texto-secundario);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sponsored-banner img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--color-borde);
+}
+
+.event-page-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-borde);
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.event-page-footer .ai-disclaimer {
+    color: var(--color-texto-secundario);
+    margin: 0 0 0.5rem 0;
+}
+
+.event-page-footer .business-cta {
+    font-weight: bold;
+    color: var(--color-acento);
+    text-decoration: none;
+}
+
+.event-page-footer .business-cta:hover {
+    text-decoration: underline;
+}

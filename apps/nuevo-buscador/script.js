@@ -277,6 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const pageHtml = `
             <div class="event-page-container" data-event-id="${event._id}">
+                <div id="sponsored-banner-container"></div>
                 ${imageHtml}
                 <div class="card-header">
                     <h1 class="titulo-truncado" title="${eventName}">${eventName}</h1>
@@ -318,10 +319,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div id="map-container"></div>
+                <footer class="event-page-footer">
+                    <p class="ai-disclaimer"><em>Contenido generado por IA. La información puede no ser exacta.</em></p>
+                    <a href="https://afland.es/contact/" target="_blank" rel="noopener noreferrer" class="business-cta">¿Quieres ver tu negocio aquí? Contacta</a>
+                </footer>
             </div>
         `;
 
         mainContainer.innerHTML = pageHtml;
+
+        displaySponsoredBanner(event);
 
         const mapContainer = document.getElementById('map-container');
         if (mapContainer && event.location?.coordinates?.length === 2) {
@@ -556,6 +563,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (shareUrl) {
             window.open(shareUrl, '_blank', 'noopener,noreferrer');
+        }
+    }
+
+    async function displaySponsoredBanner(event) {
+        // TODO: La lógica para determinar si un evento es patrocinado se moverá al backend.
+        // Por ahora, se asume que un evento patrocinado tiene un tag 'patrocinado'.
+        const isSponsored = event.tags?.includes('patrocinado');
+
+        if (!isSponsored) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/config`);
+            const config = await response.json();
+
+            if (config && config.banner_enabled) {
+                const bannerContainer = document.getElementById('sponsored-banner-container');
+                if (bannerContainer) {
+                    const bannerHtml = `
+                        <div class="sponsored-banner">
+                            <span>Patrocinado</span>
+                            <a href="${config.banner_linkUrl || '#'}" target="_blank" rel="noopener noreferrer">
+                                <img src="${config.banner_imageUrl}" alt="Banner promocional">
+                            </a>
+                        </div>
+                    `;
+                    bannerContainer.innerHTML = bannerHtml;
+                }
+            }
+        } catch (error) {
+            console.error('Error al mostrar el banner de patrocinado:', error);
         }
     }
 
