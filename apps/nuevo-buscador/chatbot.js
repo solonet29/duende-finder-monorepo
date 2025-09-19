@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. CONFIGURACIÓN Y ESTADO
     // =========================================================================
     const config = {
-        IS_ENABLED: true,
+        IS_ENABLED: false,
         API_BASE_URL: 'https://api-v2.afland.es/api',
         CHROME_DOWNLOAD_URL: 'https://www.google.com/chrome/',
         defaultLanguage: 'es-ES',
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sender === 'ai') {
             const avatarImg = document.createElement('img');
             avatarImg.src = state.avatar;
-            avatarImg.onerror = function() { this.src = config.genericAvatar; };
+            avatarImg.onerror = function () { this.src = config.genericAvatar; };
             avatarImg.className = 'chatbot-avatar';
             messageElement.appendChild(avatarImg);
         }
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleFormSubmit = async (e) => {
-        if(e) e.preventDefault();
+        if (e) e.preventDefault();
         const userInput = dom.inputField.value.trim();
         if (!userInput) return;
 
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (state.aiMode === 'basic') {
             await handleEventSearch({ query: userInput });
         }
-        
+
         showThinkingIndicator(false);
     };
 
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const canCreate = await window.ai.canCreateTextSession();
             if (canCreate !== "readily") { throw new Error('AI not ready'); }
-            
+
             state.aiMode = 'full';
             state.intentSession = await window.ai.createTextSession();
             state.helpSession = await window.ai.createTextSession({ systemPrompt: config.helpSystemPrompt.replace('{knowledgeBase}', config.knowledgeBase) });
