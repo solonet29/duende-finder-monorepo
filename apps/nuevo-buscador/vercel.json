@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/eventos/:slug*", "destination": "/index.html" }
+  ]
+}

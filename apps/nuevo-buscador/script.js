@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. CONFIGURACIÓN Y SELECTORES
     // =========================================================================
     const APP_CONFIG = {
-        USAR_PAGINAS_DE_EVENTOS: false // Poner en false para volver al modo modal
+        USAR_PAGINAS_DE_EVENTOS: true // Poner en false para volver al modo modal
     };
 
     const getApiBaseUrl = () => {
