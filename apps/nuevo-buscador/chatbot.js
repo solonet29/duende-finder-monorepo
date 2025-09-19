@@ -29,7 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
         isMuted: localStorage.getItem('chatbotMuted') === 'true',
         intentSession: null, helpSession: null,
         currentLanguage: config.defaultLanguage,
-        isAiReady: false, isListening: false,
+        isListening: false,
+        aiMode: 'full', // full, basic, none
         voiceGender: localStorage.getItem('chatbotVoiceGender') || 'female',
         avatar: localStorage.getItem('chatbotAvatar') || config.avatarPlaceholders.female,
         availableVoices: { male: null, female: null }
@@ -159,23 +160,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleFormSubmit = async (e) => {
         if(e) e.preventDefault();
         const userInput = dom.inputField.value.trim();
-        if (!userInput || !state.isAiReady) return;
+        if (!userInput) return;
+
         addMessage(userInput, 'user');
         dom.inputField.value = '';
         showThinkingIndicator(true);
-        try {
-            const intentJson = await state.intentSession.prompt(config.intentPrompt.replace('{userInput}', userInput));
-            const intent = JSON.parse(intentJson);
-            switch (intent.intent) {
-                case 'event_search': await handleEventSearch(intent.details); break;
-                case 'artist_info': await handleArtistSearch(intent.details); break;
-                default: await handleHelpQuestion(userInput);
+
+        if (state.aiMode === 'full') {
+            try {
+                const intentJson = await state.intentSession.prompt(config.intentPrompt.replace('{userInput}', userInput));
+                const intent = JSON.parse(intentJson);
+                switch (intent.intent) {
+                    case 'event_search': await handleEventSearch(intent.details); break;
+                    case 'artist_info': await handleArtistSearch(intent.details); break;
+                    default: await handleHelpQuestion(userInput);
+                }
+            } catch (error) {
+                await handleEventSearch({ query: userInput });
             }
-        } catch (error) {
-            await handleHelpQuestion(userInput);
-        } finally {
-            showThinkingIndicator(false);
+        } else if (state.aiMode === 'basic') {
+            await handleEventSearch({ query: userInput });
         }
+        
+        showThinkingIndicator(false);
     };
 
     async function handleEventSearch(details) {
@@ -233,47 +240,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
 
         if (typeof window.ai === 'undefined') {
-            let compatibilityMsg = '';
             if (isChrome) {
-                compatibilityMsg = `
-                    <p>¡Hola! Soy El Duende AI. Veo que usas Chrome, ¡genial!</p>
-                    <p>Sin embargo, la función de IA en el navegador parece no estar activa aún en tu dispositivo. Google la está desplegando progresivamente. Asegúrate de que todo tu sistema esté actualizado.</p>
-                    <div class="compatibility-buttons">
-                        <button id="continue-without-ai-btn" class="compatibility-btn secondary">Entendido</button>
-                    </div>
-                `;
+                state.aiMode = 'basic';
+                addMessage("Hola, la IA avanzada no está activa en tu dispositivo, pero puedes usarme para búsquedas simples.", 'ai', true);
+                dom.inputField.disabled = false;
+                dom.inputField.placeholder = "Busca por evento o artista...";
             } else {
-                compatibilityMsg = `
-                    <p>¡Hola! Soy El Duende AI. Mis capacidades de inteligencia artificial están diseñadas para la última versión de Google Chrome.</p>
+                state.aiMode = 'none';
+                const compatibilityMsg = `
+                    <p>Para una experiencia completa con IA, te recomiendo usar Google Chrome.</p>
                     <div class="compatibility-buttons">
-                        <button id="get-chrome-btn" class="compatibility-btn">Obtener Chrome para IA</button>
+                        <button id="get-chrome-btn" class="compatibility-btn">Obtener Chrome</button>
                         <button id="continue-without-ai-btn" class="compatibility-btn secondary">Continuar sin Asistente</button>
                     </div>
                 `;
+                addMessage(compatibilityMsg, 'ai', true);
+                dom.inputForm.style.display = 'none';
             }
-            addMessage(compatibilityMsg, 'ai', true);
-            dom.inputForm.style.display = 'none';
             return;
         }
 
         try {
             const canCreate = await window.ai.canCreateTextSession();
-            if (canCreate !== "readily") { dom.inputField.placeholder = "IA no está lista..."; return; }
+            if (canCreate !== "readily") { throw new Error('AI not ready'); }
             
+            state.aiMode = 'full';
             state.intentSession = await window.ai.createTextSession();
             state.helpSession = await window.ai.createTextSession({ systemPrompt: config.helpSystemPrompt.replace('{knowledgeBase}', config.knowledgeBase) });
 
-            state.isAiReady = true;
             dom.inputField.disabled = false;
             dom.inputField.placeholder = "Escribe o pulsa el micro...";
             addMessage("¡Hola! Soy El Duende AI. ¿Qué buscamos hoy?", 'ai');
         } catch (error) {
-            dom.inputField.placeholder = "Error al iniciar IA.";
+            state.aiMode = 'basic';
+            addMessage("Hubo un problema al iniciar la IA. Funcionando en modo básico.", 'ai');
+            dom.inputField.disabled = false;
+            dom.inputField.placeholder = "Busca por palabra clave...";
         }
     };
 
     const handleMicClick = () => {
-        if (!state.isAiReady) return;
+        if (state.aiMode === 'none') return;
         if (state.isListening) {
             recognition.stop();
             return;
@@ -297,8 +304,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let thinkingIndicator;
     const showThinkingIndicator = (show) => {
         if (show && !thinkingIndicator) {
-            thinkingIndicator = addMessage("...", 'ai');
+            thinkingIndicator = addMessage("", 'ai');
             thinkingIndicator.parentElement.classList.add('thinking');
+            thinkingIndicator.innerHTML = `<span>.</span><span>.</span><span>.</span>`;
         } else if (!show && thinkingIndicator) {
             thinkingIndicator.parentElement.remove();
             thinkingIndicator = null;
