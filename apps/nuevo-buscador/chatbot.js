@@ -230,18 +230,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // 5. INICIALIZACIÓN Y FUNCIONES AUXILIARES
     // =========================================================================
     const initAI = async () => {
+        const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+
         if (typeof window.ai === 'undefined') {
-            const compatibilityMsg = `
-                <p>¡Hola! Soy El Duende AI. Mis capacidades de inteligencia artificial están diseñadas para la última versión de Google Chrome.</p>
-                <div class="compatibility-buttons">
-                    <button id="get-chrome-btn" class="compatibility-btn">Obtener Chrome para IA</button>
-                    <button id="continue-without-ai-btn" class="compatibility-btn secondary">Continuar sin Asistente</button>
-                </div>
-            `;
+            let compatibilityMsg = '';
+            if (isChrome) {
+                compatibilityMsg = `
+                    <p>¡Hola! Soy El Duende AI. Veo que usas Chrome, ¡genial!</p>
+                    <p>Sin embargo, la función de IA en el navegador parece no estar activa aún en tu dispositivo. Google la está desplegando progresivamente. Asegúrate de que todo tu sistema esté actualizado.</p>
+                    <div class="compatibility-buttons">
+                        <button id="continue-without-ai-btn" class="compatibility-btn secondary">Entendido</button>
+                    </div>
+                `;
+            } else {
+                compatibilityMsg = `
+                    <p>¡Hola! Soy El Duende AI. Mis capacidades de inteligencia artificial están diseñadas para la última versión de Google Chrome.</p>
+                    <div class="compatibility-buttons">
+                        <button id="get-chrome-btn" class="compatibility-btn">Obtener Chrome para IA</button>
+                        <button id="continue-without-ai-btn" class="compatibility-btn secondary">Continuar sin Asistente</button>
+                    </div>
+                `;
+            }
             addMessage(compatibilityMsg, 'ai', true);
             dom.inputForm.style.display = 'none';
             return;
         }
+
         try {
             const canCreate = await window.ai.canCreateTextSession();
             if (canCreate !== "readily") { dom.inputField.placeholder = "IA no está lista..."; return; }
