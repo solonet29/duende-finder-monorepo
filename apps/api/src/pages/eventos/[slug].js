@@ -58,8 +58,6 @@ const EventoPage = ({ event }) => {
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
                 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700;900&family=Montserrat:wght@700&display=swap" rel="stylesheet" />
-                <Script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js" />
-                <Script nomodule="" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js" />
                 <link rel="icon" type="image/png" href="https://nuevobuscador.afland.es/assets/favicon.png" />
                 <link rel="stylesheet" href="https://nuevobuscador.afland.es/styles.css" />
                 <link rel="stylesheet" href="https://nuevobuscador.afland.es/chatbot.css" />
@@ -80,6 +78,9 @@ const EventoPage = ({ event }) => {
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
                 />
             </Head>
+
+            <Script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js" />
+            <Script nomodule="" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js" />
 
             {/* Contenido de la página del evento (reutilizando clases de la modal para consistencia) */}
             <div className="modal-event-details">
