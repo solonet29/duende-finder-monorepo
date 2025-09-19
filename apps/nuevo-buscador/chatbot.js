@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 1. CONFIGURACIÓN Y ESTADO
@@ -9,8 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
         CHROME_DOWNLOAD_URL: 'https://www.google.com/chrome/',
         defaultLanguage: 'es-ES',
         avatarPlaceholders: {
-            female: 'assets/avatar_mujer.png',
-            male: 'assets/avatar_hombre.png'
+            female: '/assets/avatar_mujer.png',
+            male: '/assets/avatar_hombre.png'
         },
         knowledgeBase: `
         Información sobre Duende Finder:
@@ -47,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatbotContainer = document.createElement('div');
     chatbotContainer.id = 'chatbot-container';
     chatbotContainer.classList.add('closed');
+    chatbotContainer.style.visibility = 'hidden'; // Ocultar inicialmente para evitar parpadeo
     chatbotContainer.innerHTML = `
         <div id="chatbot-header">
             <h3>El Duende AI</h3>
@@ -367,4 +367,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     dom.ttsButton.textContent = state.isMuted ? '🔈' : '🔊';
+    // Pequeño retraso para mostrar el chatbot y evitar el parpadeo inicial
+    setTimeout(() => { chatbotContainer.style.visibility = 'visible'; }, 100);
 });

@@ -139,6 +139,7 @@
     padding: 8px 12px;
     border-radius: 18px;
     word-wrap: break-word;
+    width: 100%; /* Corrección para la caja estrecha */
 }
 
 .user-message {
