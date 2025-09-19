@@ -504,6 +504,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 3. FUNCIÓN PRINCIPAL DE ORQUESTACIÓN
     // =========================================================================
+    async function handleInitialPageLoadRouting() {
+        if (!APP_CONFIG.USAR_PAGINAS_DE_EVENTOS) return;
+
+        const path = window.location.pathname;
+        const eventPageMatch = path.match(/^\/eventos\/([a-f0-9]{24})-/);
+
+        if (eventPageMatch && eventPageMatch[1]) {
+            const eventId = eventPageMatch[1];
+            try {
+                if (eventDetailModalOverlay) {
+                    eventDetailModalOverlay.innerHTML = `<div class="modal"><div class="modal-content" style="text-align: center;">Cargando evento...</div></div>`;
+                    eventDetailModalOverlay.classList.add('visible');
+                }
+
+                let eventData = eventsCache[eventId];
+                if (!eventData) {
+                    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`);
+                    if (!response.ok) throw new Error('Evento no encontrado');
+                    eventData = await response.json();
+                    eventsCache[eventId] = eventData;
+                }
+                trackInteraction('eventView', { eventId: eventData._id, source: 'directURL' });
+                renderEventDetailModal(eventData);
+            } catch (error) {
+                console.error('Error al cargar el evento desde la URL:', error);
+                if (eventDetailModalOverlay) {
+                    eventDetailModalOverlay.innerHTML = `<div class="modal"><div class="modal-content" style="text-align: center;"><h3>Evento no encontrado</h3><p>El evento que buscas no existe o ha sido eliminado.</p><button class="modal-close-btn">×</button></div></div>`;
+                    eventDetailModalOverlay.classList.add('visible');
+                }
+            }
+        }
+    }
+
     async function init() {
         const savedTheme = localStorage.getItem('duende-theme') || 'light';
         applyTheme(savedTheme);
@@ -511,6 +544,9 @@ document.addEventListener('DOMContentLoaded', () => {
         initPushNotifications();
         populateInfoModals();
         displayEventCount();
+
+        // We handle routing before loading the dashboard to show the event modal quickly
+        await handleInitialPageLoadRouting();
 
         const modalPromise = handleWelcomeModal();
         const dashboardPromise = initializeDashboard();
