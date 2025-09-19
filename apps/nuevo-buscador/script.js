@@ -640,8 +640,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const isEventPage = await handleInitialPageLoadRouting();
 
-        if (!isEventPage) {
-            // Si NO es una página de evento, cargar el dashboard y el contador
+        const welcomeOverlay = document.getElementById('welcome-modal-overlay');
+
+        if (isEventPage) {
+            // Es una página de evento, nos aseguramos de que el modal de bienvenida no moleste.
+            if (welcomeOverlay) {
+                welcomeOverlay.classList.remove('visible');
+            }
+        } else {
+            // No es una página de evento, procedemos con la carga normal del dashboard.
             displayEventCount();
             const modalPromise = handleWelcomeModal();
             const dashboardPromise = initializeDashboard();
@@ -651,9 +658,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await dashboardPromise;
 
-            const overlay = document.getElementById('welcome-modal-overlay');
-            if (overlay && modalInfo.active) {
-                overlay.classList.remove('visible');
+            if (welcomeOverlay && modalInfo.active) {
+                welcomeOverlay.classList.remove('visible');
             }
         }
     }
