@@ -264,9 +264,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventName = sanitizeField(event.name, 'evento');
         eventCard.setAttribute('data-artist-name', artistName);
         eventCard.setAttribute('data-event-name', eventName);
+        
         const placeholderUrl = './assets/flamenco-placeholder.png';
-        const eventImageUrl = event.imageUrl || placeholderUrl;
-        eventCard.innerHTML = `<img src="${eventImageUrl}" alt="${artistName}" class="card-image" onerror="this.src='${placeholderUrl}'"><div class="card-content"><h3 class="card-title">${artistName}</h3></div>`;
+        let eventImageUrl = placeholderUrl;
+        if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim().startsWith('http')) {
+            eventImageUrl = event.imageUrl.trim();
+        }
+
+        eventCard.innerHTML = `<img src="${eventImageUrl}" alt="${artistName}" class="card-image" onerror="this.onerror=null;this.src='${placeholderUrl}'"><div class="card-content"><h3 class="card-title">${artistName}</h3></div>`;
         return eventCard;
     }
 
@@ -288,8 +293,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
         const blogIcon = event.blogPostUrl ? 'book-outline' : 'newspaper-outline';
         const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
-        const eventImageUrl = event.imageUrl || './assets/flamenco-placeholder.png';
-        eventDetailModalOverlay.innerHTML = `<div class="modal"><button class="modal-close-btn">×</button><div class="modal-content modal-event-details">${event.imageUrl ? `<div class="evento-card-img-container"><img src="${eventImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}<div class="card-header"><h2 class="titulo-truncado" title="${eventName}">${eventName}</h2></div><div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div><p class="descripcion-corta">${description}</p><div class="card-detalles"><div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div><div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div><div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><ion-icon name="location-outline"></ion-icon><span>${displayLocation}</span></a></div></div><div class="card-actions"><div class="card-actions-primary"><button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button><a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a></div></div></div></div>`;
+        
+        let imageHtml = '';
+        if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim().startsWith('http')) {
+            imageHtml = `<div class="evento-card-img-container"><img src="${event.imageUrl.trim()}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
+        }
+
+        eventDetailModalOverlay.innerHTML = `<div class="modal"><button class="modal-close-btn">×</button><div class="modal-content modal-event-details">${imageHtml}<div class="card-header"><h2 class="titulo-truncado" title="${eventName}">${eventName}</h2></div><div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div><p class="descripcion-corta">${description}</p><div class="card-detalles"><div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div><div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div><div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><ion-icon name="location-outline"></ion-icon><span>${displayLocation}</span></a></div></div><div class="card-actions"><div class="card-actions-primary"><button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button><a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a></div></div></div></div>`;
         eventDetailModalOverlay.classList.add('visible');
     }
 
