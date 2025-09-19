@@ -154,7 +154,31 @@ document.addEventListener('DOMContentLoaded', () => {
         return R * 2 * Math.asin(Math.sqrt(a));
     }
 
+    function createSkeletonCard() {
+        const skeletonCard = document.createElement('div');
+        skeletonCard.className = 'event-card';
+        skeletonCard.innerHTML = `
+            <div class="skeleton" style="height: 125px; border-radius: 8px 8px 0 0;"></div>
+            <div class="card-content">
+                <div class="skeleton" style="height: 20px; width: 80%; margin: 10px auto;"></div>
+            </div>
+        `;
+        return skeletonCard;
+    }
+
     async function initializeDashboard() {
+        const sliders = [featuredSlider, weekSlider, todaySlider];
+        sliders.forEach(slider => {
+            if (slider) {
+                const section = slider.closest('.sliders-section');
+                if(section) section.style.display = 'block';
+                slider.innerHTML = ''; // Limpiar contenido existente
+                for (let i = 0; i < 5; i++) { // Mostrar 5 tarjetas de esqueleto
+                    slider.appendChild(createSkeletonCard());
+                }
+            }
+        });
+
         try {
             const userLocationPromise = getUserLocation().catch(() => null);
 
