@@ -1,5 +1,5 @@
 import { CountUp } from './libs/countup.js';
-import { initPushNotifications } from './notifications.js'; // <-- Módulo de notificaciones
+import { initPushNotifications } from './notifications.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
@@ -158,17 +158,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function getUserLocation() {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                return reject(new Error('Geolocation not supported'));
+            }
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 0.5 - Math.cos(dLat)/2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon))/2;
+        return R * 2 * Math.asin(Math.sqrt(a));
+    }
+
     async function initializeDashboard() {
         try {
-            const [featuredData, weekData, todayData, allEventsData] = await Promise.all([
-                fetch(`${API_BASE_URL}/api/events?featured=true&limit=10`).then(res => res.json()),
+            const userLocationPromise = getUserLocation().catch(() => null);
+
+            const [circuitoData, weekData, todayData, allEventsData] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/events?q=Circuito Andaluz de Peñas 2025&limit=100`).then(res => res.json()),
                 fetch(`${API_BASE_URL}/api/events?timeframe=week&limit=10`).then(res => res.json()),
                 fetch(`${API_BASE_URL}/api/events?timeframe=today&limit=10`).then(res => res.json()),
                 fetch(`${API_BASE_URL}/api/events?sort=date`).then(res => res.json())
             ]);
-            renderSlider(featuredSlider, featuredData?.events);
+
+            const userLocation = await userLocationPromise;
+            let circuitoEvents = circuitoData?.events || [];
+
+            if (userLocation && circuitoEvents.length > 0) {
+                const { latitude, longitude } = userLocation.coords;
+                circuitoEvents.forEach(event => {
+                    if (event.location?.coordinates?.length === 2) {
+                        const [eventLon, eventLat] = event.location.coordinates;
+                        event.distance = calculateDistance(latitude, longitude, eventLat, eventLon);
+                    } else {
+                        event.distance = Infinity;
+                    }
+                });
+                circuitoEvents.sort((a, b) => a.distance - b.distance);
+            }
+
+            renderSlider(featuredSlider, circuitoEvents);
             renderSlider(weekSlider, weekData?.events);
             renderSlider(todaySlider, todayData?.events);
+
             if (allEventsData?.events) {
                 const monthlyGroups = groupEventsByMonth(allEventsData.events);
                 renderMonthlySliders(monthlyGroups);
@@ -339,7 +376,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (data.events && data.events.length > 0) {
                 renderSlider(tripResultsSlider, data.events);
-                // The renderSlider function will set display to block if there are events
             } else {
                 tripResultsMessage.textContent = 'No se encontraron eventos para esa ciudad y fechas.';
                 tripResultsMessage.style.display = 'block';
@@ -454,17 +490,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. FUNCIÓN PRINCIPAL DE ORQUESTACIÓN
     // =========================================================================
     async function init() {
-        // if ('serviceWorker' in navigator) {
-        //     window.addEventListener('load', () => {
-        //         navigator.serviceWorker.register('/sw.js')
-        //             .then(registration => console.log('Service Worker registrado con éxito:', registration))
-        //             .catch(error => console.error('Error al registrar el Service Worker:', error));
-        //     });
-        // }
         const savedTheme = localStorage.getItem('duende-theme') || 'light';
         applyTheme(savedTheme);
         setupEventListeners();
-        initPushNotifications(); // <-- Inicializar notificaciones
+        initPushNotifications();
         populateInfoModals();
         displayEventCount();
 
