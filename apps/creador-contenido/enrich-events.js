@@ -24,7 +24,8 @@ La respuesta DEBE ser un único objeto JSON válido con la siguiente estructura 
 {
   "blogTitle": "string",
   "blogPostMarkdown": "string",
-  "nightPlanMarkdown": "string"
+  "nightPlanMarkdown": "string",
+  "urlSlug": "string"
 }
 
 Aquí están los detalles del evento:
@@ -51,6 +52,8 @@ Instrucciones para cada campo del JSON:
     Crea expectación sobre el espectáculo.
     ### Post-Espectáculo: La Última Copa
     Sugiere un tipo de lugar para tomar una copa después (sin dar nombres de locales).
+
+4.  **urlSlug**: Crea un slug para la URL a partir del nombre del artista y el nombre del evento. Debe estar en minúsculas, usar guiones en lugar de espacios, y no tener más de 6-7 palabras clave relevantes. No incluyas la fecha ni la ciudad.
 `;
 
 async function generateContentForEvent(event, db) {
@@ -70,7 +73,7 @@ async function generateContentForEvent(event, db) {
         const responseText = result.response.text().replace(/```json|```/g, '').trim();
         const generatedContentPackage = JSON.parse(responseText);
 
-        if (!generatedContentPackage.blogTitle || !generatedContentPackage.blogPostMarkdown || !generatedContentPackage.nightPlanMarkdown) {
+        if (!generatedContentPackage.blogTitle || !generatedContentPackage.blogPostMarkdown || !generatedContentPackage.nightPlanMarkdown || !generatedContentPackage.urlSlug) {
             throw new Error('La respuesta JSON de Gemini no contiene todos los campos esperados.');
         }
         console.log(`      ✅ Textos generados por Gemini.`);
@@ -88,6 +91,7 @@ async function generateContentForEvent(event, db) {
         const updates = {
             blogPostTitle: generatedContentPackage.blogTitle,
             blogPostMarkdown: generatedContentPackage.blogPostMarkdown,
+            slug: generatedContentPackage.urlSlug, // <-- AÑADIDO EL NUEVO SLUG
             eventSummaryMarkdown: generatedContentPackage.eventSummaryMarkdown,
             nightPlanMarkdown: generatedContentPackage.nightPlanMarkdown,
             nightPlan: generatedContentPackage.nightPlanMarkdown, // Guardamos también en el campo que usa el API

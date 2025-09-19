@@ -541,9 +541,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 const eventId = sliderCard.dataset.eventId;
                 if (eventId) {
                     if (APP_CONFIG.USAR_PAGINAS_DE_EVENTOS) {
-                        const eventName = sliderCard.dataset.eventName || 'evento';
-                        const slug = `${eventId}-${eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
-                        window.location.href = `/eventos/${slug}`;
+                        try {
+                            // Obtenemos los datos completos del evento (deberían estar en caché por el mouseover)
+                            let eventData = eventsCache[eventId];
+                            if (!eventData) {
+                                console.log("Cache miss on click, fetching event data...");
+                                const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`);
+                                if (!response.ok) throw new Error('Evento no encontrado al hacer clic');
+                                eventData = await response.json();
+                                eventsCache[eventId] = eventData;
+                            }
+
+                            // Lógica de slug retrocompatible
+                            const fallbackSlug = (eventData.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                            const finalSlug = eventData.slug || fallbackSlug;
+                            
+                            const url = `/eventos/${eventData._id}-${finalSlug}`;
+                            window.location.href = url;
+
+                        } catch (error) {
+                            console.error('Error al generar la URL del evento:', error);
+                            // Fallback a la URL antigua si todo lo demás falla
+                            const eventName = sliderCard.dataset.eventName || 'evento';
+                            const slug = `${eventId}-${eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+                            window.location.href = `/eventos/${slug}`;
+                        }
                     } else {
                         try {
                             let eventData = eventsCache[eventId];
@@ -650,27 +672,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const isEventPage = await handleInitialPageLoadRouting();
 
-        const welcomeOverlay = document.getElementById('welcome-modal-overlay');
-
-        if (isEventPage) {
-            // Es una página de evento, nos aseguramos de que el modal de bienvenida no moleste.
-            if (welcomeOverlay) {
-                welcomeOverlay.classList.remove('visible');
-            }
-        } else {
-            // No es una página de evento, procedemos con la carga normal del dashboard.
+        if (!isEventPage) {
+            // Si NO es una página de evento, cargar el dashboard y el contador
             displayEventCount();
-            const modalPromise = handleWelcomeModal();
-            const dashboardPromise = initializeDashboard();
-
-            const modalInfo = await modalPromise;
-            await modalInfo.timer;
-
-            await dashboardPromise;
-
-            if (welcomeOverlay && modalInfo.active) {
-                welcomeOverlay.classList.remove('visible');
-            }
+            initializeDashboard();
         }
     }
 
