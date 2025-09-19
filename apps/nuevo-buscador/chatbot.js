@@ -11,23 +11,15 @@ document.addEventListener('DOMContentLoaded', () => {
             female: '/assets/avatar_mujer.png',
             male: '/assets/avatar_hombre.png'
         },
-        knowledgeBase: `
-        Información sobre Duende Finder:
-        - Propósito: Duende Finder es un asistente inteligente para descubrir eventos de flamenco (conciertos, tablaos, festivales) en todo el mundo.
-        - Funcionamiento: Usa IA para recopilar y organizar eventos de fuentes públicas.
-        - "Cerca de mí": Muestra eventos próximos a la ubicación del usuario (requiere permisos).
-        - "Planear Noche": Función premium con IA en la nube (Gemini) para crear una guía de noche (restaurantes, transporte) alrededor de un evento.
-        - Costo: El uso de Duende Finder y su chatbot de ayuda es gratuito. La IA del chatbot se ejecuta localmente en el navegador.
-        `,
-        intentPrompt: `Clasifica la petición del usuario en una de estas categorías: "event_search", "artist_info", "help_question". Extrae entidades relevantes: para "event_search", extrae "query" (el qué) y "location" (el dónde); para "artist_info", extrae "artistName". Responde únicamente con un objeto JSON minificado. Petición: "{userInput}"`,
-        helpSystemPrompt: `Eres "El Duende AI", un asistente de ayuda para el sitio web Duende Finder. Tu personalidad es amable, servicial y con un toque poético flamenco. Responde SIEMPRE en el mismo idioma que el usuario. Tu única fuente de conocimiento es la "Información sobre Duende Finder" que se te proporciona. Si no sabes la respuesta, di amablemente que no tienes esa información. Sé conciso. Información: {knowledgeBase}`
+        genericAvatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzkwOTA5MCI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNjcgMC01LTEuMjYtNi42Ny0zLjIzLjk5LTEuNjcgMy45OS0yLjc3IDYuNjctMi43N3MyLjY4IDEuMSA2LjY3IDIuNzdjLTEuNjcgMS45Ny00IDIuMjMtNi42NyAyLjIzeiIvPjwvc3ZnPg==',
+        knowledgeBase: `...`,
+        intentPrompt: `Clasifica la petición del usuario en "event_search", "artist_info", o "help_question". Extrae entidades: para "event_search", "query" y "location"; para "artist_info", "artistName". Responde solo con JSON minificado. Petición: "{userInput}"`,
+        helpSystemPrompt: `Eres "El Duende AI", un asistente flamenco amable y servicial. Responde SIEMPRE en el idioma del usuario, basándote únicamente en la información proporcionada. Si no sabes algo, dilo con gracia. Sé conciso. Información: {knowledgeBase}`
     };
 
     let state = {
-        isChatOpen: false,
-        isMuted: localStorage.getItem('chatbotMuted') === 'true',
-        intentSession: null, helpSession: null,
-        currentLanguage: config.defaultLanguage,
+        isChatOpen: false, isMuted: localStorage.getItem('chatbotMuted') === 'true',
+        intentSession: null, helpSession: null, currentLanguage: config.defaultLanguage,
         isListening: false,
         aiMode: 'full', // full, basic, none
         voiceGender: localStorage.getItem('chatbotVoiceGender') || 'female',
@@ -46,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatbotContainer = document.createElement('div');
     chatbotContainer.id = 'chatbot-container';
     chatbotContainer.classList.add('closed');
-    chatbotContainer.style.visibility = 'hidden'; // Ocultar inicialmente para evitar parpadeo
+    chatbotContainer.style.visibility = 'hidden'; // Ocultar para evitar parpadeo inicial
     chatbotContainer.innerHTML = `
         <div id="chatbot-header">
             <h3>El Duende AI</h3>
@@ -145,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sender === 'ai') {
             const avatarImg = document.createElement('img');
             avatarImg.src = state.avatar;
+            avatarImg.onerror = function() { this.src = config.genericAvatar; };
             avatarImg.className = 'chatbot-avatar';
             messageElement.appendChild(avatarImg);
         }
@@ -368,5 +361,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dom.ttsButton.textContent = state.isMuted ? '🔈' : '🔊';
     // Pequeño retraso para mostrar el chatbot y evitar el parpadeo inicial
-    setTimeout(() => { chatbotContainer.style.visibility = 'visible'; }, 100);
+    setTimeout(() => { chatbotContainer.style.visibility = 'visible'; }, 200);
 });
