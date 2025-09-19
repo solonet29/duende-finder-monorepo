@@ -317,10 +317,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                 </div>
+                <div id="map-container"></div>
             </div>
         `;
 
         mainContainer.innerHTML = pageHtml;
+
+        const mapContainer = document.getElementById('map-container');
+        if (mapContainer && event.location?.coordinates?.length === 2) {
+            const [lon, lat] = event.location.coordinates;
+            const mapHtml = `<iframe
+                width="100%"
+                height="300"
+                frameborder="0"
+                scrolling="no"
+                marginheight="0"
+                marginwidth="0"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=${lon - 0.01}%2C${lat - 0.01}%2C${lon + 0.01}%2C${lat + 0.01}&layer=mapnik&marker=${lat}%2C${lon}"
+                style="border: 1px solid var(--color-borde); border-radius: 12px;">
+            </iframe>`;
+            mapContainer.innerHTML = mapHtml;
+        } 
+
         window.scrollTo(0, 0); // Scroll to top
 
         // Modificar la cabecera para mostrar el botón de "Volver"
