@@ -1,274 +1,154 @@
 
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from 'react';
+import Head from 'next/head';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// --- Componentes de UI Reutilizables ---
+const EventCard = ({ event }) => {
+    // Lógica para el slug, igual que en script.js
+    const eventName = event.name || 'evento';
+    const slug = `${event._id}-${eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+    const eventUrl = `/eventos/${slug}`;
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+    return (
+        <a href={eventUrl} className="event-card">
+            <img src={event.imageUrl || '/assets/flamenco-placeholder.png'} alt={event.artist || 'Artista'} className="card-image" onError={(e) => { e.target.onerror = null; e.target.src='/assets/flamenco-placeholder.png'}} />
+            <div className="card-content">
+                <h3 className="card-title">{event.artist || 'Artista por confirmar'}</h3>
+            </div>
+        </a>
+    );
+};
 
-// Función para convertir la clave VAPID de base64url a un Uint8Array
-function urlBase64ToUint8Array(base64String) {
-  if (typeof window === 'undefined') return;
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/\-/g, '+')
-    .replace(/_/g, '/');
+const EventSlider = ({ events }) => {
+    if (!events || events.length === 0) return null;
+    return (
+        <div className="slider-container">
+            {events.map(event => <EventCard key={event._id} event={event} />)}
+        </div>
+    );
+};
 
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
+// --- Página Principal ---
+const HomePage = ({ staticProps }) => {
+    const { circuitoEvents: initialCircuitoEvents, weekEvents, todayEvents, allEvents, eventCount } = staticProps;
 
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
+    // --- Estados de la Aplicación ---
+    const [circuitoEvents, setCircuitoEvents] = useState(initialCircuitoEvents);
+    const [monthlyEvents, setMonthlyEvents] = useState({});
 
-export default function Home() {
-  // States for Push Notifications
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [subscription, setSubscription] = useState(null);
-  const [registration, setRegistration] = useState(null);
+    // --- Efectos para Lógica de Cliente ---
 
-  // State for Welcome Modal
-  const [showWelcome, setShowWelcome] = useState(true);
-
-  // State for Event Count
-  const [eventCount, setEventCount] = useState(0);
-
-  useEffect(() => {
-    // Fetch event count
-    fetch('/api/events/count')
-      .then(res => res.json())
-      .then(data => {
-        if (data.total) {
-          setEventCount(data.total);
-        }
-      })
-      .catch(console.error);
-
-    // Service Worker registration
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js")
-        .then(reg => {
-          setRegistration(reg);
-          console.log("Service worker registrado", reg);
-          reg.pushManager.getSubscription().then(sub => {
-            if (sub) {
-              console.log("Usuario ya está suscrito.", sub);
-              setSubscription(sub);
-              setIsSubscribed(true);
+    // Efecto para ordenar el slider principal por proximidad
+    useEffect(() => {
+        const sortEventsByProximity = async () => {
+            try {
+                const position = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject));
+                const { latitude, longitude } = position.coords;
+                const sorted = [...initialCircuitoEvents].map(event => {
+                    const [eventLon, eventLat] = event.location?.coordinates || [0, 0];
+                    const distance = calculateDistance(latitude, longitude, eventLat, eventLon);
+                    return { ...event, distance };
+                }).sort((a, b) => a.distance - b.distance);
+                setCircuitoEvents(sorted);
+            } catch (error) {
+                console.warn("No se pudo obtener la ubicación para ordenar eventos.");
             }
-          });
-        })
-        .catch(err => console.error("Error al registrar el service worker", err));
-    }
-  }, []);
+        };
+        if (initialCircuitoEvents.length > 0) sortEventsByProximity();
+    }, [initialCircuitoEvents]);
 
-  const subscribeUser = async () => {
-    if (!registration) {
-      console.error("Service worker no registrado.");
-      return;
-    }
-    
-    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-    if (!vapidPublicKey) {
-        console.error("La VAPID public key no está definida en las variables de entorno.");
-        alert("Error de configuración: La clave VAPID pública no está disponible.");
-        return;
-    }
+    // Efecto para agrupar eventos por mes
+    useEffect(() => {
+        if (allEvents.length > 0) {
+            const grouped = allEvents.reduce((acc, event) => {
+                if (!event.date) return acc;
+                const monthKey = event.date.substring(0, 7);
+                if (!acc[monthKey]) acc[monthKey] = [];
+                acc[monthKey].push(event);
+                return acc;
+            }, {});
+            setMonthlyEvents(grouped);
+        }
+    }, [allEvents]);
 
-    const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+    return (
+        <>
+            <Head>
+                {/* El Head principal ya está en Layout.js, esto es para contenido específico de la página si se necesita */}
+            </Head>
 
+            <h1 className="main-title">Duende Finder</h1>
+            {/* El contador ahora es parte de la página y no necesita su propio script */}
+            <p className="subtitle-counter loaded">+{eventCount.toLocaleString('es-ES')} eventos de flamenco verificados</p>
+
+            {/* Aquí irían los componentes para Planificador de Viaje y Cerca de Mí si se migran */}
+
+            <section id="destacados-section" className="sliders-section">
+                <h2>Circuito Andaluz de Peñas 2025</h2>
+                <EventSlider events={circuitoEvents} />
+            </section>
+            <section id="semana-section" className="sliders-section">
+                <h2>Esta Semana 🔥</h2>
+                <EventSlider events={weekEvents} />
+            </section>
+            <section id="hoy-section" className="sliders-section">
+                <h2>Eventos para Hoy 📅</h2>
+                <EventSlider events={todayEvents} />
+            </section>
+
+            <div id="monthly-sliders-container">
+                {Object.keys(monthlyEvents).sort().map(monthKey => {
+                    const monthName = new Date(monthKey + '-02').toLocaleString('es-ES', { month: 'long' });
+                    const year = monthKey.split('-')[0];
+                    return (
+                        <section key={monthKey} className="sliders-section">
+                            <h2>{`${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`}</h2>
+                            <EventSlider events={monthlyEvents[monthKey]} />
+                        </section>
+                    );
+                })}
+            </div>
+        </>
+    );
+};
+
+// --- Funciones de Ayuda ---
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 0.5 - Math.cos(dLat)/2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon))/2;
+    return R * 2 * Math.asin(Math.sqrt(a));
+};
+
+// --- Carga de Datos del Lado del Servidor ---
+export async function getStaticProps() {
+    const API_BASE_URL = process.env.API_BASE_URL || 'https://api-v2.afland.es';
     try {
-      const sub = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: convertedVapidKey
-      });
+        const [circuitoData, weekData, todayData, allEventsData, countData] = await Promise.all([
+            fetch(`${API_BASE_URL}/api/events?q=Circuito Andaluz de Peñas 2025&limit=100`).then(res => res.json()),
+            fetch(`${API_BASE_URL}/api/events?timeframe=week&limit=10`).then(res => res.json()),
+            fetch(`${API_BASE_URL}/api/events?timeframe=today&limit=10`).then(res => res.json()),
+            fetch(`${API_BASE_URL}/api/events?sort=date`).then(res => res.json()),
+            fetch(`${API_BASE_URL}/api/events/count`).then(res => res.json())
+        ]);
 
-      console.log("Usuario suscrito exitosamente.", sub);
-
-      await fetch("/api/subscribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(sub),
-      });
-
-      setSubscription(sub);
-      setIsSubscribed(true);
-      // Opcional: cerrar el modal tras suscribirse
-      // setShowWelcome(false); 
-    } catch (err) {
-      console.error("Error al suscribir al usuario:", err);
+        return {
+            props: {
+                staticProps: {
+                    circuitoEvents: circuitoData?.events || [],
+                    weekEvents: weekData?.events || [],
+                    todayEvents: todayData?.events || [],
+                    allEvents: allEventsData?.events || [],
+                    eventCount: countData?.total || 0,
+                }
+            },
+            revalidate: 300, // Re-generar la página cada 5 minutos
+        };
+    } catch (error) {
+        console.error("Error fetching data for home page:", error);
+        return { props: { staticProps: { circuitoEvents: [], weekEvents: [], todayEvents: [], allEvents: [], eventCount: 0 } } };
     }
-  };
-
-  const unsubscribeUser = async () => {
-    if (subscription) {
-      try {
-        await subscription.unsubscribe();
-        console.log("Suscripción cancelada en el navegador.");
-
-        await fetch("/api/unsubscribe", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ endpoint: subscription.endpoint }),
-        });
-
-        setSubscription(null);
-        setIsSubscribed(false);
-      } catch (err) {
-        console.error("Error al cancelar la suscripción:", err);
-      }
-    }
-  };
-
-  const handleCloseWelcome = () => {
-    setShowWelcome(false);
-  };
-
-  return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20`}
-    >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        
-        <div className="w-full text-center mb-4">
-          <p className="text-lg">
-            Tenemos: <span className="font-bold text-xl">{eventCount}</span> eventos en nuestro buscador
-          </p>
-        </div>
-
-        {/* Contenido principal de la página */}
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/pages/index.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-
-      {/* --- Modal de Bienvenida con Suscripción Integrada --- */}
-      {showWelcome && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', textAlign: 'center', color: 'black', maxWidth: '400px' }}>
-            <span onClick={handleCloseWelcome} style={{ float: 'right', cursor: 'pointer', fontSize: '1.5rem' }}>&times;</span>
-            <h2 style={{ marginTop: 0 }}>¡Bienvenido a Duende Finder!</h2>
-            <p>Tu guía para encontrar los mejores eventos de flamenco.</p>
-            <p>Para no perderte ninguna novedad, activa las notificaciones.</p>
-            
-            <button 
-                onClick={isSubscribed ? unsubscribeUser : subscribeUser}
-                className={`rounded-full font-medium text-sm sm:text-base h-12 px-6 transition-colors ${isSubscribed ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
-                disabled={!registration}
-            >
-                {isSubscribed ? 'Cancelar Suscripción' : 'Activar Notificaciones'}
-            </button>
-            {!registration && <p className="text-xs text-gray-500 mt-2">Inicializando...</p>}
-
-            <button onClick={handleCloseWelcome} style={{ marginTop: '10px', marginLeft: '10px', background: 'grey', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '20px', cursor: 'pointer' }}>
-              Explorar
-            </button>
-          </div>
-        </div>
-      )}
-
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
 }
+
+export default HomePage;

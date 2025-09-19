@@ -1,0 +1,169 @@
+/* ==========================================================================
+   1. ESTILOS DEL CONTENEDOR PRINCIPAL
+   ========================================================================== */
+#chatbot-container {
+    position: fixed;
+    bottom: 85px; /* Elevado para no solapar con la barra de navegación */
+    right: 20px;
+    width: 370px;
+    height: 550px;
+    max-width: 95vw;
+    max-height: 80vh;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    z-index: 1000;
+}
+
+#chatbot-container.closed {
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   2. CABECERA Y CUERPO DEL CHAT
+   ========================================================================== */
+#chatbot-header {
+    background-color: var(--color-acento);
+    color: white;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+#chatbot-header h3 { margin: 0; font-size: 16px; font-weight: 600; }
+
+#chatbot-header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#chatbot-toggle-btn, #chatbot-tts-btn, #chatbot-settings-btn {
+    background: none; border: none; color: white; font-size: 22px;
+    cursor: pointer; padding: 0; width: 24px; height: 24px;
+    line-height: 24px; text-align: center; opacity: 0.8; transition: opacity 0.2s;
+}
+#chatbot-toggle-btn:hover, #chatbot-tts-btn:hover, #chatbot-settings-btn:hover { opacity: 1; }
+
+#chatbot-container.closed #chatbot-header h3,
+#chatbot-container.closed #chatbot-header-buttons,
+#chatbot-container.closed #chatbot-body {
+    display: none;
+}
+
+#chatbot-container.closed #chatbot-toggle-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%; font-size: 30px;
+}
+
+#chatbot-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   3. ÁREA DE MENSAJES Y CONTENIDO
+   ========================================================================== */
+#chatbot-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background-color: var(--color-fondo);
+}
+
+.chatbot-message { display: flex; gap: 10px; max-width: 95%; line-height: 1.4; font-size: 14px; }
+.chatbot-avatar { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; align-self: flex-start; object-fit: cover; }
+.message-content { padding: 8px 12px; border-radius: 18px; word-wrap: break-word; width: 100%; }
+
+.user-message { align-self: flex-end; flex-direction: row-reverse; }
+.user-message .message-content { background-color: var(--color-acento); color: white; border-bottom-right-radius: 4px; }
+.user-message .chatbot-avatar { display: none; }
+
+.ai-message { align-self: flex-start; }
+.ai-message .message-content { background-color: var(--color-superficie); color: var(--color-texto-principal); border: 1px solid var(--color-borde); border-bottom-left-radius: 4px; }
+
+.ai-message.thinking .message-content span { animation: thinking-dot 1.4s infinite; font-size: 1.2em; font-weight: bold; }
+.ai-message.thinking .message-content span:nth-child(2) { animation-delay: 0.2s; }
+.ai-message.thinking .message-content span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes thinking-dot { 0%, 80%, 100% { opacity: 0; } 40% { opacity: 1; } }
+
+#chatbot-tts-disclaimer { font-size: 11px; text-align: center; padding: 5px 10px; background-color: #fffbe6; color: #8a6d3b; border-top: 1px solid var(--color-borde); }
+
+.ai-message .results-list { list-style: none; padding: 0; margin: 10px 0 0 0; }
+.ai-message .results-list li { padding: 8px; border-top: 1px solid var(--color-borde); }
+.ai-message .results-list li:first-child { border-top: none; }
+.ai-message .results-list li strong { color: var(--color-acento); }
+.ai-message .results-list li small { color: var(--color-texto-secundario); }
+
+.compatibility-buttons { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.compatibility-btn { padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; text-align: center; background-color: var(--color-acento); color: white; transition: filter 0.2s; }
+.compatibility-btn:hover { filter: brightness(1.1); }
+.compatibility-btn.secondary { background-color: var(--color-superficie); color: var(--color-texto-principal); border: 1px solid var(--color-borde); }
+.compatibility-btn.secondary:hover { background-color: var(--color-borde); }
+
+/* ==========================================================================
+   4. FORMULARIO DE ENTRADA
+   ========================================================================== */
+#chatbot-input-form {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid var(--color-borde);
+    padding: 10px;
+    background-color: var(--color-superficie);
+    flex-shrink: 0;
+}
+
+#chatbot-input { flex-grow: 1; border: 1px solid var(--color-borde); background-color: var(--color-fondo); color: var(--color-texto-principal); border-radius: 20px; padding: 8px 15px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+#chatbot-input:focus { border-color: var(--color-acento); }
+#chatbot-input:disabled { background-color: var(--color-borde); cursor: not-allowed; }
+
+#chatbot-mic-btn { background: none; border: none; font-size: 22px; color: var(--color-texto-secundario); cursor: pointer; padding: 5px; margin: 0 5px; transition: color 0.2s; }
+#chatbot-mic-btn:hover { color: var(--color-acento); }
+#chatbot-mic-btn.listening { color: #ff4136; animation: pulse-mic 1.2s infinite; }
+
+@keyframes pulse-mic { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+#chatbot-send-btn { background-color: var(--color-acento); color: white; border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: filter 0.2s; flex-shrink: 0; }
+#chatbot-send-btn:hover { filter: brightness(1.1); }
+#chatbot-send-btn:disabled { background-color: var(--color-acento); filter: grayscale(0.5); cursor: not-allowed; }
+
+/* ==========================================================================
+   5. ESTILOS RESPONSIVE PARA MÓVILES
+   ========================================================================== */
+@media (max-width: 480px) {
+    #chatbot-container {
+        bottom: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+        border: none;
+    }
+
+    #chatbot-container.closed {
+        width: 60px;
+        height: 60px;
+        bottom: 85px;
+        right: 15px;
+        border-radius: 50%;
+    }
+}
