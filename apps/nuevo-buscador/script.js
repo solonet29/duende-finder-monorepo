@@ -591,12 +591,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function displaySponsoredBanner(event) {
-        // TODO: La lógica para determinar si un evento es patrocinado se moverá al backend.
-        // Por ahora, se asume que un evento patrocinado tiene un tag 'patrocinado'.
-        const isSponsored = event.tags?.includes('patrocinado');
-
-        if (!isSponsored) return;
-
         try {
             const response = await fetch(`${API_BASE_URL}/api/config`);
             const config = await response.json();
