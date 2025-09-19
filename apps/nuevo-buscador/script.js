@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const pageHtml = `
-            <div class="event-page-container">
+            <div class="event-page-container" data-event-id="${event._id}">
                 ${imageHtml}
                 <div class="card-header">
                     <h1 class="titulo-truncado" title="${eventName}">${eventName}</h1>
@@ -306,6 +306,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}">
                             <ion-icon name="${blogIcon}"></ion-icon> ${blogText}
                         </a>
+                    </div>
+                    <div class="card-actions-secondary">
+                        <p class="share-title">Compartir:</p>
+                        <div class="share-buttons-container">
+                            <button class="share-btn" data-social="twitter" title="Compartir en Twitter/X"><ion-icon name="logo-twitter"></ion-icon></button>
+                            <button class="share-btn" data-social="facebook" title="Compartir en Facebook"><ion-icon name="logo-facebook"></ion-icon></button>
+                            <button class="share-btn" data-social="whatsapp" title="Compartir en WhatsApp"><ion-icon name="logo-whatsapp"></ion-icon></button>
+                            <button class="share-btn" data-social="copy" title="Copiar enlace"><ion-icon name="copy-outline"></ion-icon></button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -478,6 +487,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function handleShare(socialPlatform, eventId) {
+        const event = eventsCache[eventId];
+        if (!event) {
+            console.error('Evento no encontrado en caché para compartir');
+            // Opcional: mostrar un mensaje al usuario
+            alert('No se pudo compartir el evento. Inténtalo de nuevo.');
+            return;
+        }
+
+        const eventUrl = window.location.href;
+        let shareText;
+
+        try {
+            if (window.ai && (await window.ai.canCreateTextSession()) === "readily") {
+                const session = await window.ai.createTextSession();
+                const prompt = `Genera un texto corto y atractivo para compartir en redes sociales sobre el siguiente evento de flamenco. Incluye el nombre del evento, el artista y la ciudad. Máximo 280 caracteres. El evento es: ${event.name} con ${event.artist} en ${event.city}.`;
+                shareText = await session.prompt(prompt);
+                session.destroy();
+            } else {
+                throw new Error('window.ai no disponible o no listo.');
+            }
+        } catch (e) {
+            console.log('Fallback a texto de compartido por defecto:', e.message);
+            shareText = event.description || `${event.name} con ${event.artist}`;
+        }
+
+        let shareUrl;
+        switch (socialPlatform) {
+            case 'twitter':
+                shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(eventUrl)}&text=${encodeURIComponent(shareText)}`;
+                break;
+            case 'facebook':
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(eventUrl)}`;
+                break;
+            case 'whatsapp':
+                shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + eventUrl)}`;
+                break;
+            case 'copy':
+                try {
+                    await navigator.clipboard.writeText(eventUrl);
+                    // Considera mostrar una notificación más sutil que un alert
+                    alert('¡Enlace copiado al portapapeles!');
+                } catch (err) {
+                    console.error('Error al copiar el enlace: ', err);
+                    alert('No se pudo copiar el enlace.');
+                }
+                return; // Salir de la función después de copiar
+        }
+
+        if (shareUrl) {
+            window.open(shareUrl, '_blank', 'noopener,noreferrer');
+        }
+    }
+
     function setupEventListeners() {
         const header = document.querySelector('.header-main');
         if (header) {
@@ -511,6 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const modalOverlay = e.target.closest('.modal-overlay:not(#welcome-modal-overlay)');
             const modalCloseBtn = e.target.closest('.modal-close-btn');
             const requestLocationBtn = e.target.closest('#request-location-btn');
+            const shareBtn = e.target.closest('.share-btn');
 
             if (sliderCard) {
                 const eventId = sliderCard.dataset.eventId;
@@ -567,6 +631,13 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (modalCloseBtn || (modalOverlay && e.target === modalOverlay)) {
                 const overlayToClose = modalCloseBtn ? modalCloseBtn.closest('.modal-overlay') : modalOverlay;
                 if (overlayToClose) overlayToClose.classList.remove('visible');
+            } else if (shareBtn) {
+                const eventPageContainer = e.target.closest('.event-page-container');
+                const eventId = eventPageContainer?.dataset.eventId;
+                const social = shareBtn.dataset.social;
+                if (eventId && social) {
+                    handleShare(social, eventId);
+                }
             }
         });
         if (filterBar) {
