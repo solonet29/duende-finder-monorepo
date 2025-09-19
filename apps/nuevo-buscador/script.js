@@ -131,35 +131,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleWelcomeModal() {
         const overlay = document.getElementById('welcome-modal-overlay');
-        if (!overlay) return { active: false, timer: Promise.resolve() };
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/config`);
-            const config = await response.json();
-            if (config && config.welcomeModal_enabled) {
-                const sponsorLink = document.getElementById('sponsor-link');
-                const sponsorLogo = document.getElementById('sponsor-logo');
-                if (sponsorLink && sponsorLogo) {
-                    sponsorLink.href = config.sponsor_website_url || '#';
-                    sponsorLogo.src = config.sponsor_logo_url;
-                    sponsorLogo.alt = `Logo de ${config.sponsor_name}`;
-                }
-                const bannerContainer = document.getElementById('welcome-banner-container');
-                if (config.banner_enabled && bannerContainer) {
-                    document.getElementById('banner-link').href = config.banner_linkUrl || '#';
-                    document.getElementById('banner-image').src = config.banner_imageUrl;
-                    bannerContainer.classList.remove('hidden');
-                }
-                const timerPromise = new Promise(resolve => setTimeout(resolve, config.welcomeModal_minDuration_ms || 2500));
-                return { active: true, timer: timerPromise };
-            } else {
-                overlay.classList.remove('visible');
-                return { active: false, timer: Promise.resolve() };
-            }
-        } catch (error) {
-            console.error("Error al cargar config del modal, se ocultará:", error);
-            overlay.classList.remove('visible');
-            return { active: false, timer: Promise.resolve() };
+        if (overlay) {
+            overlay.style.display = 'none';
         }
+        return { active: false, timer: Promise.resolve() };
     }
 
     function getUserLocation() {
@@ -669,6 +644,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
         initPushNotifications();
         populateInfoModals();
+        handleWelcomeModal();
         
         const isEventPage = await handleInitialPageLoadRouting();
 
