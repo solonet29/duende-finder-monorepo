@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
 
     let allEvents = [];
+    let currentFilteredEvents = [];
+    let currentPage = 1;
+    const EVENTS_PER_PAGE = 10;
+    let isLoadingMore = false;
     let eventsCache = {};
     let map = null;
     let markersLayer = null;
@@ -22,20 +26,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleRouting() {
         const path = window.location.pathname;
-        const eventPageMatch = path.match(/^\/eventos\/([a-f0-9]{24})/);
-        if (eventPageMatch && eventPageMatch[1]) {
+        // Expresión regular mejorada para capturar el ID de evento de una URL con slug opcional.
+        // Ej: /eventos/nombre-evento-12345 o /eventos/12345
+        const eventPageMatch = path.match(/^\/eventos\/(?:[a-z0-9-]+\-)?([a-f0-9]{24})$/);
+        if (eventPageMatch && eventPageMatch[1]) { // El ID del evento es el primer grupo capturado
             await showEventPageView(eventPageMatch[1]);
         } else {
             await showDashboardView();
         }
     }
 
-    function navigateTo(url) {
-        history.pushState({ path: url }, '', url);
+    function navigateTo(url, options = {}) {
+        const { replace = false } = options;
+        const state = { path: url };
+        if (replace) {
+            // Reemplaza la entrada actual en el historial, útil para fallbacks sin crear un bucle de "atrás".
+            history.replaceState(state, '', url);
+        } else {
+            // Añade una nueva entrada al historial, para la navegación normal.
+            history.pushState(state, '', url);
+        }
         handleRouting();
     }
 
     async function showDashboardView() {
+        clearMetaTags();
+        clearStructuredData();
         document.body.classList.remove('view-detail');
         document.querySelector('header.header-main .container').innerHTML = `
             <h1 class="main-title">Duende Finder</h1>
@@ -89,9 +105,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 event = await response.json();
                 eventsCache[eventId] = event;
             }
+
+            // Actualizar título y metaetiquetas para SEO y redes sociales
+            const eventName = event.name || 'Evento de Flamenco';
+            document.title = `${eventName} | Duende Finder`;
+            updateMetaTags({
+                'og:title': eventName,
+                'og:description': event.description || `Descubre todo sobre ${eventName}, un evento de flamenco que no te puedes perder.`,
+                'og:image': event.imageUrl || `${window.location.origin}/assets/flamenco-placeholder.png`,
+                'og:url': window.location.href,
+                'og:type': 'website'
+            });
+            updateStructuredData(event);
+
             renderEventPage(event);
         } catch (error) {
             mainContainer.innerHTML = `<h2>Error al cargar el evento</h2>`;
+            clearMetaTags(); // Limpiar metaetiquetas en caso de error
+            clearStructuredData();
         }
     }
 
@@ -134,14 +165,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
 
     async function applyFilter(filterType, forMap = false) {
-        let filteredEvents = [];
+        let results = [];
         switch (filterType) {
             case 'destacados':
-                filteredEvents = allEvents.filter(event => event.name.includes('Circuito Andaluz de Peñas'));
+                results = allEvents.filter(event => event.name.includes('Circuito Andaluz de Peñas'));
                 break;
             case 'hoy':
                 const today = new Date().toISOString().slice(0, 10);
-                filteredEvents = allEvents.filter(event => event.date === today);
+                results = allEvents.filter(event => event.date === today);
                 break;
             case 'semana':
                 const startOfWeek = new Date();
@@ -150,36 +181,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 endOfWeek.setDate(endOfWeek.getDate() + 6);
                 const startStr = startOfWeek.toISOString().slice(0, 10);
                 const endStr = endOfWeek.toISOString().slice(0, 10);
-                filteredEvents = allEvents.filter(event => event.date >= startStr && event.date <= endStr);
+                results = allEvents.filter(event => event.date >= startStr && event.date <= endStr);
                 break;
             case 'cerca':
                 try {
                     document.getElementById('event-list-container').innerHTML = '<div class="loading-indicator">Obteniendo ubicación...</div>';
                     const userLocation = await getUserLocation();
                     const { latitude, longitude } = userLocation.coords;
-                    filteredEvents = allEvents.map(event => {
+                    results = allEvents.map(event => {
                         event.distance = event.location?.coordinates?.length === 2 ? calculateDistance(latitude, longitude, event.location.coordinates[1], event.location.coordinates[0]) : Infinity;
                         return event;
                     }).filter(event => event.distance <= 100).sort((a, b) => a.distance - b.distance);
                 } catch (error) {
                     alert('No se pudo obtener tu ubicación.');
-                    filteredEvents = [];
+                    results = [];
                 }
                 break;
             default:
-                filteredEvents = allEvents;
+                results = allEvents;
                 break;
         }
 
+        currentFilteredEvents = results;
+        currentPage = 1;
+        isLoadingMore = false;
+
         if (forMap) {
-            renderMapMarkers(filteredEvents);
+            renderMapMarkers(currentFilteredEvents);
         } else {
-            const totalFound = filteredEvents.length;
-            const eventsToRender = filteredEvents.slice(0, 10);
+            const totalFound = currentFilteredEvents.length;
+            const eventsToRender = currentFilteredEvents.slice(0, EVENTS_PER_PAGE);
             renderEventList(eventsToRender);
             updateEventCount(totalFound);
             if (window.innerWidth > 768 && map) {
-                renderMapMarkers(filteredEvents);
+                renderMapMarkers(currentFilteredEvents);
             }
         }
     }
@@ -203,6 +238,46 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // 5. FUNCIONES DE RENDERIZADO
     // =========================================================================
+
+    function appendEventList(events) {
+        const container = document.getElementById('event-list-container');
+        if (!container || !events || events.length === 0) return;
+
+        const loadingEl = container.querySelector('.loading-indicator');
+        if (loadingEl) loadingEl.remove();
+
+        events.forEach(event => container.appendChild(createEventCard(event)));
+    }
+
+    async function loadMoreEvents() {
+        if (isLoadingMore) return;
+
+        const totalEvents = currentFilteredEvents.length;
+        const currentlyLoaded = currentPage * EVENTS_PER_PAGE;
+
+        if (currentlyLoaded >= totalEvents) {
+            return; // No hay más eventos para cargar
+        }
+
+        isLoadingMore = true;
+        const container = document.getElementById('event-list-container');
+        if (container) {
+            const loadingEl = document.createElement('div');
+            loadingEl.className = 'loading-indicator';
+            loadingEl.textContent = 'Cargando más eventos...';
+            container.appendChild(loadingEl);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        currentPage++;
+        const nextBatchStart = (currentPage - 1) * EVENTS_PER_PAGE;
+        const nextBatchEnd = currentPage * EVENTS_PER_PAGE;
+        const eventsToAppend = currentFilteredEvents.slice(nextBatchStart, nextBatchEnd);
+
+        appendEventList(eventsToAppend);
+        isLoadingMore = false;
+    }
 
     function initMap(containerId) {
         if (map) map.remove();
@@ -240,8 +315,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Asocia el popup pero no lo vincules al click por defecto
                 marker.bindPopup(`<b>${event.name}</b>`);
 
-                // Navega en el click
-                marker.on('click', () => navigateTo(`/eventos/${event._id}`));
+                // Al hacer clic, cerramos el modal en móvil y luego navegamos.
+                marker.on('click', () => {
+                    if (window.innerWidth <= 768) {
+                        closeMapModal();
+                    }
+                    const slug = event.slug || slugify(event.name);
+                    navigateTo(`/eventos/${slug}-${event._id}`);
+                });
 
                 // Muestra/oculta el popup con el ratón
                 marker.on('mouseover', function (e) { this.openPopup(); });
@@ -263,7 +344,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function createEventCard(event) {
         const card = document.createElement('a');
         card.className = 'event-card';
-        card.href = `/eventos/${event._id}`;
+        const slug = event.slug || slugify(event.name);
+        card.href = `/eventos/${slug}-${event._id}`;
         card.dataset.eventId = event._id;
         const eventDate = event.date ? new Date(event.date + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) : '';
         
@@ -285,8 +367,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventName = event.name || 'Evento sin título';
         const displayLocation = `${event.venue || ''}, ${event.city || ''}`.replace(/^,|,$/g, '');
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${eventName}, ${displayLocation}`)}`;
+        
+        const sponsorBannerHtml = `
+            <div class="sponsor-banner" style="margin-bottom: 1.5rem; text-align: center;">
+                <a href="https://afland.es/" target="_blank" rel="noopener sponsored">
+                    <img src="https://afland.es/wp-content/uploads/2025/08/banner-publicidad-1.jpg" alt="Patrocinado por Andalucía Flamenco Land" style="max-width: 100%; height: auto; border-radius: 8px;">
+                </a>
+            </div>
+        `;
+
         mainContainer.innerHTML = `
             <div class="event-page-container">
+                ${sponsorBannerHtml}
                 <img src="${event.imageUrl || './assets/flamenco-placeholder.png'}" alt="Imagen de ${eventName}" class="event-page-image">
                 <div class="event-page-content">
                     <h1>${eventName}</h1>
@@ -329,7 +421,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupGlobalListeners() {
         document.body.addEventListener('click', e => {
             const backBtn = e.target.closest('.back-button');
-            if (backBtn) { e.preventDefault(); history.back(); return; }
+            if (backBtn) {
+                e.preventDefault();
+                // Si hay más de una entrada en el historial, podemos volver atrás de forma segura.
+                if (window.history.length > 1) {
+                    history.back();
+                } else {
+                    // Si no hay historial (ej. se abrió un enlace directo al evento en la PWA),
+                    // navegamos a la página principal para no dejar al usuario atrapado.
+                    // Usamos { replace: true } para que la página de evento no quede en el historial.
+                    navigateTo('/', { replace: true });
+                }
+                return;
+            }
 
             const eventCard = e.target.closest('.event-card');
             if (eventCard) { e.preventDefault(); navigateTo(eventCard.href); return; }
@@ -354,6 +458,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.addEventListener('resize', handleViewLayout);
         window.addEventListener('popstate', handleRouting);
+
+        // Listener para scroll infinito
+        window.addEventListener('scroll', () => {
+            if (document.body.classList.contains('view-detail') || isLoadingMore) {
+                return;
+            }
+
+            const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+            
+            // Cargar más cuando el usuario esté a 400px del final
+            if (scrollTop + clientHeight >= scrollHeight - 400) {
+                loadMoreEvents();
+            }
+        }, { passive: true });
     }
 
     function handleShare(social) {
@@ -385,6 +503,86 @@ document.addEventListener('DOMContentLoaded', () => {
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = 0.5 - Math.cos(dLat) / 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon)) / 2;
         return R * 2 * Math.asin(Math.sqrt(a));
+    }
+
+    function slugify(text) {
+        if (!text) return 'evento';
+        return text
+            .toString()
+            .toLowerCase()
+            .normalize('NFD') // Normaliza para separar acentos
+            .replace(/[\u0300-\u036f]/g, '') // Elimina los diacríticos
+            .replace(/\s+/g, '-') // Reemplaza espacios con -
+            .replace(/[^\w\-]+/g, '') // Elimina caracteres no alfanuméricos (excepto guiones)
+            .replace(/\-\-+/g, '-') // Reemplaza múltiples guiones con uno solo
+            .replace(/^-+/, '') // Elimina guiones al principio
+            .replace(/-+$/, ''); // Elimina guiones al final
+    }
+
+    function updateMetaTags(tags) {
+        // Limpia las metaetiquetas dinámicas anteriores para evitar duplicados.
+        document.querySelectorAll('meta[data-dynamic-meta]').forEach(tag => tag.remove());
+    
+        Object.entries(tags).forEach(([property, content]) => {
+            if (content) {
+                const meta = document.createElement('meta');
+                meta.setAttribute('property', property);
+                meta.setAttribute('content', content);
+                meta.setAttribute('data-dynamic-meta', 'true'); // Etiqueta para facilitar su eliminación
+                document.head.appendChild(meta);
+            }
+        });
+    }
+    
+    function clearMetaTags() {
+        // Elimina solo las metaetiquetas que hemos añadido dinámicamente.
+        document.querySelectorAll('meta[data-dynamic-meta]').forEach(tag => tag.remove());
+        // Restaura el título original de la página principal.
+        document.title = 'Duende Finder - El Buscador de Flamenco';
+    }
+
+    function updateStructuredData(event) {
+        clearStructuredData(); // Limpiar datos anteriores para evitar duplicados
+
+        const structuredData = {
+            '@context': 'https://schema.org',
+            '@type': 'Event',
+            name: event.name || 'Evento de Flamenco',
+            startDate: event.date,
+            description: event.description || `Detalles sobre el evento de flamenco ${event.name}.`,
+            image: event.imageUrl || `${window.location.origin}/assets/flamenco-placeholder.png`,
+            eventStatus: 'https://schema.org/EventScheduled',
+            location: {
+                '@type': 'Place',
+                name: event.venue || 'Lugar por confirmar',
+                address: {
+                    '@type': 'PostalAddress',
+                    addressLocality: event.city || 'Ciudad no especificada',
+                    addressCountry: event.country || 'ES'
+                }
+            },
+            performer: {
+                '@type': 'Person',
+                name: event.artist || 'Artista por confirmar'
+            },
+            offers: {
+                '@type': 'Offer',
+                url: window.location.href,
+                price: '0',
+                priceCurrency: 'EUR',
+                availability: 'https://schema.org/InStock'
+            }
+        };
+
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.setAttribute('data-dynamic-structured-data', 'true');
+        script.textContent = JSON.stringify(structuredData);
+        document.head.appendChild(script);
+    }
+
+    function clearStructuredData() {
+        document.querySelectorAll('script[data-dynamic-structured-data]').forEach(tag => tag.remove());
     }
 
     // =========================================================================

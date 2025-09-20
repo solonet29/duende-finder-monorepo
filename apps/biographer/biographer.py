@@ -136,7 +136,7 @@ def create_wordpress_page(config, artist_name, short_bio, long_bio_html, main_im
 
     image_html = ""
     if main_image_url:
-        image_html = f'''<div class="wp-block-column" style="flex-basis:33.33%"><figure class="wp-block-image size-large"><img src="{main_image_url}" alt="{artist_name}"/></figure></div>'''
+        image_html = f'''<div class="wp-block-column" style="flex-basis:33.33%"><figure class="wp-block-image size-large"><img src="{main_image_url}" alt="{artist_name}" style="width: 100%; height: auto; border-radius: 8px;"/></figure></div>'''
     
     column_style = "66.66%" if main_image_url else "100%"
     text_column_style = f"flex-basis:{column_style};"

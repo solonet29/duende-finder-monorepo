@@ -223,11 +223,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderSlider(container, events) {
         if (!container) return;
         const section = container.closest('.sliders-section');
+
+        // Nos aseguramos de que la sección siempre sea visible para que los enlaces de anclaje funcionen.
+        if (section) section.style.display = 'block';
+
         if (!events || events.length === 0) {
-            if (section) section.style.display = 'none';
+            // En lugar de ocultar la sección, mostramos un mensaje claro dentro de ella.
+            container.innerHTML = `<p class="no-events-message" style="padding: 1rem; text-align: center; color: var(--color-texto-secundario);">No hay eventos para mostrar en esta categoría.</p>`;
             return;
         }
-        if (section) section.style.display = 'block';
         container.innerHTML = '';
         events.forEach(event => container.appendChild(createSliderCard(event)));
     }
