@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
-    // 1. CONFIGURACIÓN Y ESTADO del bot
+    // 1. CONFIGURACIÓN Y ESTADO del bot principal
     // =========================================================================
     const config = {
         IS_ENABLED: false,
