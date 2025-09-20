@@ -171,6 +171,7 @@ header.header-main {
 }
 .event-card .card-image {
     width: 120px;
+    height: 67.5px; /* Proporción 16:9 para un ancho de 120px */
     flex-shrink: 0;
     background-size: cover;
     background-position: center;
@@ -243,4 +244,29 @@ header.header-main {
    9. OTROS
    ========================================================================== */
 .loading-indicator { text-align: center; padding: 40px; font-size: 1.2rem; color: var(--color-texto-secundario); }
-#bottom-nav { /* ... (estilos sin cambios) ... */ }
+
+
+/* ==========================================================================
+   10. VIEW-SPECIFIC OVERRIDES
+   ========================================================================== */
+
+/* Cuando estamos en la vista de detalle de un evento */
+body.view-detail {
+    overflow-y: auto !important; /* Permite el scroll vertical en toda la página */
+}
+
+body.view-detail #main-content {
+    display: block;
+    height: auto;
+    overflow: visible;
+}
+
+/* Oculta el mapa de escritorio cuando estamos en la vista de detalle */
+body.view-detail #desktop-map-container {
+    display: none;
+}
+
+body.view-detail #list-wrapper {
+    width: 100%;
+    overflow: visible;
+}

@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function showDashboardView() {
+        document.body.classList.remove('view-detail');
         document.querySelector('header.header-main .container').innerHTML = `
             <h1 class="main-title">Duende Finder</h1>
             <p id="event-counter" class="subtitle-counter">Cargando...</p>
@@ -67,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function showEventPageView(eventId) {
+        document.body.classList.add('view-detail');
         document.querySelector('header.header-main .container').innerHTML = `
             <nav class="event-page-nav">
                 <a href="/" class="back-button">&larr; Volver a la lista</a>
@@ -219,11 +221,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!map || !markersLayer) return;
         markersLayer.clearLayers();
         markerEventMap = {};
+
+        const orangeIcon = new L.Icon({
+            iconUrl: 'data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="%23E58A2D"><path d="M16 0C9.37 0 4 5.37 4 12c0 8 12 20 12 20s12-12 12-20c0-6.63-5.37-12-12-12zm0 16a4 4 0 110-8 4 4 0 010 8z"/></svg>',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -32]
+        });
+
         const markers = events.map(event => {
             if (event.location?.coordinates?.length === 2) {
-                const marker = L.marker([event.location.coordinates[1], event.location.coordinates[0]]);
+                const marker = L.marker([event.location.coordinates[1], event.location.coordinates[0]], { icon: orangeIcon });
+                
+                // Asocia el popup pero no lo vincules al click por defecto
                 marker.bindPopup(`<b>${event.name}</b>`);
+
+                // Navega en el click
                 marker.on('click', () => navigateTo(`/eventos/${event._id}`));
+
+                // Muestra/oculta el popup con el ratón
+                marker.on('mouseover', function (e) { this.openPopup(); });
+                marker.on('mouseout', function (e) { this.closePopup(); });
+
                 markerEventMap[event._id] = marker;
                 return marker;
             }
