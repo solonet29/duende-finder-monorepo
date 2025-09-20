@@ -68,6 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function showEventPageView(eventId) {
+        if (map) {
+            map.remove();
+            map = null;
+        }
         document.body.classList.add('view-detail');
         document.querySelector('header.header-main .container').innerHTML = `
             <nav class="event-page-nav">
