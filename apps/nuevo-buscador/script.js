@@ -16,9 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let markersLayer = null;
     let markerEventMap = {};
 
-    const mainContainer = document.getElementById('main-content');
-    const headerContainer = document.querySelector('header.header-main .container');
-
     // =========================================================================
     // 2. ROUTER Y VISTAS
     // =========================================================================
@@ -26,10 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleRouting() {
         const path = window.location.pathname;
         const eventPageMatch = path.match(/^\/eventos\/([a-f0-9]{24})/);
-
         if (eventPageMatch && eventPageMatch[1]) {
-            const eventId = eventPageMatch[1];
-            await showEventPageView(eventId);
+            await showEventPageView(eventPageMatch[1]);
         } else {
             await showDashboardView();
         }
@@ -41,8 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function showDashboardView() {
-        document.body.style.overflow = 'hidden';
-        headerContainer.innerHTML = `
+        document.querySelector('header.header-main .container').innerHTML = `
             <h1 class="main-title">Duende Finder</h1>
             <p id="event-counter" class="subtitle-counter">Cargando...</p>
             <nav id="category-filters" class="filter-bar">
@@ -52,29 +46,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="filter-chip" data-filter="cerca">Cerca de Mí</button>
             </nav>
         `;
-        mainContainer.innerHTML = `
-            <div id="content-wrapper">
+        document.getElementById('main-content').innerHTML = `
+            <div id="list-wrapper">
+                <div class="map-view-toggle-wrapper">
+                    <button id="show-map-btn" class="map-view-toggle-btn"><ion-icon name="map-outline"></ion-icon> Ver en el Mapa</button>
+                </div>
                 <div id="event-list-container"></div>
-                <div id="map-container"></div>
             </div>
+            <div id="desktop-map-container"></div>
         `;
         
-        initMap();
+        handleViewLayout();
+
         if (allEvents.length === 0) {
             await loadAndRenderEvents();
         } else {
-            const activeFilter = headerContainer.querySelector('.filter-chip.active')?.dataset.filter || 'destacados';
+            const activeFilter = document.querySelector('#category-filters .filter-chip.active')?.dataset.filter || 'destacados';
             await applyFilter(activeFilter);
         }
     }
 
     async function showEventPageView(eventId) {
-        document.body.style.overflow = 'auto';
-        headerContainer.innerHTML = `
+        document.querySelector('header.header-main .container').innerHTML = `
             <nav class="event-page-nav">
                 <a href="/" class="back-button">&larr; Volver a la lista</a>
             </nav>
         `;
+        const mainContainer = document.getElementById('main-content');
         mainContainer.innerHTML = `<div class="loading-indicator">Cargando evento...</div>`;
 
         try {
@@ -92,10 +90,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================================================
-    // 3. LÓGICA DE FILTRADO Y DATOS (DASHBOARD)
+    // 3. LÓGICA DE LAYOUT (MÓVIL/ESCRITORIO)
     // =========================================================================
 
-    async function applyFilter(filterType) {
+    function handleViewLayout() {
+        if (window.innerWidth > 768) {
+            if (!map) initMap('desktop-map-container');
+            const activeFilter = document.querySelector('#category-filters .filter-chip.active')?.dataset.filter || 'destacados';
+            applyFilter(activeFilter, true);
+        } else {
+            if (map) {
+                map.remove();
+                map = null;
+            }
+        }
+    }
+
+    function openMapModal() {
+        const modal = document.getElementById('map-modal-overlay');
+        modal.classList.add('visible');
+        initMap('modal-map-container');
+        const activeFilter = document.querySelector('#category-filters .filter-chip.active')?.dataset.filter || 'destacados';
+        applyFilter(activeFilter, true);
+    }
+
+    function closeMapModal() {
+        const modal = document.getElementById('map-modal-overlay');
+        modal.classList.remove('visible');
+        if (map) {
+            map.remove();
+            map = null;
+        }
+    }
+
+    // =========================================================================
+    // 4. LÓGICA DE FILTRADO Y DATOS
+    // =========================================================================
+
+    async function applyFilter(filterType, forMap = false) {
         let filteredEvents = [];
         switch (filterType) {
             case 'destacados':
@@ -120,18 +152,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const userLocation = await getUserLocation();
                     const { latitude, longitude } = userLocation.coords;
                     filteredEvents = allEvents.map(event => {
-                        if (event.location?.coordinates?.length === 2) {
-                            const [eventLon, eventLat] = event.location.coordinates;
-                            event.distance = calculateDistance(latitude, longitude, eventLat, eventLon);
-                        } else {
-                            event.distance = Infinity;
-                        }
+                        event.distance = event.location?.coordinates?.length === 2 ? calculateDistance(latitude, longitude, event.location.coordinates[1], event.location.coordinates[0]) : Infinity;
                         return event;
-                    })
-                    .filter(event => event.distance <= 100)
-                    .sort((a, b) => a.distance - b.distance);
+                    }).filter(event => event.distance <= 100).sort((a, b) => a.distance - b.distance);
                 } catch (error) {
-                    alert('No se pudo obtener tu ubicación. Por favor, activa los permisos.');
+                    alert('No se pudo obtener tu ubicación.');
                     filteredEvents = [];
                 }
                 break;
@@ -139,9 +164,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 filteredEvents = allEvents;
                 break;
         }
-        renderEventList(filteredEvents);
-        renderMapMarkers(filteredEvents);
-        updateEventCount(filteredEvents.length);
+
+        if (forMap) {
+            renderMapMarkers(filteredEvents);
+        } else {
+            const totalFound = filteredEvents.length;
+            const eventsToRender = filteredEvents.slice(0, 10);
+            renderEventList(eventsToRender);
+            updateEventCount(totalFound);
+            if (window.innerWidth > 768 && map) {
+                renderMapMarkers(filteredEvents);
+            }
+        }
     }
 
     async function loadAndRenderEvents() {
@@ -153,10 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error('Error al cargar eventos');
             const data = await response.json();
             allEvents = data.events || [];
-            eventsCache = allEvents.reduce((acc, event) => {
-                acc[event._id] = event;
-                return acc;
-            }, {});
+            eventsCache = allEvents.reduce((acc, event) => { acc[event._id] = event; return acc; }, {});
             await applyFilter('destacados');
         } catch (error) {
             if (eventListContainer) eventListContainer.innerHTML = '<h2>Oops! No se pudo cargar el contenido.</h2>';
@@ -164,83 +195,70 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================================================
-    // 4. FUNCIONES DE RENDERIZADO
+    // 5. FUNCIONES DE RENDERIZADO
     // =========================================================================
 
-    function initMap() {
-        const mapContainer = document.getElementById('map-container');
-        if (mapContainer && !map) {
-            map = L.map(mapContainer).setView([40.416775, -3.703790], 5);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+    function initMap(containerId) {
+        if (map) map.remove();
+        const mapContainer = document.getElementById(containerId);
+        if (mapContainer) {
+            map = L.map(mapContainer).setView([40.4, -3.7], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
             markersLayer = L.layerGroup().addTo(map);
         }
     }
 
     function renderEventList(events) {
-        const eventListContainer = document.getElementById('event-list-container');
-        if (!eventListContainer) return;
-        if (!events || events.length === 0) {
-            eventListContainer.innerHTML = '<p style="text-align: center; padding: 20px;">No se encontraron eventos.</p>';
-            return;
-        }
-        eventListContainer.innerHTML = '';
-        events.forEach(event => {
-            eventListContainer.appendChild(createEventCard(event));
-        });
+        const container = document.getElementById('event-list-container');
+        if (!container) return;
+        container.innerHTML = !events || events.length === 0 ? '<p class="loading-indicator">No se encontraron eventos.</p>' : '';
+        events.forEach(event => container.appendChild(createEventCard(event)));
     }
 
     function renderMapMarkers(events) {
         if (!map || !markersLayer) return;
         markersLayer.clearLayers();
         markerEventMap = {};
-        const markers = [];
-        events.forEach(event => {
+        const markers = events.map(event => {
             if (event.location?.coordinates?.length === 2) {
-                const [lon, lat] = event.location.coordinates;
-                const marker = L.marker([lat, lon]);
+                const marker = L.marker([event.location.coordinates[1], event.location.coordinates[0]]);
                 marker.bindPopup(`<b>${event.name}</b>`);
-                marker.on('click', () => {
-                    const card = document.querySelector(`.event-card[data-event-id="${event._id}"]`);
-                    if (card) {
-                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        card.classList.add('highlighted');
-                        setTimeout(() => card.classList.remove('highlighted'), 2500);
-                    }
-                });
-                markersLayer.addLayer(marker);
-                markers.push(marker);
+                marker.on('click', () => navigateTo(`/eventos/${event._id}`));
                 markerEventMap[event._id] = marker;
+                return marker;
             }
-        });
+            return null;
+        }).filter(Boolean);
+
         if (markers.length > 0) {
             const group = new L.featureGroup(markers);
+            markersLayer.addLayer(group);
             map.fitBounds(group.getBounds().pad(0.2));
         }
     }
 
     function createEventCard(event) {
-        const eventCard = document.createElement('a');
-        eventCard.className = 'event-card';
-        eventCard.setAttribute('data-event-id', event._id);
-        eventCard.href = `/eventos/${event._id}-${(event.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+        const card = document.createElement('a');
+        card.className = 'event-card';
+        card.href = `/eventos/${event._id}`;
+        card.dataset.eventId = event._id;
         const eventDate = event.date ? new Date(event.date + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) : '';
-        eventCard.innerHTML = `
+        
+        card.innerHTML = `
             <div class="card-image" style="background-image: url('${event.imageUrl || './assets/flamenco-placeholder.png'}')"></div>
             <div class="card-content">
-                <h3 class="card-title">${event.name || 'Evento sin nombre'}</h3>
-                <p class="card-artist">${event.artist || 'Artista por confirmar'}</p>
+                <h3 class="card-title">${event.name || 'Evento'}</h3>
+                <p class="card-artist">${event.artist || 'N/A'}</p>
                 <div class="card-details">
                     <span><ion-icon name="location-outline"></ion-icon> ${event.city || ''}</span>
                     <span><ion-icon name="calendar-outline"></ion-icon> ${eventDate}</span>
                 </div>
-            </div>
-        `;
-        return eventCard;
+            </div>`;
+        return card;
     }
 
     function renderEventPage(event) {
+        const mainContainer = document.getElementById('main-content');
         const eventName = event.name || 'Evento sin título';
         const displayLocation = `${event.venue || ''}, ${event.city || ''}`.replace(/^,|,$/g, '');
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${eventName}, ${displayLocation}`)}`;
@@ -282,95 +300,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================================================
-    // 5. MANEJADORES DE EVENTOS
+    // 6. MANEJADORES DE EVENTOS
     // =========================================================================
 
     function setupGlobalListeners() {
         document.body.addEventListener('click', e => {
-            // Navegación
-            const backButton = e.target.closest('.back-button');
-            if (backButton) {
-                e.preventDefault();
-                history.back();
-                return;
-            }
+            const backBtn = e.target.closest('.back-button');
+            if (backBtn) { e.preventDefault(); history.back(); return; }
+
             const eventCard = e.target.closest('.event-card');
-            if (eventCard) {
-                e.preventDefault();
-                navigateTo(eventCard.href);
-                return;
-            }
+            if (eventCard) { e.preventDefault(); navigateTo(eventCard.href); return; }
 
-            // Filtros Dashboard
-            const filterButton = e.target.closest('#category-filters .filter-chip');
-            if (filterButton && !filterButton.classList.contains('active')) {
+            if (e.target.closest('#show-map-btn')) { openMapModal(); return; }
+            if (e.target.closest('#close-map-modal-btn')) { closeMapModal(); return; }
+
+            const filterBtn = e.target.closest('#category-filters .filter-chip');
+            if (filterBtn && !filterBtn.classList.contains('active')) {
                 document.querySelector('#category-filters .active')?.classList.remove('active');
-                filterButton.classList.add('active');
-                applyFilter(filterButton.dataset.filter);
+                filterBtn.classList.add('active');
+                applyFilter(filterBtn.dataset.filter);
                 return;
             }
-
-            // Acciones Página de Evento
+            
             const shareMainBtn = e.target.closest('.share-btn-main');
-            if (shareMainBtn) {
-                shareMainBtn.nextElementSibling.classList.toggle('active');
-                return;
-            }
+            if (shareMainBtn) { shareMainBtn.nextElementSibling.classList.toggle('active'); return; }
+
             const shareOptionBtn = e.target.closest('.share-option-btn');
-            if (shareOptionBtn) {
-                e.preventDefault();
-                handleShare(shareOptionBtn.dataset.social);
-                return;
-            }
+            if (shareOptionBtn) { e.preventDefault(); handleShare(shareOptionBtn.dataset.social); return; }
         });
 
-        document.body.addEventListener('mouseover', e => {
-            const eventCard = e.target.closest('#event-list-container .event-card');
-            if (eventCard && eventCard.dataset.eventId) {
-                const marker = markerEventMap[eventCard.dataset.eventId];
-                if (marker) marker.openPopup();
-            }
-        });
-
-        document.body.addEventListener('mouseout', e => {
-            const eventCard = e.target.closest('#event-list-container .event-card');
-            if (eventCard && eventCard.dataset.eventId) {
-                const marker = markerEventMap[eventCard.dataset.eventId];
-                if (marker) marker.closePopup();
-            }
-        });
+        window.addEventListener('resize', handleViewLayout);
+        window.addEventListener('popstate', handleRouting);
     }
 
     function handleShare(social) {
         const url = window.location.href;
         const text = document.title;
         let shareUrl;
-
         switch (social) {
-            case 'twitter':
-                shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
-                break;
-            case 'facebook':
-                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-                break;
-            case 'whatsapp':
-                shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`;
-                break;
-            case 'copy':
-                navigator.clipboard.writeText(url).then(() => alert('¡Enlace copiado!'));
-                return;
+            case 'twitter': shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`; break;
+            case 'facebook': shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`; break;
+            case 'whatsapp': shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`; break;
+            case 'copy': navigator.clipboard.writeText(url).then(() => alert('¡Enlace copiado!')); return;
         }
         if (shareUrl) window.open(shareUrl, '_blank');
-    }
-
-    // =========================================================================
-    // 6. INICIALIZACIÓN
-    // =========================================================================
-
-    function init() {
-        setupGlobalListeners();
-        window.addEventListener('popstate', handleRouting);
-        handleRouting(); // Maneja la carga inicial de la página
     }
 
     // =========================================================================
@@ -389,6 +362,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = 0.5 - Math.cos(dLat) / 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon)) / 2;
         return R * 2 * Math.asin(Math.sqrt(a));
+    }
+
+    // =========================================================================
+    // 8. INICIALIZACIÓN
+    // =========================================================================
+    function init() {
+        setupGlobalListeners();
+        handleRouting();
     }
 
     init();
