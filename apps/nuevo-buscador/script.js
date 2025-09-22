@@ -75,13 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 countUp.start(() => {
                     setTimeout(() => {
                         counterElement.classList.add('fading-out');
-                    }, 10000);
+                    }, 30000);
                 });
             } else {
                 counterElement.textContent = `+${totalEvents.toLocaleString('es-ES')} eventos de flamenco verificados`;
                 setTimeout(() => {
                     counterElement.classList.add('fading-out');
-                }, 10000);
+                }, 30000);
             }
             counterElement.classList.add('loaded');
         } catch (error) {
@@ -153,7 +153,106 @@ document.addEventListener('DOMContentLoaded', () => {
     // ... (el resto de las funciones del script original)
     // (initializeDashboard, renderSlider, renderEventPage, etc.)
 
-        async function renderEventPage(eventId) {
+        function renderEventCard(event) {
+    eventsCache[event._id] = event;
+    const eventDate = new Date(event.date);
+    const day = eventDate.getDate();
+    const month = eventDate.toLocaleString('es-ES', { month: 'short' });
+    const fallbackSlug = (event.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const finalSlug = event.slug || fallbackSlug;
+    const eventUrl = APP_CONFIG.USAR_PAGINAS_DE_EVENTOS ? `/eventos/${event._id}-${finalSlug}` : '#';
+
+    return `
+        <div class="event-card" data-event-id="${event._id}">
+            <a href="${eventUrl}" class="event-card-link">
+                <div class="event-image-container">
+                    <img src="${event.image}" alt="${event.name}" loading="lazy">
+                    <div class="event-date">
+                        <span class="day">${day}</span>
+                        <span class="month">${month.replace('.', '')}</span>
+                    </div>
+                </div>
+                <div class="event-info">
+                    <h3>${event.name}</h3>
+                    <p>${event.artist || 'Artista no especificado'}</p>
+                    <span>${event.location.city}</span>
+                </div>
+            </a>
+        </div>
+    `;
+}
+
+function renderSlider(container, events, title) {
+    if (!container || !events || events.length === 0) {
+        if (container) container.style.display = 'none';
+        return;
+    }
+    const eventsHTML = events.map(renderEventCard).join('');
+    container.innerHTML = `
+        <h2 class="slider-title">${title}</h2>
+        <div class="slider">
+            ${eventsHTML}
+        </div>
+    `;
+    container.style.display = 'block';
+}
+
+function renderMonthlySliders(monthlyEvents) {
+    if (!monthlySlidersContainer || !monthlyEvents) {
+        if (monthlySlidersContainer) monthlySlidersContainer.style.display = 'none';
+        return;
+    }
+    let allMonthsHTML = '';
+    for (const monthName in monthlyEvents) {
+        const events = monthlyEvents[monthName];
+        if (events && events.length > 0) {
+            const sliderHTML = `
+                <div class="slider-container" id="slider-${monthName.replace(/\s+/g, '-').toLowerCase()}">
+                    <h2 class="slider-title">${monthName}</h2>
+                    <div class="slider">
+                        ${events.map(renderEventCard).join('')}
+                    </div>
+                </div>
+            `;
+            allMonthsHTML += sliderHTML;
+        }
+    }
+    monthlySlidersContainer.innerHTML = allMonthsHTML;
+    monthlySlidersContainer.style.display = 'block';
+}
+
+async function initializeDashboard() {
+    try {
+        const [featuredResponse, todayResponse, weekResponse, nearbyResponse, monthlyResponse] = await Promise.all([
+            fetch(`${API_BASE_URL}/api/events/featured`),
+            fetch(`${API_BASE_URL}/api/events/today`),
+            fetch(`${API_BASE_URL}/api/events/week`),
+            fetch(`${API_BASE_URL}/api/events/nearby`),
+            fetch(`${API_BASE_URL}/api/events/monthly`)
+        ]);
+
+        const featuredEvents = await featuredResponse.json();
+        renderSlider(featuredSlider, featuredEvents, 'Destacados');
+
+        const todayEvents = await todayResponse.json();
+        renderSlider(todaySlider, todayEvents, 'Para Hoy');
+
+        const weekEvents = await weekResponse.json();
+        renderSlider(weekSlider, weekEvents, 'Esta Semana');
+
+        const nearbyEvents = await nearbyResponse.json();
+        renderSlider(nearbySlider, nearbyEvents, 'Cerca de ti');
+
+        const monthlyEvents = await monthlyResponse.json();
+        renderMonthlySliders(monthlyEvents);
+
+    } catch (error) {
+        console.error("Error initializing dashboard:", error);
+        mainContainer.innerHTML = '<p class="error-message">No se pudieron cargar los eventos. Inténtalo de nuevo más tarde.</p>';
+    }
+}
+
+async function renderEventPage(eventId) {
         try {
             const response = await fetch(`${API_BASE_URL}/api/events/id/${eventId}`);
             if (!response.ok) {
