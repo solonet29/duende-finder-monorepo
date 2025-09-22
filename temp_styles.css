@@ -218,54 +218,9 @@ header.header-main {
 }
 
 .slider-container .event-card {
-    flex: 0 0 280px; /* Aumentamos el tamaño de la tarjeta */
-    width: 280px;
-    scroll-snap-align: start;
-}
-
-.event-card {
-    background-color: var(--color-superficie);
-    border-radius: 12px;
-    border: 1px solid var(--color-borde);
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    display: flex;
-    flex-direction: column;
-}
-
-.event-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-}
-
-.event-card .card-image {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    display: block;
-    border-bottom: 1px solid var(--color-borde);
-}
-
-.event-card .card-content {
-    padding: 15px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.event-card .card-title {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 700;
-    white-space: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    line-height: 1.3;
-    height: 2.6em; /* 2 lines * 1.3 line-height */
+    flex: 0 0 220px;
+    width: 220px;
+    /* ... */
 }
 
 /* ==========================================================================
