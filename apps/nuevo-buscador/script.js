@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const API_BASE_URL = getApiBaseUrl();
     let eventsCache = {};
+    let modalMapInstance = null;
 
     const modalContent = {
         howItWorks: `
@@ -60,7 +61,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const tripEndDateInput = document.getElementById('trip-end-date');
     const tripSearchBtn = document.getElementById('trip-search-btn');
     const tripResultsSlider = document.getElementById('trip-results-slider');
-    const tripResultsMessage = document.getElementById('trip-results-message');
+            const tripResultsMessage = document.getElementById('trip-results-message');
+    const showMapBtn = document.getElementById('show-map-btn');
+    const mapModalOverlay = document.getElementById('map-modal-overlay');
+    const closeMapModalBtn = document.getElementById('close-map-modal-btn');
+    const showMapBtn = document.getElementById('show-map-btn');
+    const mapModalOverlay = document.getElementById('map-modal-overlay');
+    const closeMapModalBtn = document.getElementById('close-map-modal-btn');
 
     // =========================================================================
     // 2. DEFINICIÓN DE TODAS LAS FUNCIONES
@@ -104,14 +111,85 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             const totalEvents = data.total;
             const countUp = new CountUp(counterElement, totalEvents, { prefix: '+', suffix: ' eventos de flamenco verificados', duration: 2.5, separator: '.', useEasing: true });
-            if (!countUp.error) countUp.start();
-            else counterElement.textContent = `+${totalEvents.toLocaleString('es-ES')} eventos de flamenco verificados`;
+            if (!countUp.error) {
+                countUp.start(() => {
+                    setTimeout(() => {
+                        counterElement.classList.add('fading-out');
+                    }, 30000);
+                });
+            } else {
+                counterElement.textContent = `+${totalEvents.toLocaleString('es-ES')} eventos de flamenco verificados`;
+                setTimeout(() => {
+                    counterElement.classList.add('fading-out');
+                }, 30000);
+            }
             counterElement.classList.add('loaded');
         } catch (error) {
             console.error('Error al cargar el contador de eventos:', error);
             counterElement.style.display = 'none';
         }
     }
+
+    function openMapModal() {
+        if (!mapModalOverlay) return;
+        const visibleEvents = getAllVisibleEvents();
+        if (visibleEvents.length === 0) {
+            alert('No hay eventos para mostrar en el mapa.');
+            return;
+        }
+        mapModalOverlay.classList.add('visible');
+        initializeModalMap(visibleEvents);
+    }
+
+    function closeMapModal() {
+        if (mapModalOverlay) {
+            mapModalOverlay.classList.remove('visible');
+        }
+    }
+
+    function getAllVisibleEvents() {
+        const eventCards = document.querySelectorAll('.slider-container .event-card');
+        const visibleEventIds = new Set();
+        eventCards.forEach(card => {
+            if (card.offsetParent !== null) {
+                const eventId = card.dataset.eventId;
+                if (eventId) visibleEventIds.add(eventId);
+            }
+        });
+        return Array.from(visibleEventIds).map(id => eventsCache[id]).filter(Boolean);
+    }
+
+    function initializeModalMap(events) {
+        const mapContainer = document.getElementById('modal-map-container');
+        if (!mapContainer) return;
+        if (!modalMapInstance) {
+            modalMapInstance = L.map(mapContainer).setView([40.416775, -3.703790], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(modalMapInstance);
+        }
+        modalMapInstance.eachLayer(layer => { if (layer instanceof L.Marker) modalMapInstance.removeLayer(layer); });
+        const markers = [];
+        events.forEach(event => {
+            if (event.location?.coordinates?.length === 2) {
+                const [lon, lat] = event.location.coordinates;
+                const marker = L.marker([lat, lon]).addTo(modalMapInstance);
+                marker.bindPopup(`<b>${event.name}</b><br>${event.artist || ''}`);
+                marker.on('click', () => {
+                    const fallbackSlug = (event.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                    const finalSlug = event.slug || fallbackSlug;
+                    window.location.href = `/eventos/${event._id}-${finalSlug}`;
+                });
+                markers.push(marker);
+            }
+        });
+        if (markers.length > 0) {
+            const group = new L.featureGroup(markers);
+            modalMapInstance.fitBounds(group.getBounds().pad(0.1));
+        }
+        setTimeout(() => modalMapInstance.invalidateSize(), 100);
+    }
+
 
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
@@ -745,6 +823,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tripSearchBtn) {
             tripSearchBtn.addEventListener('click', fetchTripEvents);
         }
+
+        if (showMapBtn) {
+            showMapBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openMapModal();
+            });
+        }
+        if (closeMapModalBtn) {
+            closeMapModalBtn.addEventListener('click', closeMapModal);
+        }
+        if (mapModalOverlay) {
+            mapModalOverlay.addEventListener('click', (e) => {
+                if (e.target === mapModalOverlay) closeMapModal();
+            });
+        }
+    }
     }
 
     // =========================================================================
