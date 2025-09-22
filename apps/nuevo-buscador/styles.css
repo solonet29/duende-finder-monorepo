@@ -83,10 +83,8 @@ header.header-main {
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--color-borde);
     padding: 8px 0;
-    /* Padding vertical, el horizontal lo dará el .container */
 }
 
-/* El título principal de la página */
 .main-title {
     font-family: 'Cinzel', serif;
     font-size: 2rem;
@@ -95,21 +93,17 @@ header.header-main {
     margin: 2rem 0;
 }
 
-/* La barra de filtros dentro de la cabecera */
 .filter-bar {
     display: flex;
     gap: 10px;
     overflow-x: auto;
     padding-bottom: 5px;
     scrollbar-width: none;
-    /* Oculta scrollbar en Firefox */
 }
 
 .filter-bar::-webkit-scrollbar {
     display: none;
 }
-
-/* Oculta scrollbar en Chrome/Safari */
 
 .filter-chip {
     padding: 8px 16px;
@@ -123,6 +117,9 @@ header.header-main {
     white-space: nowrap;
     transition: background-color 0.3s, color 0.3s;
     text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .filter-chip:hover {
@@ -135,27 +132,22 @@ header.header-main {
     border-color: var(--color-acento);
 }
 
-
 /* ==========================================================================
-   4. SLIDERS
+   4. SLIDERS Y PLANIFICADOR
    ========================================================================== */
-.sliders-section {
+.sliders-section, .trip-planner-section {
     width: 100%;
     margin: 30px 0;
 }
 
-/* ==========================================================================
-   X. PLANIFICADOR DE VIAJE
-   ========================================================================== */
 .trip-planner-section {
     background-color: var(--color-superficie);
     padding: 20px;
     border-radius: 12px;
-    margin: 30px 0;
     border: 1px solid var(--color-borde);
 }
 
-.trip-planner-section h2 {
+.trip-planner-section h2, .sliders-section h2 {
     margin-top: 0;
     margin-bottom: 20px;
     font-family: 'Montserrat', sans-serif;
@@ -166,15 +158,15 @@ header.header-main {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
-    align-items: flex-end; /* Alinea la parte inferior de los elementos */
+    align-items: flex-end;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    flex: 1; /* Permite que los grupos crezcan */
-    min-width: 150px; /* Ancho mínimo para evitar que se aplasten demasiado */
+    flex: 1;
+    min-width: 150px;
 }
 
 .form-group label {
@@ -192,12 +184,12 @@ header.header-main {
     color: var(--color-texto-principal);
     border-radius: 8px;
     font-size: 1rem;
-    height: 45px; /* Altura fija */
+    height: 45px;
 }
 
 .trip-planner-form button {
     padding: 10px 20px;
-    height: 45px; /* Misma altura que los inputs */
+    height: 45px;
     background-color: var(--color-acento);
     color: var(--color-superficie);
     border: none;
@@ -212,24 +204,6 @@ header.header-main {
     filter: brightness(1.1);
 }
 
-.results-message {
-    margin-top: 15px;
-    padding: 10px;
-    background-color: var(--color-fondo);
-    border-radius: 8px;
-    text-align: center;
-    color: var(--color-texto-secundario);
-}
-
-
-.sliders-section h2 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--color-texto-principal);
-    margin-bottom: 20px;
-}
-
 .slider-container {
     display: flex;
     overflow-x: auto;
@@ -237,7 +211,6 @@ header.header-main {
     padding-bottom: 15px;
     scroll-snap-type: x mandatory;
     align-items: flex-start;
-    /* CORRECCIÓN: Evita que las tarjetas se estiren */
 }
 
 .slider-container::-webkit-scrollbar {
@@ -247,50 +220,7 @@ header.header-main {
 .slider-container .event-card {
     flex: 0 0 220px;
     width: 220px;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-superficie);
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    cursor: pointer;
-}
-
-.slider-container .event-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-}
-
-.slider-container .event-card .card-image {
-    width: 100%;
-    height: 125px;
-    object-fit: cover;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.slider-container .event-card .card-content {
-    text-align: center;
-    padding: 12px 5px;
-}
-
-.slider-container .event-card .card-title {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-texto-principal);
-    max-width: 95%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.slider-container .event-card:hover .card-title {
-    background-color: var(--color-acento);
-    color: var(--color-superficie);
+    /* ... */
 }
 
 /* ==========================================================================
@@ -304,7 +234,6 @@ header.header-main {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -317,26 +246,6 @@ header.header-main {
 .modal-overlay.visible {
     opacity: 1;
     visibility: visible;
-}
-
-.modal {
-    background-color: var(--color-superficie);
-    border: 1px solid var(--color-borde);
-    color: var(--color-texto-principal);
-    border-radius: 12px;
-    width: 95%;
-    max-width: 700px;
-    max-height: 90vh;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    transform: scale(0.95);
-    transition: transform 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
-}
-
-.modal-overlay.visible .modal {
-    transform: scale(1);
 }
 
 .modal-close-btn {
@@ -352,105 +261,6 @@ header.header-main {
     z-index: 10;
 }
 
-.modal-content {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding-right: 10px;
-}
-
-.modal-content>* {
-    white-space: normal !important;
-    overflow-wrap: break-word !important;
-    max-width: 100% !important;
-}
-
-.modal-content h2,
-.modal-content h3 {
-    color: var(--color-acento);
-    margin-top: 1.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.modal-content h2:first-child,
-.modal-content h3:first-child {
-    margin-top: 0;
-}
-
-.modal-content p,
-.modal-content li {
-    line-height: 1.7;
-    color: var(--color-texto-secundario);
-}
-
-.modal-content strong {
-    color: var(--color-texto-principal);
-}
-
-.modal-content ol {
-    padding-left: 20px;
-}
-
-.modal-event-details {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.modal-event-details .evento-card-img-container {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--color-borde);
-    margin-bottom: 1rem;
-}
-
-.modal-event-details .evento-card-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.modal-event-details .card-header .titulo-truncado {
-    font-size: 1.6rem;
-}
-
-.modal-event-details .card-detalles {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    border-top: 1px solid var(--color-borde);
-    padding-top: 1rem;
-    margin-top: 0;
-}
-
-.modal-event-details .evento-detalle a {
-    color: var(--color-texto-secundario);
-    transition: color 0.2s;
-}
-
-.modal-event-details .evento-detalle a:hover {
-    color: var(--color-acento);
-}
-
-.modal-event-details .card-actions-primary {
-    display: grid;
-    gap: 10px;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-}
-
-#gemini-modal-overlay {
-    z-index: 3000;
-}
-
-.modal-overlay.modal-stacked .modal {
-    transform: scale(0.9) translateY(-10px);
-    opacity: 0.7;
-    filter: blur(2px);
-    pointer-events: none;
-}
-
 /* ==========================================================================
    6. BARRA DE NAVEGACIÓN INFERIOR
    ========================================================================== */
@@ -461,7 +271,6 @@ header.header-main {
     width: 100%;
     background-color: var(--color-nav-fondo);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -470,513 +279,66 @@ header.header-main {
     border-top: 1px solid var(--color-borde);
 }
 
-.nav-btn {
-    background: none;
-    border: none;
-    color: var(--color-texto-secundario);
-    font-size: 24px;
-    padding: 10px;
-    cursor: pointer;
-    transition: color 0.3s, transform 0.2s;
-    text-decoration: none;
-}
-
-.nav-btn:hover {
-    color: var(--color-texto-principal);
-    transform: translateY(-3px);
-}
-
-.nav-btn.active {
-    color: var(--color-acento);
-}
-
-/* ==========================================================================
-   7. COMPONENTES Y OTROS
-   ========================================================================== */
-ion-icon {
-    font-size: 1.2em;
-    vertical-align: middle;
-}
-
-.evento-detalle ion-icon {
-    font-size: 18px;
-    color: var(--color-acento);
-}
-
-.card-actions-primary button,
-.card-actions-primary a {
-    padding: 10px;
-    border-radius: 25px;
-    border: none;
-    font-weight: bold;
-    font-size: 0.9rem;
-    cursor: pointer;
-    text-align: center;
-    text-decoration: none;
-    transition: transform 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.card-actions-primary button:hover,
-.card-actions-primary a:hover {
-    transform: scale(1.05);
-}
-
-.gemini-btn {
-    background-color: var(--color-acento);
-    color: var(--color-superficie);
-}
-
-.btn-blog-explorar,
-.blog-link-btn {
-    background-color: var(--color-borde);
-    color: var(--color-texto-principal);
-}
-
-.skeleton-card {
-    background-color: var(--color-superficie);
-    border: 1px solid var(--color-borde);
-    border-radius: 12px;
-    padding: 1.5rem;
-}
-
-.skeleton {
-    background-color: var(--color-borde);
-    border-radius: 4px;
-    animation: shimmer 1.5s infinite linear;
-    background-image: linear-gradient(to right, var(--color-borde) 0%, var(--color-superficie) 50%, var(--color-borde) 100%);
-    background-repeat: no-repeat;
-    background-size: 200% 100%;
-}
-
-@keyframes shimmer {
-    0% {
-        background-position: -100% 0;
-    }
-
-    100% {
-        background-position: 100% 0;
-    }
-}
-
-.skeleton.title {
-    height: 24px;
-    width: 70%;
-    margin-bottom: 1rem;
-}
-
-.skeleton.text {
-    height: 16px;
-    margin-bottom: 0.5rem;
-}
-
-.cta-section {
-    text-align: center;
-    background-color: var(--color-superficie);
-    padding: 2.5rem 1.5rem;
-    border-radius: 12px;
-    margin: 40px 0;
-    border: 1px solid var(--color-borde);
-}
-
-.cta-section h2 {
-    margin-top: 0;
-    font-family: 'Montserrat', sans-serif;
-}
-
-.cta-section p {
-    color: var(--color-texto-secundario);
-    max-width: 450px;
-    margin: 0 auto 1.5rem auto;
-}
-
-.cta-btn {
-    background-color: var(--color-acento);
-    color: var(--color-superficie);
-    border: none;
-    padding: 12px 24px;
-    font-size: 1rem;
-    font-weight: bold;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: transform 0.2s, filter 0.2s;
-}
-
-.cta-btn:hover {
-    transform: scale(1.05);
-    filter: brightness(1.1);
-}
-
-
-/* --- ESTILOS DEL MODAL DE BIENVENIDA --- */
-#welcome-modal-overlay .modal {
-    background-color: transparent;
-    border: none;
-    padding: 0;
-    width: auto;
-    /* Ajustar al contenido */
-    max-width: 90%;
-}
-
-.welcome-modal-content {
-    background-color: var(--color-superficie);
-    padding: 30px;
-    border-radius: 16px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    width: 350px;
-    max-width: 100%;
-    /* Relativo al .modal auto-ajustado */
-    border: 1px solid var(--color-borde);
-}
-
-#welcome-banner-container {
-    width: 100%;
-}
-
-.sponsor-container p {
-    margin: 0 0 10px 0;
-    color: var(--color-texto-secundario);
-    font-size: 0.9rem;
-}
-
-.sponsor-logo {
-    max-height: 75px;
-    width: auto;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
-    transition: transform 0.2s ease;
-}
-
-.sponsor-container a:hover .sponsor-logo {
-    transform: scale(1.05);
-}
-
-.banner-image {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-}
-
-.sponsor-container a,
-.banner-container a {
-    color: transparent;
-}
-
-.loading-indicator {
-    margin-top: 15px;
-    color: var(--color-acento);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-}
-
-.loading-indicator ion-icon {
-    font-size: 2.5rem;
-    animation: pulse 1.5s infinite ease-in-out;
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 0.8;
-    }
-
-    50% {
-        transform: scale(1.1);
-        opacity: 1;
-    }
-}
-
-/* ==========================================================================
-   ESTILOS PARA ENLACES EN TEMA OSCURO
-   ========================================================================== */
-
-/* Estilo para todos los enlaces cuando el tema oscuro está activo */
-[data-theme="dark"] a {
-    /* Usamos el color de acento que ya tienes definido para el tema oscuro */
-    color: var(--color-acento);
-    text-decoration: none;
-    /* Opcional: quita el subrayado por defecto */
-    transition: filter 0.2s ease;
-}
-
-/* Estilo para cuando el usuario pasa el ratón sobre un enlace */
-[data-theme="dark"] a:hover {
-    /* Aclaramos un poco el color para dar feedback visual */
-    filter: brightness(1.2);
-    text-decoration: underline;
-    /* Opcional: añadimos el subrayado en hover */
-}
-
-/* ============================ */
-/* ==   COMPONENTES & FX     == */
-/* ============================ */
+/* ... (resto de estilos) ... */
 
 .subtitle-counter {
     text-align: center;
-    /* Centra el texto */
     margin-top: -10px;
-    /* Sube un poco el texto para que quede más cerca del título */
     margin-bottom: 20px;
-    /* Añade espacio antes del siguiente contenido */
     font-size: 0.9em;
-    /* Un poco más pequeño que el texto normal */
     color: #888;
-    /* Un color gris para que no compita con el título */
     opacity: 0;
-    /* Empieza invisible */
-
+    transition: opacity 1s ease-out; /* Añadido para el fade-out */
 }
 
-/* Clase que se añade con JS para activar la animación */
 .subtitle-counter.loaded {
     animation: bounce-in 0.7s ease-out forwards;
 }
 
-/* Define la animación de rebotes */
+.subtitle-counter.fading-out {
+    opacity: 0;
+}
+
 @keyframes bounce-in {
-    0% {
-        transform: scale(0.5);
-        opacity: 0;
-    }
-
-    60% {
-        transform: scale(1.1);
-        opacity: 1;
-    }
-
-    80% {
-        transform: scale(0.95);
-    }
-
-    100% {
-        transform: scale(1);
-    }
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.1); opacity: 1; }
+    80% { transform: scale(0.95); }
+    100% { transform: scale(1); }
 }
 
 /* ==========================================================================
-   8. PÁGINA DE DETALLE DE EVENTO
+   MAP MODAL STYLES
    ========================================================================== */
-
-/* Contenedor principal de la página de evento */
-.event-page-container {
-    max-width: 700px; /* Ancho máximo similar al modal */
-    margin: 2rem auto; /* Centrado y con margen superior/inferior */
-    padding: 1rem;
-    background-color: var(--color-superficie);
-    border: 1px solid var(--color-borde);
-    border-radius: 12px;
+.modal-content-full {
+    width: 95vw;
+    height: 90vh;
+    background: var(--color-superficie);
+    border-radius: 15px;
+    position: relative;
+    padding: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
-    gap: 1rem;
 }
 
-/* Contenedor de la imagen del evento */
-.event-page-container .evento-card-img-container {
-    width: 100%;
-    max-height: 350px; /* Altura máxima para la imagen */
-    aspect-ratio: 16 / 9;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--color-borde);
-}
-
-.event-page-container .evento-card-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Título del evento en la página de detalle */
-.event-page-container .card-header h1 {
-    font-size: 1.8rem;
-    margin: 0;
-}
-
-/* Resto de detalles (artista, fecha, etc.) */
-.event-page-container .artista,
-.event-page-container .evento-detalle {
-    font-size: 1rem;
-}
-
-.event-page-container .card-detalles {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    border-top: 1px solid var(--color-borde);
-    padding-top: 1rem;
-    margin-top: 0;
-}
-
-.event-page-container .card-actions-primary {
-    display: grid;
-    gap: 10px;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-}
-
-
-/* Navegación para la página de evento (Botón Volver) */
-.event-page-nav {
-    width: 100%;
-    display: flex;
-    justify-content: flex-start;
-}
-
-.back-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    background-color: var(--color-superficie);
+#close-map-modal-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 2.5rem;
     color: var(--color-texto-principal);
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-decoration: none;
-    border: 1px solid var(--color-borde);
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.back-button:hover {
-    background-color: var(--color-borde);
-}
-
-/* ==========================================================================
-   9. BOTONES DE COMPARTIR
-   ========================================================================== */
-
-.card-actions-secondary {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--color-borde);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.share-title {
-    font-size: 0.9rem;
-    font-weight: bold;
-    margin: 0;
-    color: var(--color-texto-secundario);
-}
-
-.share-buttons-container {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.share-btn {
-    background: transparent;
-    border: 1px solid var(--color-borde);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    background: none;
+    border: none;
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    color: var(--color-texto-secundario);
+    z-index: 2010; /* Encima del contenido del modal */
+    line-height: 1;
 }
 
-.share-btn ion-icon {
-    font-size: 1.2rem;
-}
-
-.share-btn:hover,
-.share-btn:focus {
-    background-color: var(--color-fondo-hover);
-    border-color: var(--color-primario);
-    color: var(--color-primario);
-}
-
-/* Specific colors for social media icons on hover */
-.share-btn[data-social="twitter"]:hover {
-    color: #1DA1F2;
-    border-color: #1DA1F2;
-}
-
-.share-btn[data-social="facebook"]:hover {
-    color: #1877F2;
-    border-color: #1877F2;
-}
-
-.share-btn[data-social="whatsapp"]:hover {
-    color: #25D366;
-    border-color: #25D366;
-}
-
-.share-btn[data-social="copy"]:hover {
-    color: var(--color-acento);
-    border-color: var(--color-acento);
-}
-
-/* ==========================================================================
-   10. MAPA
-   ========================================================================== */
-
-#map-container {
-    margin-top: 1rem;
-    border-radius: 12px;
+#modal-map-container {
+    flex-grow: 1;
+    border-radius: 10px;
     overflow: hidden;
-    border: 1px solid var(--color-borde);
-}
-
-/* ==========================================================================
-   11. SPONSORED BANNER & FOOTER
-   ========================================================================== */
-
-.sponsored-banner {
-    margin-bottom: 1rem;
-    text-align: center;
-}
-
-.sponsored-banner span {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--color-texto-secundario);
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.sponsored-banner img {
-    max-width: 100%;
-    border-radius: 8px;
-    border: 1px solid var(--color-borde);
-}
-
-.event-page-footer {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--color-borde);
-    text-align: center;
-    font-size: 0.9rem;
-}
-
-.event-page-footer .ai-disclaimer {
-    color: var(--color-texto-secundario);
-    margin: 0 0 0.5rem 0;
-}
-
-.event-page-footer .business-cta {
-    font-weight: bold;
-    color: var(--color-acento);
-    text-decoration: none;
-}
-
-.event-page-footer .business-cta:hover {
-    text-decoration: underline;
+    height: 100%;
+    width: 100%;
+    background-color: var(--color-borde);
 }

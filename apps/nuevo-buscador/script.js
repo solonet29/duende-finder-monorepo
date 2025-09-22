@@ -108,8 +108,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             const totalEvents = data.total;
             const countUp = new CountUp(counterElement, totalEvents, { prefix: '+', suffix: ' eventos de flamenco verificados', duration: 2.5, separator: '.', useEasing: true });
-            if (!countUp.error) countUp.start();
-            else counterElement.textContent = `+${totalEvents.toLocaleString('es-ES')} eventos de flamenco verificados`;
+            if (!countUp.error) {
+                countUp.start(() => {
+                    setTimeout(() => {
+                        counterElement.classList.add('fading-out');
+                    }, 30000);
+                });
+            } else {
+                counterElement.textContent = `+${totalEvents.toLocaleString('es-ES')} eventos de flamenco verificados`;
+                setTimeout(() => {
+                    counterElement.classList.add('fading-out');
+                }, 30000);
+            }
             counterElement.classList.add('loaded');
         } catch (error) {
             console.error('Error al cargar el contador de eventos:', error);
@@ -177,7 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => modalMapInstance.invalidateSize(), 100);
     }
 
-
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('duende-theme', theme);
@@ -236,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sliders.forEach(slider => {
             if (slider) {
                 const section = slider.closest('.sliders-section');
-                if (section) section.style.display = 'block';
+                if(section) section.style.display = 'block';
                 slider.innerHTML = ''; // Limpiar contenido existente
                 for (let i = 0; i < 5; i++) { // Mostrar 5 tarjetas de esqueleto
                     slider.appendChild(createSkeletonCard());
@@ -328,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventName = sanitizeField(event.name, 'evento');
         eventCard.setAttribute('data-artist-name', artistName);
         eventCard.setAttribute('data-event-name', eventName);
-
+        
         const placeholderUrl = './assets/flamenco-placeholder.png';
         let eventImageUrl = placeholderUrl;
         if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim().startsWith('http')) {
@@ -433,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 style="border: 1px solid var(--color-borde); border-radius: 12px;">
             </iframe>`;
             mapContainer.innerHTML = mapHtml;
-        }
+        } 
 
         window.scrollTo(0, 0); // Scroll to top
 
@@ -466,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
         const blogIcon = event.blogPostUrl ? 'book-outline' : 'newspaper-outline';
         const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
-
+        
         let imageHtml = '';
         if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim().startsWith('http')) {
             imageHtml = `<div class="evento-card-img-container"><img src="${event.imageUrl.trim()}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
@@ -732,7 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Lógica de slug retrocompatible
                             const fallbackSlug = (eventData.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
                             const finalSlug = eventData.slug || fallbackSlug;
-
+                            
                             const url = `/eventos/${eventData._id}-${finalSlug}`;
                             window.location.href = url;
 
@@ -810,6 +819,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tripSearchBtn) {
             tripSearchBtn.addEventListener('click', fetchTripEvents);
         }
+
+        if (showMapBtn) {
+            showMapBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openMapModal();
+            });
+        }
+        if (closeMapModalBtn) {
+            closeMapModalBtn.addEventListener('click', closeMapModal);
+        }
+        if (mapModalOverlay) {
+            mapModalOverlay.addEventListener('click', (e) => {
+                if (e.target === mapModalOverlay) closeMapModal();
+            });
+        }
     }
 
     // =========================================================================
@@ -854,7 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initPushNotifications();
         populateInfoModals();
         handleWelcomeModal();
-
+        
         const isEventPage = await handleInitialPageLoadRouting();
 
         if (!isEventPage) {
