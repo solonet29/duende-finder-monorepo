@@ -153,6 +153,53 @@ document.addEventListener('DOMContentLoaded', () => {
     // ... (el resto de las funciones del script original)
     // (initializeDashboard, renderSlider, renderEventPage, etc.)
 
+        async function renderEventPage(eventId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/events/id/${eventId}`);
+            if (!response.ok) {
+                window.location.href = '/';
+                return;
+            }
+            const event = await response.json();
+            const sliders = document.querySelectorAll('.slider-container, .filter-bar, #monthly-sliders-container');
+            sliders.forEach(el => el.style.display = 'none');
+            mainContainer.innerHTML = '';
+            const eventDetailHTML = `
+                <div class="event-detail-container" style="margin-top: 80px;">
+                    <div class="event-detail-card">
+                        <img src="${event.image}" alt="${event.name}" class="event-detail-image">
+                        <div class="event-detail-info">
+                            <h1>${event.name}</h1>
+                            ${event.artist ? `<h2>${event.artist}</h2>` : ''}
+                            <p><strong>Fecha:</strong> ${new Date(event.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                            <p><strong>Lugar:</strong> ${event.location.name}, ${event.location.city}</p>
+                            <p>${event.description || ''}</p>
+                            ${event.url ? `<a href="${event.url}" target="_blank" class="cta-button">Comprar entradas</a>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            mainContainer.innerHTML = eventDetailHTML;
+        } catch (error) {
+            console.error('Error al cargar la página del evento:', error);
+            window.location.href = '/';
+        }
+    }
+
+    async function handleInitialPageLoadRouting() {
+        if (!APP_CONFIG.USAR_PAGINAS_DE_EVENTOS) {
+            return false;
+        }
+        const path = window.location.pathname;
+        const eventPageMatch = path.match(/^\/eventos\/([a-f0-9]{24})/);
+        if (eventPageMatch && eventPageMatch[1]) {
+            const eventId = eventPageMatch[1];
+            await renderEventPage(eventId);
+            return true;
+        }
+        return false;
+    }
+
     function setupEventListeners() {
         // ... (listeners originales)
         if (showMapBtn) {
