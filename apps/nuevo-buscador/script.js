@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeMapModalBtn = document.getElementById('close-map-modal-btn');
 
     // =========================================================================
-    // 2. DEFINICIÓN DE TODAS LAS FUNCIONES
+    // 2. DEFINICIÓN DE TODAS LAS FUNCIONES generadas
     // =========================================================================
 
     function getSessionId() {
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sliders.forEach(slider => {
             if (slider) {
                 const section = slider.closest('.sliders-section');
-                if(section) section.style.display = 'block';
+                if (section) section.style.display = 'block';
                 slider.innerHTML = ''; // Limpiar contenido existente
                 for (let i = 0; i < 5; i++) { // Mostrar 5 tarjetas de esqueleto
                     slider.appendChild(createSkeletonCard());
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventName = sanitizeField(event.name, 'evento');
         eventCard.setAttribute('data-artist-name', artistName);
         eventCard.setAttribute('data-event-name', eventName);
-        
+
         const placeholderUrl = './assets/flamenco-placeholder.png';
         let eventImageUrl = placeholderUrl;
         if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim().startsWith('http')) {
@@ -442,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 style="border: 1px solid var(--color-borde); border-radius: 12px;">
             </iframe>`;
             mapContainer.innerHTML = mapHtml;
-        } 
+        }
 
         window.scrollTo(0, 0); // Scroll to top
 
@@ -475,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
         const blogIcon = event.blogPostUrl ? 'book-outline' : 'newspaper-outline';
         const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
-        
+
         let imageHtml = '';
         if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim().startsWith('http')) {
             imageHtml = `<div class="evento-card-img-container"><img src="${event.imageUrl.trim()}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
@@ -741,7 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Lógica de slug retrocompatible
                             const fallbackSlug = (eventData.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
                             const finalSlug = eventData.slug || fallbackSlug;
-                            
+
                             const url = `/eventos/${eventData._id}-${finalSlug}`;
                             window.location.href = url;
 
@@ -878,7 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initPushNotifications();
         populateInfoModals();
         handleWelcomeModal();
-        
+
         const isEventPage = await handleInitialPageLoadRouting();
 
         if (!isEventPage) {
