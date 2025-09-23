@@ -589,120 +589,113 @@ header.header-main {
     background-color: var(--color-borde);
 }
 
-/* =============================================== */
-/* MEJORAS DE TEXTO Y BOTONES PARA PÁGINA DE EVENTO */
-/* =============================================== */
+/* =================================================================== */
+/* MEJORAS INTEGRADAS DE TEXTO Y BOTONES PARA PÁGINA DE EVENTO */
+/* =================================================================== */
 
-/* --- 1. Mejoras en la Tipografía --- */
-
-/* Estilo para el contenedor principal del evento */
-.event-details-container {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    /* Una fuente moderna y legible */
-    color: #333;
-    /* Un gris oscuro es más suave para la vista que el negro puro */
-}
+/* --- 1. Mejoras en la Tipografía (Integrado con Variables) --- */
 
 /* Título principal del evento (H1) */
-.event-details-container h1 {
+.event-page-container h1 {
+    font-family: 'Montserrat', sans-serif;
+    /* Usamos una fuente consistente con tus otros H2 */
     font-size: 2.5em;
-    /* Un tamaño más impactante */
     font-weight: 700;
-    /* Más grueso para destacar */
     margin-bottom: 20px;
-    /* Más espacio debajo del título */
+    color: var(--color-texto-principal);
+    /* Usa la variable de tu tema */
 }
 
 /* Títulos de sección (H2) */
-.event-details-container h2 {
+.event-page-container h2 {
+    font-family: 'Montserrat', sans-serif;
     font-size: 1.8em;
     font-weight: 600;
     margin-top: 40px;
-    /* Más espacio arriba para separar secciones */
     margin-bottom: 15px;
-    border-bottom: 2px solid #f0f0f0;
-    /* Un sutil separador visual */
+    border-bottom: 2px solid var(--color-borde);
+    /* Usa la variable de tu tema */
     padding-bottom: 8px;
+    color: var(--color-texto-principal);
+    /* Usa la variable de tu tema */
 }
 
 /* Párrafos de texto */
-.event-details-container p {
+.event-page-container p {
     font-size: 1.1em;
-    /* Ligeramente más grande para facilitar la lectura */
     line-height: 1.7;
-    /* Aumenta el espacio entre líneas, clave para la legibilidad */
+    /* Aumenta el espacio entre líneas para legibilidad */
     margin-bottom: 1em;
+    color: var(--color-texto-secundario);
+    /* Usa la variable de texto secundario para el cuerpo */
 }
 
 
-/* --- 2. Mejoras en los Botones --- */
+/* --- 2. Mejoras en los Botones (Integrado con Variables) --- */
 
 /* Contenedor de los botones para alinearlos */
 .event-buttons {
     display: flex;
     gap: 15px;
-    /* Espacio entre los botones */
     margin-top: 30px;
     flex-wrap: wrap;
-    /* Para que se ajusten en móviles */
 }
 
 /* Estilo base para todos los botones del evento */
 .event-button {
     padding: 12px 24px;
-    /* Más espacio interior para un área de clic más grande */
     border: 2px solid transparent;
-    /* Borde transparente por defecto */
     border-radius: 8px;
-    /* Bordes redondeados, más modernos */
     font-size: 1em;
     font-weight: bold;
     text-transform: uppercase;
-    /* Texto en mayúsculas para un look de "acción" */
     cursor: pointer;
     transition: all 0.3s ease;
-    /* Transición suave para todos los efectos */
     text-decoration: none;
-    /* Quitar subrayado si son enlaces */
     display: inline-block;
     text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Botón Principal (Comprar Entradas) */
 .event-button.primary {
-    background-color: #E60023;
-    /* Un color rojo vibrante y llamativo */
+    background-color: var(--color-acento);
+    /* Usa tu color de acento principal */
     color: white;
+    /* El blanco suele funcionar bien sobre el color de acento */
 }
 
 .event-button.primary:hover,
 .event-button.primary:focus {
-    background-color: #C0001D;
-    /* Un tono más oscuro al pasar el ratón */
+    filter: brightness(1.15);
+    /* Aclara ligeramente el color de acento */
     transform: translateY(-2px);
-    /* Un sutil efecto de elevación */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    /* Sombra para destacar */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Botón Secundario (Cómo llegar, etc.) */
 .event-button.secondary {
-    background-color: #f0f0f0;
-    /* Un fondo neutro */
-    color: #333;
-    border: 2px solid #ddd;
+    background-color: var(--color-superficie);
+    /* Usa el color de superficie */
+    color: var(--color-texto-principal);
+    /* Usa el color de texto principal */
+    border: 2px solid var(--color-borde);
+    /* Usa el color de borde */
 }
 
 .event-button.secondary:hover,
 .event-button.secondary:focus {
-    background-color: #e0e0e0;
-    border-color: #ccc;
+    background-color: var(--color-borde);
+    /* Cambia al color de borde para un efecto sutil */
+    border-color: var(--color-texto-secundario);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Estado :active para cuando se hace clic */
 .event-button:active {
     transform: translateY(0);
-    box-shadow: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    filter: brightness(1);
+    /* Resetea el brillo al hacer clic */
 }
