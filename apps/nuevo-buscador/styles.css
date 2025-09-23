@@ -77,7 +77,7 @@ body {
 
 .hero-header {
     position: relative;
-    background-image: url('./public/assets/img_header.png');
+    background-image: url('/assets/img_header.png');
     background-size: cover;
     background-position: center;
     width: 100%;
@@ -686,7 +686,7 @@ header.header-main {
     color: var(--color-texto-principal);
     /* Usa el color de texto principal */
     border: 2px solid var(--color-borde);
-    /* Usa el color de borde */
+    /* Usa la variable de borde */
 }
 
 .event-button.secondary:hover,
@@ -704,4 +704,115 @@ header.header-main {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     filter: brightness(1);
     /* Resetea el brillo al hacer clic */
+}
+
+/* =================================================================== */
+/* FIX: ESTILOS DE PÁGINA DE EVENTO Y FOOTER VISIBLE */
+/* =================================================================== */
+
+/* --- Tarea 1: Restaurar y unificar los estilos de los botones y el texto --- */
+
+/* Estilo base para botones de acción principales */
+.event-page-container .gemini-btn,
+.event-page-container .blog-link-btn,
+.event-page-container .btn-blog-explorar {
+    padding: 12px 24px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo primario */
+.event-page-container .gemini-btn,
+.event-page-container .blog-link-btn,
+.event-page-container .btn-blog-explorar {
+    background-color: var(--color-acento);
+    color: white;
+}
+
+/* Efectos Hover/Focus para primarios */
+.event-page-container .gemini-btn:hover,
+.event-page-container .gemini-btn:focus,
+.event-page-container .blog-link-btn:hover,
+.event-page-container .blog-link-btn:focus,
+.event-page-container .btn-blog-explorar:hover,
+.event-page-container .btn-blog-explorar:focus {
+    filter: brightness(1.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilo para botones de compartir (secundario) */
+.event-page-container .share-btn {
+    padding: 10px;
+    border: 2px solid var(--color-borde);
+    border-radius: 50%;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-superficie);
+    color: var(--color-texto-principal);
+    width: 44px;
+    height: 44px;
+}
+
+/* Efectos Hover/Focus para secundarios */
+.event-page-container .share-btn:hover,
+.event-page-container .share-btn:focus {
+    background-color: var(--color-borde);
+    border-color: var(--color-texto-secundario);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Restauración de Tipografía --- */
+/* Se asume que los estilos existentes para h1, h2 y p son correctos pero necesitan mayor especificidad si están rotos. */
+/* Si los estilos base se han eliminado, habría que re-declararlos aquí. */
+.event-page-container h1.titulo-truncado {
+    font-size: 2.5em !important;
+}
+
+.event-page-container h2 {
+    font-size: 1.8em !important;
+}
+
+.event-page-container p {
+    font-size: 1.1em !important;
+    line-height: 1.7;
+}
+
+
+/* --- Tarea 2: Asegurar la visibilidad permanente del footer --- */
+
+/* Contenedor principal de la página de evento */
+.event-page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 150px); /* Aproximación para header y nav. Ajustar si es necesario. */
+}
+
+/* Empujar el footer hacia abajo */
+.event-page-container .event-page-footer {
+    margin-top: auto;
+    padding-top: 20px;
+}
+
+/* FIX: Hacer que el contenido del modal de Gemini sea desplazable */
+#gemini-modal-overlay .modal-content {
+    max-height: 70vh; /* Limitar la altura al 70% de la altura de la ventana */
+    overflow-y: auto; /* Añadir barra de desplazamiento vertical cuando sea necesario */
 }
