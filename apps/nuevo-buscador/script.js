@@ -129,13 +129,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openMapModal() {
         if (!mapModalOverlay) return;
-        const visibleEvents = getAllVisibleEvents();
-        if (visibleEvents.length === 0) {
-            alert('No hay eventos para mostrar en el mapa.');
+        const eventsToShow = getEventsForMap();
+        if (eventsToShow.length === 0) {
+            alert('No hay eventos para mostrar en el mapa para el filtro actual.');
             return;
         }
         mapModalOverlay.classList.add('visible');
-        initializeModalMap(visibleEvents);
+        // Forzamos la invalidación del tamaño del mapa un poco después de que el modal sea visible
+        setTimeout(() => initializeModalMap(eventsToShow), 10);
     }
 
     function closeMapModal() {
@@ -144,47 +145,93 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function getAllVisibleEvents() {
-        const eventCards = document.querySelectorAll('.slider-container .event-card');
-        const visibleEventIds = new Set();
-        eventCards.forEach(card => {
-            if (card.offsetParent !== null) {
-                const eventId = card.dataset.eventId;
-                if (eventId) visibleEventIds.add(eventId);
+    function getEventsForMap() {
+        const activeFilter = document.querySelector('.filter-bar .filter-chip.active');
+        let sliderId;
+
+        if (activeFilter) {
+            const filterHref = activeFilter.getAttribute('href');
+            if (filterHref && filterHref.startsWith('#')) {
+                const sectionId = filterHref.substring(1);
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    const slider = section.querySelector('.slider-container');
+                    if (slider) {
+                        sliderId = slider.id;
+                    }
+                }
+            } else if (activeFilter.dataset.filter === 'cerca') {
+                sliderId = 'nearby-events-slider';
             }
-        });
-        return Array.from(visibleEventIds).map(id => eventsCache[id]).filter(Boolean);
+        }
+
+        if (!sliderId) {
+            // Fallback a los eventos destacados si no hay filtro activo
+            sliderId = 'featured-events-slider';
+        }
+        
+        const slider = document.getElementById(sliderId);
+        if (!slider) return [];
+
+        const eventCards = slider.querySelectorAll('.event-card');
+        const eventIds = Array.from(eventCards).map(card => card.dataset.eventId);
+        
+        return eventIds.map(id => eventsCache[id]).filter(Boolean);
     }
 
     function initializeModalMap(events) {
         const mapContainer = document.getElementById('modal-map-container');
         if (!mapContainer) return;
+
+        // Si el mapa no está inicializado, créalo
         if (!modalMapInstance) {
-            modalMapInstance = L.map(mapContainer).setView([40.416775, -3.703790], 5);
+            modalMapInstance = L.map(mapContainer).setView([40.416775, -3.703790], 5); // Vista inicial de España
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(modalMapInstance);
         }
-        modalMapInstance.eachLayer(layer => { if (layer instanceof L.Marker) modalMapInstance.removeLayer(layer); });
+
+        // Limpiar marcadores anteriores
+        modalMapInstance.eachLayer(layer => {
+            if (layer instanceof L.Marker) {
+                modalMapInstance.removeLayer(layer);
+            }
+        });
+
         const markers = [];
         events.forEach(event => {
             if (event.location?.coordinates?.length === 2) {
                 const [lon, lat] = event.location.coordinates;
-                const marker = L.marker([lat, lon]).addTo(modalMapInstance);
-                marker.bindPopup(`<b>${event.name}</b><br>${event.artist || ''}`);
-                marker.on('click', () => {
-                    const fallbackSlug = (event.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-                    const finalSlug = event.slug || fallbackSlug;
-                    window.location.href = `/eventos/${event._id}-${finalSlug}`;
-                });
-                markers.push(marker);
+                // Asegurarse de que las coordenadas son números válidos
+                if (typeof lat === 'number' && typeof lon === 'number') {
+                    const marker = L.marker([lat, lon]);
+                    marker.bindPopup(`<b>${event.name}</b><br>${event.artist || ''}`);
+                    marker.on('click', () => {
+                        // Cerrar el modal del mapa y navegar a la página del evento
+                        closeMapModal();
+                        const fallbackSlug = (event.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                        const finalSlug = event.slug || fallbackSlug;
+                        window.location.href = `/eventos/${event._id}-${finalSlug}`;
+                    });
+                    markers.push(marker);
+                }
             }
         });
+
         if (markers.length > 0) {
-            const group = new L.featureGroup(markers);
+            // Añadir todos los marcadores al mapa a la vez
+            const group = new L.featureGroup(markers).addTo(modalMapInstance);
+            // Ajustar el zoom para que todos los marcadores sean visibles
             modalMapInstance.fitBounds(group.getBounds().pad(0.1));
+        } else {
+            // Si no hay marcadores, centrar el mapa en una vista por defecto
+            modalMapInstance.setView([40.416775, -3.703790], 5);
         }
-        setTimeout(() => modalMapInstance.invalidateSize(), 100);
+
+        // Forzar al mapa a recalcular su tamaño. Esencial cuando se muestra en un modal.
+        setTimeout(() => {
+            modalMapInstance.invalidateSize();
+        }, 10); // Un pequeño retardo para asegurar que el modal es visible
     }
 
     function applyTheme(theme) {
@@ -302,7 +349,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (section) section.style.display = 'block';
         container.innerHTML = '';
-        events.forEach(event => container.appendChild(createSliderCard(event)));
+        events.forEach(event => {
+            eventsCache[event._id] = event;
+            container.appendChild(createSliderCard(event));
+        });
     }
 
     function renderMonthlySliders(monthlyGroups) {
@@ -322,7 +372,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title.textContent = titleText;
             const sliderContainer = document.createElement('div');
             sliderContainer.className = 'slider-container';
-            events.forEach(event => sliderContainer.appendChild(createSliderCard(event)));
+            sliderContainer.id = `slider-month-${monthKey}`;
+            events.forEach(event => {
+                eventsCache[event._id] = event;
+                sliderContainer.appendChild(createSliderCard(event));
+            });
             section.appendChild(title);
             section.appendChild(sliderContainer);
             monthlySlidersContainer.appendChild(section);
