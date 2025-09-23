@@ -39,6 +39,14 @@
         <div class="hero-text">
             <h1 class="main-title">Duende Finder</h1>
             <p id="event-stats" class="hero-subtitle">Cargando eventos...</p>
+            <!-- Search Bar Start -->
+            <form class="search-bar-container" id="header-search-form">
+                <input type="text" id="header-search-input" class="search-input" placeholder="Buscar artistas, ciudades, tablaos...">
+                <button type="submit" class="search-button">
+                    <ion-icon name="search-outline"></ion-icon>
+                </button>
+            </form>
+            <!-- Search Bar End -->
         </div>
     </div>
 
@@ -171,6 +179,21 @@
     </nav>
     <script type="module" src="script.js"></script>
     <script type="module" src="chatbot.js"></script>
+    <script type="module" src="search.js"></script>
+
+    <!-- Search Modal Start -->
+    <div id="search-modal-overlay" class="modal-overlay search-modal-overlay">
+        <div class="search-modal">
+            <div class="search-modal-header">
+                <input type="text" id="modal-search-input" class="search-input-modal" placeholder="Buscar artistas, ciudades, tablaos...">
+                <button id="search-modal-close-btn" class="modal-close-btn">&times;</button>
+            </div>
+            <div id="search-results-container" class="search-results-container">
+                <!-- Results will be injected here -->
+            </div>
+        </div>
+    </div>
+    <!-- Search Modal End -->
 
 </body>
 
