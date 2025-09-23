@@ -198,7 +198,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Asegurarse de que las coordenadas son números válidos
                 if (typeof lat === 'number' && typeof lon === 'number') {
                     const marker = L.marker([lat, lon]);
-                    marker.bindPopup(`<b>${event.name}</b><br>${event.artist || ''}`);
+                    const popupContent = `<b>${event.artist || event.name}</b><br>${new Date(event.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`;
+                    marker.bindPopup(popupContent);
+
+                    marker.on('mouseover', function (e) {
+                        this.openPopup();
+                    });
+                    marker.on('mouseout', function (e) {
+                        this.closePopup();
+                    });
+
                     marker.on('click', () => {
                         // Cerrar el modal del mapa y navegar a la página del evento
                         closeMapModal();
