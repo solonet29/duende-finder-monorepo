@@ -82,7 +82,7 @@ body {
     background-position: center;
     width: 100%;
     height: 0;
-    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    padding-bottom: 34.64%; /* Aspect ratio 665/1920 */
 }
 
 .hero-header::before {
