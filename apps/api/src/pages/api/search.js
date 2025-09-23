@@ -1,7 +1,11 @@
 
-import { getDb } from '../../../../lib/database';
+import { getDb } from '@/lib/database';
+import { runMiddleware, corsMiddleware } from '@/lib/cors';
 
 export default async function handler(req, res) {
+  // Ejecutar el middleware de CORS
+  await runMiddleware(req, res, corsMiddleware);
+
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
