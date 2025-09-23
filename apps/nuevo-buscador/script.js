@@ -303,32 +303,26 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const userLocationPromise = getUserLocation().catch(() => null);
 
-            const [circuitoData, weekData, todayData, allEventsData] = await Promise.all([
-                fetch(`${API_BASE_URL}/api/events?q=Circuito Andaluz de Peñas 2025&limit=100`).then(res => res.json()),
+            const [featuredData, weekData, todayData, allEventsData] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/events?featured=true&limit=10`).then(res => res.json()),
                 fetch(`${API_BASE_URL}/api/events?timeframe=week&limit=10`).then(res => res.json()),
                 fetch(`${API_BASE_URL}/api/events?timeframe=today&limit=10`).then(res => res.json()),
                 fetch(`${API_BASE_URL}/api/events?sort=date`).then(res => res.json())
             ]);
 
             const userLocation = await userLocationPromise;
-            let circuitoEvents = circuitoData?.events || [];
+            let featuredEvents = featuredData?.events || [];
+            let weekEvents = weekData?.events || [];
+            let todayEvents = todayData?.events || [];
 
-            if (userLocation && circuitoEvents.length > 0) {
-                const { latitude, longitude } = userLocation.coords;
-                circuitoEvents.forEach(event => {
-                    if (event.location?.coordinates?.length === 2) {
-                        const [eventLon, eventLat] = event.location.coordinates;
-                        event.distance = calculateDistance(latitude, longitude, eventLat, eventLon);
-                    } else {
-                        event.distance = Infinity;
-                    }
-                });
-                circuitoEvents.sort((a, b) => a.distance - b.distance);
-            }
+            const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
+            featuredEvents.sort(sortByDate);
+            weekEvents.sort(sortByDate);
+            todayEvents.sort(sortByDate);
 
-            renderSlider(featuredSlider, circuitoEvents);
-            renderSlider(weekSlider, weekData?.events);
-            renderSlider(todaySlider, todayData?.events);
+            renderSlider(featuredSlider, featuredEvents);
+            renderSlider(weekSlider, weekEvents);
+            renderSlider(todaySlider, todayEvents);
 
             if (allEventsData?.events) {
                 const monthlyGroups = groupEventsByMonth(allEventsData.events);

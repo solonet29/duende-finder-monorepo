@@ -78,7 +78,7 @@ body {
 .hero-header {
     position: relative;
     padding: 4rem 1rem;
-    background: url('./assets/img_header.png') no-repeat center center;
+    background: url('/assets/img_header.png') no-repeat center center;
     background-size: cover;
     text-align: center;
 }
