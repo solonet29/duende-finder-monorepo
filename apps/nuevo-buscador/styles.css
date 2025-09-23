@@ -822,3 +822,32 @@ header.header-main {
 [data-theme="dark"] .evento-detalle a {
     color: white;
 }
+
+/* ==========================================================================
+   SKELETON LOADER
+   ========================================================================== */
+.skeleton {
+    background-color: var(--color-borde);
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 150%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+    animation: skeleton-shine 1.5s infinite;
+}
+
+@keyframes skeleton-shine {
+    0% {
+        left: -150%;
+    }
+    100% {
+        left: 150%;
+    }
+}
