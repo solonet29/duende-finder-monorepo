@@ -109,16 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const totalEvents = data.total;
             const countUp = new CountUp(counterElement, totalEvents, { prefix: '+', suffix: ' eventos de flamenco verificados', duration: 2.5, separator: '.', useEasing: true });
             if (!countUp.error) {
-                countUp.start(() => {
-                    setTimeout(() => {
-                        counterElement.classList.add('fading-out');
-                    }, 30000);
-                });
+                countUp.start();
             } else {
                 counterElement.textContent = `+${totalEvents.toLocaleString('es-ES')} eventos de flamenco verificados`;
-                setTimeout(() => {
-                    counterElement.classList.add('fading-out');
-                }, 30000);
             }
             counterElement.classList.add('loaded');
         } catch (error) {
