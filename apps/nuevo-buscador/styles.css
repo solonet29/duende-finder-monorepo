@@ -77,7 +77,8 @@ body {
 
 .hero-header {
     position: relative;
-    line-height: 0; /* Remove space below image */
+    line-height: 0;
+    /* Remove space below image */
 }
 
 .hero-header img {
@@ -175,7 +176,8 @@ header.header-main {
 /* ==========================================================================
    4. SLIDERS Y PLANIFICADOR
    ========================================================================== */
-.sliders-section, .trip-planner-section {
+.sliders-section,
+.trip-planner-section {
     width: 100%;
     margin: 30px 0;
 }
@@ -221,7 +223,8 @@ header.header-main {
 }
 
 .trip-planner-section.active .trip-planner-content {
-    max-height: 1000px; /* Large enough value */
+    max-height: 1000px;
+    /* Large enough value */
 }
 
 .trip-planner-form {
@@ -288,7 +291,8 @@ header.header-main {
 }
 
 .slider-container .event-card {
-    flex: 0 0 280px; /* Aumentamos el tamaño de la tarjeta */
+    flex: 0 0 280px;
+    /* Aumentamos el tamaño de la tarjeta */
     width: 280px;
     scroll-snap-align: start;
 }
@@ -305,7 +309,7 @@ header.header-main {
 
 .event-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
 .event-card .card-image {
@@ -336,7 +340,8 @@ header.header-main {
     line-clamp: 2;
     -webkit-box-orient: vertical;
     line-height: 1.3;
-    height: 2.6em; /* 2 lines * 1.3 line-height */
+    height: 2.6em;
+    /* 2 lines * 1.3 line-height */
 }
 
 /* ==========================================================================
@@ -386,7 +391,7 @@ header.header-main {
     width: 90%;
     max-width: 600px;
     position: relative;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     border: 1px solid var(--color-borde);
 }
 
@@ -407,7 +412,7 @@ header.header-main {
     width: 90%;
     max-width: 600px;
     position: relative;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     border: 1px solid var(--color-borde);
 }
 
@@ -437,14 +442,15 @@ header.header-main {
     padding: 10px 0;
     z-index: 1000;
     border-top: 1px solid var(--color-borde);
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .nav-btn {
     background: none;
     border: none;
     color: var(--color-texto-secundario);
-    font-size: 1.5rem; /* Icon size */
+    font-size: 1.5rem;
+    /* Icon size */
     padding: 5px 10px;
     border-radius: 8px;
     cursor: pointer;
@@ -465,7 +471,8 @@ header.header-main {
 
 .event-page-container .evento-card-img-container {
     width: 100%;
-    max-height: 400px; /* Límite de altura para la imagen */
+    max-height: 400px;
+    /* Límite de altura para la imagen */
     overflow: hidden;
     border-radius: 12px;
     margin-bottom: 20px;
@@ -474,7 +481,8 @@ header.header-main {
 .event-page-container .evento-card-img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* La imagen cubre el contenedor sin deformarse */
+    object-fit: cover;
+    /* La imagen cubre el contenedor sin deformarse */
     display: block;
 }
 
@@ -494,10 +502,23 @@ header.header-main {
 }
 
 @keyframes bounce-in {
-    0% { transform: scale(0.5); opacity: 0; }
-    60% { transform: scale(1.1); opacity: 1; }
-    80% { transform: scale(0.95); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    80% {
+        transform: scale(0.95);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* ==========================================================================
@@ -554,7 +575,8 @@ header.header-main {
     background: none;
     border: none;
     cursor: pointer;
-    z-index: 2010; /* Encima del contenido del modal */
+    z-index: 2010;
+    /* Encima del contenido del modal */
     line-height: 1;
 }
 
@@ -565,4 +587,122 @@ header.header-main {
     height: 100%;
     width: 100%;
     background-color: var(--color-borde);
+}
+
+/* =============================================== */
+/* MEJORAS DE TEXTO Y BOTONES PARA PÁGINA DE EVENTO */
+/* =============================================== */
+
+/* --- 1. Mejoras en la Tipografía --- */
+
+/* Estilo para el contenedor principal del evento */
+.event-details-container {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    /* Una fuente moderna y legible */
+    color: #333;
+    /* Un gris oscuro es más suave para la vista que el negro puro */
+}
+
+/* Título principal del evento (H1) */
+.event-details-container h1 {
+    font-size: 2.5em;
+    /* Un tamaño más impactante */
+    font-weight: 700;
+    /* Más grueso para destacar */
+    margin-bottom: 20px;
+    /* Más espacio debajo del título */
+}
+
+/* Títulos de sección (H2) */
+.event-details-container h2 {
+    font-size: 1.8em;
+    font-weight: 600;
+    margin-top: 40px;
+    /* Más espacio arriba para separar secciones */
+    margin-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+    /* Un sutil separador visual */
+    padding-bottom: 8px;
+}
+
+/* Párrafos de texto */
+.event-details-container p {
+    font-size: 1.1em;
+    /* Ligeramente más grande para facilitar la lectura */
+    line-height: 1.7;
+    /* Aumenta el espacio entre líneas, clave para la legibilidad */
+    margin-bottom: 1em;
+}
+
+
+/* --- 2. Mejoras en los Botones --- */
+
+/* Contenedor de los botones para alinearlos */
+.event-buttons {
+    display: flex;
+    gap: 15px;
+    /* Espacio entre los botones */
+    margin-top: 30px;
+    flex-wrap: wrap;
+    /* Para que se ajusten en móviles */
+}
+
+/* Estilo base para todos los botones del evento */
+.event-button {
+    padding: 12px 24px;
+    /* Más espacio interior para un área de clic más grande */
+    border: 2px solid transparent;
+    /* Borde transparente por defecto */
+    border-radius: 8px;
+    /* Bordes redondeados, más modernos */
+    font-size: 1em;
+    font-weight: bold;
+    text-transform: uppercase;
+    /* Texto en mayúsculas para un look de "acción" */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    /* Transición suave para todos los efectos */
+    text-decoration: none;
+    /* Quitar subrayado si son enlaces */
+    display: inline-block;
+    text-align: center;
+}
+
+/* Botón Principal (Comprar Entradas) */
+.event-button.primary {
+    background-color: #E60023;
+    /* Un color rojo vibrante y llamativo */
+    color: white;
+}
+
+.event-button.primary:hover,
+.event-button.primary:focus {
+    background-color: #C0001D;
+    /* Un tono más oscuro al pasar el ratón */
+    transform: translateY(-2px);
+    /* Un sutil efecto de elevación */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    /* Sombra para destacar */
+}
+
+/* Botón Secundario (Cómo llegar, etc.) */
+.event-button.secondary {
+    background-color: #f0f0f0;
+    /* Un fondo neutro */
+    color: #333;
+    border: 2px solid #ddd;
+}
+
+.event-button.secondary:hover,
+.event-button.secondary:focus {
+    background-color: #e0e0e0;
+    border-color: #ccc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estado :active para cuando se hace clic */
+.event-button:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
