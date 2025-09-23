@@ -77,14 +77,14 @@ body {
 
 .hero-header {
     position: relative;
-    line-height: 0;
-    /* Remove space below image */
-}
-
-.hero-header img {
-    width: 100%;
-    height: auto;
-    display: block;
+    background-image: url('./assets/flamenco-placeholder.png');
+    background-size: cover;
+    background-position: center;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .hero-header::before {
@@ -99,20 +99,24 @@ body {
 }
 
 .hero-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    text-align: center;
+    position: relative;
     z-index: 2;
     line-height: 1.4;
+    color: white;
+    padding: 0 20px;
 }
 
 .hero-header .main-title {
     color: #ffffff;
     margin: 0;
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.hero-subtitle {
+    color: #ffffff;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
 }
 
 header.header-main {

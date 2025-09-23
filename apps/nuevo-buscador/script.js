@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function displayEventCount() {
-        const counterElement = document.getElementById('event-counter');
+        const counterElement = document.getElementById('event-stats');
         if (!counterElement) return;
         try {
             const response = await fetch(`${API_BASE_URL}/api/events/count`);
