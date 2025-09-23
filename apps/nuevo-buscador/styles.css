@@ -816,3 +816,9 @@ header.header-main {
     max-height: 70vh; /* Limitar la altura al 70% de la altura de la ventana */
     overflow-y: auto; /* Añadir barra de desplazamiento vertical cuando sea necesario */
 }
+
+/* FIX: Textos en modo oscuro */
+[data-theme="dark"] .event-page-nav .back-button,
+[data-theme="dark"] .evento-detalle a {
+    color: white;
+}
