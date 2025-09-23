@@ -74,6 +74,32 @@ body {
 /* ==========================================================================
    3. CABECERA Y TÍTULO
    ========================================================================== */
+
+.hero-header {
+    position: relative;
+    padding: 4rem 1rem;
+    background: url('./assets/img_header.png') no-repeat center center;
+    background-size: cover;
+    text-align: center;
+}
+
+.hero-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.hero-header .main-title {
+    position: relative;
+    color: #ffffff;
+    margin: 0;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+}
+
 header.header-main {
     position: sticky;
     top: 0;
@@ -147,11 +173,41 @@ header.header-main {
     border: 1px solid var(--color-borde);
 }
 
-.trip-planner-section h2, .sliders-section h2 {
+.sliders-section h2 {
     margin-top: 0;
     margin-bottom: 20px;
     font-family: 'Montserrat', sans-serif;
     font-size: 1.6rem;
+}
+
+.trip-planner-section h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.6rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.trip-planner-section h2 ion-icon {
+    transition: transform 0.3s ease;
+    font-size: 1.4rem;
+}
+
+.trip-planner-section.active h2 ion-icon {
+    transform: rotate(180deg);
+}
+
+.trip-planner-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+}
+
+.trip-planner-section.active .trip-planner-content {
+    max-height: 1000px; /* Large enough value */
 }
 
 .trip-planner-form {
@@ -263,6 +319,7 @@ header.header-main {
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     line-height: 1.3;
     height: 2.6em; /* 2 lines * 1.3 line-height */
@@ -409,10 +466,10 @@ header.header-main {
 
 .subtitle-counter {
     text-align: center;
-    margin-top: -10px;
+    margin-top: 0;
     margin-bottom: 20px;
     font-size: 0.9em;
-    color: #888;
+    color: var(--color-texto-secundario);
     opacity: 0;
     transition: opacity 1s ease-out; /* Añadido para el fade-out */
 }

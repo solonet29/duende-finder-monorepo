@@ -870,6 +870,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (navHowItWorksBtn) navHowItWorksBtn.addEventListener('click', () => howItWorksModal?.classList.add('visible'));
         if (navTermsBtn) navTermsBtn.addEventListener('click', () => termsModal?.classList.add('visible'));
+        
+        const tripPlannerToggle = document.getElementById('trip-planner-toggle');
+        if (tripPlannerToggle) {
+            tripPlannerToggle.addEventListener('click', () => {
+                const tripPlannerSection = document.getElementById('trip-planner-section');
+                tripPlannerSection.classList.toggle('active');
+            });
+        }
+
         if (tripSearchBtn) {
             tripSearchBtn.addEventListener('click', fetchTripEvents);
         }

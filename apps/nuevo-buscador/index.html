@@ -33,6 +33,10 @@
 
 <body>
 
+    <div class="hero-header">
+        <h1 class="main-title">Duende Finder</h1>
+    </div>
+
     <div id="welcome-modal-overlay" class="modal-overlay">
         <div class="modal">
             <div class="modal-content welcome-modal-content">
@@ -66,28 +70,32 @@
     </header>
 
     <main class="container">
-        <h1 class="main-title">Duende Finder</h1>
         <p id="event-counter" class="subtitle-counter">Cargando eventos...</p>
 
         <section id="trip-planner-section" class="trip-planner-section">
-            <h2>Planificador de Viaje 🗺️</h2>
-            <div class="trip-planner-form">
-                <div class="form-group">
-                    <label for="trip-city">Destino</label>
-                    <input type="text" id="trip-city" placeholder="Escribe una ciudad o región...">
+            <h2 id="trip-planner-toggle">
+                Planificador de Viaje 🗺️
+                <ion-icon name="chevron-down-outline"></ion-icon>
+            </h2>
+            <div id="trip-planner-content" class="trip-planner-content">
+                <div class="trip-planner-form">
+                    <div class="form-group">
+                        <label for="trip-city">Destino</label>
+                        <input type="text" id="trip-city" placeholder="Escribe una ciudad o región...">
+                    </div>
+                    <div class="form-group">
+                        <label for="trip-start-date">Desde</label>
+                        <input type="date" id="trip-start-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="trip-end-date">Hasta</label>
+                        <input type="date" id="trip-end-date">
+                    </div>
+                    <button id="trip-search-btn">Buscar Eventos</button>
                 </div>
-                <div class="form-group">
-                    <label for="trip-start-date">Desde</label>
-                    <input type="date" id="trip-start-date">
-                </div>
-                <div class="form-group">
-                    <label for="trip-end-date">Hasta</label>
-                    <input type="date" id="trip-end-date">
-                </div>
-                <button id="trip-search-btn">Buscar Eventos</button>
+                <div class="slider-container" id="trip-results-slider" style="display: none;"></div>
+                <p id="trip-results-message" class="results-message" style="display: none;"></p>
             </div>
-            <div class="slider-container" id="trip-results-slider" style="display: none;"></div>
-             <p id="trip-results-message" class="results-message" style="display: none;"></p>
         </section>
 
         <section id="destacados-section" class="sliders-section">
