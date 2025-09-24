@@ -1,112 +1,119 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // --- ELEMENTOS DEL DOM ---
-    const headerSearchForm = document.getElementById('header-search-form');
-    const headerSearchInput = document.getElementById('header-search-input');
-    const searchModalOverlay = document.getElementById('search-modal-overlay');
-    const modalSearchInput = document.getElementById('modal-search-input');
-    const searchModalCloseBtn = document.getElementById('search-modal-close-btn');
-    const searchResultsContainer = document.getElementById('search-results-container');
+import { MongoClient } from 'mongodb';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-    const API_BASE_URL = 'https://api-v2.afland.es';
+const uri = process.env.MONGO_URI;
+const client = new MongoClient(uri);
 
-    // --- LÓGICA DE DEBOUNCE ---
-    let debounceTimer;
-    function debounce(func, delay) {
-        return function(...args) {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                func.apply(this, args);
-            }, delay);
-        };
+// Inicialización de la IA de Gemini
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+async function getAiSynonyms(searchTerm) {
+    if (!searchTerm) return null;
+
+    const prompt = `Actúa como un lexicógrafo y experto en la cultura flamenca. Un usuario ha buscado el término "${searchTerm}" en un buscador de eventos de flamenco y no ha obtenido resultados. Tu tarea es generar una lista de 3 a 5 términos de búsqueda alternativos, sinónimos o conceptos relacionados que probablemente devuelvan resultados relevantes. Devuelve únicamente los términos, separados por comas.`;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        // Limpiamos la respuesta para devolver un array de strings
+        return text.split(',').map(term => term.trim()).filter(term => term);
+    } catch (error) {
+        console.error("Error fetching synonyms from AI:", error);
+        return null;
+    }
+}
+
+export default async function handler(req, res) {
+    if (req.method !== 'GET') {
+        return res.status(405).json({ message: 'Method not allowed' });
     }
 
-    // --- MANEJO DEL MODAL ---
-    function openModal() {
-        searchModalOverlay.classList.add('visible');
-        modalSearchInput.focus();
+    const searchTerm = req.query.q;
+    if (!searchTerm) {
+        return res.status(400).json({ message: 'Search term is required' });
     }
 
-    function closeModal() {
-        searchModalOverlay.classList.remove('visible');
-    }
+    try {
+        await client.connect();
+        const db = client.db('DuendeDB');
+        const synonymsCollection = db.collection('synonyms');
+        const eventsCollection = db.collection('events');
 
-    // --- LLAMADA A LA API Y RENDERIZADO ---
-    async function performSearch(query) {
-        if (!query || query.length < 2) {
-            searchResultsContainer.innerHTML = '<p class="search-feedback">Escribe algo para buscar...</p>';
-            return;
+        let finalSearchQuery = searchTerm;
+        const synonymDoc = await synonymsCollection.findOne({
+            mappingType: "equivalent",
+            synonyms: searchTerm.toLowerCase()
+        });
+
+        if (synonymDoc) {
+            finalSearchQuery = synonymDoc.synonyms.join(' | ');
+            console.log(`Synonym found. New query: ${finalSearchQuery}`);
         }
 
-        searchResultsContainer.innerHTML = '<p class="search-feedback">Buscando...</p>';
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`);
-            if (!response.ok) {
-                throw new Error(`Error en la petición: ${response.statusText}`);
+        const pipeline = [
+            {
+                $search: {
+                    index: 'buscador', // O el nombre de tu índice principal
+                    text: {
+                        query: finalSearchQuery,
+                        path: {
+                            wildcard: '*.text'
+                        },
+                        fuzzy: {
+                            maxEdits: 2,
+                            prefixLength: 3
+                        }
+                    }
+                }
+            },
+            { $limit: 50 },
+            {
+                $project: {
+                    _id: 1, title: 1, artist: 1, date: 1, city: 1, country: 1, url: 1, imageUrl: 1,
+                    score: { $meta: 'searchScore' }
+                }
             }
-            const results = await response.json();
-            renderResults(results);
-        } catch (error) {
-            console.error('Error al buscar:', error);
-            searchResultsContainer.innerHTML = '<p class="search-feedback">Error al conectar con el buscador. Inténtalo de nuevo.</p>';
+        ];
+
+        let results = await eventsCollection.aggregate(pipeline).toArray();
+
+        if (results.length === 0 && searchTerm.length > 3) {
+            console.log(`Initial search for "${searchTerm}" failed. Triggering AI rescue...`);
+            const alternativeTerms = await getAiSynonyms(searchTerm);
+
+            if (alternativeTerms && alternativeTerms.length > 0) {
+                const rescueQuery = alternativeTerms.join(' | ');
+                console.log(`AI suggested terms. New rescue query: ${rescueQuery}`);
+                const rescuePipeline = [
+                    {
+                        $search: {
+                            index: 'buscador',
+                            text: {
+                                query: rescueQuery,
+                                path: { wildcard: '*.text' }
+                            }
+                        }
+                    },
+                    { $limit: 50 },
+                    {
+                        $project: {
+                            _id: 1, title: 1, artist: 1, date: 1, city: 1, country: 1, url: 1, imageUrl: 1,
+                            score: { $meta: 'searchScore' }
+                        }
+                    }
+                ];
+                results = await eventsCollection.aggregate(rescuePipeline).toArray();
+            }
         }
+
+        res.status(200).json(results);
+
+    } catch (error) {
+        console.error('Error in /api/search:', error);
+        // Añadimos más detalle al error de respuesta
+        const errorMessage = error.message || 'Internal Server Error';
+        res.status(500).json({ message: errorMessage, details: error.toString() });
     }
-
-    function renderResults(results) {
-        if (results.length === 0) {
-            searchResultsContainer.innerHTML = '<p class="search-feedback">No se encontraron resultados.</p>';
-            return;
-        }
-
-        searchResultsContainer.innerHTML = results.map(event => {
-            const { title, city, venue, imageUrl, slug } = event;
-            const eventUrl = `/evento.html?slug=${slug}`; // Asumiendo una página de detalle de evento
-
-            return `
-                <a href="${eventUrl}" class="search-result-item">
-                    <img src="${imageUrl || 'assets/placeholder.png'}" alt="${title}">
-                    <div class="search-result-info">
-                        <h4>${title}</h4>
-                        <p>${city || ''}${venue ? `, ${venue}` : ''}</p>
-                    </div>
-                </a>
-            `;
-        }).join('');
-    }
-
-    const debouncedSearch = debounce(performSearch, 300);
-
-    // --- EVENT LISTENERS ---
-
-    // Abrir modal desde la cabecera
-    headerSearchForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const query = headerSearchInput.value.trim();
-        modalSearchInput.value = query;
-        openModal();
-        if (query) {
-            performSearch(query);
-        }
-    });
-
-    // Búsqueda dinámica en el modal
-    modalSearchInput.addEventListener('input', () => {
-        const query = modalSearchInput.value.trim();
-        debouncedSearch(query);
-    });
-
-    // Cerrar modal
-    searchModalCloseBtn.addEventListener('click', closeModal);
-    searchModalOverlay.addEventListener('click', (e) => {
-        if (e.target === searchModalOverlay) {
-            closeModal();
-        }
-    });
-
-    // Cerrar con tecla Escape
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && searchModalOverlay.classList.contains('visible')) {
-            closeModal();
-        }
-    });
-});
+}
