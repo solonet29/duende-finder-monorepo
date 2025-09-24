@@ -1194,6 +1194,45 @@ header.header-main {
   border-color: var(--color-acento);
 }
 
+/* ==========================================================================
+   11. ESTILOS PARA MODAL DE GUÍA DE BÚSQUEDA (AÑADIDO)
+   ========================================================================== */
+
+#modal-text-content .modal-actions {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Espacio entre botones */
+}
+
+#modal-text-content .modal-action-button {
+  display: block;
+  padding: 14px 20px;
+  background: linear-gradient(145deg, #E53935, #C62828); /* Un gradiente rojo flamenco */
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1em;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+#modal-text-content .modal-action-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
+}
+
+#modal-text-content .modal-footer-note {
+  font-size: 0.85em;
+  color: var(--color-texto-secundario);
+  margin-top: 20px;
+  margin-bottom: 0;
+}
+
 .back-to-list-link ion-icon {
   font-size: 1.2em;
 }
