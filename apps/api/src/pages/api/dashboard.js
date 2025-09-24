@@ -1,4 +1,3 @@
-
 import { getEventModel } from '@/lib/database.js';
 import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
 
@@ -64,21 +63,17 @@ export default async function handler(req, res) {
             Event.countDocuments({ date: { $gte: todayString }, status: 'active' }),
 
             // 2. Eventos destacados
-            Event.find({ featured: true, date: { $gte: todayString } })
-                 .projection(lightweightProjection).limit(10).sort({ date: 1 }).lean(),
+            Event.find({ featured: true, date: { $gte: todayString } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
 
             // 3. Eventos de la semana
-            Event.find({ date: { $gte: todayString, $lte: nextWeekString } })
-                 .projection(lightweightProjection).limit(10).sort({ date: 1 }).lean(),
+            Event.find({ date: { $gte: todayString, $lte: nextWeekString } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
 
             // 4. Eventos de hoy
-            Event.find({ date: todayString })
-                 .projection(lightweightProjection).limit(10).sort({ time: 1 }).lean(),
+            Event.find({ date: todayString }, { projection: lightweightProjection, limit: 10, sort: { time: 1 } }).lean(),
             
             // 5. Eventos para los próximos 3 meses
             ...getNextMonths(3).map(monthKey => 
-                Event.find({ date: { $regex: `^${monthKey}` } })
-                     .projection(lightweightProjection).limit(10).sort({ date: 1 }).lean()
+                Event.find({ date: { $regex: `^${monthKey}` } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean()
             )
         ]);
 
