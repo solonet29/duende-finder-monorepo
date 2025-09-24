@@ -321,13 +321,12 @@ header.header-main {
 }
 
 .event-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    /* No hover effect on the card itself to make image and title feel more separate */
 }
 
 .card-image-container {
     width: 100%;
-    height: 157.5px;
+    aspect-ratio: 16 / 9;
     overflow: hidden;
     background-color: var(--color-borde);
     display: block;
@@ -337,7 +336,7 @@ header.header-main {
 .event-card .card-image {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     transition: transform 0.3s ease;
 }
 
