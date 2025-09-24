@@ -96,7 +96,7 @@ export default async function handler(req, res) {
 
         const events = await Event.aggregate(aggregationPipeline);
 
-        res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
+        res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate');
         res.status(200).json({ events, isAmbiguous: false });
 
     } catch (err) {
