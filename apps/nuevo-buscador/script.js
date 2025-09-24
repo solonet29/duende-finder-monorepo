@@ -304,87 +304,153 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         try {
-            const userLocationPromise = getUserLocation().catch(() => null);
+            // NOTA: Se asume un nuevo endpoint /api/dashboard que devuelve los datos iniciales.
+            // Este endpoint debe ser creado en el backend.
+            const response = await fetch(`${API_BASE_URL}/api/dashboard`);
+            if (!response.ok) throw new Error('Failed to fetch initial dashboard data');
+            
+            const data = await response.json();
 
-            const [featuredData, weekData, todayData, allEventsData] = await Promise.all([
-                fetch(`${API_BASE_URL}/api/events?featured=true&limit=10`).then(res => res.json()),
-                fetch(`${API_BASE_URL}/api/events?timeframe=week&limit=10`).then(res => res.json()),
-                fetch(`${API_BASE_URL}/api/events?timeframe=today&limit=10`).then(res => res.json()),
-                fetch(`${API_BASE_URL}/api/events?sort=date`).then(res => res.json())
-            ]);
-
-            // Iniciar la animación del contador inmediatamente después de recibir los datos, sin bloquear el renderizado.
-            // Usamos el total de eventos de la respuesta más completa.
-            if (allEventsData?.events?.length) {
-                animateEventCounter(allEventsData.events.length);
+            // 1. Animar el contador con el total eficiente desde el API
+            if (data.totalEvents) {
+                animateEventCounter(data.totalEvents);
             }
 
-            const userLocation = await userLocationPromise;
-            let featuredEvents = featuredData?.events || [];
-            let weekEvents = weekData?.events || [];
-            let todayEvents = todayData?.events || [];
+            // 2. Renderizar sliders principales
+            renderSlider(featuredSlider, data.featuredEvents || []);
+            renderSlider(weekSlider, data.weekEvents || []);
+            renderSlider(todaySlider, data.todayEvents || []);
 
-            const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
-            featuredEvents.sort(sortByDate);
-            weekEvents.sort(sortByDate);
-            todayEvents.sort(sortByDate);
-
-            // El renderizado de los sliders comienza aquí, en paralelo a la animación del contador.
-            renderSlider(featuredSlider, featuredEvents);
-            renderSlider(weekSlider, weekEvents);
-            renderSlider(todaySlider, todayEvents);
-
-            if (allEventsData?.events) {
-                const monthlyGroups = groupEventsByMonth(allEventsData.events);
-                renderMonthlySliders(monthlyGroups);
+            // 3. Renderizar los sliders de los próximos 3 meses
+            if (data.monthlyEvents) {
+                renderMonthlySliders(data.monthlyEvents);
             }
+
+            // La geolocalización puede seguir su curso
+            getUserLocation().then(location => {
+                if(location) fetchNearbyEvents();
+            }).catch(() => {
+                renderGeolocationDenied();
+            });
+
         } catch (error) {
             console.error("Error fatal al cargar el dashboard:", error);
             if (mainContainer) mainContainer.innerHTML = '<h2>Oops! No se pudo cargar el contenido.</h2>';
         }
     }
 
-    function renderSlider(container, events) {
+    function renderSlider(container, events, monthKey = null) {
         if (!container) return;
         const section = container.closest('.sliders-section');
+        
         if (!events || events.length === 0) {
             if (section) section.style.display = 'none';
             return;
         }
+
         if (section) section.style.display = 'block';
-        container.innerHTML = '';
+        
+        // Si es la primera carga (no scroll infinito), limpiar
+        if (container.dataset.page !== '1') {
+            container.innerHTML = '';
+        }
+
         events.forEach(event => {
             eventsCache[event._id] = event;
             container.appendChild(createSliderCard(event));
         });
+
+        // Configurar para scroll infinito si es un slider mensual y tiene potencial de más eventos
+        if (monthKey && events.length === 10) {
+            container.dataset.month = monthKey;
+            container.dataset.page = '1';
+            
+            // Eliminar sentinel anterior si existe
+            const oldSentinel = container.querySelector('.sentinel');
+            if(oldSentinel) oldSentinel.remove();
+
+            // Añadir un elemento "sentinel" al final para IntersectionObserver
+            const sentinel = document.createElement('div');
+            sentinel.className = 'sentinel';
+            container.appendChild(sentinel);
+            setupInfiniteScroll(sentinel);
+        }
     }
 
     function renderMonthlySliders(monthlyGroups) {
         if (!monthlySlidersContainer) return;
         monthlySlidersContainer.innerHTML = '';
-        const sortedMonths = Object.keys(monthlyGroups).sort();
-        sortedMonths.forEach(monthKey => {
-            const events = monthlyGroups[monthKey];
+        
+        // El backend ya nos da solo los meses que necesitamos
+        monthlyGroups.forEach(group => {
+            const { monthKey, events } = group;
             const [year, month] = monthKey.split('-');
             const monthDate = new Date(year, parseInt(month, 10) - 1);
             const monthName = monthDate.toLocaleString('es-ES', { month: 'long' });
             const titleText = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
+            
             const section = document.createElement('section');
             section.className = 'sliders-section';
             section.id = `month-${monthKey}-section`;
+            
             const title = document.createElement('h2');
             title.textContent = titleText;
+            
             const sliderContainer = document.createElement('div');
             sliderContainer.className = 'slider-container';
             sliderContainer.id = `slider-month-${monthKey}`;
-            events.forEach(event => {
-                eventsCache[event._id] = event;
-                sliderContainer.appendChild(createSliderCard(event));
-            });
+            
             section.appendChild(title);
             section.appendChild(sliderContainer);
             monthlySlidersContainer.appendChild(section);
+
+            // Renderizar los eventos iniciales y preparar para scroll infinito
+            renderSlider(sliderContainer, events, monthKey);
         });
+    }
+
+    function setupInfiniteScroll(sentinel) {
+        const slider = sentinel.parentElement;
+        
+        const observer = new IntersectionObserver(async (entries) => {
+            if (entries[0].isIntersecting) {
+                observer.unobserve(sentinel); // Dejar de observar para no hacer múltiples peticiones
+
+                const month = slider.dataset.month;
+                let page = parseInt(slider.dataset.page || '1', 10);
+                page++;
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/events?month=${month}&page=${page}&limit=10`);
+                    if (!response.ok) return;
+
+                    const data = await response.json();
+                    if (data.events && data.events.length > 0) {
+                        data.events.forEach(event => {
+                            eventsCache[event._id] = event;
+                            slider.insertBefore(createSliderCard(event), sentinel);
+                        });
+                        slider.dataset.page = page;
+                        
+                        // Si se recibieron 10 eventos, es probable que haya más. Volver a observar.
+                        if (data.events.length === 10) {
+                            observer.observe(sentinel);
+                        } else {
+                            sentinel.remove(); // No hay más eventos, quitar el sentinel
+                        }
+                    } else {
+                        sentinel.remove(); // No hay más eventos, quitar el sentinel
+                    }
+                } catch (error) {
+                    console.error('Error cargando más eventos:', error);
+                    // Re-observar en caso de error de red para poder reintentar
+                    observer.observe(sentinel);
+
+                }
+            }
+        }, { rootMargin: '200px' }); // Empezar a cargar 200px antes de que sea visible
+
+        observer.observe(sentinel);
     }
 
     function createSliderCard(event) {

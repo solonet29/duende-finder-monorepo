@@ -1,6 +1,6 @@
 // RUTA: /src/pages/api/events/index.js
 // VERSIÓN FINAL DE PRODUCCIÓN CON CORS A NUEVO BUSCADOR
-// AÑADIENDO UN COMENTARIO PARA FORZAR EL DESPLIEGUE
+// AÑADIDA LÓGICA DE PAGINACIÓN PARA SCROLL INFINITO
 
 import { getEventModel } from '@/lib/database.js';
 import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
@@ -15,7 +15,10 @@ export default async function handler(req, res) {
         const {
             search = null, artist = null, city = null, country = null,
             dateFrom = null, dateTo = null, timeframe = null, lat = null,
-            lon = null, radius = null, sort = null, featured = null
+            lon = null, radius = null, sort = null, featured = null,
+            month = null, // Param para paginación de meses
+            page = '1',     // Param para paginación de meses
+            limit = '10'   // Param para paginación de meses
         } = req.query;
 
         const featuredArtists = [
@@ -56,12 +59,16 @@ export default async function handler(req, res) {
 
         matchFilter.name = { $ne: null, $nin: ["", "N/A"] };
 
-        if (search && !lat) {
+        // --- LÓGICA DE FILTRADO ---
+        if (month) {
+            // Si se pide un mes específico (para scroll infinito), este filtro es prioritario
+            matchFilter.date = { $regex: `^${month}` };
+        } else if (search && !lat) {
             const normalizedSearch = search.trim().toLowerCase();
             if (ciudadesYProvincias.some(cp => cp.toLowerCase() === normalizedSearch)) {
-                matchFilter.city = { $regex: new RegExp(`^${normalizedSearch}$`, 'i') };
+                matchFilter.city = { $regex: new RegExp(`^${normalizedSearch}, 'i') };
             } else if (paises.some(p => p.toLowerCase().includes(normalizedSearch))) {
-                matchFilter.country = { $regex: new RegExp(`^${normalizedSearch}$`, 'i') };
+                matchFilter.country = { $regex: new RegExp(`^${normalizedSearch}, 'i') };
             } else {
                 matchFilter.$or = [
                     { name: { $regex: new RegExp(search, 'i') } }, { artist: { $regex: new RegExp(search, 'i') } },
@@ -69,12 +76,13 @@ export default async function handler(req, res) {
                 ];
             }
         }
+
         if (featured === 'true') {
             matchFilter.artist = { $in: featuredArtists };
         }
         if (artist) matchFilter.artist = { $regex: new RegExp(artist, 'i') };
         if (city) matchFilter.city = { $regex: new RegExp(city, 'i') };
-        if (country) matchFilter.country = { $regex: new RegExp(`^${country}$`, 'i') };
+        if (country) matchFilter.country = { $regex: new RegExp(`^${country}, 'i') };
         if (dateFrom) matchFilter.date.$gte = dateFrom;
         if (dateTo) matchFilter.date.$lte = dateTo;
         if (timeframe === 'week' && !dateTo) {
@@ -84,7 +92,7 @@ export default async function handler(req, res) {
         }
 
         aggregationPipeline.push({ $match: matchFilter });
-        aggregationPipeline.push({ $group: { _id: { date: "$date", artist: "$artist", name: "$name" }, firstEvent: { $first: "$$ROOT" } } });
+        aggregationPipeline.push({ $group: { _id: { date: "$date", artist: "$artist", name: "$name" }, firstEvent: { $first: "$ROOT" } } });
         aggregationPipeline.push({ $match: { firstEvent: { $ne: null } } }); // FIX: Filter out null events
         aggregationPipeline.push({ $replaceRoot: { newRoot: "$firstEvent" } });
         aggregationPipeline.push({ $addFields: { contentStatus: '$contentStatus', blogPostUrl: '$blogPostUrl' } });
@@ -94,9 +102,21 @@ export default async function handler(req, res) {
         if (search && !lat) sortOrder = { score: { $meta: "textScore" } };
         if (!lat) aggregationPipeline.push({ $sort: sortOrder });
 
+        // --- LÓGICA DE PAGINACIÓN (NUEVO) ---
+        if (month) {
+            const pageNum = parseInt(page, 10);
+            const limitNum = parseInt(limit, 10);
+            const skipNum = (pageNum - 1) * limitNum;
+
+            if (skipNum > 0) {
+                aggregationPipeline.push({ $skip: skipNum });
+            }
+            aggregationPipeline.push({ $limit: limitNum });
+        }
+
         const events = await Event.aggregate(aggregationPipeline);
 
-        res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate');
+        res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=1800');
         res.status(200).json({ events, isAmbiguous: false });
 
     } catch (err) {
