@@ -1,4 +1,3 @@
-
 import { getDb } from '@/lib/database';
 import { runMiddleware, corsMiddleware } from '@/lib/cors';
 
@@ -20,41 +19,41 @@ export default async function handler(req, res) {
     const db = await getDb();
     const collection = db.collection('events');
 
+    // --- INICIO DEL PIPELINE CORREGIDO ---
+    // Esta es la consulta ajustada para coincidir con tu nuevo índice de Atlas Search
     const pipeline = [
       {
         $search: {
-          index: 'default', // Asume que el índice de búsqueda se llama 'default'
-          compound: {
-            must: [
+          index: 'default',
+          "compound": {
+            "should": [
               {
-                autocomplete: {
-                  query: q,
-                  path: 'title',
-                  tokenOrder: 'sequential',
-                  score: { boost: { value: 3 } } // Mayor prioridad al título
+                "autocomplete": {
+                  "query": q,
+                  "path": "title.completion", // Apunta al subcampo .completion
+                  "tokenOrder": "sequential",
+                  "score": { "boost": { "value": 3 } }
                 }
               },
               {
-                autocomplete: {
-                  query: q,
-                  path: 'artist',
-                  tokenOrder: 'sequential'
+                "autocomplete": {
+                  "query": q,
+                  "path": "artist.completion", // Apunta al subcampo .completion
+                  "tokenOrder": "sequential",
+                  "score": { "boost": { "value": 2 } }
                 }
-              }
-            ],
-            should: [
+              },
               {
-                wildcard: {
-                  query: `${q}*`,
-                  path: { wildcard: '*' }, // Busca en todos los campos
-                  allowAnalyzedField: true
+                "text": {
+                  "query": q,
+                  "path": {
+                    "wildcard": "*" // Busca en todos los demás campos
+                  },
+                  "fuzzy": { "maxEdits": 1 },
+                  "synonyms": "flamencoSynonyms" // Activa los sinónimos
                 }
               }
             ]
-          },
-          fuzzy: {
-            maxEdits: 1, // Tolera un error tipográfico
-            prefixLength: 2
           }
         }
       },
@@ -70,10 +69,11 @@ export default async function handler(req, res) {
           startDate: 1,
           imageUrl: 1,
           slug: 1,
-          score: { $meta: "searchScore" } // Proyectar el score para depuración si es necesario
+          score: { $meta: "searchScore" }
         }
       }
     ];
+    // --- FIN DEL PIPELINE CORREGIDO ---
 
     const results = await collection.aggregate(pipeline).toArray();
 
