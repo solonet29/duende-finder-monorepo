@@ -42,13 +42,16 @@ export default async function handler(req, res) {
 
     try {
         const Event = await getEventModel();
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayString = today.toISOString().split('T')[0];
+        
+        // --- Definición robusta de rangos de fechas con objetos Date ---
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
 
-        const nextWeek = new Date(today);
-        nextWeek.setDate(today.getDate() + 7);
-        const nextWeekString = nextWeek.toISOString().split('T')[0];
+        const tomorrowStart = new Date(todayStart);
+        tomorrowStart.setDate(todayStart.getDate() + 1);
+
+        const nextWeekEnd = new Date(todayStart);
+        nextWeekEnd.setDate(todayStart.getDate() + 7);
 
         // --- Consultas a la Base de Datos en Paralelo ---
 
@@ -60,16 +63,16 @@ export default async function handler(req, res) {
             ...monthlyResults
         ] = await Promise.all([
             // 1. Conteo total de eventos activos (muy eficiente)
-            Event.countDocuments({ date: { $gte: todayString }, status: 'active' }),
+            Event.countDocuments({ date: { $gte: todayStart }, status: 'active' }),
 
             // 2. Eventos destacados
-            Event.find({ featured: true, date: { $gte: todayString } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
+            Event.find({ featured: true, date: { $gte: todayStart } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
 
             // 3. Eventos de la semana
-            Event.find({ date: { $gte: todayString, $lte: nextWeekString } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
+            Event.find({ date: { $gte: todayStart, $lte: nextWeekEnd } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
 
-            // 4. Eventos de hoy
-            Event.find({ date: todayString }, { projection: lightweightProjection, limit: 10, sort: { time: 1 } }).lean(),
+            // 4. Eventos de hoy (CORREGIDO: usando rango de 24h)
+            Event.find({ date: { $gte: todayStart, $lt: tomorrowStart } }, { projection: lightweightProjection, limit: 10, sort: { time: 1 } }).lean(),
             
             // 5. Eventos para los próximos 3 meses
             ...getNextMonths(3).map(monthKey => {
