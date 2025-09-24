@@ -47,10 +47,18 @@ export default async function handler(req, res) {
                 "text": {
                   "query": q,
                   "path": {
-                    "wildcard": "*" // Busca en todos los demás campos
+                    "wildcard": "*"
                   },
-                  "fuzzy": { "maxEdits": 1 },
-                  "synonyms": "flamencoSynonyms" // Activa los sinónimos
+                  "fuzzy": { "maxEdits": 1 }
+                }
+              },
+              {
+                "text": {
+                  "query": q,
+                  "path": {
+                    "wildcard": "*"
+                  },
+                  "synonyms": "flamencoSynonyms"
                 }
               }
             ]
