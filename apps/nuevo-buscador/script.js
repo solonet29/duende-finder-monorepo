@@ -163,13 +163,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Fallback a los eventos destacados si no hay filtro activo
             sliderId = 'featured-events-slider';
         }
-        
+
         const slider = document.getElementById(sliderId);
         if (!slider) return [];
 
         const eventCards = slider.querySelectorAll('.event-card');
         const eventIds = Array.from(eventCards).map(card => card.dataset.eventId);
-        
+
         return eventIds.map(id => eventsCache[id]).filter(Boolean);
     }
 
@@ -291,50 +291,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function initializeDashboard() {
+        console.log("✅ Paso 1: Entrando en initializeDashboard.");
+
         const sliders = [featuredSlider, weekSlider, todaySlider];
         sliders.forEach(slider => {
             if (slider) {
                 const section = slider.closest('.sliders-section');
                 if (section) section.style.display = 'block';
-                slider.innerHTML = ''; // Limpiar contenido existente
-                for (let i = 0; i < 5; i++) { // Mostrar 5 tarjetas de esqueleto
+                slider.innerHTML = '';
+                for (let i = 0; i < 5; i++) {
                     slider.appendChild(createSkeletonCard());
                 }
             }
         });
 
         try {
-            // NOTA: Se asume un nuevo endpoint /api/dashboard que devuelve los datos iniciales.
-            // Este endpoint debe ser creado en el backend.
-            const response = await fetch(`${API_BASE_URL}/api/dashboard`);
-            if (!response.ok) throw new Error('Failed to fetch initial dashboard data');
-            
-            const data = await response.json();
+            console.log("✅ Paso 2: A punto de ejecutar el fetch a /api/dashboard.");
 
-            // 1. Animar el contador con el total eficiente desde el API
+            const response = await fetch(`${API_BASE_URL}/api/dashboard`);
+
+            console.log("✅ Paso 3: Fetch completado. La respuesta del servidor es:", response);
+
+            if (!response.ok) {
+                console.error(`Error en la respuesta de la red: ${response.status} ${response.statusText}`);
+                throw new Error('Failed to fetch initial dashboard data');
+            }
+
+            const data = await response.json();
+            console.log("✅ Paso 4: Datos JSON procesados:", data);
+
+
             if (data.totalEvents) {
                 animateEventCounter(data.totalEvents);
             }
 
-            // 2. Renderizar sliders principales
             renderSlider(featuredSlider, data.featuredEvents || []);
             renderSlider(weekSlider, data.weekEvents || []);
             renderSlider(todaySlider, data.todayEvents || []);
 
-            // 3. Renderizar los sliders de los próximos 3 meses
             if (data.monthlyEvents) {
                 renderMonthlySliders(data.monthlyEvents);
             }
 
-            // La geolocalización puede seguir su curso
             getUserLocation().then(location => {
-                if(location) fetchNearbyEvents();
+                if (location) fetchNearbyEvents();
             }).catch(() => {
                 renderGeolocationDenied();
             });
 
         } catch (error) {
-            console.error("Error fatal al cargar el dashboard:", error);
+            console.error("❌ ERROR FATAL al cargar el dashboard:", error);
             if (mainContainer) mainContainer.innerHTML = '<h2>Oops! No se pudo cargar el contenido.</h2>';
         }
     }
@@ -342,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderSlider(container, events, monthKey = null) {
         if (!container) return;
         const section = container.closest('.sliders-section');
-        
+
         // Siempre mostrar la sección para que los filtros funcionen
         if (section) section.style.display = 'block';
 
@@ -351,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--color-texto-secundario);">No hay eventos en esta categoría por ahora.</p>';
             return;
         }
-        
+
         // Si es la primera carga (no scroll infinito), limpiar
         if (container.dataset.page !== '1') {
             container.innerHTML = '';
@@ -366,10 +372,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (monthKey && events.length === 10) {
             container.dataset.month = monthKey;
             container.dataset.page = '1';
-            
+
             // Eliminar sentinel anterior si existe
             const oldSentinel = container.querySelector('.sentinel');
-            if(oldSentinel) oldSentinel.remove();
+            if (oldSentinel) oldSentinel.remove();
 
             // Añadir un elemento "sentinel" al final para IntersectionObserver
             const sentinel = document.createElement('div');
@@ -382,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderMonthlySliders(monthlyGroups) {
         if (!monthlySlidersContainer) return;
         monthlySlidersContainer.innerHTML = '';
-        
+
         // El backend ya nos da solo los meses que necesitamos
         monthlyGroups.forEach(group => {
             const { monthKey, events } = group;
@@ -390,18 +396,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const monthDate = new Date(year, parseInt(month, 10) - 1);
             const monthName = monthDate.toLocaleString('es-ES', { month: 'long' });
             const titleText = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
-            
+
             const section = document.createElement('section');
             section.className = 'sliders-section';
             section.id = `month-${monthKey}-section`;
-            
+
             const title = document.createElement('h2');
             title.textContent = titleText;
-            
+
             const sliderContainer = document.createElement('div');
             sliderContainer.className = 'slider-container';
             sliderContainer.id = `slider-month-${monthKey}`;
-            
+
             section.appendChild(title);
             section.appendChild(sliderContainer);
             monthlySlidersContainer.appendChild(section);
@@ -413,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupInfiniteScroll(sentinel) {
         const slider = sentinel.parentElement;
-        
+
         const observer = new IntersectionObserver(async (entries) => {
             if (entries[0].isIntersecting) {
                 observer.unobserve(sentinel); // Dejar de observar para no hacer múltiples peticiones
@@ -433,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             slider.insertBefore(createSliderCard(event), sentinel);
                         });
                         slider.dataset.page = page;
-                        
+
                         // Si se recibieron 10 eventos, es probable que haya más. Volver a observar.
                         if (data.events.length === 10) {
                             observer.observe(sentinel);
@@ -971,7 +977,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (termsModal) termsModal.classList.add('visible');
             });
         }
-        
+
         const tripPlannerToggle = document.getElementById('trip-planner-toggle');
         if (tripPlannerToggle) {
             tripPlannerToggle.addEventListener('click', () => {
