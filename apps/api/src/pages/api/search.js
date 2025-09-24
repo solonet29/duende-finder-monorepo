@@ -1,4 +1,4 @@
-import { getDb } from '@/lib/database';
+import { connectToMainDb } from '@/lib/database';
 import { runMiddleware, corsMiddleware } from '@/lib/cors';
 
 export default async function handler(req, res) {
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const db = await getDb();
+    const db = await connectToMainDb();
     const collection = db.collection('events');
 
     // --- INICIO DEL PIPELINE CORREGIDO ---

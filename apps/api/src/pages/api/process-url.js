@@ -2,7 +2,7 @@
 // VERSIÓN FINAL CON FRENO DE SEGURIDAD (SLEEP) PARA RATE LIMITING
 
 import { verifySignature } from "@upstash/qstash/nextjs";
-import { connectToDatabase } from '@/lib/database.js';
+import { connectToMainDb } from '@/lib/database.js';
 import Groq from 'groq-sdk';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
@@ -103,7 +103,7 @@ export default async function handler(req, res) {
         console.log(`✨ La IA encontró ${eventsFromPage.length} posibles eventos en ${url}.`);
 
         // --- Lógica de Guardado en Base de Datos (Eficiente) ---
-        const { db } = await connectToDatabase('main'); // Conexión eficiente
+        const db = await connectToMainDb(); // Conexión eficiente
         const tempCollection = db.collection('temp_scraped_events');
 
         const eventsToInsert = eventsFromPage.filter(event => event.name && event.date && event.venue).map(event => ({
