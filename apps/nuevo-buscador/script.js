@@ -402,7 +402,13 @@ document.addEventListener('DOMContentLoaded', () => {
             eventImageUrl = event.imageUrl.trim();
         }
 
-        eventCard.innerHTML = `<img src="${eventImageUrl}" alt="${artistName}" class="card-image" onerror="this.onerror=null;this.src='${placeholderUrl}'"><div class="card-content"><h3 class="card-title">${artistName}</h3></div>`;
+        eventCard.innerHTML = `
+            <div class="card-image-container">
+                <img src="${eventImageUrl}" alt="${artistName}" class="card-image" onerror="this.onerror=null;this.src='${placeholderUrl}'">
+            </div>
+            <div class="card-content">
+                <h3 class="card-title card-title-button">${artistName}</h3>
+            </div>`;
         return eventCard;
     }
 
