@@ -63,7 +63,7 @@ const eventSchema = new mongoose.Schema({
     // --- Campos para el pipeline de contenido ---
     contentStatus: {
         type: String,
-        enum: ['pending_enrichment', 'enrichment_failed', 'content_ready', 'publishing', 'published', 'publishing_failed'],
+        enum: ['pending_enrichment', 'enrichment_failed', 'content_ready', 'publishing', 'published', 'publishing_failed', 'archived', 'pending'],
         default: 'pending_enrichment',
         index: true
     },
