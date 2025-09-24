@@ -97,7 +97,16 @@ async function processEvents() {
           delete sanitizedEvent.location;
         }
 
-        await finalCollection.insertOne({ ...sanitizedEvent, contentStatus: CONTENT_STATUS_PENDING });
+        const artist = sanitizedEvent.artist || '';
+        const title = sanitizedEvent.title || '';
+        const search_synonyms = `${artist} ${title}`.trim();
+
+        await finalCollection.insertOne({
+          ...sanitizedEvent,
+          search_synonyms,
+          contentStatus: CONTENT_STATUS_PENDING,
+          createdAt: new Date()
+        });
         summary.added++;
       }
       await tempCollection.deleteOne({ _id: new ObjectId(event._id) });
