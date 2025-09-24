@@ -470,6 +470,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button class="share-btn" data-social="copy" title="Copiar enlace"><ion-icon name="copy-outline"></ion-icon></button>
                         </div>
                     </div>
+                    <a href="/" class="back-to-list-link">
+                      <ion-icon name="arrow-back-outline"></ion-icon>
+                      Volver a la lista
+                    </a>
                 </div>
                 <footer class="event-page-footer">
                     <p class="ai-disclaimer"><em>Contenido generado por IA. La información puede no ser exacta.</em></p>
@@ -499,16 +503,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         window.scrollTo(0, 0); // Scroll to top
-
-        // Modificar la cabecera para mostrar el botón de "Volver"
-        const headerContainer = document.querySelector('header.header-main .container');
-        if (headerContainer) {
-            headerContainer.innerHTML = `
-                <nav class="event-page-nav">
-                    <a href="/" class="back-button">&larr; Volver a la lista</a>
-                </nav>
-            `;
-        }
     }
 
     function renderEventDetailModal(event) {
@@ -771,7 +765,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.body.addEventListener('click', async (e) => {
             const sliderCard = e.target.closest('.slider-container .event-card');
-            const geminiBtn = e.target.closest('.gemini-btn');
+            // Se ha movido la lógica del botón gemini al contenedor de la página del evento para que sea más robusto
+            const geminiBtn = e.target.closest('.action-button.primary');
             const modalOverlay = e.target.closest('.modal-overlay:not(#welcome-modal-overlay)');
             const modalCloseBtn = e.target.closest('.modal-close-btn');
             const requestLocationBtn = e.target.closest('#request-location-btn');
@@ -782,7 +777,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (eventId) {
                     if (APP_CONFIG.USAR_PAGINAS_DE_EVENTOS) {
                         try {
-                            // Obtenemos los datos completos del evento (deberían estar en caché por el mouseover)
                             let eventData = eventsCache[eventId];
                             if (!eventData) {
                                 console.log("Cache miss on click, fetching event data...");
@@ -791,17 +785,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 eventData = await response.json();
                                 eventsCache[eventId] = eventData;
                             }
-
-                            // Lógica de slug retrocompatible
                             const fallbackSlug = (eventData.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
                             const finalSlug = eventData.slug || fallbackSlug;
-
                             const url = `/eventos/${eventData._id}-${finalSlug}`;
                             window.location.href = url;
-
                         } catch (error) {
                             console.error('Error al generar la URL del evento:', error);
-                            // Fallback a la URL antigua si todo lo demás falla
                             const eventName = sliderCard.dataset.eventName || 'evento';
                             const slug = `${eventId}-${eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
                             window.location.href = `/eventos/${slug}`;
@@ -824,9 +813,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else if (geminiBtn) {
                 const eventId = geminiBtn.dataset.eventId;
-                const eventData = eventsCache[eventId];
-                trackInteraction('planNightRequest', { eventId: eventData._id });
-                if (eventData) getAndShowNightPlan(eventData);
+                if (eventId && eventsCache[eventId]) {
+                    const eventData = eventsCache[eventId];
+                    trackInteraction('planNightRequest', { eventId: eventData._id });
+                    getAndShowNightPlan(eventData);
+                } else if (eventId) {
+                    // Si el evento no está en caché, búscalo primero
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`);
+                        if (!response.ok) throw new Error('Evento no encontrado para Planear Noche');
+                        const eventData = await response.json();
+                        eventsCache[eventId] = eventData;
+                        trackInteraction('planNightRequest', { eventId: eventData._id });
+                        getAndShowNightPlan(eventData);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
             } else if (requestLocationBtn) {
                 fetchNearbyEvents();
             } else if (modalCloseBtn || (modalOverlay && e.target === modalOverlay)) {
@@ -841,41 +844,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
         if (filterBar) {
             filterBar.addEventListener('click', (e) => {
                 const filterChip = e.target.closest('.filter-chip');
                 if (filterChip) {
                     e.preventDefault();
-                    filterBar.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+                    const allChips = filterBar.querySelectorAll('.filter-chip');
+                    if (allChips) allChips.forEach(btn => btn.classList.remove('active'));
                     filterChip.classList.add('active');
                     if (filterChip.dataset.filter === 'cerca') {
                         geolocationSearch();
                         return;
                     }
                     const targetId = filterChip.getAttribute('href');
-                    const targetSection = document.querySelector(targetId);
-                    if (targetSection) {
-                        const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
-                        const elementPosition = targetSection.getBoundingClientRect().top;
-                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                    if (targetId) {
+                        const targetSection = document.querySelector(targetId);
+                        if (targetSection) {
+                            const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
+                            const elementPosition = targetSection.getBoundingClientRect().top;
+                            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                            window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                        }
                     }
                 }
             });
         }
-        if (navHomeBtn) navHomeBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-        if (navThemeToggle) navThemeToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
-        });
-        if (navHowItWorksBtn) navHowItWorksBtn.addEventListener('click', () => howItWorksModal?.classList.add('visible'));
-        if (navTermsBtn) navTermsBtn.addEventListener('click', () => termsModal?.classList.add('visible'));
+        if (navHomeBtn) {
+            navHomeBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        }
+        if (navThemeToggle) {
+            navThemeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+            });
+        }
+        if (navHowItWorksBtn) {
+            navHowItWorksBtn.addEventListener('click', () => {
+                if (howItWorksModal) howItWorksModal.classList.add('visible');
+            });
+        }
+        if (navTermsBtn) {
+            navTermsBtn.addEventListener('click', () => {
+                if (termsModal) termsModal.classList.add('visible');
+            });
+        }
         
         const tripPlannerToggle = document.getElementById('trip-planner-toggle');
         if (tripPlannerToggle) {
             tripPlannerToggle.addEventListener('click', () => {
                 const tripPlannerSection = document.getElementById('trip-planner-section');
-                tripPlannerSection.classList.toggle('active');
+                if (tripPlannerSection) {
+                    tripPlannerSection.classList.toggle('active');
+                }
             });
         }
 
