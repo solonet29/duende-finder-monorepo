@@ -42,15 +42,6 @@ export default async function handler(req, res) {
         const eventsCollection = db.collection('events');
 
         let finalSearchQuery = searchTerm;
-        const synonymDoc = await synonymsCollection.findOne({
-            mappingType: "equivalent",
-            synonyms: searchTerm.toLowerCase()
-        });
-
-        if (synonymDoc) {
-            finalSearchQuery = synonymDoc.synonyms.join(' | ');
-            console.log(`Synonym found. New query: ${finalSearchQuery}`);
-        }
 
         const pipeline = [
             {
