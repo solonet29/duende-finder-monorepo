@@ -51,15 +51,6 @@ export default async function handler(req, res) {
                   },
                   "fuzzy": { "maxEdits": 1 }
                 }
-              },
-              {
-                "text": {
-                  "query": q,
-                  "path": {
-                    "wildcard": "*"
-                  },
-                  "synonyms": "flamencoSynonyms"
-                }
               }
             ]
           }
