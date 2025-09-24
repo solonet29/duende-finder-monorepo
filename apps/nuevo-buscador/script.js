@@ -343,12 +343,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container) return;
         const section = container.closest('.sliders-section');
         
+        // Siempre mostrar la sección para que los filtros funcionen
+        if (section) section.style.display = 'block';
+
         if (!events || events.length === 0) {
-            if (section) section.style.display = 'none';
+            // En lugar de ocultar, mostrar un mensaje informativo
+            container.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--color-texto-secundario);">No hay eventos en esta categoría por ahora.</p>';
             return;
         }
-
-        if (section) section.style.display = 'block';
         
         // Si es la primera carga (no scroll infinito), limpiar
         if (container.dataset.page !== '1') {
