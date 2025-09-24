@@ -65,20 +65,20 @@ export default async function handler(req, res) {
 
             // 2. Eventos destacados
             Event.find({ featured: true, date: { $gte: todayString } })
-                 .project(lightweightProjection).limit(10).sort({ date: 1 }).lean(),
+                 .projection(lightweightProjection).limit(10).sort({ date: 1 }).lean(),
 
             // 3. Eventos de la semana
             Event.find({ date: { $gte: todayString, $lte: nextWeekString } })
-                 .project(lightweightProjection).limit(10).sort({ date: 1 }).lean(),
+                 .projection(lightweightProjection).limit(10).sort({ date: 1 }).lean(),
 
             // 4. Eventos de hoy
             Event.find({ date: todayString })
-                 .project(lightweightProjection).limit(10).sort({ time: 1 }).lean(),
+                 .projection(lightweightProjection).limit(10).sort({ time: 1 }).lean(),
             
             // 5. Eventos para los próximos 3 meses
             ...getNextMonths(3).map(monthKey => 
                 Event.find({ date: { $regex: `^${monthKey}` } })
-                     .project(lightweightProjection).limit(10).sort({ date: 1 }).lean()
+                     .projection(lightweightProjection).limit(10).sort({ date: 1 }).lean()
             )
         ]);
 
