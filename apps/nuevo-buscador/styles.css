@@ -54,7 +54,7 @@ html {
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     background-color: var(--color-fondo);
     color: var(--color-texto-principal);
     margin: 0;
@@ -74,6 +74,12 @@ body {
 /* ==========================================================================
    3. CABECERA Y TÍTULO
    ========================================================================== */
+
+/* --- TIPOGRAFÍA GLOBAL --- */
+h1, h2, h3, h4, h5, h6, .main-title, .hero-text .main-title {
+    font-family: 'Playfair Display', serif;
+}
+/* --- FIN TIPOGRAFÍA GLOBAL --- */
 
 .hero-header {
     position: relative;
@@ -135,7 +141,6 @@ header.header-main {
 }
 
 .main-title {
-    font-family: 'Cinzel', serif;
     font-size: 2rem;
     text-align: center;
     color: var(--color-texto-principal);
@@ -200,14 +205,12 @@ header.header-main {
 .sliders-section h2 {
     margin-top: 0;
     margin-bottom: 20px;
-    font-family: 'Montserrat', sans-serif;
     font-size: 1.6rem;
 }
 
 .trip-planner-section h2 {
     margin-top: 0;
     margin-bottom: 20px;
-    font-family: 'Montserrat', sans-serif;
     font-size: 1.6rem;
     display: flex;
     justify-content: space-between;
