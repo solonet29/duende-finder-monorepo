@@ -99,14 +99,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function displayEventCount() {
+    function animateEventCounter(totalEvents) {
         const counterElement = document.getElementById('event-stats');
         if (!counterElement) return;
+        // Asegurarse de que totalEvents es un número válido y mayor que cero
+        if (typeof totalEvents !== 'number' || totalEvents <= 0) {
+            counterElement.style.display = 'none';
+            return;
+        }
         try {
-            const response = await fetch(`${API_BASE_URL}/api/events/count`);
-            if (!response.ok) throw new Error('Error en la respuesta de la API');
-            const data = await response.json();
-            const totalEvents = data.total;
             const countUp = new CountUp(counterElement, totalEvents, { prefix: '+', suffix: ' eventos de flamenco verificados', duration: 2.5, separator: '.', useEasing: true });
             if (!countUp.error) {
                 countUp.start();
@@ -115,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             counterElement.classList.add('loaded');
         } catch (error) {
-            console.error('Error al cargar el contador de eventos:', error);
+            console.error('Error al animar el contador de eventos:', error);
             counterElement.style.display = 'none';
         }
     }
@@ -312,6 +313,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch(`${API_BASE_URL}/api/events?sort=date`).then(res => res.json())
             ]);
 
+            // Iniciar la animación del contador inmediatamente después de recibir los datos, sin bloquear el renderizado.
+            // Usamos el total de eventos de la respuesta más completa.
+            if (allEventsData?.events?.length) {
+                animateEventCounter(allEventsData.events.length);
+            }
+
             const userLocation = await userLocationPromise;
             let featuredEvents = featuredData?.events || [];
             let weekEvents = weekData?.events || [];
@@ -322,6 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
             weekEvents.sort(sortByDate);
             todayEvents.sort(sortByDate);
 
+            // El renderizado de los sliders comienza aquí, en paralelo a la animación del contador.
             renderSlider(featuredSlider, featuredEvents);
             renderSlider(weekSlider, weekEvents);
             renderSlider(todaySlider, todayEvents);
@@ -966,8 +974,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isEventPage = await handleInitialPageLoadRouting();
 
         if (!isEventPage) {
-            // Si NO es una página de evento, cargar el dashboard y el contador
-            displayEventCount();
+            // Ahora solo llamamos a initializeDashboard, que se encarga de todo.
             initializeDashboard();
         }
     }
