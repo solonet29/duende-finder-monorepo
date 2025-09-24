@@ -1008,3 +1008,139 @@ header.header-main {
         flex: 0 0 calc(50% - 8px);
     }
 }
+/* =================================================================== */
+/* REFACTOR 2025-09-24: Mejoras en la página de detalles del evento */
+/* =================================================================== */
+
+/* --- Tarea 4: Layout de Footer Persistente --- */
+.event-page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 70px); /* Ajustar 70px a la altura real del header + nav */
+}
+
+.event-page-content {
+    flex-grow: 1;
+}
+
+/* --- Tarea 1: Mejoras de Tipografía y Jerarquía --- */
+.event-page-container h1 {
+    font-weight: 700;
+    margin-bottom: 0.5em;
+}
+
+.event-page-container .artist-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+    color: var(--color-texto-secundario);
+    margin-bottom: 1.5em;
+}
+
+.event-page-container .event-description {
+    line-height: 1.6;
+}
+
+.event-details-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 1.5em 0;
+    padding: 1.5em;
+    background-color: var(--color-superficie);
+    border-radius: 12px;
+    border: 1px solid var(--color-borde);
+}
+
+.event-details-group .evento-detalle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+}
+
+.event-details-group .evento-detalle ion-icon {
+    font-size: 1.4rem;
+    color: var(--color-acento);
+}
+
+/* --- Tarea 2: Rediseño de Botones de Acción --- */
+.action-buttons-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 1.5em;
+}
+
+.action-button {
+    flex: 1; /* Para que ocupen el mismo espacio */
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.action-button.primary {
+    background-color: var(--color-acento);
+    color: #fff;
+    border: 2px solid var(--color-acento);
+}
+.action-button.primary:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
+.action-button.secondary {
+    background-color: transparent;
+    color: var(--color-acento);
+    border: 2px solid var(--color-acento);
+}
+
+.action-button.secondary:hover {
+    background-color: var(--color-acento);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+
+/* --- Tarea 3: Botón de Superposición en el Mapa --- */
+.map-wrapper {
+    position: relative;
+    margin-top: 1.5em;
+}
+
+.map-overlay-button {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 1px solid var(--color-borde);
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    color: var(--color-texto-principal-light);
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.map-overlay-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .map-overlay-button {
+    background-color: rgba(30, 30, 30, 0.8);
+    color: var(--color-texto-principal-dark);
+}

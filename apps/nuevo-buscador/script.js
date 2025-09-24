@@ -415,8 +415,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
         const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
-        const blogIcon = event.blogPostUrl ? 'book-outline' : 'newspaper-outline';
-        const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
 
         let imageHtml = '';
         if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim().startsWith('http')) {
@@ -425,37 +423,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const pageHtml = `
             <div class="event-page-container" data-event-id="${event._id}">
-                <div id="sponsored-banner-container"></div>
-                ${imageHtml}
-                <div class="card-header">
-                    <h1 class="titulo-truncado" title="${eventName}">${eventName}</h1>
-                </div>
-                <div class="artista">
-                    <ion-icon name="person-outline"></ion-icon> <span>${artistName}</span>
-                </div>
-                <p class="descripcion-corta">${description}</p>
-                <div class="card-detalles">
-                    <div class="evento-detalle">
-                        <ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span>
+                <div class="event-page-content">
+                    <div id="sponsored-banner-container"></div>
+                    ${imageHtml}
+                    
+                    <h1>${eventName}</h1>
+                    <div class="artist-name">
+                        <ion-icon name="person-outline"></ion-icon>
+                        <span>${artistName}</span>
                     </div>
-                    <div class="evento-detalle">
-                        <ion-icon name="time-outline"></ion-icon><span>${eventTime}</span>
-                    </div>
-                    <div class="evento-detalle">
-                        <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">
+
+                    <div class="event-details-group">
+                        <div class="evento-detalle">
+                            <ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span>
+                        </div>
+                        <div class="evento-detalle">
+                            <ion-icon name="time-outline"></ion-icon><span>${eventTime}</span>
+                        </div>
+                        <div class="evento-detalle">
                             <ion-icon name="location-outline"></ion-icon><span>${displayLocation}</span>
-                        </a>
+                        </div>
                     </div>
-                </div>
-                <div class="card-actions">
-                    <div class="card-actions-primary">
-                        <button class="gemini-btn" data-event-id="${event._id}">
+
+                    <div class="action-buttons-container">
+                        <button class="action-button primary" data-event-id="${event._id}">
                             <ion-icon name="sparkles-outline"></ion-icon> Planear Noche
                         </button>
-                        <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}">
-                            <ion-icon name="${blogIcon}"></ion-icon> ${blogText}
+                        <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="action-button secondary">
+                            <ion-icon name="newspaper-outline"></ion-icon> ${blogText}
                         </a>
                     </div>
+
+                    <p class="event-description">${description}</p>
+                    
+                    <div class="map-wrapper">
+                        <div id="map-container"></div>
+                        <a href="${mapsUrl}" class="map-overlay-button" target="_blank" rel="noopener noreferrer">Ver en Mapa</a>
+                    </div>
+
                     <div class="card-actions-secondary">
                         <p class="share-title">Compartir:</p>
                         <div class="share-buttons-container">
@@ -466,7 +471,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                 </div>
-                <div id="map-container"></div>
                 <footer class="event-page-footer">
                     <p class="ai-disclaimer"><em>Contenido generado por IA. La información puede no ser exacta.</em></p>
                     <a href="https://afland.es/contact/" target="_blank" rel="noopener noreferrer" class="business-cta">¿Quieres ver tu negocio aquí? Contacta</a>
