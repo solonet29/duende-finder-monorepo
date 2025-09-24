@@ -1,8 +1,35 @@
 import { connectToMainDb } from '@/lib/database';
 import { runMiddleware, corsMiddleware } from '@/lib/cors';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+require('dotenv').config();
+
+async function getAiSynonyms(searchTerm) {
+  if (!process.env.GEMINI_API_KEY) {
+    console.error('GEMINI_API_KEY is not defined.');
+    return null;
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+    const prompt = `Actúa como un lexicógrafo y experto en la cultura flamenca. Un usuario ha buscado el término "${searchTerm}" en un buscador de eventos de flamenco y no ha obtenido resultados. Tu tarea es generar una lista de 3 a 5 términos de búsqueda alternativos, sinónimos o conceptos relacionados que probablemente devuelvan resultados relevantes. Devuelve únicamente los términos, separados por comas.`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    if (text) {
+      return text.split(',').map(s => s.trim()).filter(Boolean);
+    }
+  } catch (error) {
+    console.error('Error getting AI synonyms:', error);
+  }
+  return null;
+}
 
 export default async function handler(req, res) {
-  // Ejecutar el middleware de CORS
   await runMiddleware(req, res, corsMiddleware);
 
   if (req.method !== 'GET') {
@@ -19,8 +46,6 @@ export default async function handler(req, res) {
     const db = await connectToMainDb();
     const collection = db.collection('events');
 
-    // --- INICIO DEL PIPELINE CORREGIDO ---
-    // Esta es la consulta ajustada para coincidir con tu nuevo índice de Atlas Search
     const pipeline = [
       {
         $search: {
@@ -30,7 +55,7 @@ export default async function handler(req, res) {
               {
                 "autocomplete": {
                   "query": q,
-                  "path": "title.completion", // Apunta al subcampo .completion
+                  "path": "title.completion",
                   "tokenOrder": "sequential",
                   "score": { "boost": { "value": 3 } }
                 }
@@ -38,7 +63,7 @@ export default async function handler(req, res) {
               {
                 "autocomplete": {
                   "query": q,
-                  "path": "artist.completion", // Apunta al subcampo .completion
+                  "path": "artist.completion",
                   "tokenOrder": "sequential",
                   "score": { "boost": { "value": 2 } }
                 }
@@ -46,18 +71,14 @@ export default async function handler(req, res) {
               {
                 "text": {
                   "query": q,
-                  "path": {
-                    "wildcard": "*"
-                  },
+                  "path": { "wildcard": "*" },
                   "fuzzy": { "maxEdits": 1 }
                 }
               },
               {
                 "text": {
                   "query": q,
-                  "path": {
-                    "wildcard": "*"
-                  },
+                  "path": { "wildcard": "*" },
                   "synonyms": "flamencoSynonyms"
                 }
               }
@@ -65,9 +86,7 @@ export default async function handler(req, res) {
           }
         }
       },
-      {
-        $limit: 20
-      },
+      { $limit: 20 },
       {
         $project: {
           _id: 1,
@@ -81,9 +100,43 @@ export default async function handler(req, res) {
         }
       }
     ];
-    // --- FIN DEL PIPELINE CORREGIDO ---
 
-    const results = await collection.aggregate(pipeline).toArray();
+    let results = await collection.aggregate(pipeline).toArray();
+
+    if (results.length === 0) {
+      console.log(`No results for "${q}", trying AI rescue...`);
+      const aiSynonyms = await getAiSynonyms(q);
+
+      if (aiSynonyms && aiSynonyms.length > 0) {
+        console.log(`AI synonyms for "${q}": ${aiSynonyms.join(', ')}`);
+        const rescueQuery = aiSynonyms.join(' | ');
+        const rescuePipeline = [
+          {
+            $search: {
+              index: 'default',
+              text: {
+                query: rescueQuery,
+                path: { wildcard: '*' }
+              }
+            }
+          },
+          { $limit: 20 },
+          {
+            $project: {
+              _id: 1,
+              title: 1,
+              city: 1,
+              venue: 1,
+              startDate: 1,
+              imageUrl: 1,
+              slug: 1,
+              score: { $meta: "searchScore" }
+            }
+          }
+        ];
+        results = await collection.aggregate(rescuePipeline).toArray();
+      }
+    }
 
     res.status(200).json(results);
   } catch (error) {
