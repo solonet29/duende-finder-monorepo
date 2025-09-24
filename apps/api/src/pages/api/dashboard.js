@@ -72,9 +72,19 @@ export default async function handler(req, res) {
             Event.find({ date: todayString }, { projection: lightweightProjection, limit: 10, sort: { time: 1 } }).lean(),
             
             // 5. Eventos para los próximos 3 meses
-            ...getNextMonths(3).map(monthKey => 
-                Event.find({ date: { $regex: `^${monthKey}` } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean()
-            )
+            ...getNextMonths(3).map(monthKey => {
+                const startDate = new Date(monthKey + '-01');
+                const endDate = new Date(startDate);
+                endDate.setMonth(endDate.getMonth() + 1);
+
+                const startDateString = startDate.toISOString().split('T')[0];
+                const endDateString = endDate.toISOString().split('T')[0];
+
+                return Event.find(
+                    { date: { $gte: startDateString, $lt: endDateString } },
+                    { projection: lightweightProjection, limit: 10, sort: { date: 1 } }
+                ).lean();
+            })
         ]);
 
         // --- Ensamblaje de la Respuesta ---
