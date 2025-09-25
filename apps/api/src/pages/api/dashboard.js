@@ -67,17 +67,17 @@ export default async function handler(req, res) {
             todayEvents,
             ...monthlyResults
         ] = await Promise.all([
-            // 1. Conteo total de eventos activos (CORREGIDO)
-            Event.countDocuments({ date: { $gte: todayString }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }),
+            // 1. Conteo total de eventos (SIMPLIFICADO PARA DEBUG)
+            Event.countDocuments({ date: { $gte: todayString } }),
 
-            // 2. Eventos destacados (CORREGIDO)
-            Event.find({ featured: true, date: { $gte: todayString }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
+            // 2. Eventos destacados (SIMPLIFICADO PARA DEBUG)
+            Event.find({ date: { $gte: todayString } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
 
-            // 3. Eventos de la semana (CORREGIDO)
-            Event.find({ date: { $gte: todayString, $lte: nextWeekEndString }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
+            // 3. Eventos de la semana (SIMPLIFICADO PARA DEBUG)
+            Event.find({ date: { $gte: todayString, $lte: nextWeekEndString } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
 
-            // 4. Eventos de hoy (CORREGIDO)
-            Event.find({ date: { $gte: todayString, $lt: tomorrowString }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }, { projection: lightweightProjection, limit: 10, sort: { time: 1 } }).lean(),
+            // 4. Eventos de hoy (SIMPLIFICADO PARA DEBUG)
+            Event.find({ date: { $gte: todayString, $lt: tomorrowString } }, { projection: lightweightProjection, limit: 10, sort: { time: 1 } }).lean(),
             
             // 5. Eventos para los próximos 3 meses
             ...getNextMonths(3).map(monthKey => {
