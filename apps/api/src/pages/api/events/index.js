@@ -102,7 +102,8 @@ export default async function handler(req, res) {
         // Ordenación
         let sortOrder = { date: 1 };
         if (sort === 'date' && req.query.order === 'desc') sortOrder = { date: -1 };
-        if (search && !lat) sortOrder = { score: { $meta: "textScore" } };
+        // No se puede ordenar por textScore cuando se usa $regex. Se usará el orden por defecto (fecha).
+        // if (search && !lat) sortOrder = { score: { $meta: "textScore" } };
         if (!lat) aggregationPipeline.push({ $sort: sortOrder });
 
         // --- LÓGICA DE PAGINACIÓN ---
