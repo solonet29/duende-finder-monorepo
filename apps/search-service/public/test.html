@@ -1,68 +1,137 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prueba de Búsqueda - Meilisearch</title>
     <style>
-        body { font-family: sans-serif; background-color: #1a1a1a; color: #e0e0e0; padding: 20px; }
-        h1 { text-align: center; color: #E58A2D; }
-        .search-container { display: flex; max-width: 600px; margin: 20px auto; }
-        input { flex-grow: 1; padding: 10px; font-size: 1rem; border: 1px solid #444; background: #2a2a2a; color: #e0e0e0; border-radius: 5px 0 0 5px; }
-        button { padding: 10px 15px; font-size: 1rem; background: #E58A2D; color: white; border: none; cursor: pointer; border-radius: 0 5px 5px 0; }
-        pre { background-color: #2a2a2a; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; border: 1px solid #444; }
-        #status { text-align: center; margin-top: 15px; font-style: italic; color: #888; }
+        body {
+            font-family: sans-serif;
+            background-color: #222;
+            color: #eee;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ff9800;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background: #333;
+            color: #eee;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: #ff9800;
+            color: #222;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #results {
+            border-top: 1px solid #555;
+            padding-top: 20px;
+        }
+
+        .result-item {
+            padding: 15px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background: #333;
+        }
+
+        .result-item h3 {
+            margin: 0 0 5px;
+            color: #ffb74d;
+        }
+
+        .result-item p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .error {
+            color: #ff5252;
+            text-align: center;
+        }
     </style>
 </head>
+
 <body>
 
     <h1>Banco de Pruebas - Search Service</h1>
-    
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Buscar en Meilisearch...">
-        <button id="search-button">Buscar</button>
-    </div>
 
-    <div id="status"></div>
-    <pre id="results"></pre>
+    <form id="search-form">
+        <input type="text" id="query-input" placeholder="Buscar en Meilisearch..." required>
+        <button type="submit">Buscar</button>
+    </form>
+
+    <div id="results"></div>
 
     <script>
-        const searchInput = document.getElementById('search-input');
-        const searchButton = document.getElementById('search-button');
+        const form = document.getElementById('search-form');
+        const input = document.getElementById('query-input');
         const resultsContainer = document.getElementById('results');
-        const statusContainer = document.getElementById('status');
 
-        const performSearch = async () => {
-            const query = searchInput.value;
-            if (!query) {
-                resultsContainer.textContent = 'Escribe algo para buscar.';
-                return;
-            }
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = input.value.trim();
+            if (!query) return;
 
-            statusContainer.textContent = 'Buscando...';
-            resultsContainer.textContent = '';
+            resultsContainer.innerHTML = '<p>Buscando...</p>';
 
             try {
-                // El fetch apunta al endpoint /search del propio servicio
+                // Hacemos la llamada a nuestro propio servidor, que está en la misma dirección
                 const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
-                const data = await response.json();
-                
-                resultsContainer.textContent = JSON.stringify(data, null, 2);
-                statusContainer.textContent = `Búsqueda completada en ${data.processingTimeMs || 'N/A'} ms. Encontrados ${data.estimatedTotalHits || data.hits.length} resultados.`;
+
+                if (!response.ok) {
+                    throw new Error(`Error del servidor: ${response.statusText}`);
+                }
+
+                const hits = await response.json();
+                renderResults(hits);
 
             } catch (error) {
-                resultsContainer.textContent = `Error: ${error.message}`;
-                statusContainer.textContent = 'Fallo en la búsqueda.';
-            }
-        };
-
-        searchButton.addEventListener('click', performSearch);
-        searchInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') {
-                performSearch();
+                console.error('Error en la búsqueda:', error);
+                resultsContainer.innerHTML = `<p class="error">Falló la búsqueda. Asegúrate de que el servidor ('npm start') está corriendo.</p>`;
             }
         });
+
+        function renderResults(hits) {
+            if (hits.length === 0) {
+                resultsContainer.innerHTML = '<p>No se encontraron resultados.</p>';
+                return;
+            }
+            resultsContainer.innerHTML = hits.map(hit => `
+                <div class="result-item">
+                    <h3>${hit.name || 'Sin título'}</h3>
+                    <p>${hit.artist || 'Artista desconocido'}</p>
+                    <small>${hit.city || 'Ubicación desconocida'}</small>
+                </div>
+            `).join('');
+        }
     </script>
 
 </body>
+
 </html>

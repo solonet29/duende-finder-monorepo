@@ -1,58 +1,49 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const { MeiliSearch } = require('meilisearch');
+// Contenido completo y correcto para index.js
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import { MeiliSearch } from 'meilisearch';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// --- Configuración y Clientes ---
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Cliente de Meilisearch (configuración básica)
 const client = new MeiliSearch({
   host: process.env.MEILISEARCH_HOST || 'http://127.0.0.1:7700',
   apiKey: process.env.MEILISEARCH_API_KEY,
 });
 
-// --- Middlewares ---
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); // Para servir nuestra página de prueba
 
-// --- Endpoints ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(path.join(__dirname, 'public')));
 
-/**
- * Endpoint de Búsqueda
- * Recibe una consulta y la pasa a Meilisearch.
- */
+// Esta es la ruta que faltaba en la versión que se está ejecutando
 app.get('/search', async (req, res) => {
   const query = req.query.q;
-
   if (!query) {
-    return res.status(400).json({ error: 'El parámetro de búsqueda \'q\' es requerido.' });
+    return res.status(400).json({ error: "El parámetro de búsqueda 'q' es requerido." });
   }
-
   try {
-    // Aquí irá la lógica de búsqueda con Meilisearch
-    // Por ahora, devolvemos un resultado de ejemplo
-    console.log(`Búsqueda recibida: ${query}`);
-    const mockResponse = {
-        hits: [{ id: 1, name: "Resultado de ejemplo", artist: "Artista Ejemplo" }],
-        query: query,
-        processingTimeMs: 2,
-        limit: 20,
-        offset: 0,
-        estimatedTotalHits: 1
-    };
-    res.json(mockResponse);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayTimestamp = Math.floor(today.getTime() / 1000);
+    const filter = `date >= ${todayTimestamp}`;
 
+    const searchResults = await client.index('events').search(query, {
+      limit: 20,
+      filter: [filter]
+    });
+    res.json(searchResults.hits);
   } catch (error) {
     console.error('Error al buscar en Meilisearch:', error);
     res.status(500).json({ error: 'Error interno del servidor de búsqueda.' });
   }
 });
 
-// --- Iniciar Servidor ---
 app.listen(PORT, () => {
   console.log(`🚀 Search-service escuchando en http://localhost:${PORT}`);
-  console.log(`   Página de prueba disponible en http://localhost:${PORT}/test.html`);
 });

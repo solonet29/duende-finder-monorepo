@@ -13,7 +13,8 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "meilisearch": "^0.40.0",
-    "mongodb": "^6.18.0"
+    "mongodb": "^6.18.0",
+    "mongoose": "^8.18.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

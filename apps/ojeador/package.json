@@ -5,8 +5,8 @@
   "main": "api/getArtists.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node api/getArtists.js",
-        "dev": "node api/findArtists.js",
+    "start": "node api/findArtists.js",
+    "dev": "node api/findArtists.js",
     "build": "echo \"No build required\""
   },
   "dependencies": {

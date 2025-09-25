@@ -1,0 +1,35 @@
+services:
+  meilisearch:
+    image: 'getmeili/meilisearch:latest'
+    container_name: meili
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_MASTER_KEY: 'DuendeFinder_Master_Key_1234'
+    volumes:
+      - meili_data:/meili_data
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:7700/health" ]
+      interval: 1s
+      timeout: 5s
+      retries: 30
+
+  search-service:
+    build:
+      context: ./apps/search-service
+      dockerfile: Dockerfile
+    container_name: search-service
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./apps/search-service/.env
+    volumes:
+      - ./apps/search-service:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      meilisearch:
+        condition: service_healthy
+    command: npm run dev
+
+volumes:
+  meili_data:
