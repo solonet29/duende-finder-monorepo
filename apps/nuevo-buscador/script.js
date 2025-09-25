@@ -946,7 +946,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
                     const targetId = filterChip.getAttribute('href');
-                    if (targetId) {
+                    if (targetId && targetId !== '#') { // Check for valid targetId
                         const targetSection = document.querySelector(targetId);
                         if (targetSection) {
                             const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
