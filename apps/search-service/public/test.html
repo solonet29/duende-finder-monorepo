@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Búsqueda - Meilisearch</title>
+    <style>
+        body { font-family: sans-serif; background-color: #1a1a1a; color: #e0e0e0; padding: 20px; }
+        h1 { text-align: center; color: #E58A2D; }
+        .search-container { display: flex; max-width: 600px; margin: 20px auto; }
+        input { flex-grow: 1; padding: 10px; font-size: 1rem; border: 1px solid #444; background: #2a2a2a; color: #e0e0e0; border-radius: 5px 0 0 5px; }
+        button { padding: 10px 15px; font-size: 1rem; background: #E58A2D; color: white; border: none; cursor: pointer; border-radius: 0 5px 5px 0; }
+        pre { background-color: #2a2a2a; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; border: 1px solid #444; }
+        #status { text-align: center; margin-top: 15px; font-style: italic; color: #888; }
+    </style>
+</head>
+<body>
+
+    <h1>Banco de Pruebas - Search Service</h1>
+    
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Buscar en Meilisearch...">
+        <button id="search-button">Buscar</button>
+    </div>
+
+    <div id="status"></div>
+    <pre id="results"></pre>
+
+    <script>
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const resultsContainer = document.getElementById('results');
+        const statusContainer = document.getElementById('status');
+
+        const performSearch = async () => {
+            const query = searchInput.value;
+            if (!query) {
+                resultsContainer.textContent = 'Escribe algo para buscar.';
+                return;
+            }
+
+            statusContainer.textContent = 'Buscando...';
+            resultsContainer.textContent = '';
+
+            try {
+                // El fetch apunta al endpoint /search del propio servicio
+                const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                resultsContainer.textContent = JSON.stringify(data, null, 2);
+                statusContainer.textContent = `Búsqueda completada en ${data.processingTimeMs || 'N/A'} ms. Encontrados ${data.estimatedTotalHits || data.hits.length} resultados.`;
+
+            } catch (error) {
+                resultsContainer.textContent = `Error: ${error.message}`;
+                statusContainer.textContent = 'Fallo en la búsqueda.';
+            }
+        };
+
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    </script>
+
+</body>
+</html>
