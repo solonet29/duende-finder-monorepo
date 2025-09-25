@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         searchResultsContainer.innerHTML = ''; // Limpiar resultados anteriores
-        events.forEach(event => {
+        events.forEach((event, index) => {
             const eventElement = document.createElement('div');
             eventElement.className = 'search-result-item';
             eventElement.setAttribute('data-event-id', event._id);
@@ -74,10 +74,24 @@ document.addEventListener('DOMContentLoaded', () => {
             eventElement.innerHTML = `
                 <div class="search-result-info">
                     <h4>${event.name}</h4>
-                    <p>${event.artist || ''} - ${new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                    <p>${event.city || 'Ubicación desconocida'}</p>
+                    <p class="details">
+                        <ion-icon name="person-outline"></ion-icon>
+                        ${event.artist || 'Artista no especificado'}
+                    </p>
+                    <p class="details">
+                        <ion-icon name="calendar-outline"></ion-icon>
+                        ${new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                    <p class="location">
+                        <ion-icon name="location-outline"></ion-icon>
+                        ${event.city || 'Ubicación desconocida'}
+                    </p>
                 </div>
             `;
+
+            // Aplicar el retraso de la animación en cascada
+            eventElement.style.animationDelay = `${index * 60}ms`;
+
             searchResultsContainer.appendChild(eventElement);
         });
     };

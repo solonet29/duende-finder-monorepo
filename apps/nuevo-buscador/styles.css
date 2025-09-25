@@ -991,38 +991,94 @@ header.header-main {
 .search-results-container {
     display: flex;
     flex-direction: column;
+    padding: 0 10px; /* Añadir padding al contenedor para separar del borde del modal */
 }
 
 .search-result-item {
-    padding: 20px 15px; /* Más padding vertical */
+    padding: 20px 10px;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-    border-bottom: 1px solid var(--color-borde); /* Separador de línea */
+    border-bottom: 1px solid var(--color-borde);
+    border-left: 4px solid transparent; /* Borde de acento oculto */
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    opacity: 0; /* Oculto por defecto para la animación de entrada */
+    animation: slide-up-fade-in 0.5s ease-out forwards;
 }
 
 .search-result-item:last-child {
-    border-bottom: none; /* No hay línea en el último elemento */
+    border-bottom: none;
 }
 
 .search-result-item:hover {
-    transform: translateY(-3px); /* Efecto de "levantamiento" */
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transform: translateX(5px); /* Ligero desplazamiento a la derecha */
     background-color: var(--color-superficie);
-    border-radius: 8px; /* Redondear solo en hover */
-    border-color: transparent;
+    border-left-color: var(--color-acento); /* Mostrar borde de acento en hover */
 }
 
 .search-result-info h4 {
-    margin: 0 0 8px 0; /* Más espacio debajo del título */
-    font-size: 1.1rem; /* Título más grande */
-    font-weight: 700; /* Título más pesado */
+    margin: 0 0 12px 0;
+    font-size: 1.2rem; /* Título más grande */
+    font-weight: 700;
     color: var(--color-texto-principal);
+    position: relative;
+    display: inline-block;
 }
 
-.search-result-info p {
-    margin: 0 0 4px 0;
-    font-size: 0.85rem; /* Texto secundario más pequeño */
-    color: var(--color-texto-secundario); /* Color más sutil */
+/* El subrayado animado */
+.search-result-info h4::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: var(--color-acento);
+    transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.search-result-item:hover .search-result-info h4::after {
+    width: 100%;
+}
+
+.search-result-info .details,
+.search-result-info .location {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    color: var(--color-texto-secundario);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-result-info p:last-child {
+    margin-bottom: 0;
+}
+
+.search-result-info .details ion-icon,
+.search-result-info .location ion-icon {
+    color: var(--color-acento);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.search-result-info .location {
+    display: inline-flex;
+    background-color: var(--color-borde);
+    padding: 5px 12px;
+    border-radius: 15px;
+    margin-top: 8px;
+    font-weight: 500;
+}
+
+/* Keyframes para la animación de entrada en cascada */
+@keyframes slide-up-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .search-feedback {
