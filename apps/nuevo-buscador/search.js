@@ -71,11 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             eventElement.setAttribute('data-event-id', event._id);
             eventElement.setAttribute('data-event-slug', event.slug || (event.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-'));
 
-            const placeholderUrl = './assets/flamenco-placeholder.png';
-            const imageUrl = event.imageUrl || placeholderUrl;
-
             eventElement.innerHTML = `
-                <img src="${imageUrl}" alt="${event.name}" onerror="this.onerror=null;this.src='${placeholderUrl}'">
                 <div class="search-result-info">
                     <h4>${event.name}</h4>
                     <p>${event.artist || ''} - ${new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>

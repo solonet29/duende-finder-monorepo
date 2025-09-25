@@ -260,12 +260,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function initializeDashboard() {
-        // Mostrar elementos de la página principal
+        // --- 1. Asegurar visibilidad de elementos de la página principal ---
+        const heroHeader = document.querySelector('.hero-header');
+        if (heroHeader) heroHeader.style.display = 'block';
+        
         const filterBar = document.querySelector('.filter-bar');
         if (filterBar) filterBar.style.display = 'flex';
+        
         const actionsContainer = document.querySelector('.main-actions-container');
         if (actionsContainer) actionsContainer.style.display = 'flex';
 
+        const eventStats = document.getElementById('event-stats');
+        if(eventStats) eventStats.innerHTML = 'Descubre la magia del flamenco.'; // Subtítulo estático
+
+        // --- 2. Lógica de carga de sliders (revertida a /api/events) ---
         console.log("✅ Paso 1: Entrando en initializeDashboard (modo API/EVENTS).");
 
         const sliders = [featuredSlider, weekSlider, todaySlider];
@@ -1009,12 +1017,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (eventPageMatch && eventPageMatch[1]) {
             const eventId = eventPageMatch[1];
             try {
-                // Ocultar elementos de la página principal
+                // --- 1. Modificar UI para la página de evento ---
+                // Ocultar filtros y búsqueda
                 const filterBar = document.querySelector('.filter-bar');
                 if (filterBar) filterBar.style.display = 'none';
                 const actionsContainer = document.querySelector('.main-actions-container');
                 if (actionsContainer) actionsContainer.style.display = 'none';
 
+                // Cambiar subtítulo del hero
+                const eventStats = document.getElementById('event-stats');
+                if(eventStats) eventStats.innerHTML = '<h2>EVENTO DISPONIBLE</h2>';
+
+                // --- 2. Cargar datos del evento ---
                 mainContainer.innerHTML = `<div class="loading-container"><div class="loader"></div><p>Cargando evento...</p></div>`;
 
                 let eventData = eventsCache[eventId];
