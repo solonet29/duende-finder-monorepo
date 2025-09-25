@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getApiBaseUrl = () => {
         const hostname = window.location.hostname;
-        if (hostname.includes('localhost')) {
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
             return 'http://localhost:3000';
         }
         return 'https://api-v2.afland.es';
