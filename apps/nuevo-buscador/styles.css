@@ -1236,3 +1236,68 @@ header.header-main {
 .back-to-list-link ion-icon {
   font-size: 1.2em;
 }
+
+/* ==========================================================================
+   12. ESTILOS PARA ACCIONES PRINCIPALES (BÚSQUEDA Y MAPA)
+   ========================================================================== */
+
+.main-actions-container {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.main-actions-container .search-bar-container {
+    flex-grow: 1;
+    margin: 0; /* Reset margin as it's now in a flex container */
+}
+
+.map-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px; /* Padding horizontal */
+    height: 48px; /* Misma altura que la barra de búsqueda */
+    border: 1px solid var(--color-borde);
+    background-color: var(--color-superficie);
+    color: var(--color-texto-principal);
+    border-radius: 24px; /* Totalmente redondeado */
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    white-space: nowrap;
+}
+
+.map-button:hover {
+    background-color: var(--color-borde);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.map-button ion-icon {
+    font-size: 1.5rem; /* Icono más grande */
+    color: var(--color-acento);
+}
+
+/* Media query para pantallas pequeñas */
+@media (max-width: 600px) {
+    .main-actions-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .map-button span {
+        display: inline; /* Asegurarse de que el texto es visible */
+    }
+}
+
+@media (max-width: 400px) {
+    .map-button span {
+        display: none; /* Ocultar texto en pantallas muy pequeñas */
+    }
+    .map-button {
+        min-width: 48px; /* Asegurar que el botón no colapse */
+        justify-content: center;
+    }
+}

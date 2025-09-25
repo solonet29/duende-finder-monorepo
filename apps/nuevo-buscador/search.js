@@ -1,98 +1,134 @@
 /**
  * @file search.js
- * @description Gestiona la funcionalidad del modal de búsqueda, guiando a los usuarios hacia
- *              las funcionalidades de descubrimiento existentes mientras la búsqueda por texto se finaliza.
+ * @description Gestiona la funcionalidad de búsqueda de eventos.
  * @author Gemini
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // --- 1. Selección de Elementos del DOM ---
-  const searchForm = document.getElementById('header-search-form');
-  const searchModalOverlay = document.getElementById('search-modal-overlay');
-  const searchResultsContainer = document.getElementById('search-results-container');
-  const searchModalCloseBtn = document.getElementById('search-modal-close-btn');
+    // --- 1. Selección de Elementos del DOM ---
+    const headerSearchForm = document.getElementById('header-search-form');
+    const headerSearchInput = document.getElementById('header-search-input');
+    const searchModalOverlay = document.getElementById('search-modal-overlay');
+    const searchResultsContainer = document.getElementById('search-results-container');
+    const searchModalCloseBtn = document.getElementById('search-modal-close-btn');
+    const modalSearchInput = document.getElementById('modal-search-input');
 
-  if (!searchForm || !searchModalOverlay || !searchResultsContainer || !searchModalCloseBtn) {
-    console.error('Error: No se encontraron los elementos esenciales del DOM (header-search-form, search-modal-overlay, search-results-container, search-modal-close-btn).');
-    return;
-  }
+    // --- 2. Configuración ---
+    const getApiBaseUrl = () => {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            return 'http://localhost:3000';
+        }
+        return 'https://api-v2.afland.es';
+    };
+    const API_BASE_URL = getApiBaseUrl();
 
-  // --- 2. Lógica de Eventos ---
+    // --- 3. Funciones ---
 
-  /**
-   * Muestra el modal con contenido dinámico que guía al usuario.
-   */
-  const showGuidingModal = () => {
-    // Contenido HTML dinámico con las URLs e IDs correctos
-    searchResultsContainer.innerHTML = `
-      <div style="padding: 20px; text-align: center;">
-        <h2>Una nueva y potente forma de buscar está en camino</h2>
-        <p>Estamos desarrollando una búsqueda inteligente para que encuentres exactamente lo que quieres. Mientras la preparamos, explora el flamenco con estas opciones:</p>
-        <div class="modal-actions" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
-          <a href="#cerca-section" class="modal-action-button">📍 Explorar cerca de ti</a>
-          <a href="#semana-section" class="modal-action-button">📅 Agenda de la semana</a>
-          <a href="#trip-planner-section" class="modal-action-button">✈️ Planificar un viaje flamenco</a>
-          <a href="#" id="trigger-map-modal" class="modal-action-button">🗺️ Descubrir en el mapa</a>
-        </div>
-        <p class="modal-footer-note" style="margin-top: 20px; font-size: 0.9em; color: #666;">¡Gracias por tu paciencia!</p>
-      </div>
-    `;
-    searchModalOverlay.style.display = 'flex';
-  };
-
-  /**
-   * Oculta el modal.
-   */
-  const hideModal = () => {
-    searchModalOverlay.style.display = 'none';
-  };
-
-  // --- 3. Asignación de Listeners ---
-
-  searchForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    showGuidingModal();
-  });
-
-  searchModalOverlay.addEventListener('click', (event) => {
-    // Si se hace clic en el overlay (fuera del contenido del modal), se cierra
-    if (event.target === searchModalOverlay) {
-      hideModal();
-    }
-  });
-
-  searchModalCloseBtn.addEventListener('click', hideModal);
-
-  searchResultsContainer.addEventListener('click', (event) => {
-    const link = event.target.closest('a');
-    if (!link) return;
-
-    const href = link.getAttribute('href');
-
-    // Comportamiento para el mapa
-    if (link.id === 'trigger-map-modal') {
-        event.preventDefault();
-        hideModal();
-        // Simulamos un clic en el botón que ya existe para mostrar el mapa
-        document.getElementById('show-map-btn')?.click();
-        return;
-    }
-
-    if (href && href.startsWith('#')) {
-      event.preventDefault();
-      const targetElement = document.querySelector(href);
-      hideModal();
-
-      if (targetElement) {
-        // Si es el planificador de viajes, lo abrimos también
-        if(href === '#trip-planner-section' && !targetElement.classList.contains('active')){
-            targetElement.querySelector('#trip-planner-toggle')?.click();
+    /**
+     * Ejecuta la búsqueda y muestra los resultados en el modal.
+     * @param {string} query - El término de búsqueda.
+     */
+    const performSearch = async (query) => {
+        if (!query || query.trim().length < 2) {
+            searchResultsContainer.innerHTML = '<div class="search-feedback">Escribe al menos 2 caracteres para buscar.</div>';
+            return;
         }
 
-        setTimeout(() => {
-          targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-      }
-    }
-  });
+        // Mostrar modal y estado de carga
+        searchModalOverlay.style.display = 'flex';
+        searchResultsContainer.innerHTML = '<div class="search-feedback">Buscando...</div>';
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/events?search=${encodeURIComponent(query)}`);
+            if (!response.ok) {
+                throw new Error('La búsqueda falló');
+            }
+            const data = await response.json();
+            renderSearchResults(data.events || []);
+        } catch (error) {
+            console.error('Error en la búsqueda:', error);
+            searchResultsContainer.innerHTML = '<div class="search-feedback">Ocurrió un error al buscar. Inténtalo de nuevo.</div>';
+        }
+    };
+
+    /**
+     * Renderiza los resultados de la búsqueda en el contenedor.
+     * @param {Array} events - Array de eventos encontrados.
+     */
+    const renderSearchResults = (events) => {
+        if (events.length === 0) {
+            searchResultsContainer.innerHTML = '<div class="search-feedback">No se encontraron resultados. Por favor, refina tu búsqueda.</div>';
+            return;
+        }
+
+        searchResultsContainer.innerHTML = ''; // Limpiar resultados anteriores
+        events.forEach(event => {
+            const eventElement = document.createElement('div');
+            eventElement.className = 'search-result-item';
+            eventElement.setAttribute('data-event-id', event._id);
+            eventElement.setAttribute('data-event-slug', event.slug || (event.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+
+            const placeholderUrl = './assets/flamenco-placeholder.png';
+            const imageUrl = event.imageUrl || placeholderUrl;
+
+            eventElement.innerHTML = `
+                <img src="${imageUrl}" alt="${event.name}" onerror="this.onerror=null;this.src='${placeholderUrl}'">
+                <div class="search-result-info">
+                    <h4>${event.name}</h4>
+                    <p>${event.artist || ''} - ${new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <p>${event.city || 'Ubicación desconocida'}</p>
+                </div>
+            `;
+            searchResultsContainer.appendChild(eventElement);
+        });
+    };
+
+    /**
+     * Oculta el modal de búsqueda.
+     */
+    const hideModal = () => {
+        searchModalOverlay.style.display = 'none';
+    };
+
+    // --- 4. Asignación de Listeners ---
+
+    // Al enviar el formulario de la cabecera
+    headerSearchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const query = headerSearchInput.value;
+        modalSearchInput.value = query; // Sincronizar inputs
+        performSearch(query);
+    });
+
+    // Búsqueda en tiempo real en el input del modal
+    let searchTimeout;
+    modalSearchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const query = modalSearchInput.value;
+            performSearch(query);
+        }, 300); // Debounce de 300ms
+    });
+
+    // Cerrar el modal
+    searchModalCloseBtn.addEventListener('click', hideModal);
+    searchModalOverlay.addEventListener('click', (e) => {
+        if (e.target === searchModalOverlay) {
+            hideModal();
+        }
+    });
+
+    // Clic en un resultado de búsqueda
+    searchResultsContainer.addEventListener('click', (e) => {
+        const resultItem = e.target.closest('.search-result-item');
+        if (resultItem) {
+            const eventId = resultItem.dataset.eventId;
+            const eventSlug = resultItem.dataset.eventSlug;
+            if (eventId) {
+                // Asumimos que la navegación a la página del evento es la acción deseada
+                window.location.href = `/eventos/${eventId}-${eventSlug}`;
+            }
+        }
+    });
 });

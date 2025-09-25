@@ -67,20 +67,25 @@
                 <a href="#semana-section" class="filter-chip">Esta Semana</a>
                 <a href="#hoy-section" class="filter-chip">Hoy</a>
                 <a href="#cerca-section" class="filter-chip" data-filter="cerca">Cerca de Mí</a>
-                <a href="#" id="show-map-btn" class="filter-chip">Ver en mapa</a>
             </nav>
         </div>
     </header>
 
     <main class="container">
-        <!-- Search Bar Start -->
-        <form class="search-bar-container" id="header-search-form">
-            <input type="text" id="header-search-input" class="search-input" placeholder="Buscar artistas, ciudades, tablaos...">
-            <button type="submit" class="search-button">
-                <ion-icon name="search-outline"></ion-icon>
+        <!-- Search and Map Actions -->
+        <div class="main-actions-container">
+            <form class="search-bar-container" id="header-search-form">
+                <input type="text" id="header-search-input" class="search-input" placeholder="Buscar artistas, ciudades, tablaos...">
+                <button type="submit" class="search-button">
+                    <ion-icon name="search-outline"></ion-icon>
+                </button>
+            </form>
+            <button id="show-map-btn" class="map-button">
+                <ion-icon name="map-outline"></ion-icon>
+                <span>Ver en mapa</span>
             </button>
-        </form>
-        <!-- Search Bar End -->
+        </div>
+        <!-- End Search and Map Actions -->
         <section id="trip-planner-section" class="trip-planner-section">
             <h2 id="trip-planner-toggle">
                 Planificador de Viaje 🗺️
