@@ -53,6 +53,11 @@ export default async function handler(req, res) {
         const nextWeekEnd = new Date(todayStart);
         nextWeekEnd.setDate(todayStart.getDate() + 7);
 
+        // --- Conversión a Strings YYYY-MM-DD para consistencia ---
+        const todayString = todayStart.toISOString().split('T')[0];
+        const tomorrowString = tomorrowStart.toISOString().split('T')[0];
+        const nextWeekEndString = nextWeekEnd.toISOString().split('T')[0];
+
         // --- Consultas a la Base de Datos en Paralelo ---
 
         const [
@@ -63,16 +68,16 @@ export default async function handler(req, res) {
             ...monthlyResults
         ] = await Promise.all([
             // 1. Conteo total de eventos activos (CORREGIDO)
-            Event.countDocuments({ date: { $gte: todayStart }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }),
+            Event.countDocuments({ date: { $gte: todayString }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }),
 
             // 2. Eventos destacados (CORREGIDO)
-            Event.find({ featured: true, date: { $gte: todayStart }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
+            Event.find({ featured: true, date: { $gte: todayString }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
 
             // 3. Eventos de la semana (CORREGIDO)
-            Event.find({ date: { $gte: todayStart, $lte: nextWeekEnd }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
+            Event.find({ date: { $gte: todayString, $lte: nextWeekEndString }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
 
             // 4. Eventos de hoy (CORREGIDO)
-            Event.find({ date: { $gte: todayStart, $lt: tomorrowStart }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }, { projection: lightweightProjection, limit: 10, sort: { time: 1 } }).lean(),
+            Event.find({ date: { $gte: todayString, $lt: tomorrowString }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }, { projection: lightweightProjection, limit: 10, sort: { time: 1 } }).lean(),
             
             // 5. Eventos para los próximos 3 meses
             ...getNextMonths(3).map(monthKey => {
