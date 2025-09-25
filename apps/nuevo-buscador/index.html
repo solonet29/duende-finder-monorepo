@@ -72,7 +72,7 @@
     </header>
 
     <main class="container">
-        <!-- Search and Map Actions -->
+        <!-- Search Actions -->
         <div class="main-actions-container">
             <form class="search-bar-container" id="header-search-form">
                 <input type="text" id="header-search-input" class="search-input" placeholder="Buscar artistas, ciudades, tablaos...">
@@ -80,12 +80,8 @@
                     <ion-icon name="search-outline"></ion-icon>
                 </button>
             </form>
-            <button id="show-map-btn" class="map-button">
-                <ion-icon name="map-outline"></ion-icon>
-                <span>Mapa</span>
-            </button>
         </div>
-        <!-- End Search and Map Actions -->
+        <!-- End Search Actions -->
         <section id="trip-planner-section" class="trip-planner-section">
             <h2 id="trip-planner-toggle">
                 Planificador de Viaje 🗺️
@@ -113,19 +109,31 @@
         </section>
 
         <section id="destacados-section" class="sliders-section">
-            <h2>Artistas Destacados 2025</h2>
+            <div class="slider-title-container">
+                <h2>Artistas Destacados 2025</h2>
+                <button class="slider-map-btn"><ion-icon name="map-outline"></ion-icon> Mapa</button>
+            </div>
             <div class="slider-container" id="featured-events-slider"></div>
         </section>
         <section id="semana-section" class="sliders-section">
-            <h2>Esta Semana 🔥</h2>
+            <div class="slider-title-container">
+                <h2>Esta Semana 🔥</h2>
+                <button class="slider-map-btn"><ion-icon name="map-outline"></ion-icon> Mapa</button>
+            </div>
             <div class="slider-container" id="week-events-slider"></div>
         </section>
         <section id="hoy-section" class="sliders-section">
-            <h2>Eventos para Hoy 📅</h2>
+            <div class="slider-title-container">
+                <h2>Eventos para Hoy 📅</h2>
+                <button class="slider-map-btn"><ion-icon name="map-outline"></ion-icon> Mapa</button>
+            </div>
             <div class="slider-container" id="today-events-slider"></div>
         </section>
         <section id="cerca-section" class="sliders-section" style="display: none;">
-            <h2>Cerca de Ti 📍</h2>
+            <div class="slider-title-container">
+                <h2>Cerca de Ti 📍</h2>
+                <button class="slider-map-btn"><ion-icon name="map-outline"></ion-icon> Mapa</button>
+            </div>
             <div class="slider-container" id="nearby-events-slider"></div>
         </section>
         <div id="monthly-sliders-container"></div>

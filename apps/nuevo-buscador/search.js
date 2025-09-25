@@ -30,13 +30,15 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} query - El término de búsqueda.
      */
     const performSearch = async (query) => {
+        // Siempre mostrar el modal al iniciar una búsqueda
+        searchModalOverlay.classList.add('visible');
+
         if (!query || query.trim().length < 2) {
             searchResultsContainer.innerHTML = '<div class="search-feedback">Escribe al menos 2 caracteres para buscar.</div>';
             return;
         }
 
-        // Mostrar modal y estado de carga
-        searchModalOverlay.style.display = 'flex';
+        // Mostrar estado de carga
         searchResultsContainer.innerHTML = '<div class="search-feedback">Buscando...</div>';
 
         try {
@@ -88,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * Oculta el modal de búsqueda.
      */
     const hideModal = () => {
-        searchModalOverlay.style.display = 'none';
+        searchModalOverlay.classList.remove('visible');
     };
 
     // --- 4. Asignación de Listeners ---

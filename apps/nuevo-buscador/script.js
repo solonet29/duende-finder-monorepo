@@ -121,15 +121,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function openMapModal() {
-        if (!mapModalOverlay) return;
-        const eventsToShow = getEventsForMap();
+    function openMapModal(sliderContainer) {
+        if (!mapModalOverlay || !sliderContainer) return;
+
+        const eventCards = sliderContainer.querySelectorAll('.event-card');
+        const eventIds = Array.from(eventCards).map(card => card.dataset.eventId);
+        const eventsToShow = eventIds.map(id => eventsCache[id]).filter(Boolean);
+
         if (eventsToShow.length === 0) {
-            alert('No hay eventos para mostrar en el mapa para el filtro actual.');
+            alert('No hay eventos en esta sección para mostrar en el mapa.');
             return;
         }
         mapModalOverlay.classList.add('visible');
-        // Forzamos la invalidación del tamaño del mapa un poco después de que el modal sea visible
         setTimeout(() => initializeModalMap(eventsToShow), 10);
     }
 
@@ -137,40 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mapModalOverlay) {
             mapModalOverlay.classList.remove('visible');
         }
-    }
-
-    function getEventsForMap() {
-        const activeFilter = document.querySelector('.filter-bar .filter-chip.active');
-        let sliderId;
-
-        if (activeFilter) {
-            const filterHref = activeFilter.getAttribute('href');
-            if (filterHref && filterHref.startsWith('#')) {
-                const sectionId = filterHref.substring(1);
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    const slider = section.querySelector('.slider-container');
-                    if (slider) {
-                        sliderId = slider.id;
-                    }
-                }
-            } else if (activeFilter.dataset.filter === 'cerca') {
-                sliderId = 'nearby-events-slider';
-            }
-        }
-
-        if (!sliderId) {
-            // Fallback a los eventos destacados si no hay filtro activo
-            sliderId = 'featured-events-slider';
-        }
-
-        const slider = document.getElementById(sliderId);
-        if (!slider) return [];
-
-        const eventCards = slider.querySelectorAll('.event-card');
-        const eventIds = Array.from(eventCards).map(card => card.dataset.eventId);
-
-        return eventIds.map(id => eventsCache[id]).filter(Boolean);
     }
 
     function initializeModalMap(events) {
@@ -291,6 +260,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function initializeDashboard() {
+        // Mostrar elementos de la página principal
+        const filterBar = document.querySelector('.filter-bar');
+        if (filterBar) filterBar.style.display = 'flex';
+        const actionsContainer = document.querySelector('.main-actions-container');
+        if (actionsContainer) actionsContainer.style.display = 'flex';
+
         console.log("✅ Paso 1: Entrando en initializeDashboard (modo API/EVENTS).");
 
         const sliders = [featuredSlider, weekSlider, todaySlider];
@@ -403,14 +378,24 @@ document.addEventListener('DOMContentLoaded', () => {
             section.className = 'sliders-section';
             section.id = `month-${monthKey}-section`;
 
+            const titleContainer = document.createElement('div');
+            titleContainer.className = 'slider-title-container';
+
             const title = document.createElement('h2');
             title.textContent = titleText;
+
+            const mapButton = document.createElement('button');
+            mapButton.className = 'slider-map-btn';
+            mapButton.innerHTML = '<ion-icon name="map-outline"></ion-icon> Mapa';
+
+            titleContainer.appendChild(title);
+            titleContainer.appendChild(mapButton);
 
             const sliderContainer = document.createElement('div');
             sliderContainer.className = 'slider-container';
             sliderContainer.id = `slider-month-${monthKey}`;
 
-            section.appendChild(title);
+            section.appendChild(titleContainer);
             section.appendChild(sliderContainer);
             monthlySlidersContainer.appendChild(section);
 
@@ -855,14 +840,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.body.addEventListener('click', async (e) => {
             const sliderCard = e.target.closest('.slider-container .event-card');
-            // Se ha movido la lógica del botón gemini al contenedor de la página del evento para que sea más robusto
             const geminiBtn = e.target.closest('.action-button.primary');
             const modalOverlay = e.target.closest('.modal-overlay:not(#welcome-modal-overlay)');
             const modalCloseBtn = e.target.closest('.modal-close-btn');
             const requestLocationBtn = e.target.closest('#request-location-btn');
             const shareBtn = e.target.closest('.share-btn');
+            const sliderMapBtn = e.target.closest('.slider-map-btn');
 
-            if (sliderCard) {
+            if (sliderMapBtn) {
+                const sliderSection = sliderMapBtn.closest('.sliders-section');
+                if (sliderSection) {
+                    const sliderContainer = sliderSection.querySelector('.slider-container');
+                    if (sliderContainer) {
+                        openMapModal(sliderContainer);
+                    }
+                }
+            } else if (sliderCard) {
                 const eventId = sliderCard.dataset.eventId;
                 if (eventId) {
                     if (APP_CONFIG.USAR_PAGINAS_DE_EVENTOS) {
@@ -994,12 +987,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tripSearchBtn.addEventListener('click', fetchTripEvents);
         }
 
-        if (showMapBtn) {
-            showMapBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                openMapModal();
-            });
-        }
         if (closeMapModalBtn) {
             closeMapModalBtn.addEventListener('click', closeMapModal);
         }
@@ -1022,6 +1009,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (eventPageMatch && eventPageMatch[1]) {
             const eventId = eventPageMatch[1];
             try {
+                // Ocultar elementos de la página principal
+                const filterBar = document.querySelector('.filter-bar');
+                if (filterBar) filterBar.style.display = 'none';
+                const actionsContainer = document.querySelector('.main-actions-container');
+                if (actionsContainer) actionsContainer.style.display = 'none';
+
                 mainContainer.innerHTML = `<div class="loading-container"><div class="loader"></div><p>Cargando evento...</p></div>`;
 
                 let eventData = eventsCache[eventId];

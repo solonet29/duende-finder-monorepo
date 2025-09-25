@@ -1253,32 +1253,40 @@ header.header-main {
     margin: 0; /* Reset margin as it's now in a flex container */
 }
 
-.map-button {
+.slider-title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.slider-title-container h2 {
+    margin: 0;
+}
+
+.slider-map-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 0 16px; /* Padding horizontal */
-    height: 48px; /* Misma altura que la barra de búsqueda */
+    gap: 6px;
+    padding: 6px 12px;
     border: 1px solid var(--color-borde);
     background-color: var(--color-superficie);
-    color: var(--color-texto-principal);
-    border-radius: 24px; /* Totalmente redondeado */
-    font-size: 0.9rem;
+    color: var(--color-texto-secundario);
+    border-radius: 20px;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s, box-shadow 0.3s;
-    white-space: nowrap;
 }
 
-.map-button:hover {
+.slider-map-btn:hover {
     background-color: var(--color-borde);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.map-button ion-icon {
-    font-size: 1.5rem; /* Icono más grande */
-    color: var(--color-acento);
+.slider-map-btn ion-icon {
+    font-size: 1.2rem;
 }
+
 
 /* Media query para pantallas pequeñas */
 @media (max-width: 600px) {
