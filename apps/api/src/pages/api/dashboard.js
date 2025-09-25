@@ -63,16 +63,16 @@ export default async function handler(req, res) {
             ...monthlyResults
         ] = await Promise.all([
             // 1. Conteo total de eventos activos (CORREGIDO)
-            Event.countDocuments({ date: { $gte: todayStart }, contentStatus: { $in: ['content_ready', 'published'] } }),
+            Event.countDocuments({ date: { $gte: todayStart }, contentStatus: { $in: ['content_ready', 'published', 'pending'] } }),
 
             // 2. Eventos destacados (CORREGIDO)
-            Event.find({ featured: true, date: { $gte: todayStart }, contentStatus: { $in: ['content_ready', 'published'] } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
+            Event.find({ featured: true, date: { $gte: todayStart }, contentStatus: { $in: ['content_ready', 'published', 'pending'] } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
 
             // 3. Eventos de la semana (CORREGIDO)
-            Event.find({ date: { $gte: todayStart, $lte: nextWeekEnd }, contentStatus: { $in: ['content_ready', 'published'] } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
+            Event.find({ date: { $gte: todayStart, $lte: nextWeekEnd }, contentStatus: { $in: ['content_ready', 'published', 'pending'] } }, { projection: lightweightProjection, limit: 10, sort: { date: 1 } }).lean(),
 
             // 4. Eventos de hoy (CORREGIDO)
-            Event.find({ date: { $gte: todayStart, $lt: tomorrowStart }, contentStatus: { $in: ['content_ready', 'published'] } }, { projection: lightweightProjection, limit: 10, sort: { time: 1 } }).lean(),
+            Event.find({ date: { $gte: todayStart, $lt: tomorrowStart }, contentStatus: { $in: ['content_ready', 'published', 'pending'] } }, { projection: lightweightProjection, limit: 10, sort: { time: 1 } }).lean(),
             
             // 5. Eventos para los próximos 3 meses
             ...getNextMonths(3).map(monthKey => {
