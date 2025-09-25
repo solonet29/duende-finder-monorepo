@@ -7,13 +7,13 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   // --- 1. Selección de Elementos del DOM ---
-  // Apuntamos al ID correcto del formulario de búsqueda del header
   const searchForm = document.getElementById('header-search-form');
-  const searchModal = document.getElementById('search-modal');
-  const modalTextContent = document.getElementById('modal-text-content');
+  const searchModalOverlay = document.getElementById('search-modal-overlay');
+  const searchResultsContainer = document.getElementById('search-results-container');
+  const searchModalCloseBtn = document.getElementById('search-modal-close-btn');
 
-  if (!searchForm || !searchModal || !modalTextContent) {
-    console.error('Error: No se encontraron los elementos esenciales del DOM (header-search-form, search-modal, modal-text-content).');
+  if (!searchForm || !searchModalOverlay || !searchResultsContainer || !searchModalCloseBtn) {
+    console.error('Error: No se encontraron los elementos esenciales del DOM (header-search-form, search-modal-overlay, search-results-container, search-modal-close-btn).');
     return;
   }
 
@@ -24,25 +24,27 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   const showGuidingModal = () => {
     // Contenido HTML dinámico con las URLs e IDs correctos
-    modalTextContent.innerHTML = `
-      <h2>Una nueva y potente forma de buscar está en camino</h2>
-      <p>Estamos desarrollando una búsqueda inteligente para que encuentres exactamente lo que quieres. Mientras la preparamos, explora el flamenco con estas opciones:</p>
-      <div class="modal-actions">
-        <a href="#cerca-section" class="modal-action-button">📍 Explorar cerca de ti</a>
-        <a href="#semana-section" class="modal-action-button">📅 Agenda de la semana</a>
-        <a href="#trip-planner-section" class="modal-action-button">✈️ Planificar un viaje flamenco</a>
-        <a href="#" id="trigger-map-modal" class="modal-action-button">🗺️ Descubrir en el mapa</a>
+    searchResultsContainer.innerHTML = `
+      <div style="padding: 20px; text-align: center;">
+        <h2>Una nueva y potente forma de buscar está en camino</h2>
+        <p>Estamos desarrollando una búsqueda inteligente para que encuentres exactamente lo que quieres. Mientras la preparamos, explora el flamenco con estas opciones:</p>
+        <div class="modal-actions" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+          <a href="#cerca-section" class="modal-action-button">📍 Explorar cerca de ti</a>
+          <a href="#semana-section" class="modal-action-button">📅 Agenda de la semana</a>
+          <a href="#trip-planner-section" class="modal-action-button">✈️ Planificar un viaje flamenco</a>
+          <a href="#" id="trigger-map-modal" class="modal-action-button">🗺️ Descubrir en el mapa</a>
+        </div>
+        <p class="modal-footer-note" style="margin-top: 20px; font-size: 0.9em; color: #666;">¡Gracias por tu paciencia!</p>
       </div>
-      <p class="modal-footer-note">¡Gracias por tu paciencia!</p>
     `;
-    searchModal.style.display = 'flex';
+    searchModalOverlay.style.display = 'flex';
   };
 
   /**
    * Oculta el modal.
    */
   const hideModal = () => {
-    searchModal.style.display = 'none';
+    searchModalOverlay.style.display = 'none';
   };
 
   // --- 3. Asignación de Listeners ---
@@ -52,13 +54,16 @@ document.addEventListener('DOMContentLoaded', () => {
     showGuidingModal();
   });
 
-  searchModal.addEventListener('click', (event) => {
-    if (event.target === searchModal || event.target.closest('.close-button')) {
+  searchModalOverlay.addEventListener('click', (event) => {
+    // Si se hace clic en el overlay (fuera del contenido del modal), se cierra
+    if (event.target === searchModalOverlay) {
       hideModal();
     }
   });
 
-  modalTextContent.addEventListener('click', (event) => {
+  searchModalCloseBtn.addEventListener('click', hideModal);
+
+  searchResultsContainer.addEventListener('click', (event) => {
     const link = event.target.closest('a');
     if (!link) return;
 
@@ -73,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    if (href.startsWith('#')) {
+    if (href && href.startsWith('#')) {
       event.preventDefault();
       const targetElement = document.querySelector(href);
       hideModal();
