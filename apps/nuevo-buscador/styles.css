@@ -1286,18 +1286,4 @@ header.header-main {
         flex-direction: column;
         align-items: stretch;
     }
-
-    .map-button span {
-        display: inline; /* Asegurarse de que el texto es visible */
-    }
-}
-
-@media (max-width: 400px) {
-    .map-button span {
-        display: none; /* Ocultar texto en pantallas muy pequeñas */
-    }
-    .map-button {
-        min-width: 48px; /* Asegurar que el botón no colapse */
-        justify-content: center;
-    }
 }
