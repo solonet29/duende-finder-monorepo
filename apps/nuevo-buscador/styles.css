@@ -988,46 +988,41 @@ header.header-main {
     padding: 10px;
 }
 
+.search-results-container {
+    display: flex;
+    flex-direction: column;
+}
+
 .search-result-item {
-    padding: 15px;
-    border-radius: 12px;
+    padding: 20px 15px; /* Más padding vertical */
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.2s;
-    border: 1px solid transparent; /* Borde inicial transparente */
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    border-bottom: 1px solid var(--color-borde); /* Separador de línea */
 }
 
-/* Estilos para el modo claro */
-[data-theme="light"] .search-result-item {
-    background-color: rgba(255, 255, 255, 0.6);
-    border-color: rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-/* Estilos para el modo oscuro */
-[data-theme="dark"] .search-result-item {
-    background-color: rgba(30, 30, 30, 0.6);
-    border-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+.search-result-item:last-child {
+    border-bottom: none; /* No hay línea en el último elemento */
 }
 
 .search-result-item:hover {
-    transform: scale(1.02);
-    background-color: var(--color-borde);
+    transform: translateY(-3px); /* Efecto de "levantamiento" */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    background-color: var(--color-superficie);
+    border-radius: 8px; /* Redondear solo en hover */
+    border-color: transparent;
 }
 
 .search-result-info h4 {
-    margin: 0 0 4px 0;
-    font-size: 1rem;
-    font-weight: 700;
+    margin: 0 0 8px 0; /* Más espacio debajo del título */
+    font-size: 1.1rem; /* Título más grande */
+    font-weight: 700; /* Título más pesado */
     color: var(--color-texto-principal);
 }
 
 .search-result-info p {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--color-texto-secundario);
+    margin: 0 0 4px 0;
+    font-size: 0.85rem; /* Texto secundario más pequeño */
+    color: var(--color-texto-secundario); /* Color más sutil */
 }
 
 .search-feedback {

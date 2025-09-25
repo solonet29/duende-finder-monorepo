@@ -1026,7 +1026,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Cambiar subtítulo del hero
                 const eventStats = document.getElementById('event-stats');
-                if(eventStats) eventStats.innerHTML = '<h2>EVENTO DISPONIBLE</h2>';
+                if(eventStats) eventStats.textContent = 'Evento disponible';
 
                 // --- 2. Cargar datos del evento ---
                 mainContainer.innerHTML = `<div class="loading-container"><div class="loader"></div><p>Cargando evento...</p></div>`;
