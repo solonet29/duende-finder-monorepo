@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function initializeDashboard() {
-        console.log("✅ Paso 1: Entrando en initializeDashboard.");
+        console.log("✅ Paso 1: Entrando en initializeDashboard (modo API/EVENTS).");
 
         const sliders = [featuredSlider, weekSlider, todaySlider];
         sliders.forEach(slider => {
@@ -305,34 +305,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Ocultar el contador de eventos ya que no tenemos el total
+        const counterElement = document.getElementById('event-stats');
+        if (counterElement) counterElement.style.display = 'none';
+
+        // Ocultar sliders mensuales
+        if (monthlySlidersContainer) monthlySlidersContainer.style.display = 'none';
+
         try {
-            console.log("✅ Paso 2: A punto de ejecutar el fetch a /api/dashboard.");
+            const today = new Date();
+            const todayString = today.toISOString().split('T')[0];
 
-            const response = await fetch(`${API_BASE_URL}/api/dashboard`);
+            const [featuredResponse, weekResponse, todayResponse] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/events?featured=true&limit=10`),
+                fetch(`${API_BASE_URL}/api/events?timeframe=week&limit=10`),
+                fetch(`${API_BASE_URL}/api/events?dateFrom=${todayString}&dateTo=${todayString}&limit=10`)
+            ]);
 
-            console.log("✅ Paso 3: Fetch completado. La respuesta del servidor es:", response);
+            if (!featuredResponse.ok) console.error('Error fetching featured events');
+            if (!weekResponse.ok) console.error('Error fetching week events');
+            if (!todayResponse.ok) console.error('Error fetching today events');
 
-            if (!response.ok) {
-                console.error(`Error en la respuesta de la red: ${response.status} ${response.statusText}`);
-                throw new Error('Failed to fetch initial dashboard data');
-            }
+            const featuredData = await featuredResponse.json();
+            const weekData = await weekResponse.json();
+            const todayData = await todayResponse.json();
 
-            const data = await response.json();
-            console.log("✅ Paso 4: Datos JSON procesados:", data);
+            renderSlider(featuredSlider, featuredData.events || []);
+            renderSlider(weekSlider, weekData.events || []);
+            renderSlider(todaySlider, todayData.events || []);
 
-
-            if (data.totalEvents) {
-                animateEventCounter(data.totalEvents);
-            }
-
-            renderSlider(featuredSlider, data.featuredEvents || []);
-            renderSlider(weekSlider, data.weekEvents || []);
-            renderSlider(todaySlider, data.todayEvents || []);
-
-            if (data.monthlyEvents) {
-                renderMonthlySliders(data.monthlyEvents);
-            }
-
+            // La geolocalización se mantiene igual
             getUserLocation().then(location => {
                 if (location) fetchNearbyEvents();
             }).catch(() => {
@@ -340,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
         } catch (error) {
-            console.error("❌ ERROR FATAL al cargar el dashboard:", error);
+            console.error("❌ ERROR FATAL al cargar el dashboard con API/EVENTS:", error);
             if (mainContainer) mainContainer.innerHTML = '<h2>Oops! No se pudo cargar el contenido.</h2>';
         }
     }
