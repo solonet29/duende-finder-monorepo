@@ -7,7 +7,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // --- CONFIGURACIÓN Y LÓGICA DE GENERACIÓN (Igual que antes) ---
 const BATCH_SIZE = 20; // Un lote pequeño para que cada ejecución sea rápida
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'models/gemini-1.5-flash-latest' });
+const model = genAI.getGenerativeModel({ model: 'models/gemini-2.5-flash' });
 
 const nightPlanPromptTemplate = (event) => `
     Eres "Duende", un conocedor local...
