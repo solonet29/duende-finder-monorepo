@@ -8,16 +8,16 @@ export default async function handler(req, res) {
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
-  const { eventId } = req.query;
+  const { id } = req.query;
 
-  if (!ObjectId.isValid(eventId)) {
+  if (!ObjectId.isValid(id)) {
     return res.status(400).json({ error: 'Invalid event ID' });
   }
 
   try {
     const Event = await getEventModel();
     const result = await Event.updateOne(
-      { _id: new ObjectId(eventId) },
+      { _id: new ObjectId(id) },
       { $set: { 'social.publishedAt': new Date() } }
     );
 

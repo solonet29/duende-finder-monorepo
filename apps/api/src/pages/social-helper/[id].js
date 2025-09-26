@@ -111,15 +111,15 @@ function SocialHelperPage({ event }) {
 }
 
 export async function getServerSideProps(context) {
-  const { eventId } = context.params;
+  const { id } = context.params;
 
-  if (!ObjectId.isValid(eventId)) {
+  if (!ObjectId.isValid(id)) {
     return { notFound: true };
   }
 
   try {
     const Event = await getEventModel();
-    const event = await Event.findById(eventId).lean();
+    const event = await Event.findById(id).lean();
 
     if (!event) {
       return { notFound: true };
