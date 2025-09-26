@@ -80,22 +80,18 @@ ${publicEventUrl}`;
             <h1 style={styles.h1}>Asistente de Contenido para Redes Sociales</h1>
           </header>
 
-          {/* --- NUEVO: Sección para copiar post completo --- */}
           <div style={styles.fieldContainer}>
-            <h2>Publicación completa para Facebook / Redes</h2>
-            <p>Copia y pega este texto directamente en tu publicación. Facebook generará la vista previa del enlace automáticamente.</p>
-            <textarea style={{...styles.textarea, minHeight: '200px'}} defaultValue={fullPostText} readOnly />
-            <button style={{...styles.button, backgroundColor: '#1877F2'}} onClick={() => copyToClipboard(fullPostText)}>Copiar Publicación Completa</button>
-          </div>
-
-          <div style={styles.fieldContainer}>
-            <h2>Compartir Directamente en X</h2>
+            <h2>Compartir Directamente</h2>
             <button style={{...styles.button, ...styles.shareButton}} onClick={shareOnTwitter}>Compartir en X (Twitter)</button>
+            <button style={{...styles.button, ...styles.shareButton, backgroundColor: '#1877F2'}} onClick={shareOnFacebook}>Compartir en Facebook</button>
           </div>
 
           <hr />
 
-          <h2>Componentes individuales</h2>
+          <h2>Publicación completa para Copiar y Pegar</h2>
+          <p>Usa esta opción si quieres añadir texto personalizado a tu publicación en Facebook, Instagram, etc.</p>
+          <textarea style={{...styles.textarea, minHeight: '200px'}} defaultValue={fullPostText} readOnly />
+          <button style={styles.button} onClick={() => copyToClipboard(fullPostText)}>Copiar Publicación Completa</button>
 
           <div style={styles.fieldContainer}>
             <h4>Título del Evento</h4>
