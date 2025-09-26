@@ -1,5 +1,5 @@
 
-import { getEventModel } from '../../../lib/database';
+import { getEventModel } from '@/lib/database';
 import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {

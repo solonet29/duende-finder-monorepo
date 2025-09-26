@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { getEventModel } from '../lib/database';
+import { getEventModel } from '@/lib/database';
 
 function SocialDashboardPage({ initialEvents }) {
   const [events, setEvents] = useState(initialEvents);

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Head from 'next/head';
-import { getEventModel } from '../../lib/database';
+import { getEventModel } from '@/lib/database';
 import { ObjectId } from 'mongodb';
 
 function SocialHelperPage({ event }) {
