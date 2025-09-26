@@ -106,6 +106,8 @@ ${publicEventUrl}`;
           <div style={styles.fieldContainer}>
             <h4>Imagen del Evento</h4>
             {event.imageUrl ? <img src={event.imageUrl} alt="Imagen del evento" style={styles.img} /> : <p>No hay imagen disponible.</p>}
+            <p style={{fontSize: '0.8rem', color: '#666', marginTop: '10px'}}>URL de la imagen:</p>
+            <pre style={{...styles.pre, fontSize: '0.9rem'}}>{event.imageUrl || 'No disponible'}</pre>
           </div>
 
           <div style={styles.fieldContainer}>
