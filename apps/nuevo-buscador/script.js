@@ -545,8 +545,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
 
                     <div class="card-actions-secondary">
-                        <p class="share-title">Compartir:</p>
+                        <p class="share-title">Compartir y Guardar:</p>
                         <div class="share-buttons-container">
+                            <button class="share-btn" data-social="google" title="Añadir a Google Calendar"><ion-icon name="logo-google"></ion-icon></button>
+                            <button class="share-btn" data-social="ics" title="Descargar .ics para Apple/Outlook"><ion-icon name="calendar-outline"></ion-icon></button>
                             <button class="share-btn" data-social="twitter" title="Compartir en Twitter/X"><ion-icon name="logo-twitter"></ion-icon></button>
                             <button class="share-btn" data-social="facebook" title="Compartir en Facebook"><ion-icon name="logo-facebook"></ion-icon></button>
                             <button class="share-btn" data-social="whatsapp" title="Compartir en WhatsApp"><ion-icon name="logo-whatsapp"></ion-icon></button>
@@ -579,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 scrolling="no"
                 marginheight="0"
                 marginwidth="0"
-                src="https://www.openstreetmap.org/export/embed.html?bbox=${lon - 0.01}%2C${lat - 0.01}%2C${lon + 0.01}%2C${lat + 0.01}&layer=mapnik&marker=${lat}%2C${lon}"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=${lon - 0.01}%2C${lat - 0.01}%2C${lon + 0.01}%2C${lat + 0.01}&amp;layer=mapnik&amp;marker=${lat}%2C${lon}"
                 style="border: 1px solid var(--color-borde); border-radius: 12px;">
             </iframe>`;
             mapContainer.innerHTML = mapHtml;
@@ -768,35 +770,53 @@ document.addEventListener('DOMContentLoaded', () => {
         const event = eventsCache[eventId];
         if (!event) {
             console.error('Evento no encontrado en caché para compartir');
-            // Opcional: mostrar un mensaje al usuario
-            alert('No se pudo compartir el evento. Inténtalo de nuevo.');
+            alert('No se pudo procesar la acción. Inténtalo de nuevo.');
             return;
         }
 
         const eventUrl = window.location.href;
-        let shareText;
-
-        try {
-            if (window.ai && (await window.ai.canCreateTextSession()) === "readily") {
-                const session = await window.ai.createTextSession();
-                const prompt = `Genera un texto corto y atractivo para compartir en redes sociales sobre el siguiente evento de flamenco. Incluye el nombre del evento, el artista y la ciudad. Máximo 280 caracteres. El evento es: ${event.name} con ${event.artist} en ${event.city}.`;
-                shareText = await session.prompt(prompt);
-                session.destroy();
-            } else {
-                throw new Error('window.ai no disponible o no listo.');
-            }
-        } catch (e) {
-            console.log('Fallback a texto de compartido por defecto:', e.message);
-            shareText = event.description || `${event.name} con ${event.artist}`;
-        }
+        const eventName = event.name || 'Evento de Flamenco';
+        // Simplificado: Usar la descripción del evento directamente para compartir.
+        const shareText = event.description || `No te pierdas ${eventName}`;
+        const location = [event.venue, event.city, event.country].filter(Boolean).join(', ');
 
         let shareUrl;
+
         switch (socialPlatform) {
+            case 'google':
+                // Formato de fecha para Google Calendar: YYYYMMDDTHHMMSSZ
+                const toGoogleISO = (dateStr, timeStr) => {
+                    const time = timeStr || '21:00'; // Asumir hora por defecto
+                    const [hours, minutes] = time.split(':').map(Number);
+                    const d = new Date(`${dateStr}T00:00:00`); // Usar T00:00:00 para evitar problemas de zona horaria del navegador
+                    d.setHours(hours, minutes, 0, 0);
+                    
+                    // Convertir a UTC para el enlace. Google lo ajustará a la zona del usuario.
+                    const utcDate = new Date(d.getTime() - (d.getTimezoneOffset() * 60000));
+                    return utcDate.toISOString().replace(/\.\d{3}Z$/, "Z").replace(/[-:]/g, '');
+                };
+
+                const startTime = toGoogleISO(event.date, event.time);
+                
+                // Crear fecha de fin asumiendo 2 horas de duración
+                const endDateObj = new Date(`${event.date}T00:00:00`);
+                const [startHours, startMinutes] = (event.time || '21:00').split(':').map(Number);
+                endDateObj.setHours(startHours + 2, startMinutes, 0, 0);
+                const endTime = toGoogleISO(endDateObj.toISOString().split('T')[0], endDateObj.toTimeString().split(' ')[0].substring(0,5));
+
+                shareUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventName)}&dates=${startTime}/${endTime}&details=${encodeURIComponent(shareText)}&location=${encodeURIComponent(location)}&ctz=Europe/Madrid`;
+                break;
+
+            case 'ics':
+                window.location.href = `${API_BASE_URL}/api/generate-ics?eventId=${eventId}`;
+                return; // Salir de la función
+
             case 'twitter':
                 shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(eventUrl)}&text=${encodeURIComponent(shareText)}`;
                 break;
             case 'facebook':
-                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(eventUrl)}`;
+                const shareableUrl = `${API_BASE_URL}/api/share/${eventId}`;
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareableUrl)}`;
                 break;
             case 'whatsapp':
                 shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + eventUrl)}`;
@@ -804,7 +824,6 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'copy':
                 try {
                     await navigator.clipboard.writeText(eventUrl);
-                    // Considera mostrar una notificación más sutil que un alert
                     alert('¡Enlace copiado al portapapeles!');
                 } catch (err) {
                     console.error('Error al copiar el enlace: ', err);
