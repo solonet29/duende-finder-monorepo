@@ -31,15 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const performSearch = async (query) => {
         // Siempre mostrar el modal al iniciar una búsqueda
-        searchModalOverlay.classList.add('visible');
+        if (searchModalOverlay) searchModalOverlay.classList.add('visible');
 
         if (!query || query.trim().length < 2) {
-            searchResultsContainer.innerHTML = '<div class="search-feedback">Escribe al menos 2 caracteres para buscar.</div>';
+            if (searchResultsContainer) searchResultsContainer.innerHTML = '<div class="search-feedback">Escribe al menos 2 caracteres para buscar.</div>';
             return;
         }
 
         // Mostrar estado de carga
-        searchResultsContainer.innerHTML = '<div class="search-feedback">Buscando...</div>';
+        if (searchResultsContainer) searchResultsContainer.innerHTML = '<div class="search-feedback">Buscando...</div>';
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/events?search=${encodeURIComponent(query)}`);
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSearchResults(data.events || []);
         } catch (error) {
             console.error('Error en la búsqueda:', error);
-            searchResultsContainer.innerHTML = '<div class="search-feedback">Ocurrió un error al buscar. Inténtalo de nuevo.</div>';
+            if (searchResultsContainer) searchResultsContainer.innerHTML = '<div class="search-feedback">Ocurrió un error al buscar. Inténtalo de nuevo.</div>';
         }
     };
 
@@ -59,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {Array} events - Array de eventos encontrados.
      */
     const renderSearchResults = (events) => {
+        if (!searchResultsContainer) return;
+
         if (events.length === 0) {
             searchResultsContainer.innerHTML = '<div class="search-feedback">No se encontraron resultados. Por favor, refina tu búsqueda.</div>';
             return;
@@ -100,47 +102,57 @@ document.addEventListener('DOMContentLoaded', () => {
      * Oculta el modal de búsqueda.
      */
     const hideModal = () => {
-        searchModalOverlay.classList.remove('visible');
+        if (searchModalOverlay) searchModalOverlay.classList.remove('visible');
     };
 
     // --- 4. Asignación de Listeners ---
 
     // Al enviar el formulario de la cabecera
-    headerSearchForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const query = headerSearchInput.value;
-        modalSearchInput.value = query; // Sincronizar inputs
-        performSearch(query);
-    });
+    if (headerSearchForm) {
+        headerSearchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const query = headerSearchInput.value;
+            if (modalSearchInput) modalSearchInput.value = query; // Sincronizar inputs
+            performSearch(query);
+        });
+    }
 
     // Búsqueda en tiempo real en el input del modal
-    let searchTimeout;
-    modalSearchInput.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            const query = modalSearchInput.value;
-            performSearch(query);
-        }, 300); // Debounce de 300ms
-    });
+    if (modalSearchInput) {
+        let searchTimeout;
+        modalSearchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const query = modalSearchInput.value;
+                performSearch(query);
+            }, 300); // Debounce de 300ms
+        });
+    }
 
     // Cerrar el modal
-    searchModalCloseBtn.addEventListener('click', hideModal);
-    searchModalOverlay.addEventListener('click', (e) => {
-        if (e.target === searchModalOverlay) {
-            hideModal();
-        }
-    });
+    if (searchModalCloseBtn) {
+        searchModalCloseBtn.addEventListener('click', hideModal);
+    }
+    if (searchModalOverlay) {
+        searchModalOverlay.addEventListener('click', (e) => {
+            if (e.target === searchModalOverlay) {
+                hideModal();
+            }
+        });
+    }
 
     // Clic en un resultado de búsqueda
-    searchResultsContainer.addEventListener('click', (e) => {
-        const resultItem = e.target.closest('.search-result-item');
-        if (resultItem) {
-            const eventId = resultItem.dataset.eventId;
-            const eventSlug = resultItem.dataset.eventSlug;
-            if (eventId) {
-                // Asumimos que la navegación a la página del evento es la acción deseada
-                window.location.href = `/eventos/${eventId}-${eventSlug}`;
+    if (searchResultsContainer) {
+        searchResultsContainer.addEventListener('click', (e) => {
+            const resultItem = e.target.closest('.search-result-item');
+            if (resultItem) {
+                const eventId = resultItem.dataset.eventId;
+                const eventSlug = resultItem.dataset.eventSlug;
+                if (eventId) {
+                    // Asumimos que la navegación a la página del evento es la acción deseada
+                    window.location.href = `/eventos/${eventId}-${eventSlug}`;
+                }
             }
-        }
-    });
+        });
+    }
 });
