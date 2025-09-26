@@ -724,9 +724,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!geminiModalOverlay) return;
         const modalContent = geminiModalOverlay.querySelector('.modal-content');
         geminiModalOverlay.classList.add('visible');
-        if (modalContent) modalContent.innerHTML = `<div class="loading-container"><div class="loader"></div><p>Planeando tu noche...</p></div>`;
+
+        const loadingMessages = [
+            "Buscando la inspiración del duende...",
+            "Consultando al maestro Gemini...",
+            "Diseñando la previa perfecta...",
+            "Afinando los últimos detalles de tu plan..."
+        ];
+        let messageIndex = 0;
+        let loadingInterval;
+
+        if (modalContent) {
+            modalContent.innerHTML = `<div class="loading-container"><div class="loader"></div><p>${loadingMessages[messageIndex]}</p></div>`;
+            const loadingTextElement = modalContent.querySelector('p');
+            
+            loadingInterval = setInterval(() => {
+                messageIndex = (messageIndex + 1) % loadingMessages.length;
+                if (loadingTextElement) {
+                    loadingTextElement.textContent = loadingMessages[messageIndex];
+                }
+            }, 2500); // Cambia el mensaje cada 2.5 segundos
+        }
+
         try {
             const response = await fetch(`${API_BASE_URL}/api/generate-night-plan?eventId=${event._id}`);
+            clearInterval(loadingInterval); // Detener el carrusel de mensajes
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ error: "Error desconocido en el servidor" }));
                 throw new Error(errorData.error);
@@ -736,6 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const aiHtmlContent = window.marked ? window.marked.parse(data.content) : `<pre>${data.content}</pre>`;
             if (modalContent) modalContent.innerHTML = aiHtmlContent + footerHtml;
         } catch (error) {
+            clearInterval(loadingInterval); // Asegurarse de detenerlo también en caso de error
             console.error("Error al generar Plan Noche:", error);
             if (modalContent) modalContent.innerHTML = `<div class="error-container"><h3>¡Vaya! Algo ha fallado</h3><p>${error.message}</p></div>`;
         }
