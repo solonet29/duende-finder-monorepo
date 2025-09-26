@@ -1360,3 +1360,11 @@ header.header-main {
         align-items: stretch;
     }
 }
+
+/* Ajuste para la imagen de cabecera en pantallas grandes */
+@media (min-width: 992px) {
+    .hero-header {
+        height: 450px; /* Establece una altura fija para la cabecera en PC */
+        padding-bottom: 0; /* Anula el truco del aspect-ratio */
+    }
+}
