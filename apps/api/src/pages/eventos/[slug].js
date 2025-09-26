@@ -14,6 +14,7 @@ const EventoPage = ({ event }) => {
     const pageDescription = event.description.substring(0, 160) + '...';
     const eventDate = new Date(event.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${event.name}, ${event.venue}, ${event.city}`)}`;
+    const canonicalUrl = `https://nuevobuscador.afland.es/eventos/${event._id}-${event.slug || 'evento'}`;
 
     // --- Datos Estructurados para Google (JSON-LD) --- 
     const structuredData = {
@@ -69,6 +70,8 @@ const EventoPage = ({ event }) => {
                 <meta property="og:image" content={event.imageUrl || 'https://via.placeholder.com/1200x630.png?text=Duende+Finder'} />
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
+                <meta property="og:url" content={canonicalUrl} />
+                <meta property="og:type" content="article" />
                 {/* Twitter */}
                 <meta property="twitter:card" content="summary_large_image" />
                 <meta property="twitter:title" content={pageTitle} />
