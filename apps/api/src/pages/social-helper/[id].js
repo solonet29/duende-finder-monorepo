@@ -19,7 +19,9 @@ function SocialHelperPage({ event }) {
   };
 
   const shareOnFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicEventUrl)}`;
+    // Apuntar al endpoint de /api/share que se encarga de la redirección
+    const shareableUrl = `/api/share/${event._id}`;
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareableUrl)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
