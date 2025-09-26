@@ -36,12 +36,22 @@ async function generateAndSavePlan(db, event) {
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const generatedContent = response.text();
+    let generatedContent = response.text();
 
     if (!generatedContent || !generatedContent.includes('---')) {
         console.warn("La respuesta de Gemini no tiene el formato esperado. Contenido recibido:", generatedContent);
         throw new Error("La respuesta de la IA no tiene el formato esperado.");
     }
+
+    // --- AÑADIR CONSEJOS DEL DUENDE ESTÁTICOS ---
+    const consejosDelDuende = `
+---
+### 💡 Consejos del Duende
+- **Puntualidad:** Recomienda llegar con tiempo para encontrar un buen sitio y disfrutar del ambiente previo.
+- **Respeto y Silencio:** Menciona la importancia de guardar silencio durante el espectáculo para respetar a los artistas y al "duende".
+- **Disfruta el Momento:** Anima al usuario a dejarse llevar por la música y la emoción.`;
+    
+    generatedContent += consejosDelDuende;
 
     await db.collection('events').updateOne(
         { _id: event._id },
@@ -56,13 +66,13 @@ async function generateAndSavePlan(db, event) {
 // =======================================================================
 const nightPlanPromptTemplate = (event, formattedDate, mapsUrl) => `
 # REGLA DE ORO: FORMATO Y ESTRUCTURA
-Tu misión principal es generar una respuesta que siga ESTRICTAMENTE el formato Markdown y la estructura de 3 secciones separadas por "---". No añadas texto antes de la primera sección o después de la última. La estructura es INNEGOCIABLE.
+Tu misión principal es generar una respuesta que siga ESTRICTAMENTE el formato Markdown y la estructura de 2 secciones separadas por "---". No añadas texto antes de la primera sección o después de la última. La estructura es INNEGOCIABLE.
 
 # INSTRUCCIONES
 Eres "Duende Planner", un asistente experto en flamenco y cultura andaluza. Tu objetivo es crear un plan de noche atractivo y útil para un usuario que asistirá a un evento de flamenco. El tono debe ser cercano, apasionado y un poco poético, usando lenguaje que evoque la magia del flamenco.
 
 // --- NUEVA DIRECTRIZ DE CALIDAD ---
-- **Principio de Prudencia:** Tu credibilidad es clave. Si no tienes información 100% segura sobre un dato fáctico del artista (biografía, familia, lugar de nacimiento, etc.), **NO LO INVENTES**. En su lugar, enfócate en la emoción del arte flamenco: habla del duende, la pasión, el sentimiento del cante o la fuerza del baile. Tu misión es generar expectación, no ser una enciclopedia.
+- **Principio de Prudencia:** Tu credibilidad es clave. Si no tienes información 100% segura sobre un dato fáctico (biografía, lugares, etc.), **NO LO INVENTES**. En su lugar, enfócate en la emoción del arte. Tu misión es generar expectación, no ser una enciclopedia.
 
 # CONTEXTO DEL EVENTO
 - **Artista Principal:** ${event.artist || 'Artista por confirmar'}
@@ -75,15 +85,9 @@ Eres "Duende Planner", un asistente experto en flamenco y cultura andaluza. Tu o
 
 ### 🔮 Una Noche con Duende: ${event.artist || event.name}
 * **La Previa Perfecta:** Describe el ambiente ideal para empezar la noche, como una taberna andaluza o un bar de tapas animado. Sugiere una o dos tapas y una bebida típica (ej: "un buen vino de Jerez"). Indícale al usuario que puede encontrar lugares así explorando los alrededores del recinto en el mapa. **No inventes un nombre específico para el bar.**
-* **El Atuendo Ideal:** Sugiere un código de vestimenta. Debe ser elegante pero cómodo, algo que respete la ocasión sin ser excesivamente formal. Piensa en el "smart casual" con un toque andaluz.
+* **Rincones con Historia:** Describe algún monumento, punto de interés cultural o lugar histórico que se encuentre cerca del lugar del evento. Anima al usuario a dar un paseo por la zona para descubrirlo. Aplica el "Principio de Prudencia": si no conoces con seguridad un lugar de interés cercano, habla de forma genérica sobre el encanto del barrio o la ciudad.
 * **El Momento Cumbre:** Describe con emoción qué puede esperar el espectador del artista o del evento. Usa lenguaje evocador. Si no tienes datos concretos del artista, aplica el "Principio de Prudencia" y habla sobre la magia del palo flamenco (si se conoce) o del flamenco en general.
 * **Después de los Aplausos:** De forma similar a la previa, describe un tipo de lugar con encanto para tomar la última copa y anímale a explorar el mapa para encontrarlo. **No inventes un nombre específico.**
-
----
-### 💡 Consejos del Duende
-- **Puntualidad:** Recomienda llegar con tiempo para encontrar un buen sitio y disfrutar del ambiente previo.
-- **Respeto y Silencio:** Menciona la importancia de guardar silencio durante el espectáculo para respetar a los artistas y al "duende".
-- **Disfruta el Momento:** Anima al usuario a dejarse llevar por la música y la emoción.
 
 ---
 ### 🎟️ Ficha Rápida
