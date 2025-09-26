@@ -9,7 +9,7 @@ const BATCH_SIZE = 15; // Un lote pequeño para respetar la cuota de Gemini
 // --- LÓGICA DE GEMINI Y PROMPT ---
 // (Pega aquí la misma configuración de Gemini y el 'Prompt Maestro' que tenemos en los otros generadores)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 const nightPlanPromptTemplate = (event, formattedDate) => `... tu prompt maestro ...`;
 
 
