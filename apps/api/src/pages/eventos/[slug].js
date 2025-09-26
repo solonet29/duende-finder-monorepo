@@ -67,11 +67,15 @@ const EventoPage = ({ event }) => {
                 <meta property="og:title" content={pageTitle} />
                 <meta property="og:description" content={pageDescription} />
                 <meta property="og:image" content={event.imageUrl || 'https://www.afland.es/wp-content/uploads/2024/04/DUENDE-FINDER-LOGO-1200-X-630-PX.png'} />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
                 {/* Twitter */}
                 <meta property="twitter:card" content="summary_large_image" />
                 <meta property="twitter:title" content={pageTitle} />
                 <meta property="twitter:description" content={pageDescription} />
                 <meta property="twitter:image" content={event.imageUrl || 'https://www.afland.es/wp-content/uploads/2024/04/DUENDE-FINDER-LOGO-1200-X-630-PX.png'} />
+                <meta property="twitter:image:width" content="1200" />
+                <meta property="twitter:image:height" content="630" />
 
                 {/* Datos Estructurados JSON-LD */}
                 <script 

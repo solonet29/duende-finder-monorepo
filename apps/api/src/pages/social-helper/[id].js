@@ -32,6 +32,16 @@ function SocialHelperPage({ event }) {
     });
   };
 
+  // --- NUEVO: Generar el post completo para copiar ---
+  const fullPostText = 
+`${event.social?.instagram || ''}
+
+${event.social?.hashtags?.join(' ') || ''}
+
+👇 Toda la información y entradas en:
+${publicEventUrl}`;
+
+
   // --- Estilos ---
   const styles = {
     body: { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', color: '#333', backgroundColor: '#f4f4f9', margin: 0, padding: '20px' },
@@ -70,37 +80,48 @@ function SocialHelperPage({ event }) {
             <h1 style={styles.h1}>Asistente de Contenido para Redes Sociales</h1>
           </header>
 
+          {/* --- NUEVO: Sección para copiar post completo --- */}
           <div style={styles.fieldContainer}>
-            <h2>Compartir Directamente</h2>
-            <button style={{...styles.button, ...styles.shareButton}} onClick={shareOnTwitter}>Compartir en X (Twitter)</button>
-            <button style={{...styles.button, ...styles.shareButton}} onClick={shareOnFacebook}>Compartir en Facebook</button>
+            <h2>Publicación completa para Facebook / Redes</h2>
+            <p>Copia y pega este texto directamente en tu publicación. Facebook generará la vista previa del enlace automáticamente.</p>
+            <textarea style={{...styles.textarea, minHeight: '200px'}} defaultValue={fullPostText} readOnly />
+            <button style={{...styles.button, backgroundColor: '#1877F2'}} onClick={() => copyToClipboard(fullPostText)}>Copiar Publicación Completa</button>
           </div>
 
           <div style={styles.fieldContainer}>
-            <h2>Título del Evento</h2>
+            <h2>Compartir Directamente en X</h2>
+            <button style={{...styles.button, ...styles.shareButton}} onClick={shareOnTwitter}>Compartir en X (Twitter)</button>
+          </div>
+
+          <hr />
+
+          <h2>Componentes individuales</h2>
+
+          <div style={styles.fieldContainer}>
+            <h4>Título del Evento</h4>
             <pre style={styles.pre}>{event.blogPostTitle || 'No disponible'}</pre>
             <button style={styles.button} onClick={() => copyToClipboard(event.blogPostTitle)}>Copiar Título</button>
           </div>
 
           <div style={styles.fieldContainer}>
-            <h2>Imagen del Evento</h2>
+            <h4>Imagen del Evento</h4>
             {event.imageUrl ? <img src={event.imageUrl} alt="Imagen del evento" style={styles.img} /> : <p>No hay imagen disponible.</p>}
           </div>
 
           <div style={styles.fieldContainer}>
-            <h2>Texto para Instagram / Facebook</h2>
+            <h4>Texto para Instagram / Facebook</h4>
             <textarea style={styles.textarea} defaultValue={event.social?.instagram || 'No disponible'} readOnly />
             <button style={styles.button} onClick={() => copyToClipboard(event.social?.instagram)}>Copiar Texto</button>
           </div>
 
           <div style={styles.fieldContainer}>
-            <h2>Texto para X (Twitter)</h2>
+            <h4>Texto para X (Twitter)</h4>
             <textarea style={styles.textarea} defaultValue={event.social?.tweet || 'No disponible'} readOnly />
             <button style={styles.button} onClick={() => copyToClipboard(event.social?.tweet)}>Copiar Tweet</button>
           </div>
 
           <div style={styles.fieldContainer}>
-            <h2>Hashtags</h2>
+            <h4>Hashtags</h4>
             <textarea style={styles.textarea} defaultValue={event.social?.hashtags?.join(' ') || 'No disponible'} readOnly />
             <button style={styles.button} onClick={() => copyToClipboard(event.social?.hashtags?.join(' '))}>Copiar Hashtags</button>
           </div>
