@@ -1,5 +1,16 @@
 {
   "rewrites": [
+    {
+      "source": "/eventos/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "User-Agent",
+          "value": ".*(facebookexternalhit|Twitterbot|LinkedInBot).*"
+        }
+      ],
+      "destination": "https://api-v2.afland.es/eventos/:slug"
+    },
     { "source": "/eventos/:slug*", "destination": "/index.html" }
   ]
 }
