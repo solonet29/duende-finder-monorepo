@@ -10,7 +10,7 @@ function SocialHelperPage({ event }) {
   }
 
   // --- Funciones para compartir ---
-  const publicEventUrl = `https://duendefinder.com/eventos/${event._id}-${event.slug}`;
+  const publicEventUrl = `https://nuevobuscador.afland.es/eventos/${event._id}-${event.slug}`;
 
   const shareOnTwitter = () => {
     const text = encodeURIComponent(event.social?.tweet || event.blogPostTitle);
