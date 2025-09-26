@@ -12,7 +12,7 @@ const getApiBaseUrl = () => {
 const API_BASE_URL = getApiBaseUrl();
 
 /**
- * Convierte una cadena base64 (URL-safe) a un Uint8Array.
+ * Convierte una cadena DE base64 (URL-safe) a un Uint8Array.
  * Necesario para la suscripción push.
  */
 function urlBase64ToUint8Array(base64String) {
@@ -112,7 +112,7 @@ async function checkLocationForNotification() {
 
     navigator.geolocation.getCurrentPosition(async (position) => {
         const { latitude, longitude } = position.coords;
-        
+
         try {
             // 1. Convertir coordenadas a ciudad usando nuestro endpoint seguro
             const cityResponse = await fetch(`${API_BASE_URL}/api/location/city?lat=${latitude}&lon=${longitude}`);
@@ -177,7 +177,7 @@ export function initPushNotifications() {
         if (navNotificationsBtn) navNotificationsBtn.style.display = 'none';
         return;
     }
-    
+
     if (navNotificationsBtn) {
         navNotificationsBtn.addEventListener('click', handlePushSubscription);
         updateNotificationButtonUI();
