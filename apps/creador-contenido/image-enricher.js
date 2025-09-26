@@ -6,45 +6,70 @@ const { uploadImage } = require('./lib/wordpressClient.js');
 const fs = require('fs').promises;
 
 /**
- * Genera una imagen para un evento, la sube a WordPress y limpia el fichero temporal.
+ * Genera dos imágenes para un evento (una estándar y otra para redes sociales),
+ * las sube a WordPress y limpia los ficheros temporales.
  * @param {object} event - El objeto del evento para el que se creará la imagen.
- * @returns {Promise<{imageId: number, imageUrl: string}|null>} Un objeto con el ID y la URL de la imagen en WordPress, o null si falla.
+ * @returns {Promise<{imageId: number, imageUrl: string, socialImageId: number, socialImageUrl: string}|null>} Un objeto con los IDs y URLs de ambas imágenes, o null si falla.
  */
 async function generateAndUploadImage(event) {
     console.log(`   -> 🖼️  Iniciando proceso de imagen para: "${event.name}".`);
-    let imagePath = null;
-    try {
-        // 1. Crear la imagen localmente
-        console.log("      1/3: Creando imagen con Sharp...");
-        imagePath = await createPostImage(event);
-        if (!imagePath) throw new Error("La creación de la imagen falló.");
+    let standardImagePath = null;
+    let socialImagePath = null;
 
-        // 2. Subir la imagen a WordPress
-        console.log("      2/3: Subiendo imagen a WordPress...");
-        const imageTitle = `${event.name} - ${event.city}`;
-        const uploadResponse = await uploadImage(imagePath, imageTitle);
-        if (!uploadResponse || !uploadResponse.imageId || !uploadResponse.imageUrl) {
-            throw new Error("La subida a WordPress falló o no devolvió los datos correctos.");
+    try {
+        // --- IMAGEN ESTÁNDAR ---
+        console.log("      -> Creando imagen estándar (1200x675)...");
+        standardImagePath = await createPostImage(event); // Dimensiones por defecto
+        if (!standardImagePath) throw new Error("La creación de la imagen estándar falló.");
+
+        console.log("      -> Subiendo imagen estándar a WordPress...");
+        const standardImageTitle = `${event.name} - ${event.city}`;
+        const standardUploadResponse = await uploadImage(standardImagePath, standardImageTitle);
+        if (!standardUploadResponse?.imageId || !standardUploadResponse?.imageUrl) {
+            throw new Error("La subida de la imagen estándar a WordPress falló.");
         }
-        console.log(`      ✅ Imagen subida con éxito. ID: ${uploadResponse.imageId}`);
-        
+        console.log(`      ✅ Imagen estándar subida. ID: ${standardUploadResponse.imageId}`);
+
+        // --- IMAGEN PARA REDES SOCIALES ---
+        console.log("      -> Creando imagen para redes sociales (1200x630)...");
+        socialImagePath = await createPostImage(event, { height: 630 }); // Proporción 1.91:1
+        if (!socialImagePath) throw new Error("La creación de la imagen para redes sociales falló.");
+
+        console.log("      -> Subiendo imagen para redes sociales a WordPress...");
+        const socialImageTitle = `${event.name} - ${event.city} (Social Media)`;
+        const socialUploadResponse = await uploadImage(socialImagePath, socialImageTitle);
+        if (!socialUploadResponse?.imageId || !socialUploadResponse?.imageUrl) {
+            throw new Error("La subida de la imagen para redes sociales a WordPress falló.");
+        }
+        console.log(`      ✅ Imagen para redes sociales subida. ID: ${socialUploadResponse.imageId}`);
+
+        // --- Devolver todos los datos ---
         return {
-            imageId: uploadResponse.imageId,
-            imageUrl: uploadResponse.imageUrl
+            imageId: standardUploadResponse.imageId,
+            imageUrl: standardUploadResponse.imageUrl,
+            socialImageId: socialUploadResponse.imageId,
+            socialImageUrl: socialUploadResponse.imageUrl
         };
 
     } catch (error) {
         console.error(`      ❌ Error en generateAndUploadImage para "${event.name}":`, error.message);
-        return null; // Devolvemos null para indicar que el proceso de imagen falló
+        return null;
     } finally {
-        // 3. Limpiar la imagen temporal
-        if (imagePath) {
-            try {
-                await fs.unlink(imagePath);
-                console.log(`      3/3: Imagen temporal eliminada.`);
-            } catch (cleanupError) {
-                console.error(`      ⚠️ Error al eliminar la imagen temporal ${imagePath}:`, cleanupError.message);
-            }
+        // --- Limpiar ambas imágenes temporales ---
+        const cleanupPromises = [];
+        if (standardImagePath) {
+            cleanupPromises.push(fs.unlink(standardImagePath).catch(err => 
+                console.error(`      ⚠️ Error al eliminar la imagen temporal estándar ${standardImagePath}:`, err.message)
+            ));
+        }
+        if (socialImagePath) {
+            cleanupPromises.push(fs.unlink(socialImagePath).catch(err => 
+                console.error(`      ⚠️ Error al eliminar la imagen temporal social ${socialImagePath}:`, err.message)
+            ));
+        }
+        await Promise.all(cleanupPromises);
+        if (cleanupPromises.length > 0) {
+            console.log(`      -> Imágenes temporales eliminadas.`);
         }
     }
 }

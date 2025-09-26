@@ -9,10 +9,10 @@ const fs = require('fs');
  * @param {object} event - El objeto del evento.
  * @returns {Promise<string>} La ruta a la imagen generada.
  */
-async function createPostImage(event) {
+async function createPostImage(event, options = {}) {
     try {
         const imageWidth = 1200;
-        const imageHeight = 675;
+        const imageHeight = options.height || 675;
         const sidebarWidth = 240; // Ancho donde empieza el área de texto
 
         // Lógica para elegir una plantilla al azar
@@ -26,6 +26,9 @@ async function createPostImage(event) {
         const cityText = event.city ? event.city.toUpperCase() : '';
 
         const textAreaXCenter = 720; // Centro del área de texto
+        const yCenter = imageHeight / 2;
+        const dateY = yCenter - 7; // Ajustado para centrar dinámicamente
+        const cityY = yCenter + 53; // Ajustado para centrar dinámicamente
 
         const svgContent = `
         <svg width="${imageWidth}" height="${imageHeight}">
@@ -33,8 +36,8 @@ async function createPostImage(event) {
                 .date { fill: #FFFFFF; font-size: 55px; font-family: 'Montserrat', sans-serif; font-weight: bold; }
                 .city { fill: #FFFFFF; font-size: 36px; font-family: 'Montserrat', sans-serif; font-weight: bold; }
             </style>
-            <text x="${textAreaXCenter}" y="330" text-anchor="middle" class="date">${dateText}</text>
-            <text x="${textAreaXCenter}" y="390" text-anchor="middle" class="city">${cityText}</text>
+            <text x="${textAreaXCenter}" y="${dateY}" text-anchor="middle" class="date">${dateText}</text>
+            <text x="${textAreaXCenter}" y="${cityY}" text-anchor="middle" class="city">${cityText}</text>
         </svg>
         `;
 

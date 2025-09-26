@@ -102,6 +102,8 @@ async function generateContentForEvent(event, db) {
             },
             imageId: imageData.imageId,
             imageUrl: imageData.imageUrl,
+            socialImageId: imageData.socialImageId,
+            socialImageUrl: imageData.socialImageUrl,
             contentGenerationDate: new Date(),
             contentStatus: 'content_ready',
         };
