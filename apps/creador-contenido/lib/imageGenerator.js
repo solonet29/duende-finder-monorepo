@@ -2,6 +2,7 @@
 
 const sharp = require('sharp');
 const path = require('path');
+const fs = require('fs');
 
 /**
  * Crea la imagen para un post del blog seleccionando una plantilla al azar.
@@ -39,6 +40,12 @@ async function createPostImage(event) {
 
         const svgBuffer = Buffer.from(svgContent);
         const outputPath = path.join(__dirname, '..', `generated_images`, `post-image-${Date.now()}.png`);
+
+        // Asegurarse de que el directorio de salida exista
+        const outputDir = path.dirname(outputPath);
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
 
         await sharp(templatePath)
             .resize(imageWidth, imageHeight)
