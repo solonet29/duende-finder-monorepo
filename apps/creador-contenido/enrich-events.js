@@ -1,5 +1,5 @@
 // enrich-events.js
-// OBJETIVO: Tomar eventos con estado 'pending' y enriquecerlos con un paquete de contenido completo (texto e imagen).
+// OBJETIVO: Tomar eventos con estado 'pending' y enriquecerlos con un paquete de contenido completo (texto, imagen y posts para redes sociales).
 
 require('dotenv').config();
 const { connectToDatabase } = require('./lib/database.js');
@@ -25,7 +25,10 @@ La respuesta DEBE ser un único objeto JSON válido con la siguiente estructura 
   "blogTitle": "string",
   "blogPostMarkdown": "string",
   "nightPlanMarkdown": "string",
-  "urlSlug": "string"
+  "urlSlug": "string",
+  "tweetText": "string",
+  "instagramText": "string",
+  "hashtags": ["string"]
 }
 
 Aquí están los detalles del evento:
@@ -40,20 +43,17 @@ Instrucciones para cada campo del JSON:
 
 1.  **blogTitle**: Crea un título SEO amigable y atractivo para un post de blog sobre el evento. Máximo 70 caracteres.
 
-2.  **blogPostMarkdown**: Escribe un artículo para el blog sobre el evento. El tono debe ser evocador y periodístico. El objetivo es generar expectación. El texto debe tener al menos 250 palabras y estar estructurado en varios párrafos. Enfócate en:
-    - Introducción: Presenta al artista y su importancia.
-    - Desarrollo: Describe la propuesta artística del espectáculo.
-    - Conclusión: Cierra con una invitación a vivir la experiencia.
+2.  **blogPostMarkdown**: Escribe un artículo para el blog sobre el evento. El tono debe ser evocador y periodístico. El objetivo es generar expectación. El texto debe tener al menos 250 palabras y estar estructurado en varios párrafos.
 
-3.  **nightPlanMarkdown**: Genera un "plan de noche" en formato Markdown. Debe ser útil y evocador. Sigue esta estructura concisa:
-    ### La Previa: Ambiente y Sabor
-    Sugiere un tipo de ambiente para tapear antes del evento (sin dar nombres de locales).
-    ### El Evento: ${event.name}
-    Crea expectación sobre el espectáculo.
-    ### Post-Espectáculo: La Última Copa
-    Sugiere un tipo de lugar para tomar una copa después (sin dar nombres de locales).
+3.  **nightPlanMarkdown**: Genera un "plan de noche" en formato Markdown, útil y evocador, con secciones para "La Previa", "El Evento" y "Post-Espectáculo".
 
-4.  **urlSlug**: Crea un slug para la URL a partir del nombre del artista y el nombre del evento. Debe estar en minúsculas, usar guiones en lugar de espacios, y no tener más de 6-7 palabras clave relevantes. No incluyas la fecha ni la ciudad.
+4.  **urlSlug**: Crea un slug para la URL a partir del nombre del artista y el nombre del evento. Debe estar en minúsculas, usar guiones y no tener más de 6-7 palabras clave.
+
+5.  **tweetText**: Escribe un tweet para X (Twitter). Debe ser corto, impactante y menor de 280 caracteres. Incluye el nombre del evento, la ciudad y la fecha.
+
+6.  **instagramText**: Escribe un post para Instagram/Facebook. Debe ser más descriptivo y emocional. Usa emojis flamencos (💃, 🎸, 👏). Termina con una pregunta para fomentar la interacción.
+
+7.  **hashtags**: Genera un array de 5 a 7 hashtags relevantes en formato string. Incluye #flamenco, el nombre de la ciudad, el nombre del artista (si está disponible) y otros relacionados.
 `;
 
 async function generateContentForEvent(event, db) {
@@ -73,12 +73,12 @@ async function generateContentForEvent(event, db) {
         const responseText = result.response.text().replace(/```json|```/g, '').trim();
         const generatedContentPackage = JSON.parse(responseText);
 
-        if (!generatedContentPackage.blogTitle || !generatedContentPackage.blogPostMarkdown || !generatedContentPackage.nightPlanMarkdown || !generatedContentPackage.urlSlug) {
+        if (!generatedContentPackage.blogTitle || !generatedContentPackage.blogPostMarkdown || !generatedContentPackage.nightPlanMarkdown || !generatedContentPackage.urlSlug || !generatedContentPackage.tweetText || !generatedContentPackage.instagramText || !generatedContentPackage.hashtags) {
             throw new Error('La respuesta JSON de Gemini no contiene todos los campos esperados.');
         }
         console.log(`      ✅ Textos generados por Gemini.`);
 
-        // PASO 2: Generar y subir la imagen (sin cambios)
+        // PASO 2: Generar y subir la imagen
         const imageData = await generateAndUploadImage(event);
         if (!imageData) {
             throw new Error('El proceso de generación de imagen falló.');
@@ -86,16 +86,20 @@ async function generateContentForEvent(event, db) {
 
         // PASO 3: Combinar y guardar todo
         const blogPostContentHtml = converter.makeHtml(generatedContentPackage.blogPostMarkdown);
-        const finalHtmlContent = blogPostContentHtml; // Simplificado, se pueden añadir bloques HTML si se desea
+        const finalHtmlContent = blogPostContentHtml;
 
         const updates = {
             blogPostTitle: generatedContentPackage.blogTitle,
             blogPostMarkdown: generatedContentPackage.blogPostMarkdown,
-            slug: generatedContentPackage.urlSlug, // <-- AÑADIDO EL NUEVO SLUG
-            eventSummaryMarkdown: generatedContentPackage.eventSummaryMarkdown,
+            slug: generatedContentPackage.urlSlug,
             nightPlanMarkdown: generatedContentPackage.nightPlanMarkdown,
-            nightPlan: generatedContentPackage.nightPlanMarkdown, // Guardamos también en el campo que usa el API
+            nightPlan: generatedContentPackage.nightPlanMarkdown,
             blogPostHtml: finalHtmlContent,
+            social: {
+                tweet: generatedContentPackage.tweetText,
+                instagram: generatedContentPackage.instagramText,
+                hashtags: generatedContentPackage.hashtags,
+            },
             imageId: imageData.imageId,
             imageUrl: imageData.imageUrl,
             contentGenerationDate: new Date(),
