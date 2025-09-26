@@ -12,7 +12,7 @@ const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@googl
 // --- INICIALIZACIÓN DE SERVICIOS ---
 if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY no está definida.');
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-pro"});
+const geminiModel = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash-latest"});
 const converter = new showdown.Converter();
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));

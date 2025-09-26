@@ -12,7 +12,7 @@ async function getAiSynonyms(searchTerm) {
 
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash-latest" });
 
     const prompt = `Actúa como un lexicógrafo y experto en la cultura flamenca. Un usuario ha buscado el término "${searchTerm}" en un buscador de eventos de flamenco y no ha obtenido resultados. Tu tarea es generar una lista de 3 a 5 términos de búsqueda alternativos, sinónimos o conceptos relacionados que probablemente devuelvan resultados relevantes. Devuelve únicamente los términos, separados por comas.`;
 
