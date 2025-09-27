@@ -380,6 +380,96 @@ header.header-main {
 }
 
 /* ==========================================================================
+   VERIFIED BADGE Y MODAL (AÑADIDO)
+   ========================================================================== */
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--color-superficie);
+    color: var(--color-texto-secundario);
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid var(--color-borde);
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 5;
+}
+
+.verified-badge .info-icon {
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--color-acento);
+    display: inline-flex;
+    align-items: center;
+}
+
+.event-card .card-content {
+    position: relative;
+}
+
+/* Ajuste para el título de la tarjeta para que no se solape con el badge */
+.event-card .card-title {
+    padding-top: 25px; /* Espacio para el badge */
+}
+
+/* FIX: Hacer que el contenido del modal de "Verificado" sea desplazable */
+#verified-info-modal .modal-content {
+    max-height: 70vh; /* Limitar la altura al 70% de la altura de la ventana */
+    overflow-y: auto; /* Añadir barra de desplazamiento vertical cuando sea necesario */
+    padding-right: 15px; /* Espacio para la barra de scroll */
+}
+
+/* Estilos para la info de verificación en la página de evento */
+.verification-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 1.5em;
+    flex-wrap: wrap;
+}
+
+.verified-badge-page, .unverified-badge-page {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.verified-badge-page {
+    background-color: #28a74520;
+    color: #28a745;
+    border: 1px solid #28a74580;
+}
+
+.unverified-badge-page {
+    background-color: #dc354520;
+    color: #dc3545;
+    border: 1px solid #dc354580;
+}
+
+.source-link {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-texto-secundario);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.2s;
+}
+
+.source-link:hover {
+    color: var(--color-acento);
+}
+
+/* ==========================================================================
    5. MODALES
    ========================================================================== */
 .modal-overlay {
