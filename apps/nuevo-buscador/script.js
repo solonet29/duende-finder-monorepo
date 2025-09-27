@@ -37,12 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <li><strong>Fuentes de Datos:</strong> La información de los eventos se recopila automáticamente de fuentes públicas en internet. No nos hacemos responsables de posibles inexactitudes, cancelaciones o cambios en la programación. Siempre verifica la información con la fuente original.</li>
             <li><strong>Contenido Generado por IA:</strong> Funcionalidades como "Planear Noche" y las descripciones de los eventos son generadas por la inteligencia artificial de Google (Gemini). Este contenido puede contener imprecisiones y debe ser considerado como una sugerencia, no como un hecho verificado.</li>
             <li><strong>Uso:</strong> El uso de este servicio implica la aceptación de estos términos.</li>
-            <li><strong>Propósito:</strong> Duende Finder es un asistente experimental diseñado para facilitar el descubrimiento de eventos de flamenco.</li>
-            <li><strong>Fuentes de Datos y Verificación:</strong> La información se recopila automáticamente de fuentes públicas (webs de teatros, portales de entradas, etc.). Cada evento incluye un enlace a su "Fuente original". Con el tiempo, estas fuentes pueden ser eliminadas por el organizador (por ejemplo, tras pasar el evento), lo que puede hacer que el enlace deje de funcionar.</li>
-            <li><strong>Eventos No Verificados:</strong> Si detectamos que la fuente original de un evento ya no está disponible, lo marcaremos con un <strong>aviso de "No Verificado"</strong>. Esto significa que la información podría estar desactualizada o el evento haber sido cancelado. <strong>Recomendamos encarecidamente confirmar los detalles con el organizador antes de asistir.</strong></li>
-            <li><strong>Contenido Generado por IA:</strong> Funcionalidades como "Planear Noche" son generadas por inteligencia artificial (Google Gemini) y deben considerarse como una sugerencia, no como un hecho verificado.</li>
-            <li><strong>Responsabilidad:</strong> No nos hacemos responsables de posibles inexactitudes, cancelaciones o cambios en la programación. La responsabilidad final de verificar la información recae en el usuario.</li>
-            <li><strong>Uso del Servicio:</strong> El uso de Duende Finder implica la aceptación de estos términos.</li>
         </ul>
     `
     };
@@ -510,28 +504,6 @@ document.addEventListener('DOMContentLoaded', () => {
             imageHtml = `<div class="evento-card-img-container"><img src="${event.imageUrl.trim()}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
         }
 
-        // Generar el indicador de estado (Verificado / No Verificado) con icono de información
-        let statusIndicatorHtml = '';
-        const isVerified = event.status !== 'cancelled';
-        
-        if (isVerified) {
-            statusIndicatorHtml = `
-                <div class="status-indicator verified">
-                    <ion-icon name="shield-checkmark-outline"></ion-icon>
-                    <span>Verificado</span>
-                    <ion-icon name="information-circle-outline" class="info-icon" data-action="open-terms" title="¿Qué significa esto?"></ion-icon>
-                </div>
-            `;
-        } else {
-            statusIndicatorHtml = `
-                <div class="status-indicator not-verified">
-                    <ion-icon name="warning-outline"></ion-icon>
-                    <span>No Verificado</span>
-                    <ion-icon name="information-circle-outline" class="info-icon" data-action="open-terms" title="¿Qué significa esto?"></ion-icon>
-                </div>
-            `;
-        }
-
         const pageHtml = `
             <div class="event-page-container" data-event-id="${event._id}">
                 <div class="event-page-content">
@@ -539,10 +511,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${imageHtml}
                     
                     <h1>${eventName}</h1>
-                    <div class="title-meta-container">
-                        ${statusIndicatorHtml}
-                    </div>
-
                     <div class="artist-name">
                         <ion-icon name="person-outline"></ion-icon>
                         <span>${artistName}</span>
@@ -570,13 +538,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
 
                     <p class="event-description">${description}</p>
-
-                    ${event.url_referencia ? `
-                    <div class="source-info-box">
-                        <ion-icon name="link-outline"></ion-icon>
-                        <div><strong>Fuente original de los datos:</strong> <a href="${event.url_referencia}" target="_blank" rel="noopener noreferrer nofollow">${event.url_referencia}</a></div>
-                    </div>
-                    ` : ''}
                     
                     <div class="map-wrapper">
                         <div id="map-container"></div>
@@ -935,7 +896,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const requestLocationBtn = e.target.closest('#request-location-btn');
             const shareBtn = e.target.closest('.share-btn');
             const sliderMapBtn = e.target.closest('.slider-map-btn');
-            const infoIcon = e.target.closest('.info-icon[data-action="open-terms"]');
 
             if (sliderMapBtn) {
                 const sliderSection = sliderMapBtn.closest('.sliders-section');
@@ -945,9 +905,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         openMapModal(sliderContainer);
                     }
                 }
-            } else if (infoIcon) {
-                // Si se hace clic en el icono de información, abrir el modal de términos
-                if (termsModal) termsModal.classList.add('visible');
             } else if (sliderCard) {
                 const eventId = sliderCard.dataset.eventId;
                 if (eventId) {
