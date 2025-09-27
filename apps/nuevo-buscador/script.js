@@ -471,24 +471,11 @@ document.addEventListener('DOMContentLoaded', () => {
             eventImageUrl = event.imageUrl.trim();
         }
 
-        // --- INICIO: Lógica para la etiqueta "Verificado" basada en la URL ---
-        let verifiedBadgeHtml = '';
-        if (event.verificationStatus === 'verified') {
-            verifiedBadgeHtml = `
-                <div class="verified-badge">
-                    <span>Verificado</span>
-                    <ion-icon name="information-circle-outline" class="info-icon" data-modal-trigger="verified-info-modal"></ion-icon>
-                </div>
-            `;
-        }
-        // --- FIN: Lógica para la etiqueta "Verificado" ---
-
         eventCard.innerHTML = `
             <div class="card-image-container">
                 <img src="${eventImageUrl}" alt="${artistName}" class="card-image" onerror="this.onerror=null;this.src='${placeholderUrl}'">
             </div>
             <div class="card-content">
-                ${verifiedBadgeHtml}
                 <h3 class="card-title card-title-button">${artistName}</h3>
             </div>`;
         return eventCard;
