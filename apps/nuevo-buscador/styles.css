@@ -413,7 +413,8 @@ header.header-main {
 
 /* Ajuste para el título de la tarjeta para que no se solape con el badge */
 .event-card .card-title {
-    padding-top: 25px; /* Espacio para el badge */
+    /* Se elimina el padding-top y se usa margin-top para empujar el título hacia abajo sin afectar su caja interna */
+    margin-top: 25px;
 }
 
 /* FIX: Hacer que el contenido del modal de "Verificado" sea desplazable */
