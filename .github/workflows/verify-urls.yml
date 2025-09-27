@@ -33,7 +33,7 @@ jobs:
         env:
           # La variable de entorno MONGO_URI se tomará de los Secretos de GitHub
           MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: node workspaces/duende-finder-monorepo/apps/api/verify-event-urls.js
+        run: node apps/api/verify-event-urls.js
 
       # 5. (Opcional) Notificar si falla
       - name: Notify on failure
