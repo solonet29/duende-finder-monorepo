@@ -12,6 +12,9 @@ on:
 jobs:
   verify-urls:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/api
 
     steps:
       # 1. Obtiene el código de tu repositorio
@@ -25,15 +28,15 @@ jobs:
           node-version: '20' # Usa la versión de Node.js que corresponda a tu proyecto
 
       # 3. Instala las dependencias (asume que package.json está en la raíz del monorepo)
-      - name: Install dependencies
-        run: npm install
+      - name: Instala las dependencias de la API
+        run: npm install # Ahora se ejecuta dentro de apps/api
 
       # 4. Ejecuta el script de verificación
       - name: Run URL verification script
         env:
           # La variable de entorno MONGO_URI se tomará de los Secretos de GitHub
           MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: node apps/api/verify-event-urls.js
+        run: node verify-event-urls.js # La ruta es ahora relativa a apps/api
 
       # 5. (Opcional) Notificar si falla
       - name: Notify on failure
