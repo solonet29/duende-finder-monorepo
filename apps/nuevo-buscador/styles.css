@@ -381,53 +381,6 @@ header.header-main {
     background-color: var(--color-borde);
 }
 
-/* --- Insignia de Verificado --- */
-.verified-badge-container {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 2;
-    cursor: pointer;
-}
-
-.verified-badge {
-    font-size: 24px;
-    color: #34c759; /* Un verde brillante */
-    background-color: rgba(255, 255, 255, 0.8);
-    border-radius: 50%;
-    padding: 2px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    transition: transform 0.2s ease;
-    animation: pulse 2.5s infinite cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.verified-badge:hover {
-    transform: scale(1.15);
-}
-
-.verified-tooltip {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%) scale(0.8);
-    background-color: var(--color-texto-principal);
-    color: var(--color-superficie);
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s, transform 0.2s;
-    margin-top: 8px;
-}
-
-.verified-badge-container:hover .verified-tooltip {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) scale(1);
-}
-
 /* ==========================================================================
    5. MODALES
    ========================================================================== */
