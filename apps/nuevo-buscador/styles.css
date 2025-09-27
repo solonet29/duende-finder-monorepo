@@ -320,9 +320,7 @@ header.header-main {
     flex-direction: column;
 }
 
-.event-card:hover {
-    /* No hover effect on the card itself to make image and title feel more separate */
-}
+
 
 .card-image-container {
     width: 100%;
