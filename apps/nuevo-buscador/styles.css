@@ -1477,14 +1477,14 @@ header.header-main {
     position: absolute;
     bottom: 125%; /* Position above the badge */
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(0);
     background-color: var(--color-superficie);
     color: var(--color-texto-principal);
     padding: 0.8rem;
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
     width: 280px;
-    text-align: center;
+    text-align: left;
     font-size: 0.8rem;
     line-height: 1.4;
     transition: opacity 0.2s ease, visibility 0.2s ease;
