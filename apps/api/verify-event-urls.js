@@ -20,12 +20,11 @@ const verifyEventUrls = async () => {
         console.log('Successfully connected to MongoDB.');
 
         const eventsToVerify = await Event.find({
-            verificationStatus: 'pending',
             date: { $gte: new Date() } // Solo verificar eventos futuros
         }).limit(50); // Limitar a 50 para no sobrecargar los servidores de origen
 
         if (eventsToVerify.length === 0) {
-            console.log('No events pending verification.');
+            console.log('No future events found.');
             return;
         }
 
@@ -35,18 +34,18 @@ const verifyEventUrls = async () => {
             let status = 'failed';
             try {
                 // Usamos una petición HEAD por eficiencia, solo nos interesa el código de estado
-                const response = await axios.head(event.sourceUrl, { timeout: 10000 });
+                const response = await axios.head(event.referenceURL, { timeout: 10000 });
                 if (response.status >= 200 && response.status < 400) {
                     status = 'verified';
-                    console.log(`SUCCESS: ${event.sourceUrl} for event "${event.name}" is valid.`);
+                    console.log(`SUCCESS: ${event.referenceURL} for event "${event.name}" is valid.`);
                 } else {
-                     console.log(`FAILED: ${event.sourceUrl} for event "${event.name}" returned status ${response.status}.`);
+                     console.log(`FAILED: ${event.referenceURL} for event "${event.name}" returned status ${response.status}.`);
                 }
             } catch (error) {
                 if (error.response) {
-                    console.error(`ERROR: ${event.sourceUrl} for event "${event.name}" returned status ${error.response.status}.`);
+                    console.error(`ERROR: ${event.referenceURL} for event "${event.name}" returned status ${error.response.status}.`);
                 } else {
-                    console.error(`ERROR: Could not reach ${event.sourceUrl} for event "${event.name}". ${error.message}`);
+                    console.error(`ERROR: Could not reach ${event.referenceURL} for event "${event.name}". ${error.message}`);
                 }
             }
 
