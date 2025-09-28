@@ -75,7 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             eventElement.innerHTML = `
                 <div class="search-result-info">
-                    <h4>${event.name}</h4>
+                    <h4>
+                        ${event.name}
+                        ${event.verificationStatus === 'verified' ? '<ion-icon name="checkmark-circle" style="color: #1abc9c; font-size: 1.1rem; vertical-align: middle; margin-left: 6px;"></ion-icon>' : ''}
+                    </h4>
                     <p class="details">
                         <ion-icon name="person-outline"></ion-icon>
                         ${event.artist || 'Artista no especificado'}

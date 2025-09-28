@@ -86,6 +86,32 @@ async function publishPosts() {
             const summaryHtml = converter.makeHtml(event.eventSummaryMarkdown);
             const nightPlanHtml = converter.makeHtml(event.nightPlanMarkdown);
 
+            const getVerificationHtml = (status, url) => {
+                if (!url) return '';
+
+                let statusText = '';
+
+                switch (status) {
+                    case 'verified':
+                        statusText = '<strong>Fuente Verificada:</strong> La URL de origen de este evento estaba activa en nuestra última comprobación.';
+                        break;
+                    case 'failed':
+                        statusText = '<strong>Fuente No Verificada:</strong> No pudimos acceder a la URL de origen en nuestra última comprobación. El evento puede estar cancelado.';
+                        break;
+                    default:
+                        statusText = '<strong>Fuente Pendiente:</strong> La URL de origen de este evento aún no ha sido comprobada por nuestro sistema.';
+                }
+
+                return `
+                    <div style="padding: 12px; border-radius: 8px; margin-top: 20px; border: 1px solid #ddd;">
+                        <p style="margin: 0 0 8px 0;">${statusText}</p>
+                        <p style="margin: 0;"><strong>Fuente Original:</strong> <a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a></p>
+                    </div>
+                `;
+            };
+
+            const verificationHtml = getVerificationHtml(event.verificationStatus, event.sourceUrl);
+
             const postBody = `
                 ${blogPostHtml}
                 <hr>
@@ -95,6 +121,7 @@ async function publishPosts() {
                 <h2>Plan de Noche</h2>
                 ${nightPlanHtml}
                 <hr>
+                ${verificationHtml}
                 <p><em>Descubre más detalles y eventos como este en nuestro <a href="https://nuevobuscador.afland.es/" target="_blank" rel="noopener noreferrer">buscador de flamenco</a>.</em></p>
             `;
 

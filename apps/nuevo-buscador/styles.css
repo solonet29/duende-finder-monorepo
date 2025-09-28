@@ -1368,3 +1368,83 @@ header.header-main {
         padding-bottom: 0; /* Anula el truco del aspect-ratio */
     }
 }
+
+/* =========================================================================
+   13. ESTILOS DE VERIFICACIÓN DE EVENTOS
+   ========================================================================== */
+
+/* --- Verification Badge --- */
+.verification-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin: 0.5rem 0;
+    position: relative; /* For tooltip positioning */
+}
+
+.verification-badge[data-status="verified"] {
+    background-color: rgba(26, 188, 156, 0.15);
+    color: #1abc9c;
+}
+
+.verification-badge[data-status="failed"] {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+}
+
+.verification-badge[data-status="pending"] {
+    background-color: rgba(243, 156, 18, 0.15);
+    color: #f39c12;
+}
+
+.verification-badge .info-icon {
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+/* --- Tooltip --- */
+.verification-badge .tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 125%; /* Position above the badge */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--color-superficie);
+    color: var(--color-texto-principal);
+    padding: 0.8rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    width: 280px;
+    text-align: center;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 10;
+    border: 1px solid var(--color-borde);
+}
+
+.verification-badge:hover .tooltip,
+.verification-badge .info-icon:hover + .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* --- Source URL --- */
+.source-url-container a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-texto-secundario);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.source-url-container a:hover {
+    color: var(--color-acento);
+    text-decoration: underline;
+}

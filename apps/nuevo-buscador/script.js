@@ -476,7 +476,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <img src="${eventImageUrl}" alt="${artistName}" class="card-image" onerror="this.onerror=null;this.src='${placeholderUrl}'">
             </div>
             <div class="card-content">
-                <h3 class="card-title card-title-button">${artistName}</h3>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <h3 class="card-title card-title-button" style="margin: 0;">${artistName}</h3>
+                    ${event.verificationStatus === 'verified' ? '<ion-icon name="checkmark-circle" style="color: #1abc9c; font-size: 1.2rem;"></ion-icon>' : ''}
+                </div>
             </div>`;
         return eventCard;
     }
@@ -511,12 +514,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${imageHtml}
                     
                     <h1>${eventName}</h1>
+
+                    <div class="verification-badge" data-status="${event.verificationStatus || 'pending'}">
+                        <ion-icon name="${getVerificationIcon(event.verificationStatus)}"></ion-icon>
+                        <span>${getVerificationText(event.verificationStatus)}</span>
+                        <ion-icon name="information-circle-outline" class="info-icon"></ion-icon>
+                        <div class="tooltip">
+                            ${getVerificationTooltip(event.verificationStatus, event.lastVerifiedAt)}
+                        </div>
+                    </div>
+
                     <div class="artist-name">
                         <ion-icon name="person-outline"></ion-icon>
                         <span>${artistName}</span>
                     </div>
 
                     <div class="event-details-group">
+                        <div class="evento-detalle">
+                            <ion-icon name="link-outline"></ion-icon>
+                            <a href="${event.sourceUrl}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">Fuente original</a>
+                        </div>
                         <div class="evento-detalle">
                             <ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span>
                         </div>
@@ -634,6 +651,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function sanitizeField(value, defaultText = 'No disponible') {
         return (value && typeof value === 'string' && value.trim()) ? value.trim() : defaultText;
+    }
+
+    function getVerificationIcon(status) {
+        switch (status) {
+            case 'verified': return 'checkmark-circle-outline';
+            case 'failed': return 'close-circle-outline';
+            default: return 'hourglass-outline';
+        }
+    }
+
+    function getVerificationText(status) {
+        switch (status) {
+            case 'verified': return 'Verificado';
+            case 'failed': return 'No Verificado';
+            default: return 'Pendiente';
+        }
+    }
+
+    function getVerificationTooltip(status, lastVerifiedAt) {
+        const date = lastVerifiedAt ? new Date(lastVerifiedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A';
+        switch (status) {
+            case 'verified':
+                return `La fuente original de este evento fue comprobada y estaba activa por última vez el ${date}.`;
+            case 'failed':
+                return `No pudimos acceder a la fuente original de este evento en la última comprobación (${date}). El evento podría haber sido cancelado o la información podría ser incorrecta.`;
+            default:
+                return 'Este evento está pendiente de nuestra comprobación automática.';
+        }
     }
 
     function geolocationSearch() {

@@ -85,6 +85,20 @@ const eventSchema = new mongoose.Schema({
     },
     publicationDate: { // Fecha en la que se programó la publicación
         type: Date,
+    },
+    // --- Campos para la verificación de la fuente del evento ---
+    verificationStatus: {
+        type: String,
+        enum: ['pending', 'verified', 'failed'],
+        default: 'pending',
+        index: true
+    },
+    lastVerifiedAt: {
+        type: Date
+    },
+    verificationAttempts: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true, // Añade automáticamente createdAt y updatedAt
