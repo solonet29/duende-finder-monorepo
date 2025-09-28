@@ -128,7 +128,7 @@ async function enrichEvents() {
     const todayString = today.toISOString().split('T')[0];
 
     const query = {
-        contentStatus: { $in: ['pending_enrichment', 'pending'] },
+        contentStatus: { $in: ['pending_enrichment', 'pending', 'enrichment_failed'] },
         date: { $gte: todayString }
     };
 

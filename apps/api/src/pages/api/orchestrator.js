@@ -25,34 +25,80 @@ export default async function handler(req, res) {
 }
 
 /**
- * Obtiene una lista paginada de artistas de la base de datos, ordenados por su ranking de eventos.
+ * Obtiene una lista paginada de artistas de la base de datos, ordenados por popularidad (número de vistas de eventos).
  */
 async function getRankedArtistsBatch(page = 1) {
-    console.log(`🚀 Solicitud para obtener el lote de artistas por ranking. Página: ${page}`);
+    console.log(`🚀 Solicitud para obtener el lote de artistas por popularidad. Página: ${page}`);
     
-    // CORRECCIÓN FINAL: Llamamos a la función correcta para obtener la conexión a la BD.
     const db = await connectToMainDb();
-
-    const artistsCollection = db.collection('artists');
-    console.log("✅ Conectado a MongoDB y a la colección 'artists'.");
+    const interactionsCollection = db.collection('user_interactions');
+    console.log("✅ Conectado a MongoDB y a la colección 'user_interactions'.");
 
     const skip = (page - 1) * BATCH_SIZE;
 
-    const query = {
-        name: { $exists: true, $ne: null, $ne: "" },
-        eventCount: { $exists: true, $gt: 0 }
-    };
+    const popularityPipeline = [
+        {
+            $match: { type: 'eventView' }
+        },
+        {
+            $group: {
+                _id: '$details.eventId',
+                views: { $sum: 1 }
+            }
+        },
+        {
+            $addFields: {
+                eventId: { $toObjectId: '$_id' }
+            }
+        },
+        {
+            $lookup: {
+                from: 'events',
+                localField: 'eventId',
+                foreignField: '_id',
+                as: 'event'
+            }
+        },
+        {
+            $unwind: '$event'
+        },
+        {
+            $group: {
+                _id: '$event.artist',
+                totalViews: { $sum: '$views' }
+            }
+        },
+        {
+            $sort: { totalViews: -1 }
+        }
+    ];
 
-    const totalArtists = await artistsCollection.countDocuments(query);
-    
-    const artists = await artistsCollection.find(query)
-        .sort({ eventCount: -1 })
-        .project({ name: 1, _id: 0 })
-        .skip(skip)
-        .limit(BATCH_SIZE)
-        .toArray();
+    const results = await interactionsCollection.aggregate([
+        {
+            $facet: {
+                artists: [
+                    ...popularityPipeline,
+                    { $skip: skip },
+                    { $limit: BATCH_SIZE },
+                    {
+                        $project: {
+                            name: '$_id',
+                            _id: 0
+                        }
+                    }
+                ],
+                totalCount: [
+                    ...popularityPipeline,
+                    { $count: 'total' }
+                ]
+            }
+        }
+    ]).toArray();
 
-    console.log(`✅ Lote de ${artists.length} artistas obtenido, ordenado por ranking.`);
+    const artists = results[0].artists;
+    const totalArtists = results[0].totalCount[0] ? results[0].totalCount[0].total : 0;
+
+    console.log(`✅ Lote de ${artists.length} artistas obtenido, ordenado por popularidad.`);
 
     return {
         artists,
