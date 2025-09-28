@@ -1514,3 +1514,7 @@ header.header-main {
     color: var(--color-acento);
     text-decoration: underline;
 }
+
+[data-theme="dark"] .business-cta {
+    color: white;
+}
