@@ -1,0 +1,44 @@
+# .github/workflows/verify-urls.yml
+
+name: Verificación diaria de URLs de eventos
+
+on:
+  # Ejecuta el workflow cada día a las 5:00 AM UTC
+  schedule:
+    - cron: '0 5 * * *'
+  # Permite ejecutar este workflow manualmente desde la pestaña "Actions" de GitHub
+  workflow_dispatch:
+
+jobs:
+  verify-urls:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/api
+
+    steps:
+      # 1. Obtiene el código de tu repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Configura el entorno de Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Usa la versión de Node.js que corresponda a tu proyecto
+
+      # 3. Instala las dependencias (asume que package.json está en la raíz del monorepo)
+      - name: Instala las dependencias de la API
+        run: npm install # Ahora se ejecuta dentro de apps/api
+
+      # 4. Ejecuta el script de verificación
+      - name: Run URL verification script
+        env:
+          # La variable de entorno MONGO_URI se tomará de los Secretos de GitHub
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: node verify-event-urls.js # La ruta es ahora relativa a apps/api
+
+      # 5. (Opcional) Notificar si falla
+      - name: Notify on failure
+        if: failure()
+        run: echo "¡El workflow de verificación de URLs ha fallado!" # Aquí podrías añadir un paso para enviar una notificación

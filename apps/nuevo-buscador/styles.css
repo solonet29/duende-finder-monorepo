@@ -320,9 +320,7 @@ header.header-main {
     flex-direction: column;
 }
 
-.event-card:hover {
-    /* No hover effect on the card itself to make image and title feel more separate */
-}
+
 
 .card-image-container {
     width: 100%;
@@ -379,6 +377,72 @@ header.header-main {
 
 .event-card:hover .card-title-button {
     background-color: var(--color-borde);
+}
+
+/* ==========================================================================
+   VERIFIED BADGE Y MODAL (AÑADIDO)
+   ========================================================================== */
+.verified-badge {
+    position: relative;
+}
+
+/* Ajuste para el título de la tarjeta para que no se solape con el badge */
+.event-card .card-title {
+    /* Se elimina el padding-top y se usa margin-top para empujar el título hacia abajo sin afectar su caja interna */
+    margin-top: 0; /* Restaurado a 0 al no haber badge */
+}
+
+/* FIX: Hacer que el contenido del modal de "Verificado" sea desplazable */
+#verified-info-modal .modal-content {
+    max-height: 70vh; /* Limitar la altura al 70% de la altura de la ventana */
+    overflow-y: auto; /* Añadir barra de desplazamiento vertical cuando sea necesario */
+    padding-right: 15px; /* Espacio para la barra de scroll */
+}
+
+/* Estilos para la info de verificación en la página de evento */
+.verification-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 1.5em;
+    flex-wrap: wrap;
+}
+
+.verified-badge-page, .unverified-badge-page {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.verified-badge-page {
+    background-color: #28a74520;
+    color: #28a745;
+    border: 1px solid #28a74580;
+}
+
+.unverified-badge-page {
+    background-color: #dc354520;
+    color: #dc3545;
+    border: 1px solid #dc354580;
+}
+
+.source-link {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-texto-secundario);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.2s;
+}
+
+.source-link:hover {
+    color: var(--color-acento);
 }
 
 /* ==========================================================================

@@ -507,6 +507,28 @@ document.addEventListener('DOMContentLoaded', () => {
             imageHtml = `<div class="evento-card-img-container"><img src="${event.imageUrl.trim()}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
         }
 
+        // --- INICIO: Lógica para la etiqueta "Verificado" y la fuente en la página de evento ---
+        let verificationInfoHtml = '';
+        if (event.verificationStatus === 'verified' && event.sourceUrl) {
+            verificationInfoHtml = `
+                <div class="verification-info">
+                    <span class="verified-badge-page">
+                        <ion-icon name="shield-checkmark-outline"></ion-icon> Verificado
+                    </span>
+                    <a href="${event.sourceUrl}" target="_blank" rel="noopener noreferrer" class="source-link">
+                        Fuente original <ion-icon name="open-outline"></ion-icon>
+                    </a>
+                </div>
+            `;
+        } else if (event.verificationStatus === 'link_broken') {
+             verificationInfoHtml = `
+                <div class="verification-info">
+                     <span class="unverified-badge-page"><ion-icon name="alert-circle-outline"></ion-icon> No verificado (posiblemente cancelado)</span>
+                </div>
+            `;
+        }
+        // --- FIN ---
+
         const pageHtml = `
             <div class="event-page-container" data-event-id="${event._id}">
                 <div class="event-page-content">
@@ -528,6 +550,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <ion-icon name="person-outline"></ion-icon>
                         <span>${artistName}</span>
                     </div>
+
+                    ${verificationInfoHtml}
 
                     <div class="event-details-group">
                         <div class="evento-detalle">
@@ -940,6 +964,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const modalCloseBtn = e.target.closest('.modal-close-btn');
             const requestLocationBtn = e.target.closest('#request-location-btn');
             const shareBtn = e.target.closest('.share-btn');
+            const modalTrigger = e.target.closest('[data-modal-trigger]');
             const sliderMapBtn = e.target.closest('.slider-map-btn');
 
             if (sliderMapBtn) {
@@ -1020,6 +1045,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (eventId && social) {
                     handleShare(social, eventId);
                 }
+            } else if (modalTrigger) {
+                const modalId = modalTrigger.dataset.modalTrigger;
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('visible');
+                }
             }
         });
 
@@ -1092,6 +1123,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function createVerifiedInfoModal() {
+        const modalHtml = `
+            <div class="modal-overlay" id="verified-info-modal">
+                <div class="modal">
+                    <button class="modal-close-btn">×</button>
+                    <div class="modal-content">
+                        <h2><ion-icon name="shield-checkmark-outline"></ion-icon> ¿Qué significa "Verificado"?</h2>
+                        <p>La etiqueta "Verificado" indica que nuestro sistema ha comprobado recientemente que la <strong>página web original</strong> donde se anunció este evento sigue activa.</p>
+                        <p>Esto nos da un alto grado de confianza de que el evento no ha sido cancelado, pero <strong>no es una garantía absoluta</strong>.</p>
+                        <hr>
+                        <h4>¿Y si no aparece la etiqueta?</h4>
+                        <p>Si un evento no está verificado, puede significar varias cosas:</p>
+                        <ul>
+                            <li>Aún no hemos procesado su URL.</li>
+                            <li>La página original ha sido eliminada (lo que podría indicar una cancelación).</li>
+                            <li>Hubo un error temporal al intentar acceder a la página.</li>
+                        </ul>
+                        <p>En la página de detalles del evento, siempre que sea posible, te proporcionaremos un enlace a la "Fuente original" para que puedas confirmarlo por ti mismo.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
     // =========================================================================
     // 3. FUNCIÓN PRINCIPAL DE ORQUESTACIÓN
     // =========================================================================
@@ -1145,6 +1201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
         initPushNotifications();
         populateInfoModals();
+        createVerifiedInfoModal();
         handleWelcomeModal();
 
         const isEventPage = await handleInitialPageLoadRouting();
