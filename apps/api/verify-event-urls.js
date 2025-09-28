@@ -4,18 +4,18 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const eventSchema = require('./models/eventSchema');
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGO_URI = process.env.MONGO_URI;
 const Event = mongoose.model('Event', eventSchema);
 
 const verifyEventUrls = async () => {
-    if (!MONGODB_URI) {
-        console.error('Error: MONGODB_URI is not defined in .env.local');
+    if (!MONGO_URI) {
+        console.error('Error: MONGO_URI is not defined in .env.local');
         process.exit(1);
     }
 
     let isConnected = false;
     try {
-        await mongoose.connect(MONGODB_URI);
+        await mongoose.connect(MONGO_URI);
         isConnected = true;
         console.log('Successfully connected to MongoDB.');
 

@@ -1,6 +1,8 @@
 {
+  "name": "api",
   "dependencies": {
     "@upstash/qstash": "^2.8.2",
+    "axios": "^1.12.2",
     "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
