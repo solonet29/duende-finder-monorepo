@@ -28,7 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <li><strong>Encuentra Eventos Cerca de Ti:</strong> Pulsa el botón <strong>"Cerca de mí"</strong> para que el buscador te muestre al instante los tablaos y eventos más próximos a tu ubicación actual.</li>
             <li><strong>Explora el Resto:</strong> Navega por la lista completa de eventos. Usamos IA para encontrar y organizar actuaciones de múltiples fuentes públicas.</li>
             <li><strong>Planifica tu Noche:</strong> Haz clic en "Planear Noche" en cualquier evento. Gemini, nuestro copiloto de IA, te creará una guía con recomendaciones de restaurantes, transporte y consejos para disfrutar al máximo.</li>
+            <li><strong>Ver en Mapa:</strong> Cada sección de eventos tiene un botón de "Mapa" para visualizar todos los eventos de esa categoría en un mapa interactivo.</li>
+            <li><strong>Planificar Viaje:</strong> Usa el planificador de viajes para encontrar eventos en una ciudad y fechas específicas.</li>
         </ol>
+        <h4>¿Qué significan los estados de los eventos?</h4>
+        <ul>
+            <li><ion-icon name="checkmark-circle-outline"></ion-icon> <strong>Verificado:</strong> La fuente original del evento ha sido comprobada recientemente y estaba activa.</li>
+            <li><ion-icon name="hourglass-outline"></ion-icon> <strong>Pendiente:</strong> El evento está pendiente de nuestra comprobación automática.</li>
+            <li><ion-icon name="close-circle-outline"></ion-icon> <strong>No Verificado:</strong> No pudimos acceder a la fuente original. El evento podría estar cancelado.</li>
+        </ul>
         <p>¡Todo está pensado para que solo te preocupes de disfrutar del duende!</p>
     `,
         terms: `

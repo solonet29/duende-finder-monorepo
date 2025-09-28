@@ -393,7 +393,9 @@ header.header-main {
 }
 
 /* FIX: Hacer que el contenido del modal de "Verificado" sea desplazable */
-#verified-info-modal .modal-content {
+#verified-info-modal .modal-content,
+#how-it-works-modal-overlay .modal-content,
+#terms-modal-overlay .modal-content {
     max-height: 70vh; /* Limitar la altura al 70% de la altura de la ventana */
     overflow-y: auto; /* Añadir barra de desplazamiento vertical cuando sea necesario */
     padding-right: 15px; /* Espacio para la barra de scroll */
