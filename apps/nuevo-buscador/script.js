@@ -1129,6 +1129,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.target === mapModalOverlay) closeMapModal();
             });
         }
+
+        const infoMenuTrigger = document.getElementById('info-menu-trigger');
+        const infoMenuPanel = document.getElementById('info-menu-panel');
+
+        if (infoMenuTrigger && infoMenuPanel) {
+            infoMenuTrigger.addEventListener('click', () => {
+                infoMenuPanel.classList.toggle('is-open');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (infoMenuPanel.classList.contains('is-open') && !infoMenuPanel.contains(e.target) && e.target !== infoMenuTrigger && !infoMenuTrigger.contains(e.target)) {
+                    infoMenuPanel.classList.remove('is-open');
+                }
+            });
+
+            infoMenuPanel.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (link) {
+                    const action = link.dataset.action;
+                    const target = link.dataset.target;
+
+                    if (action === 'open-modal') {
+                        e.preventDefault();
+                        const modal = document.querySelector(target);
+                        if (modal) {
+                            modal.classList.add('visible');
+                        }
+                        infoMenuPanel.classList.remove('is-open');
+                    }
+                }
+            });
+        }
     }
 
     function createVerifiedInfoModal() {
