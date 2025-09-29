@@ -43,11 +43,10 @@ export default async function handler(req, res) {
         const matchFilter = {};
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const todayString = today.toISOString().split('T')[0];
 
         // Por defecto, solo mostrar eventos futuros, a menos que se filtre por un mes específico
         if (!month) {
-            matchFilter.date = { $gte: todayString };
+            matchFilter.date = { $gte: today };
         }
 
         matchFilter.name = { $ne: null, $nin: ["", "N/A"] };
@@ -58,9 +57,9 @@ export default async function handler(req, res) {
         } else if (search && !lat) {
             const normalizedSearch = search.trim().toLowerCase();
             matchFilter.$or = [
-                { name: { $regex: new RegExp(search, 'i') } }, 
+                { name: { $regex: new RegExp(search, 'i') } },
                 { artist: { $regex: new RegExp(search, 'i') } },
-                { city: { $regex: new RegExp(search, 'i') } }, 
+                { city: { $regex: new RegExp(search, 'i') } },
                 { venue: { $regex: new RegExp(search, 'i') } }
             ];
         }
@@ -70,22 +69,66 @@ export default async function handler(req, res) {
         }
         if (artist) matchFilter.artist = { $regex: new RegExp(artist, 'i') };
         if (city) matchFilter.city = { $regex: new RegExp(city, 'i') };
-        if (country) matchFilter.country = { $regex: new RegExp(`^${country}$`, 'i') };
-        
+        if (country) matchFilter.country = { $regex: new RegExp(`^${country}// RUTA: /src/pages/api/events/index.js
+// VERSIÓN RESTAURADA Y CORREGIDA CON PAGINACIÓN
+
+import { getEventModel } from '@/lib/database.js';
+import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
+
+// --- MANEJADOR PRINCIPAL DE LA API ---
+export default async function handler(req, res) {
+    await runMiddleware(req, res, corsMiddleware);
+
+    try {
+        const Event = await getEventModel();
+
+        const {
+            search = null, artist = null, city = null, country = null,
+            dateFrom = null, dateTo = null, timeframe = null, lat = null,
+            lon = null, radius = null, sort = null, featured = null,
+            month = null, // Param para paginación de meses
+            page = '1',     // Param para paginación de meses
+            limit = '10'   // Param para paginación de meses
+        } = req.query;
+
+
+
+        let aggregationPipeline = [];
+
+        if (lat && lon) {
+            const latitude = parseFloat(lat);
+            const longitude = parseFloat(lon);
+            const searchRadiusMeters = (parseFloat(radius) || 60) * 1000;
+            if (!isNaN(latitude) && !isNaN(longitude) && !isNaN(searchRadiusMeters)) {
+                aggregationPipeline.push({
+                    $geoNear: {
+                        near: { type: 'Point', coordinates: [longitude, latitude] },
+                        distanceField: 'dist.calculated',
+                        maxDistance: searchRadiusMeters,
+                        spherical: true
+                    }
+                });
+            }
+        }
+
+, 'i') };
+
         if (dateFrom) {
             if (!matchFilter.date) matchFilter.date = {};
-            matchFilter.date.$gte = dateFrom;
+            matchFilter.date.$gte = new Date(dateFrom);
         }
         if (dateTo) {
             if (!matchFilter.date) matchFilter.date = {};
-            matchFilter.date.$lte = dateTo;
+            const endDate = new Date(dateTo);
+            endDate.setHours(23, 59, 59, 999);
+            matchFilter.date.$lte = endDate;
         }
 
         if (timeframe === 'week' && !dateTo) {
             const nextWeek = new Date(today);
             nextWeek.setDate(today.getDate() + 7);
             if (!matchFilter.date) matchFilter.date = {};
-            matchFilter.date.$lte = nextWeek.toISOString().split('T')[0];
+            matchFilter.date.$lte = nextWeek;
         }
 
         aggregationPipeline.push({ $match: matchFilter });
