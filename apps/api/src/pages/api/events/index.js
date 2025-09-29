@@ -20,10 +20,7 @@ export default async function handler(req, res) {
             limit = '10'   // Param para paginación de meses
         } = req.query;
 
-        const featuredArtists = [
-            'Farruquito', 'Pedro el Granaino', 'Miguel Poveda', 'Argentina',
-            'Marina Heredia', 'Tomatito', 'Alba Heredia', 'Ivan Vargas', 'Estrella Morente',
-        ];
+
 
         let aggregationPipeline = [];
 
@@ -69,7 +66,7 @@ export default async function handler(req, res) {
         }
 
         if (featured === 'true') {
-            matchFilter.artist = { $in: featuredArtists };
+            matchFilter.featured = true;
         }
         if (artist) matchFilter.artist = { $regex: new RegExp(artist, 'i') };
         if (city) matchFilter.city = { $regex: new RegExp(city, 'i') };
