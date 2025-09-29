@@ -1,17 +1,26 @@
-
 require('dotenv').config({ path: './.env' });
-const { connectToDatabase } = require('../duende-api-next/lib/database');
+const { MongoClient } = require('mongodb');
+
+const uri = process.env.MONGO_URI;
+const dbName = 'DuendeDB';
+const COLLECTION_NAME = 'events';
+
+const client = new MongoClient(uri);
 
 async function deduplicateEvents() {
-    try {
-        const db = await connectToDatabase();
-        const eventsCollection = db.collection('events');
+    console.log('🚀 Iniciando script para de-duplicar eventos...');
 
-        const duplicates = await eventsCollection.aggregate([
+    try {
+        await client.connect();
+        console.log('🔗 Conectado a MongoDB.');
+        const database = client.db(dbName);
+        const eventsCollection = database.collection(COLLECTION_NAME);
+
+        const aggregationPipeline = [
             {
                 $group: {
-                    _id: { date: "$date", artist: "$artist" },
-                    duplicates: { $push: "$_id" },
+                    _id: { date: "$date", artist: "$artist", name: "$name" },
+                    docs: { $push: { _id: "$_id", contentStatus: "$contentStatus" } },
                     count: { $sum: 1 }
                 }
             },
@@ -20,32 +29,54 @@ async function deduplicateEvents() {
                     count: { $gt: 1 }
                 }
             }
-        ]).toArray();
+        ];
+
+        const duplicates = await eventsCollection.aggregate(aggregationPipeline).toArray();
 
         if (duplicates.length === 0) {
-            console.log('No duplicate events found.');
+            console.log('✅ No se encontraron eventos duplicados.');
             return;
         }
 
-        console.log(`Found ${duplicates.length} sets of duplicate events.`);
+        console.log(`🔎 Encontrados ${duplicates.length} grupos de eventos duplicados.`);
 
-        let deletedCount = 0;
+        const statusOrder = ['published', 'content_ready', 'pending_enrichment', 'enrichment_failed'];
+        let totalDeletedCount = 0;
+
         for (const group of duplicates) {
-            // Keep the first one, delete the rest
-            const idsToDelete = group.duplicates.slice(1);
-            const result = await eventsCollection.deleteMany({ _id: { $in: idsToDelete } });
-            deletedCount += result.deletedCount;
-            console.log(`Deleted ${result.deletedCount} duplicates for artist "${group._id.artist}" on date "${group._id.date}".`);
+            // Encontrar el "mejor" documento para conservar
+            let bestDoc = group.docs[0];
+            for (let i = 1; i < group.docs.length; i++) {
+                const currentDoc = group.docs[i];
+                const bestStatusIndex = statusOrder.indexOf(bestDoc.contentStatus);
+                const currentStatusIndex = statusOrder.indexOf(currentDoc.contentStatus);
+
+                // Un índice más bajo en statusOrder es mejor
+                if (currentStatusIndex < bestStatusIndex) {
+                    bestDoc = currentDoc;
+                }
+            }
+
+            // IDs de todos los documentos en el grupo, excepto el que queremos conservar
+            const idsToDelete = group.docs
+                .map(doc => doc._id)
+                .filter(id => !id.equals(bestDoc._id));
+
+            if (idsToDelete.length > 0) {
+                const result = await eventsCollection.deleteMany({ _id: { $in: idsToDelete } });
+                totalDeletedCount += result.deletedCount;
+                console.log(`🗑️ Para el grupo ${group._id.name}, se ha conservado el evento con status '${bestDoc.contentStatus}' y se han eliminado ${result.deletedCount} duplicados.`);
+            }
         }
 
         console.log(`
-Total duplicate events deleted: ${deletedCount}`);
+✅ Proceso finalizado. Total de eventos duplicados eliminados: ${totalDeletedCount}`);
 
     } catch (error) {
-        console.error('Error de-duplicating events:', error);
+        console.error('💥 Error durante la de-duplicación de eventos:', error);
     } finally {
-        // It's important to close the connection, but the connectToDatabase function doesn't return a client to close.
-        // Assuming the connection is managed elsewhere or the script is short-lived.
+        await client.close();
+        console.log('🚪 Conexión a MongoDB cerrada.');
     }
 }
 

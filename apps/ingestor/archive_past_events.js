@@ -31,7 +31,7 @@ async function archivePastPendingEvents() {
         // en formato ISO ("YYYY-MM-DD"). Si tu campo se llama diferente, ajústalo.
         const filter = {
             contentStatus: 'pending',
-            date: { $lt: today.toISOString().split('T')[0] } // Compara solo la parte de la fecha YYYY-MM-DD
+            date: { $lt: today } // Compara solo la parte de la fecha YYYY-MM-DD
         };
 
         const updateDoc = {

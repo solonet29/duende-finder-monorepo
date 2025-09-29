@@ -108,7 +108,7 @@ export default async function handler(req, res) {
         aggregationPipeline.push({ $group: { _id: { date: "$date", artist: "$artist", name: "$name" }, firstEvent: { $first: "$ROOT" } } });
         aggregationPipeline.push({ $match: { firstEvent: { $ne: null } } });
         aggregationPipeline.push({ $replaceRoot: { newRoot: "$firstEvent" } });
-        aggregationPipeline.push({ $addFields: { contentStatus: '$contentStatus', blogPostUrl: '$blogPostUrl' } });
+
 
         // Ordenación
         // Default sort: prioritize verified events, then by date
