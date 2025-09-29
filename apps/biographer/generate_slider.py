@@ -229,7 +229,8 @@ def main():
 
     slider_code = build_slider_code(top_artists)
     
-    output_file = "slider_code.html"
+    project_root = Path(__file__).parent.parent.parent
+    output_file = project_root / "slider_code.html"
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(slider_code)
         
