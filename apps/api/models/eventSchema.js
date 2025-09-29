@@ -18,16 +18,10 @@ const eventSchema = new mongoose.Schema({
         trim: true,
     },
     date: {
-    type: String,
-    required: true
-  },
-
-  // NUEVO CAMPO para consultas de fecha correctas
-  eventDate: {
-    type: Date,
-    required: false, // Lo poblaremos con el script de migración
-    index: true
-  },
+        type: Date,
+        required: true,
+        index: true, // Indexamos para búsquedas rápidas por fecha
+    },
     time: {
         type: String,
     },
@@ -62,9 +56,6 @@ const eventSchema = new mongoose.Schema({
     blogPostUrl: {
         type: String,
     },
-    referenceURL: { // The URL to the original event page
-        type: String,
-    },
     featured: {
         type: Boolean,
         default: false,
@@ -72,7 +63,7 @@ const eventSchema = new mongoose.Schema({
     // --- Campos para el pipeline de contenido ---
     contentStatus: {
         type: String,
-        enum: ['pending_enrichment', 'enrichment_failed', 'content_ready', 'publishing', 'published', 'publishing_failed', 'archived', 'pending', 'processed', 'processing', 'failed'],
+        enum: ['pending_enrichment', 'enrichment_failed', 'content_ready', 'publishing', 'published', 'publishing_failed', 'archived', 'pending'],
         default: 'pending_enrichment',
         index: true
     },
