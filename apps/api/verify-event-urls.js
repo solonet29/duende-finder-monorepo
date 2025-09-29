@@ -23,7 +23,7 @@ const verifyEventUrls = async () => {
             eventDate: { $gte: new Date() },
             verificationStatus: { $ne: 'verified' },
             contentStatus: { $ne: 'archived' }
-        }).limit(50);
+        }).sort({ lastVerifiedAt: 1 }).limit(50);
 
         if (eventsToVerify.length === 0) {
             console.log('No future events requiring verification were found.');

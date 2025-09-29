@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const mainContainer = document.querySelector('main.container');
     const featuredSlider = document.getElementById('featured-events-slider');
+    const recentSlider = document.getElementById('recent-events-slider');
     const weekSlider = document.getElementById('week-events-slider');
     const todaySlider = document.getElementById('today-events-slider');
     const nearbySlider = document.getElementById('nearby-events-slider');

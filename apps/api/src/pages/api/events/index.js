@@ -92,19 +92,42 @@ export default async function handler(req, res) {
         }
 
         aggregationPipeline.push({ $match: matchFilter });
+
+        // Add a field for sorting by verification status for all queries
+        aggregationPipeline.push({
+            $addFields: {
+                verificationSort: {
+                    $switch: {
+                        branches: [
+                            { case: { $eq: ["$verificationStatus", "verified"] }, then: 1 },
+                            { case: { $eq: ["$verificationStatus", "pending"] }, then: 2 },
+                        ],
+                        default: 3 // 'failed' and others
+                    }
+                }
+            }
+        });
         
         // Agrupar para eliminar duplicados
-        aggregationPipeline.push({ $group: { _id: { date: "$date", artist: "$artist", name: "$name" }, firstEvent: { $first: "$$ROOT" } } });
+        aggregationPipeline.push({ $group: { _id: { date: "$date", artist: "$artist", name: "$name" }, firstEvent: { $first: "$ROOT" } } });
         aggregationPipeline.push({ $match: { firstEvent: { $ne: null } } });
         aggregationPipeline.push({ $replaceRoot: { newRoot: "$firstEvent" } });
         aggregationPipeline.push({ $addFields: { contentStatus: '$contentStatus', blogPostUrl: '$blogPostUrl' } });
 
         // Ordenación
-        let sortOrder = { date: 1 };
-        if (sort === 'date' && req.query.order === 'desc') sortOrder = { date: -1 };
-        // No se puede ordenar por textScore cuando se usa $regex. Se usará el orden por defecto (fecha).
-        // if (search && !lat) sortOrder = { score: { $meta: "textScore" } };
-        if (!lat) aggregationPipeline.push({ $sort: sortOrder });
+        // Default sort: prioritize verified events, then by date
+        let sortOrder = { verificationSort: 1, eventDate: 1 }; 
+
+        if (sort === 'date' && req.query.order === 'desc') {
+            sortOrder = { eventDate: -1 };
+        } else if (sort === 'createdAt') {
+            sortOrder = { createdAt: -1 };
+        }
+        
+        // The 'Cerca de Mí' (nearby) query uses $geoNear and doesn't need this sort
+        if (!lat) {
+            aggregationPipeline.push({ $sort: sortOrder });
+        }
 
         // --- LÓGICA DE PAGINACIÓN ---
         const pageNum = parseInt(page, 10);
