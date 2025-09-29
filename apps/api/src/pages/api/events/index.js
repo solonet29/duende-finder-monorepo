@@ -20,8 +20,6 @@ export default async function handler(req, res) {
             limit = '10'   // Param para paginación de meses
         } = req.query;
 
-
-
         let aggregationPipeline = [];
 
         if (lat && lon) {
@@ -59,7 +57,7 @@ export default async function handler(req, res) {
             matchFilter.$or = [
                 { name: { $regex: new RegExp(search, 'i') } },
                 { artist: { $regex: new RegExp(search, 'i') } },
-                { city: { $regex: new RegExp(search, 'i') } },
+                { city: { $regex: new RegExp(city, 'i') } },
                 { venue: { $regex: new RegExp(search, 'i') } }
             ];
         }
@@ -69,49 +67,7 @@ export default async function handler(req, res) {
         }
         if (artist) matchFilter.artist = { $regex: new RegExp(artist, 'i') };
         if (city) matchFilter.city = { $regex: new RegExp(city, 'i') };
-        if (country) matchFilter.country = { $regex: new RegExp(`^${country}// RUTA: /src/pages/api/events/index.js
-// VERSIÓN RESTAURADA Y CORREGIDA CON PAGINACIÓN
-
-import { getEventModel } from '@/lib/database.js';
-import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
-
-// --- MANEJADOR PRINCIPAL DE LA API ---
-export default async function handler(req, res) {
-    await runMiddleware(req, res, corsMiddleware);
-
-    try {
-        const Event = await getEventModel();
-
-        const {
-            search = null, artist = null, city = null, country = null,
-            dateFrom = null, dateTo = null, timeframe = null, lat = null,
-            lon = null, radius = null, sort = null, featured = null,
-            month = null, // Param para paginación de meses
-            page = '1',     // Param para paginación de meses
-            limit = '10'   // Param para paginación de meses
-        } = req.query;
-
-
-
-        let aggregationPipeline = [];
-
-        if (lat && lon) {
-            const latitude = parseFloat(lat);
-            const longitude = parseFloat(lon);
-            const searchRadiusMeters = (parseFloat(radius) || 60) * 1000;
-            if (!isNaN(latitude) && !isNaN(longitude) && !isNaN(searchRadiusMeters)) {
-                aggregationPipeline.push({
-                    $geoNear: {
-                        near: { type: 'Point', coordinates: [longitude, latitude] },
-                        distanceField: 'dist.calculated',
-                        maxDistance: searchRadiusMeters,
-                        spherical: true
-                    }
-                });
-            }
-        }
-
-, 'i') };
+        if (country) matchFilter.country = { $regex: new RegExp(`^${country}$`, 'i') };
 
         if (dateFrom) {
             if (!matchFilter.date) matchFilter.date = {};
