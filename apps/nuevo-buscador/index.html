@@ -29,7 +29,6 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="chatbot.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="menu.css">
 </head>
 
 <body>
@@ -187,9 +186,12 @@
     </div>
     <nav id="bottom-nav">
         <button class="nav-btn active" id="nav-home-btn" title="Inicio"><ion-icon name="home"></ion-icon></button>
+        <button class="nav-btn" id="nav-how-it-works-btn" title="Cómo Funciona"><ion-icon
+                name="help-circle-outline"></ion-icon></button>
+        <button class="nav-btn" id="nav-terms-btn" title="Términos"><ion-icon
+                name="document-text-outline"></ion-icon></button>
         <button class="nav-btn" id="nav-notifications-btn" title="Notificaciones"><ion-icon
                 name="notifications-outline"></ion-icon></button>
-        <button class="nav-btn" id="info-menu-trigger" title="Más opciones"><ion-icon name="ellipsis-vertical"></ion-icon></button>
         <button class="nav-btn" id="nav-theme-toggle" title="Tema"><ion-icon name="moon-outline"></ion-icon></button>
         <a href="https://afland.es" target="_blank" rel="noopener noreferrer" class="nav-btn"
             title="Visitar Afland.es"><ion-icon name="flame-outline"></ion-icon></a>
@@ -212,23 +214,6 @@
     </div>
     <!-- Search Modal End -->
 
-    <div id="info-menu-panel">
-        <ul>
-            <li><a href="#" data-action="open-modal" data-target="#suggest-event-modal"><ion-icon name="add-circle-outline"></ion-icon><span>Sugerir un Evento</span></a></li>
-            <li><a href="#" data-action="open-modal" data-target="#how-it-works-modal-overlay"><ion-icon name="help-circle-outline"></ion-icon><span>Cómo Funciona</span></a></li>
-            <li><a href="/contacto.html"><ion-icon name="send-outline"></ion-icon><span>Contacto</span></a></li>
-            <li><a href="/terminos.html"><ion-icon name="document-text-outline"></ion-icon><span>Términos y Condiciones</span></a></li>
-        </ul>
-    </div>
-    <div id="suggest-event-modal" class="modal-overlay">
-        <div class="modal">
-            <button class="modal-close-btn">&times;</button>
-            <div class="modal-content">
-                <h2>Sugerir un Evento</h2>
-                <p>Próximamente podrás sugerir eventos desde aquí.</p>
-            </div>
-        </div>
-    </div>
 </body>
 
 </html>
