@@ -101,12 +101,22 @@ async function processEvents() {
         const title = sanitizedEvent.title || '';
         const search_synonyms = `${artist} ${title}`.trim();
 
-        await finalCollection.insertOne({
+        const documentToInsert = {
           ...sanitizedEvent,
           search_synonyms,
           contentStatus: CONTENT_STATUS_PENDING,
-          createdAt: new Date()
-        });
+          createdAt: new Date(),
+          eventDate: null // Default to null
+        };
+
+        if (sanitizedEvent.date && sanitizedEvent.date !== 'Fecha no disponible') {
+            const dateObject = new Date(sanitizedEvent.date);
+            if (!isNaN(dateObject.getTime())) {
+                documentToInsert.eventDate = dateObject;
+            }
+        }
+
+        await finalCollection.insertOne(documentToInsert);
         summary.added++;
       }
       await tempCollection.deleteOne({ _id: new ObjectId(event._id) });
