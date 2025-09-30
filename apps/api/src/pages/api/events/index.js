@@ -6,6 +6,7 @@ import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
 
 // --- MANEJADOR PRINCIPAL DE LA API ---
 export default async function handler(req, res) {
+    console.log('API received query:', req.query);
     await runMiddleware(req, res, corsMiddleware);
 
     try {
