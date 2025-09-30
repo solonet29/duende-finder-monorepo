@@ -6,7 +6,6 @@ import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
 
 // --- MANEJADOR PRINCIPAL DE LA API ---
 export default async function handler(req, res) {
-    console.log('API received query:', req.query);
     await runMiddleware(req, res, corsMiddleware);
 
     try {
@@ -119,19 +118,7 @@ export default async function handler(req, res) {
             }
         });
         
-        // Agrupar para eliminar duplicados (temporalmente desactivado para depuración)
-        // aggregationPipeline.push({ 
-        //     $group: { 
-        //         _id: { 
-        //             day: { $dateToString: { format: "%Y-%m-%d", date: "$eventDate" } },
-        //             artist: "$artist",
-        //             name: "$name"
-        //         }, 
-        //         firstEvent: { $first: "$ROOT" } 
-        //     } 
-        // });
-        // aggregationPipeline.push({ $match: { firstEvent: { $ne: null } } });
-        // aggregationPipeline.push({ $replaceRoot: { newRoot: "$firstEvent" } });
+        // La deduplicación se maneja en un proceso offline (enrich-events)
 
 
         // Ordenación
