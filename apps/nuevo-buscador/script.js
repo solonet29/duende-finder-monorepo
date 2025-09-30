@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- 2. Lógica de carga de sliders (revertida a /api/events) ---
         console.log("✅ Paso 1: Entrando en initializeDashboard (modo API/EVENTS).");
 
-        const sliders = [featuredSlider, weekSlider, todaySlider];
+        const sliders = [featuredSlider, recentSlider, weekSlider, todaySlider];
         sliders.forEach(slider => {
             if (slider) {
                 const section = slider.closest('.sliders-section');
@@ -308,21 +308,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
             const todayString = today.toISOString().split('T')[0];
 
-            const [featuredResponse, weekResponse, todayResponse] = await Promise.all([
+            const [featuredResponse, recentResponse, weekResponse, todayResponse] = await Promise.all([
                 fetch(`${API_BASE_URL}/api/events?featured=true&limit=10`),
+                fetch(`${API_BASE_URL}/api/events?sort=createdAt&limit=10`),
                 fetch(`${API_BASE_URL}/api/events?timeframe=week&limit=10`),
                 fetch(`${API_BASE_URL}/api/events?dateFrom=${todayString}&dateTo=${todayString}&limit=10`)
             ]);
 
             if (!featuredResponse.ok) console.error('Error fetching featured events');
+            if (!recentResponse.ok) console.error('Error fetching recent events');
             if (!weekResponse.ok) console.error('Error fetching week events');
             if (!todayResponse.ok) console.error('Error fetching today events');
 
             const featuredData = await featuredResponse.json();
+            const recentData = await recentResponse.json();
             const weekData = await weekResponse.json();
             const todayData = await todayResponse.json();
 
             renderSlider(featuredSlider, featuredData.events || []);
+            renderSlider(recentSlider, recentData.events || []);
             renderSlider(weekSlider, weekData.events || []);
             renderSlider(todaySlider, todayData.events || []);
 
