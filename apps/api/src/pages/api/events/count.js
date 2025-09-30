@@ -14,10 +14,10 @@ export default async function handler(req, res) {
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayString = today.toISOString().split('T')[0];
+
 
     const count = await eventsCollection.countDocuments({
-      date: { $gte: todayString },
+      date: { $gte: today },
       name: { $ne: null, $nin: ["", "N/A"] },
       artist: { $ne: null, $nin: ["", "N/A"] },
       time: { $ne: null, $nin: ["", "N/A"] },
