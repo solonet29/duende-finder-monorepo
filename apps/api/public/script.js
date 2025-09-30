@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const featuredSlider = document.getElementById('featured-events-slider');
     const weekSlider = document.getElementById('week-events-slider');
     const todaySlider = document.getElementById('today-events-slider');
+    const recentSlider = document.getElementById('recent-events-slider');
     const nearbySlider = document.getElementById('nearby-events-slider');
     const monthlySlidersContainer = document.getElementById('monthly-sliders-container');
     const filterBar = document.querySelector('.filter-bar');
@@ -183,11 +184,12 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const userLocationPromise = getUserLocation().catch(() => null);
 
-            const [circuitoData, weekData, todayData, allEventsData] = await Promise.all([
+            const [circuitoData, weekData, todayData, allEventsData, recentData] = await Promise.all([
                 fetch(`${API_BASE_URL}/api/events?q=Circuito Andaluz de Peñas 2025&limit=100`).then(res => res.json()),
                 fetch(`${API_BASE_URL}/api/events?timeframe=week&limit=10`).then(res => res.json()),
                 fetch(`${API_BASE_URL}/api/events?timeframe=today&limit=10`).then(res => res.json()),
-                fetch(`${API_BASE_URL}/api/events?sort=date`).then(res => res.json())
+                fetch(`${API_BASE_URL}/api/events?sort=date`).then(res => res.json()),
+                fetch(`${API_BASE_URL}/api/events?sort=createdAt&limit=10`).then(res => res.json())
             ]);
 
             const userLocation = await userLocationPromise;
@@ -209,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSlider(featuredSlider, circuitoEvents);
             renderSlider(weekSlider, weekData?.events);
             renderSlider(todaySlider, todayData?.events);
+            renderSlider(recentSlider, recentData?.events);
 
             if (allEventsData?.events) {
                 const monthlyGroups = groupEventsByMonth(allEventsData.events);

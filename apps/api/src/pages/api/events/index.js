@@ -15,6 +15,7 @@ export default async function handler(req, res) {
             search = null, artist = null, city = null, country = null,
             dateFrom = null, dateTo = null, timeframe = null, lat = null,
             lon = null, radius = null, sort = null, featured = null,
+            featured_events = null,
             month = null, // Param para paginación de meses
             page = '1',     // Param para paginación de meses
             limit = '10'   // Param para paginación de meses
@@ -65,6 +66,9 @@ export default async function handler(req, res) {
         if (featured === 'true') {
             matchFilter.featured = true;
         }
+        if (featured_events === 'true') {
+            matchFilter.artist = { $exists: true, $ne: null, $ne: "" };
+        }
         if (artist) matchFilter.artist = { $regex: new RegExp(artist, 'i') };
         if (city) matchFilter.city = { $regex: new RegExp(city, 'i') };
         if (country) matchFilter.country = { $regex: new RegExp(`^${country}$`, 'i') };
@@ -80,7 +84,12 @@ export default async function handler(req, res) {
             matchFilter.date.$lte = endDate;
         }
 
-        if (timeframe === 'week' && !dateTo) {
+        if (timeframe === 'today') {
+            const endOfDay = new Date(today);
+            endOfDay.setHours(23, 59, 59, 999);
+            if (!matchFilter.date) matchFilter.date = {};
+            matchFilter.date.$lte = endOfDay;
+        } else if (timeframe === 'week' && !dateTo) {
             const nextWeek = new Date(today);
             nextWeek.setDate(today.getDate() + 7);
             if (!matchFilter.date) matchFilter.date = {};

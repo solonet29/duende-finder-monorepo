@@ -54,10 +54,10 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
 // --- Componente Principal de la Página ---
 const HomePage = ({ staticProps }) => {
-    const { circuitoEvents: initialCircuitoEvents, weekEvents, todayEvents, allEvents, eventCount } = staticProps;
+    const { featuredEvents: initialFeaturedEvents, weekEvents, todayEvents, allEvents, eventCount } = staticProps;
 
     // --- Estados de la Aplicación ---
-    const [circuitoEvents, setCircuitoEvents] = useState(initialCircuitoEvents);
+    const [featuredEvents, setFeaturedEvents] = useState(initialFeaturedEvents);
     const [monthlyEvents, setMonthlyEvents] = useState({});
 
     // --- Efectos para Lógica de Cliente ---
@@ -69,7 +69,7 @@ const HomePage = ({ staticProps }) => {
                 const userLocation = await getUserLocation();
                 const { latitude, longitude } = userLocation.coords;
 
-                const sortedEvents = [...initialCircuitoEvents].map(event => {
+                const sortedEvents = [...initialFeaturedEvents].map(event => {
                     if (event.location?.coordinates?.length === 2) {
                         const [eventLon, eventLat] = event.location.coordinates;
                         return { ...event, distance: calculateDistance(latitude, longitude, eventLat, eventLon) };
@@ -78,17 +78,17 @@ const HomePage = ({ staticProps }) => {
                     }
                 }).sort((a, b) => a.distance - b.distance);
 
-                setCircuitoEvents(sortedEvents);
+                setFeaturedEvents(sortedEvents);
 
             } catch (error) {
                 console.warn("No se pudo obtener la ubicación para ordenar eventos cercanos.");
             }
         };
 
-        if (initialCircuitoEvents.length > 0) {
+        if (initialFeaturedEvents.length > 0) {
             sortEventsByProximity();
         }
-    }, [initialCircuitoEvents]); // Se ejecuta si los eventos iniciales cambian
+    }, [initialFeaturedEvents]); // Se ejecuta si los eventos iniciales cambian
 
     // Efecto para agrupar eventos por mes
     useEffect(() => {
@@ -110,15 +110,15 @@ const HomePage = ({ staticProps }) => {
                 {/* El Head principal ya está en Layout.js, esto es para contenido específico de la página si se necesita */}
             </Head>
 
-            <h1 className="main-title">Duende Finder</h1>
+            <h1 class="main-title">Duende Finder</h1>
             {/* El contador ahora es parte de la página y no necesita su propio script */}
-            <p className="subtitle-counter loaded">+{eventCount.toLocaleString('es-ES')} eventos de flamenco verificados</p>
+            <p class="subtitle-counter loaded">+{eventCount.toLocaleString('es-ES')} eventos de flamenco verificados</p>
 
             {/* Aquí irían los componentes para Planificador de Viaje y Cerca de Mí si se migran */}
 
-            <section id="destacados-section" className="sliders-section">
-                <h2>Circuito Andaluz de Peñas 2025</h2>
-                <EventSlider events={circuitoEvents} />
+            <section id="destacados-section" class="sliders-section">
+                <h2>Eventos Destacados</h2>
+                <EventSlider events={featuredEvents} />
             </section>
             <section id="semana-section" className="sliders-section">
                 <h2>Esta Semana 🔥</h2>
@@ -152,8 +152,8 @@ const HomePage = ({ staticProps }) => {
 export async function getStaticProps() {
     const API_BASE_URL = process.env.API_BASE_URL || 'https://api-v2.afland.es';
     try {
-        const [circuitoData, weekData, todayData, allEventsData, countData] = await Promise.all([
-            fetch(`${API_BASE_URL}/api/events?q=Circuito Andaluz de Peñas 2025&limit=100`).then(res => res.json()),
+        const [featuredData, weekData, todayData, allEventsData, countData] = await Promise.all([
+            fetch(`${API_BASE_URL}/api/events?featured_events=true&limit=100`).then(res => res.json()),
             fetch(`${API_BASE_URL}/api/events?timeframe=week&limit=10`).then(res => res.json()),
             fetch(`${API_BASE_URL}/api/events?timeframe=today&limit=10`).then(res => res.json()),
             fetch(`${API_BASE_URL}/api/events?sort=date`).then(res => res.json()),
@@ -163,7 +163,7 @@ export async function getStaticProps() {
         return {
             props: {
                 staticProps: {
-                    circuitoEvents: circuitoData?.events || [],
+                    featuredEvents: featuredData?.events || [],
                     weekEvents: weekData?.events || [],
                     todayEvents: todayData?.events || [],
                     allEvents: allEventsData?.events || [],
@@ -174,7 +174,7 @@ export async function getStaticProps() {
         };
     } catch (error) {
         console.error("Error fetching data for home page:", error);
-        return { props: { staticProps: { circuitoEvents: [], weekEvents: [], todayEvents: [], allEvents: [], eventCount: 0 } } };
+        return { props: { staticProps: { featuredEvents: [], weekEvents: [], todayEvents: [], allEvents: [], eventCount: 0 } } };
     }
 }
 
