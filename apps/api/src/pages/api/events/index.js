@@ -57,7 +57,7 @@ export default async function handler(req, res) {
             matchFilter.$or = [
                 { name: { $regex: new RegExp(search, 'i') } },
                 { artist: { $regex: new RegExp(search, 'i') } },
-                { city: { $regex: new RegExp(city, 'i') } },
+                { city: { $regex: new RegExp(search, 'i') } },
                 { venue: { $regex: new RegExp(search, 'i') } }
             ];
         }
