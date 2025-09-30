@@ -325,8 +325,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const weekData = await weekResponse.json();
             const todayData = await todayResponse.json();
 
+            // Sort recent events by date
+            const recentEvents = recentData.events || [];
+            recentEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+
             renderSlider(featuredSlider, featuredData.events || []);
-            renderSlider(recentSlider, recentData.events || []);
+            renderSlider(recentSlider, recentEvents);
             renderSlider(weekSlider, weekData.events || []);
             renderSlider(todaySlider, todayData.events || []);
 
