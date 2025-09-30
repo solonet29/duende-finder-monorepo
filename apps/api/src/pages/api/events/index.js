@@ -125,10 +125,19 @@ import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
             }
         });
         
-        // Agrupar para eliminar duplicados (temporalmente desactivado para depuración)
-        // aggregationPipeline.push({ $group: { _id: { date: "$eventDate", artist: "$artist", name: "$name" }, firstEvent: { $first: "$ROOT" } } });
-        // aggregationPipeline.push({ $match: { firstEvent: { $ne: null } } });
-        // aggregationPipeline.push({ $replaceRoot: { newRoot: "$firstEvent" } });
+        // Agrupar para eliminar duplicados
+        aggregationPipeline.push({ 
+            $group: { 
+                _id: { 
+                    day: { $dateToString: { format: "%Y-%m-%d", date: "$eventDate" } },
+                    artist: "$artist",
+                    name: "$name"
+                }, 
+                firstEvent: { $first: "$ROOT" } 
+            } 
+        });
+        aggregationPipeline.push({ $match: { firstEvent: { $ne: null } } });
+        aggregationPipeline.push({ $replaceRoot: { newRoot: "$firstEvent" } });
 
 
         // Ordenación
