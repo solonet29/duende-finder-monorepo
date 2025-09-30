@@ -45,14 +45,19 @@ export default async function handler(req, res) {
 
         // Por defecto, solo mostrar eventos futuros, a menos que se filtre por un mes específico
         if (!month) {
-            matchFilter.date = { $gte: today };
+            matchFilter.eventDate = { $gte: today };
         }
 
         matchFilter.name = { $ne: null, $nin: ["", "N/A"] };
 
         // --- LÓGICA DE FILTRADO ---
         if (month) {
-            matchFilter.date = { $regex: `^${month}` };
+            const year = parseInt(month.split('-')[0]);
+            const monthIndex = parseInt(month.split('-')[1]) - 1;
+            const startDate = new Date(Date.UTC(year, monthIndex, 1));
+            const endDate = new Date(Date.UTC(year, monthIndex + 1, 1));
+            endDate.setUTCMilliseconds(-1);
+            matchFilter.eventDate = { $gte: startDate, $lte: endDate };
         } else if (search && !lat) {
             const normalizedSearch = search.trim().toLowerCase();
             matchFilter.$or = [
@@ -71,29 +76,74 @@ export default async function handler(req, res) {
         }
         if (artist) matchFilter.artist = { $regex: new RegExp(artist, 'i') };
         if (city) matchFilter.city = { $regex: new RegExp(city, 'i') };
-        if (country) matchFilter.country = { $regex: new RegExp(`^${country}$`, 'i') };
+        if (country) matchFilter.country = { $regex: new RegExp(`^${country}// RUTA: /src/pages/api/events/index.js
+// VERSIÓN RESTAURADA Y CORREGIDA CON PAGINACIÓN
+
+import { getEventModel } from '@/lib/database.js';
+import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
+
+// --- MANEJADOR PRINCIPAL DE LA API ---
+export default async function handler(req, res) {
+    await runMiddleware(req, res, corsMiddleware);
+
+    try {
+        const Event = await getEventModel();
+
+        const {
+            search = null, artist = null, city = null, country = null,
+            dateFrom = null, dateTo = null, timeframe = null, lat = null,
+            lon = null, radius = null, sort = null, featured = null,
+            featured_events = null,
+            month = null, // Param para paginación de meses
+            page = '1',     // Param para paginación de meses
+            limit = '10'   // Param para paginación de meses
+        } = req.query;
+
+        let aggregationPipeline = [];
+
+        if (lat && lon) {
+            const latitude = parseFloat(lat);
+            const longitude = parseFloat(lon);
+            const searchRadiusMeters = (parseFloat(radius) || 60) * 1000;
+            if (!isNaN(latitude) && !isNaN(longitude) && !isNaN(searchRadiusMeters)) {
+                aggregationPipeline.push({
+                    $geoNear: {
+                        near: { type: 'Point', coordinates: [longitude, latitude] },
+                        distanceField: 'dist.calculated',
+                        maxDistance: searchRadiusMeters,
+                        spherical: true
+                    }
+                });
+            }
+        }
+
+        const matchFilter = {};
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+, 'i') };
 
         if (dateFrom) {
-            if (!matchFilter.date) matchFilter.date = {};
-            matchFilter.date.$gte = new Date(dateFrom);
+            if (!matchFilter.eventDate) matchFilter.eventDate = {};
+            matchFilter.eventDate.$gte = new Date(dateFrom);
         }
         if (dateTo) {
-            if (!matchFilter.date) matchFilter.date = {};
+            if (!matchFilter.eventDate) matchFilter.eventDate = {};
             const endDate = new Date(dateTo);
             endDate.setHours(23, 59, 59, 999);
-            matchFilter.date.$lte = endDate;
+            matchFilter.eventDate.$lte = endDate;
         }
 
         if (timeframe === 'today') {
             const endOfDay = new Date(today);
             endOfDay.setHours(23, 59, 59, 999);
-            if (!matchFilter.date) matchFilter.date = {};
-            matchFilter.date.$lte = endOfDay;
+            if (!matchFilter.eventDate) matchFilter.eventDate = {};
+            matchFilter.eventDate.$lte = endOfDay;
         } else if (timeframe === 'week' && !dateTo) {
             const nextWeek = new Date(today);
             nextWeek.setDate(today.getDate() + 7);
-            if (!matchFilter.date) matchFilter.date = {};
-            matchFilter.date.$lte = nextWeek;
+            if (!matchFilter.eventDate) matchFilter.eventDate = {};
+            matchFilter.eventDate.$lte = nextWeek;
         }
 
         aggregationPipeline.push({ $match: matchFilter });
@@ -113,10 +163,10 @@ export default async function handler(req, res) {
             }
         });
         
-        // Agrupar para eliminar duplicados (temporalmente desactivado para depuración)
-        // aggregationPipeline.push({ $group: { _id: { date: "$date", artist: "$artist", name: "$name" }, firstEvent: { $first: "$ROOT" } } });
-        // aggregationPipeline.push({ $match: { firstEvent: { $ne: null } } });
-        // aggregationPipeline.push({ $replaceRoot: { newRoot: "$firstEvent" } });
+        // Agrupar para eliminar duplicados
+        aggregationPipeline.push({ $group: { _id: { date: "$eventDate", artist: "$artist", name: "$name" }, firstEvent: { $first: "$ROOT" } } });
+        aggregationPipeline.push({ $match: { firstEvent: { $ne: null } } });
+        aggregationPipeline.push({ $replaceRoot: { newRoot: "$firstEvent" } });
 
 
         // Ordenación

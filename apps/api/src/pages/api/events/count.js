@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
 
     const count = await eventsCollection.countDocuments({
-      date: { $gte: today },
+      eventDate: { $gte: today },
       name: { $ne: null, $nin: ["", "N/A"] },
       artist: { $ne: null, $nin: ["", "N/A"] },
       time: { $ne: null, $nin: ["", "N/A"] },
