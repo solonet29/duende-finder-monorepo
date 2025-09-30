@@ -77,14 +77,7 @@ export default async function handler(req, res) {
         }
         if (artist) matchFilter.artist = { $regex: new RegExp(artist, 'i') };
         if (city) matchFilter.city = { $regex: new RegExp(city, 'i') };
-        if (country) matchFilter.country = { $regex: new RegExp(`^${country}// RUTA: /src/pages/api/events/index.js
-// VERSIÓN RESTAURADA Y CORREGIDA CON PAGINACIÓN
-
-import { getEventModel } from '@/lib/database.js';
-import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
-
-// --- MANEJADOR PRINCIPAL DE LA API ---
-, 'i') };
+        if (country) matchFilter.country = { $regex: new RegExp(`^${country}$`, 'i') };
 
         if (dateFrom) {
             if (!matchFilter.eventDate) matchFilter.eventDate = {};
