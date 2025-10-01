@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Sliders de Payload</title>
+    <style>
+        /* Basic styles for visibility */
+        body { font-family: sans-serif; padding: 1rem; background-color: #f9f9f9; color: #333; }
+        h1, h2 { color: #111; }
+        .sliders-section { margin-bottom: 2rem; border: 1px solid #ccc; padding: 1rem; border-radius: 8px; background-color: #fff; }
+        .slider-container { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; }
+        .event-card { border: 1px solid #eee; border-radius: 8px; min-width: 220px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .event-card:hover { transform: translateY(-5px); }
+        .card-image-container img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px 8px 0 0; }
+        .card-content { padding: 0.75rem; }
+        .card-title { font-size: 1.1rem; font-weight: bold; margin: 0 0 0.25rem 0; }
+        .card-subtitle { font-size: 0.9rem; color: #666; margin: 0; }
+    </style>
+</head>
+<body>
+
+    <h1>Página de Prueba para Sliders de Payload</h1>
+    <p>Esta página intenta cargar los sliders directamente desde la API <strong>https://cms-duendefinder.vercel.app/api/sliders</strong>. Abre la consola del navegador (F12) para ver los logs.</p>
+
+    <section id="destacados-section" class="sliders-section">
+        <h2>Artistas Destacados 2025</h2>
+        <div class="slider-container" id="featured-events-slider"></div>
+    </section>
+
+    <section id="recent-section" class="sliders-section">
+        <h2>Recién Añadidos 🆕</h2>
+        <div class="slider-container" id="recent-events-slider"></div>
+    </section>
+
+    <section id="semana-section" class="sliders-section">
+        <h2>Esta Semana 🔥</h2>
+        <div class="slider-container" id="week-events-slider"></div>
+    </section>
+
+    <section id="hoy-section" class="sliders-section">
+        <h2>Eventos para Hoy 📅</h2>
+        <div class="slider-container" id="today-events-slider"></div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- INICIO DEL SCRIPT DE PRUEBA ---
+
+            // 1. CONFIGURACIÓN Y SETUP
+            const getApiBaseUrl = () => {
+                // Para esta prueba, usamos siempre la URL de producción del CMS
+                return 'https://cms-duendefinder.vercel.app';
+            };
+
+            const API_BASE_URL = getApiBaseUrl();
+            let eventsCache = {}; // Mantenemos un cache por si es útil
+
+            function sanitizeField(value, defaultText = 'No disponible') {
+                return (value && typeof value === 'string' && value.trim()) ? value.trim() : defaultText;
+            }
+
+            // 2. NUEVAS FUNCIONES BASADAS EN PAYLOAD
+            async function initializeSlidersFromPayload() {
+                console.log("🚀 Inicializando sliders desde Payload CMS...");
+
+                // Mapeo de los títulos de los sliders en Payload a los contenedores HTML
+                const sliderConfig = {
+                    'Artistas Destacados 2025': document.getElementById('featured-events-slider'),
+                    'Recién Añadidos 🆕': document.getElementById('recent-events-slider'),
+                    'Esta Semana 🔥': document.getElementById('week-events-slider'),
+                    'Eventos para Hoy 📅': document.getElementById('today-events-slider'),
+                };
+
+                // Mostrar un mensaje de "Cargando..." en todos los sliders
+                Object.values(sliderConfig).forEach(container => {
+                    if (container) {
+                        container.innerHTML = '<p>Cargando...</p>';
+                    }
+                });
+
+                try {
+                    // Usamos depth=2 para que Payload popule los documentos relacionados (events, y dentro de events, artist e image)
+                    const response = await fetch(`${API_BASE_URL}/api/sliders?limit=10&depth=2`); 
+                    if (!response.ok) {
+                        throw new Error(`Error al obtener sliders de Payload: ${response.status} ${response.statusText}`);
+                    }
+                    const payloadData = await response.json();
+                    const sliders = payloadData.docs || [];
+
+                    console.log("✅ Sliders recibidos de Payload:", sliders);
+
+                    if (sliders.length === 0) {
+                        console.warn("No se encontraron sliders en Payload CMS.");
+                        Object.values(sliderConfig).forEach(container => {
+                            if(container) container.innerHTML = '<p>No se encontraron sliders en el CMS.</p>';
+                        });
+                        return;
+                    }
+                    
+                    // Limpiar todos los contenedores antes de renderizar
+                     Object.values(sliderConfig).forEach(container => {
+                        if(container) container.innerHTML = '';
+                    });
+
+                    // Renderizar cada slider que hemos recibido
+                    sliders.forEach(slider => {
+                        const container = sliderConfig[slider.title];
+                        if (container) {
+                            console.log(`Renderizando slider: "${slider.title}"`);
+                            renderPayloadSlider(container, slider);
+                        } else {
+                            console.warn(`No se encontró un contenedor para el slider con título: "${slider.title}"`);
+                        }
+                    });
+
+                } catch (error) {
+                    console.error("❌ ERROR FATAL al cargar sliders desde Payload:", error);
+                    document.body.innerHTML += `<p style="color: red; font-weight: bold;">Error al cargar los datos: ${error.message}. Revisa la consola.</p>`;
+                }
+            }
+
+            function renderPayloadSlider(container, slider) {
+                const section = container.closest('.sliders-section');
+                if (!section) return;
+
+                if (!slider.items || slider.items.length === 0) {
+                    container.innerHTML = '<p>No hay eventos en esta categoría por ahora.</p>';
+                    return;
+                }
+
+                section.style.display = 'block';
+                container.innerHTML = ''; // Limpiar el mensaje de "Cargando..."
+
+                slider.items.forEach(item => {
+                    const event = item.event;
+                    // Nos aseguramos que el evento es un objeto (porque está populado con depth=2)
+                    if (event && typeof event === 'object') {
+                        eventsCache[event.id] = event;
+                        
+                        const eventCard = document.createElement('div');
+                        eventCard.className = 'event-card';
+                        eventCard.setAttribute('data-event-id', event.id);
+
+                        // Payload devuelve relaciones como objetos. Ej: event.artist.name
+                        const artistName = sanitizeField(event.artist?.name, 'Artista por confirmar');
+                        const eventName = sanitizeField(event.name, 'Evento sin nombre');
+
+                        const placeholderUrl = 'https://via.placeholder.com/220x140.png?text=No+Imagen';
+                        let eventImageUrl = placeholderUrl;
+
+                        // La imagen también es una relación. Ej: event.image.url
+                        if (event.image && event.image.url) {
+                            eventImageUrl = event.image.url;
+                        }
+
+                        eventCard.innerHTML = `
+                            <div class="card-image-container">
+                                <img src="${eventImageUrl}" alt="${artistName}" class="card-image" onerror="this.onerror=null;this.src='${placeholderUrl}'">
+                            </div>
+                            <div class="card-content">
+                                <h3 class="card-title">${artistName}</h3>
+                                <p class="card-subtitle">${eventName}</p>
+                            </div>`;
+                        
+                        container.appendChild(eventCard);
+                    } else {
+                        console.warn("Item de slider ignorado porque el evento no está populado:", item);
+                    }
+                });
+            }
+
+            // 3. INICIALIZACIÓN
+            initializeSlidersFromPayload();
+
+            // --- FIN DEL SCRIPT DE PRUEBA ---
+        });
+    </script>
+
+</body>
+</html>

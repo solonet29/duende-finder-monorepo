@@ -29,7 +29,7 @@ export default buildConfig({
   db: mongooseAdapter({
     url: process.env.DATABASE_URI || '',
   }),
-
+  cors: ['https://cms-duendefinder.vercel.app', 'http://localhost:8080', 'http://localhost:3000'],
   plugins: [
     payloadCloudPlugin(),
     // storage-adapter-placeholders
