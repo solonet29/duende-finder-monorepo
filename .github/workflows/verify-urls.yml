@@ -33,6 +33,18 @@ jobs:
           # en cualquier subdirectorio, lo que es ideal para nuestro monorepo.
           cache-dependency-path: '**/package-lock.json'
 
+        # --- AÑADIR ESTE BLOQUE DE DIAGNÓSTICO ---
+      - name: Check Versions and Lockfile (DEBUG)
+        run: |
+          echo "--- Versión de Node.js activa ---"
+          node -v
+          echo "--- Versión de NPM activa ---"
+          npm -v
+          echo "--- Buscando archivos package-lock.json y package.json ---"
+          find . -name "package-lock.json" -o -name "package.json"
+          echo "--------------------------------------------------------"
+      # --- FIN DEL BLOQUE DE DIAGNÓSTICO ---  
+
       # 3. Instala las dependencias
       - name: Install dependencies
         run: npm install
