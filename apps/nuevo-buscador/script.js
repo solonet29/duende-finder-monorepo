@@ -529,9 +529,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.verificationStatus === 'verified' && event.sourceUrl) {
             verificationInfoHtml = `
                 <div class="verification-info">
-                    <a href="${event.sourceUrl}" target="_blank" rel="noopener noreferrer" class="source-link">
-                        Fuente original <ion-icon name="open-outline"></ion-icon>
-                    </a>
+                    <span class="verified-badge-page">
+                        <ion-icon name="shield-checkmark-outline"></ion-icon> Verificado
+                    </span>
                 </div>
             `;
         } else if (event.verificationStatus === 'link_broken') {
