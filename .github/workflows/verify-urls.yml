@@ -3,60 +3,40 @@
 name: Verificación diaria de URLs de eventos
 
 on:
-  # Ejecuta el workflow cada día a las 5:00 AM UTC (7:00 AM en España)
   schedule:
     - cron: '0 5 * * *'
-  # Permite ejecutar este workflow manualmente desde la pestaña "Actions" de GitHub
   workflow_dispatch:
 
 jobs:
   verify-urls:
     runs-on: ubuntu-latest
     
-    # Establece el directorio de trabajo para todos los comandos 'run' de este job
-    defaults:
-      run:
-        working-directory: ./apps/api
+    # ELIMINAMOS EL BLOQUE 'defaults' POR COMPLETO.
+    # Todos los comandos se ejecutarán desde la raíz del proyecto.
 
     steps:
-      # 1. Obtiene el código del repositorio
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configura Node.js y activa el caché de dependencias
-      - name: Set up Node.js v20 with dependency caching
+      - name: Set up Node.js v20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          # Nota: El caché fallará hasta que no exista un 'package-lock.json'.
+          # Lo dejamos para el siguiente paso de optimización.
           cache: 'npm'
-          # CAMBIO CLAVE: Usamos un patrón glob para que encuentre el archivo
-          # en cualquier subdirectorio, lo que es ideal para nuestro monorepo.
-          cache-dependency-path: '**/package-lock.json'
 
-        # --- AÑADIR ESTE BLOQUE DE DIAGNÓSTICO ---
-      - name: Check Versions and Lockfile (DEBUG)
-        run: |
-          echo "--- Versión de Node.js activa ---"
-          node -v
-          echo "--- Versión de NPM activa ---"
-          npm -v
-          echo "--- Buscando archivos package-lock.json y package.json ---"
-          find . -name "package-lock.json" -o -name "package.json"
-          echo "--------------------------------------------------------"
-      # --- FIN DEL BLOQUE DE DIAGNÓSTICO ---  
-
-      # 3. Instala las dependencias
-      - name: Install dependencies
+      - name: Install dependencies from root
+        # Ejecutamos npm install desde la raíz, donde está el package.json
         run: npm install
 
-      # 4. Ejecuta el script de verificación
       - name: Run URL verification script
-        run: node verify-event-urls.js
+        # Especificamos la ruta completa al script desde la raíz
+        run: node ./apps/api/verify-event-urls.js
         env:
-          # Asegúrate de que el Secret en GitHub se llame 'MONGODB_URI'
-          MONGODB_URI: ${{ secrets.MONGO_URI }}
+          # Usamos un nombre de variable consistente
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
 
-      # 5. Notificar en caso de fallo
       - name: Notify on failure
         if: failure()
         run: echo "🔴 ¡El workflow de verificación de URLs ha fallado!"
