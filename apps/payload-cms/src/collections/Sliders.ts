@@ -5,6 +5,17 @@ export const Sliders: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
   },
+
+  // --- AÑADIDO: Bloque de Control de Acceso ---
+  // Esto soluciona el error 403 permitiendo la lectura pública.
+  access: {
+    read: () => true, // Cualquiera puede LEER
+    create: ({ req: { user } }) => Boolean(user), // Solo admins pueden CREAR
+    update: ({ req: { user } }) => Boolean(user), // Solo admins pueden ACTUALIZAR
+    delete: ({ req: { user } }) => Boolean(user), // Solo admins pueden BORRAR
+  },
+  // --- FIN DEL BLOQUE AÑADIDO ---
+
   fields: [
     {
       name: 'title',
