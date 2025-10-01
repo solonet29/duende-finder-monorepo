@@ -1,32 +1,27 @@
-import { connectToMainDb } from '@/lib/database.js';
-import { ObjectId } from 'mongodb'; // Importante para buscar por ID
+// RUTA: /src/pages/api/events/[id]/index.js
+// VERSIÃN REFACTORIZADA USANDO EL DATA PROVIDER
+
+import { getEventById } from '@/lib/data-provider.js';
 import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
 
 export default async function handler(req, res) {
     await runMiddleware(req, res, corsMiddleware);
 
-    // Obtenemos el ID del evento desde la URL (ej. /api/events/ID_AQUI)
     const { id } = req.query;
 
-    if (!id || !ObjectId.isValid(id)) {
-        return res.status(400).json({ error: 'ID de evento inválido.' });
+    if (!id) {
+        return res.status(400).json({ error: 'ID de evento no proporcionado.' });
     }
 
     try {
-        const db = await connectToMainDb();
-        const eventsCollection = db.collection("events");
-
-        // Buscamos un único documento que coincida con el ID
-        const event = await eventsCollection.findOne({ _id: new ObjectId(id) });
+        const event = await getEventById(id);
 
         if (!event) {
             return res.status(404).json({ error: 'Evento no encontrado.' });
         }
 
-        // Aplicamos una caché de larga duración (2 horas), ya que un evento individual no cambia a menudo
         res.setHeader('Cache-Control', 's-maxage=7200, stale-while-revalidate=59');
-
-        res.status(200).json(event); // Devolvemos solo el objeto del evento, sin { events: ... }
+        res.status(200).json(event);
 
     } catch (err) {
         console.error(`Error en /api/events/${id}:`, err);

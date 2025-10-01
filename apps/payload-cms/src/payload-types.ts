@@ -70,6 +70,7 @@ export interface Config {
     users: User;
     media: Media;
     sliders: Slider;
+    events: Event;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -79,6 +80,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     sliders: SlidersSelect<false> | SlidersSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -180,6 +182,57 @@ export interface Slider {
   createdAt: string;
 }
 /**
+ * Eventos de flamenco que se descubren, enriquecen y publican.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: string;
+  /**
+   * El nombre principal del espectÃ¡culo o evento.
+   */
+  name: string;
+  /**
+   * Controla la visibilidad global del evento.
+   */
+  status: 'draft' | 'published' | 'archived';
+  date: string;
+  artist?: string | null;
+  city?: string | null;
+  venue?: string | null;
+  /**
+   * Ej: 21:00h
+   */
+  time?: string | null;
+  /**
+   * La pÃ¡gina web original de donde se extrajo el evento.
+   */
+  sourceUrl?: string | null;
+  verificationStatus?: ('pending' | 'verified' | 'failed') | null;
+  /**
+   * Contenido generado automÃ¡ticamente por la IA.
+   */
+  content?: {
+    status?: ('pending' | 'generated' | 'failed') | null;
+    blogTitle?: string | null;
+    blogPostMarkdown?: string | null;
+    nightPlanMarkdown?: string | null;
+    imageId?: string | null;
+    imageUrl?: string | null;
+    generatedAt?: string | null;
+  };
+  publication?: {
+    wordpressPostId?: number | null;
+    blogPostUrl?: string | null;
+    publicationDate?: string | null;
+    isDistributed?: boolean | null;
+    postImageUpdated?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
@@ -197,6 +250,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'sliders';
         value: string | Slider;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: string | Event;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -296,6 +353,43 @@ export interface SlidersSelect<T extends boolean = true> {
         artistImageURL?: T;
         artistProfileURL?: T;
         id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  name?: T;
+  status?: T;
+  date?: T;
+  artist?: T;
+  city?: T;
+  venue?: T;
+  time?: T;
+  sourceUrl?: T;
+  verificationStatus?: T;
+  content?:
+    | T
+    | {
+        status?: T;
+        blogTitle?: T;
+        blogPostMarkdown?: T;
+        nightPlanMarkdown?: T;
+        imageId?: T;
+        imageUrl?: T;
+        generatedAt?: T;
+      };
+  publication?:
+    | T
+    | {
+        wordpressPostId?: T;
+        blogPostUrl?: T;
+        publicationDate?: T;
+        isDistributed?: T;
+        postImageUpdated?: T;
       };
   updatedAt?: T;
   createdAt?: T;

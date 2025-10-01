@@ -1,27 +1,20 @@
 // post-updater.js
 
 require('dotenv').config();
-const { connectToDatabase } = require('./lib/database.js');
+const dataProvider = require('./lib/data-provider');
 const { updateWordPressPost } = require('./lib/wordpressClient.js');
-const { ObjectId } = require('mongodb');
 
 // --- CONFIGURACIÓN ---
-// Buscamos eventos que ya tienen un blogPostId y un imageId.
-const QUERY = {
-    blogPostId: { $exists: true, $ne: null },
-    imageId: { $exists: true, $ne: null }
-};
 const BATCH_SIZE = 50;
 
 async function updatePosts() {
     console.log("--- 🔄 INICIANDO ACTUALIZADOR DE POSTS ---");
 
     try {
-        const db = await connectToDatabase();
-        const eventsCollection = db.collection('events');
+        await dataProvider.connect();
 
         console.log("🔎 Buscando eventos con posts y nuevas imágenes...");
-        const eventsToUpdate = await eventsCollection.find(QUERY).limit(BATCH_SIZE).toArray();
+        const eventsToUpdate = await dataProvider.getEventsForPostUpdate(BATCH_SIZE);
 
         if (eventsToUpdate.length === 0) {
             console.log("✅ No se encontraron posts para actualizar. ¡Trabajo hecho!");
@@ -35,23 +28,25 @@ async function updatePosts() {
             console.log(`🖼️ Actualizando post para el evento: "${event.name}"`);
 
             try {
-                // Preparamos los datos para la actualización.
-                // Usamos el imageId del evento.
+                const eventId = event.id || event._id.toString();
+                const imageId = event.imageId || (event.content && event.content.imageId);
+                const postId = event.wordpressPostId;
+
+                if (!postId || !imageId) {
+                    console.log(` ⚠️  Faltan datos clave (postId o imageId) para "${event.name}". Saltando.`);
+                    continue;
+                }
+
                 const updateData = {
-                    featured_media: event.imageId
+                    featured_media: imageId
                 };
 
-                // Llamamos a la función de la API de WordPress para actualizar el post.
-                // Usamos el blogPostId del evento.
-                const result = await updateWordPressPost(event.blogPostId, updateData);
+                const result = await updateWordPressPost(postId, updateData);
 
                 if (result) {
                     console.log(` ✅ Post actualizado en WordPress con éxito.`);
-                    await eventsCollection.updateOne(
-                        { _id: new ObjectId(event._id) },
-                        { $set: { postImageUpdated: true } }
-                    );
-                    console.log(` ✅ Estado del evento actualizado en MongoDB.`);
+                    await dataProvider.markPostAsImageUpdated(eventId);
+                    console.log(` ✅ Estado del evento actualizado en el origen de datos.`);
                 }
             } catch (error) {
                 console.error(` ❌ Error al procesar el post de "${event.name}":`, error.message);
@@ -61,8 +56,8 @@ async function updatePosts() {
     } catch (error) {
         console.error("Ha ocurrido un error fatal durante la actualización de posts:", error);
     } finally {
+        await dataProvider.disconnect();
         console.log("\n--- ✨ PROCESO DE ACTUALIZACIÓN FINALIZADO ---");
-        process.exit(0);
     }
 }
 

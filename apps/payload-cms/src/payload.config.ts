@@ -9,12 +9,13 @@ import { fileURLToPath } from 'url'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Sliders } from './collections/Sliders'
+import Events from './collections/Events';
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
-  // AÑADIDO: Clave para que las URLs de las imágenes sean correctas
+  // AÃADIDO: Clave para que las URLs de las imÃ¡genes sean correctas
   serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000',
 
   admin: {
@@ -23,7 +24,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Sliders],
+  collections: [Users, Media, Sliders, Events],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

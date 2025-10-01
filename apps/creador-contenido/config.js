@@ -3,6 +3,8 @@ require('dotenv').config();
 // Almacena toda la configuración del worker para mantener los scripts de lógica limpios.
 
 const config = {
+    // --- GestiÃ³n de Origen de Datos ---
+    USE_PAYLOAD_CMS: process.env.USE_PAYLOAD_CMS === 'true', // Si es true, usa Payload CMS. Si es false, usa la conexiÃ³n directa a MongoDB.
     // --- NUEVO: Configuración de Lotes Independientes ---
     // Lote para el ENRIQUECEDOR (Paso 1): Cuántos eventos procesar para añadir texto/imagen.
     ENRICH_BATCH_SIZE: 5,

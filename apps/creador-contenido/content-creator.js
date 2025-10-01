@@ -6,7 +6,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env') }); // Cargar vari
 
 console.log("🚀 Iniciando el Orquestador de Contenido...");
 
-const { connectToDatabase, closeDatabaseConnection } = require('./lib/database.js');
+const dataProvider = require('./lib/data-provider');
 
 // Importaremos los módulos de cada paso del pipeline aquí
 const { enrichEvents } = require('./enrich-events.js');
@@ -15,9 +15,9 @@ const { distributePosts } = require('./distributor.js');
 
 async function main() {
     try {
-        // Conectar a la base de datos al inicio
-        await connectToDatabase();
-        console.log("✅ Conexión a la base de datos establecida.");
+        // Conectar usando el proveedor de datos
+        await dataProvider.connect();
+        console.log("✅ Conexión del proveedor de datos establecida.");
 
         // --- PASO 1: Enriquecer Eventos ---
         console.log("\n---");
@@ -40,9 +40,9 @@ async function main() {
     } catch (error) {
         console.error('❌ Ha ocurrido un error fatal en el orquestador:', error);
     } finally {
-        // Cerrar la conexión a la base de datos al final
-        await closeDatabaseConnection();
-        console.log("\n✅ Conexión a la base de datos cerrada. Proceso finalizado.");
+        // Desconectar usando el proveedor de datos
+        await dataProvider.disconnect();
+        console.log("\n✅ Conexión del proveedor de datos cerrada. Proceso finalizado.");
     }
 }
 
