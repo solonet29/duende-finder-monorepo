@@ -14,6 +14,9 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
+  // AÑADIDO: Clave para que las URLs de las imágenes sean correctas
+  serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000',
+
   admin: {
     user: Users.slug,
     importMap: {
@@ -29,7 +32,27 @@ export default buildConfig({
   db: mongooseAdapter({
     url: process.env.DATABASE_URI || '',
   }),
-  cors: ['https://cms-duendefinder.vercel.app', 'http://localhost:8080', 'http://localhost:3000', 'https://buscador.afland.es', 'https://afland.es'],
+
+  // --- CONFIGURACIÓN DE SEGURIDAD COMPLETA ---
+  cors: [
+    'https://cms-duendefinder.vercel.app',
+    'https://buscador.afland.es',
+    'https://afland.es',
+    'http://localhost:8080',
+    'http://localhost:3000',
+    'http://127.0.0.1:5500', // Para pruebas con Live Server
+  ],
+  // AÑADIDO: Esta propiedad faltaba y es CRUCIAL
+  csrf: [
+    'https://cms-duendefinder.vercel.app',
+    'https://buscador.afland.es',
+    'https://afland.es',
+    'http://localhost:8080',
+    'http://localhost:3000',
+    'http://127.0.0.1:5500', // Para pruebas con Live Server
+  ],
+  // --- FIN DE LA CONFIGURACIÓN DE SEGURIDAD ---
+
   plugins: [
     payloadCloudPlugin(),
     // storage-adapter-placeholders
