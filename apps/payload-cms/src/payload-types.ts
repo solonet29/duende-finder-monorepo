@@ -123,6 +123,9 @@ export interface User {
   id: string;
   updatedAt: string;
   createdAt: string;
+  enableAPIKey?: boolean | null;
+  apiKey?: string | null;
+  apiKeyIndex?: string | null;
   email: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
@@ -165,11 +168,11 @@ export interface Media {
 export interface Slider {
   id: string;
   title: string;
-  type: 'automatic' | 'manual';
-  automaticSource?: string | null;
-  manualEvents?:
+  sliderItems?:
     | {
-        eventId: string;
+        artistName: string;
+        artistImageURL: string;
+        artistProfileURL: string;
         id?: string | null;
       }[]
     | null;
@@ -244,6 +247,9 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
+  enableAPIKey?: T;
+  apiKey?: T;
+  apiKeyIndex?: T;
   email?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
@@ -283,12 +289,12 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface SlidersSelect<T extends boolean = true> {
   title?: T;
-  type?: T;
-  automaticSource?: T;
-  manualEvents?:
+  sliderItems?:
     | T
     | {
-        eventId?: T;
+        artistName?: T;
+        artistImageURL?: T;
+        artistProfileURL?: T;
         id?: T;
       };
   updatedAt?: T;
