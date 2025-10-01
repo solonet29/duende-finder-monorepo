@@ -6,7 +6,7 @@ export const Users: CollectionConfig = {
   slug: 'users',
 
   auth: {
-    apiKeys: true,
+    useAPIKey: true,
   },
 
   admin: {
