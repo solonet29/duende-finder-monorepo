@@ -35,7 +35,7 @@ jobs:
         run: node ./apps/api/verify-event-urls.js
         env:
           # Usamos un nombre de variable consistente
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_URI: ${{ secrets.MONGO_URI }}
 
       - name: Notify on failure
         if: failure()
