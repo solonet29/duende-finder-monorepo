@@ -5,60 +5,42 @@ export const Sliders: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
   },
-
-  // --- AÑADIDO: Bloque de Control de Acceso ---
-  // Esto soluciona el error 403 permitiendo la lectura pública.
   access: {
     read: () => true, // Cualquiera puede LEER
     create: ({ req: { user } }) => Boolean(user), // Solo admins pueden CREAR
     update: ({ req: { user } }) => Boolean(user), // Solo admins pueden ACTUALIZAR
     delete: ({ req: { user } }) => Boolean(user), // Solo admins pueden BORRAR
   },
-  // --- FIN DEL BLOQUE AÑADIDO ---
-
   fields: [
     {
       name: 'title',
+      label: 'Título del Slider',
       type: 'text',
       required: true,
     },
     {
-      name: 'type',
-      type: 'select',
-      options: [
-        {
-          label: 'Automatic',
-          value: 'automatic',
-        },
-        {
-          label: 'Manual',
-          value: 'manual',
-        },
-      ],
-      required: true,
-    },
-    {
-      name: 'automaticSource',
-      type: 'text',
-      admin: {
-        condition: ({ type }) => type === 'automatic',
-      },
-      label: 'API Query Parameters',
-    },
-    {
-      name: 'manualEvents',
+      name: 'sliderItems',
+      label: 'Artistas del Slider',
       type: 'array',
-      label: 'Manual Event IDs',
       minRows: 1,
       maxRows: 20,
-      admin: {
-        condition: ({ type }) => type === 'manual',
-      },
       fields: [
         {
-          name: 'eventId',
+          name: 'artistName',
+          label: 'Nombre del Artista',
           type: 'text',
-          label: 'Event ID',
+          required: true,
+        },
+        {
+          name: 'artistImageURL',
+          label: 'URL de la Imagen',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'artistProfileURL',
+          label: 'URL del Perfil',
+          type: 'text',
           required: true,
         },
       ],
