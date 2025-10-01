@@ -28,10 +28,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # MEJORA: Activa el caché para 'npm'. Acelerará las instalaciones futuras.
           cache: 'npm'
-          # Especificamos la ruta al package-lock.json para que el caché sea preciso
-          cache-dependency-path: apps/api/package-lock.json
+          # CAMBIO CLAVE: Usamos un patrón glob para que encuentre el archivo
+          # en cualquier subdirectorio, lo que es ideal para nuestro monorepo.
+          cache-dependency-path: '**/package-lock.json'
 
       # 3. Instala las dependencias
       - name: Install dependencies
