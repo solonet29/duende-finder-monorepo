@@ -7,7 +7,7 @@ export const Sliders: CollectionConfig = {
   },
   access: {
     read: () => true, // Cualquiera puede LEER
-    create: ({ req: { user } }) => Boolean(user), // Solo admins pueden CREAR
+    create: ({ req: { user } }) => Boolean(user), // Solo admins pueden CREARLO
     update: ({ req: { user } }) => Boolean(user), // Solo admins pueden ACTUALIZAR
     delete: ({ req: { user } }) => Boolean(user), // Solo admins pueden BORRAR
   },
