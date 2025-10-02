@@ -24,6 +24,7 @@
   "devDependencies": {
     "@types/node": "^24.6.2",
     "dotenv": "^16.4.5",
-    "mongodb": "^6.8.0"
+    "mongodb": "^6.8.0",
+    "typescript": "^5.9.3"
   }
 }

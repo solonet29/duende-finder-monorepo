@@ -1,18 +1,21 @@
+// En la raíz: /tsconfig.base.json
 {
   "compilerOptions": {
-    "composite": true,
     "declaration": true,
     "declarationMap": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true, // <-- REGLA AÑADIDA CLAVE
     "forceConsistentCasingInFileNames": true,
     "inlineSources": false,
     "isolatedModules": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "nodenext",
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "preserveWatchOutput": true,
     "skipLibCheck": true,
     "strict": true
   },
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

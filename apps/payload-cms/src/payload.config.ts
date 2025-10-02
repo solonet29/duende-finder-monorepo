@@ -6,10 +6,10 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
-import { Users } from './collections/Users'
-import { Media } from './collections/Media'
-import { Sliders } from './collections/Sliders'
-import Events from './collections/Events';
+import { Users } from './collections/Users.js'
+import { Media } from './collections/Media.js'
+import { Sliders } from './collections/Sliders.js'
+import Events from './collections/Events.js';
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
