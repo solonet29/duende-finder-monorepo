@@ -26,5 +26,10 @@
     "dotenv": "^16.4.5",
     "mongodb": "^6.8.0",
     "typescript": "^5.9.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "18.3.25"
+    }
   }
 }
