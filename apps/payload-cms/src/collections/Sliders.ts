@@ -20,30 +20,13 @@ export const Sliders: CollectionConfig = {
     },
     {
       name: 'sliderItems',
-      label: 'Artistas del Slider',
-      type: 'array',
-      minRows: 1,
-      maxRows: 20,
-      fields: [
-        {
-          name: 'artistName',
-          label: 'Nombre del Artista',
-          type: 'text',
-          required: true,
-        },
-        {
-          name: 'artistImageURL',
-          label: 'URL de la Imagen',
-          type: 'text',
-          required: true,
-        },
-        {
-          name: 'artistProfileURL',
-          label: 'URL del Perfil',
-          type: 'text',
-          required: true,
-        },
-      ],
+      label: 'Items del Slider',
+      type: 'relationship',
+      relationTo: ['events'],
+      hasMany: true,
+      admin: {
+        description: 'Añade eventos a este slider.',
+      },
     },
   ],
 }

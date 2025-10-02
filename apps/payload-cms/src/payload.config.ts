@@ -6,16 +6,17 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
+// Importaciones de Colecciones
 import { Users } from './collections/Users.js'
 import { Media } from './collections/Media.js'
 import { Sliders } from './collections/Sliders.js'
-import Events from './collections/Events.js';
+
+import Events from './collections/Events.js'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
-  // AÃADIDO: Clave para que las URLs de las imÃ¡genes sean correctas
   serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000',
 
   admin: {
@@ -24,7 +25,9 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
+
   collections: [Users, Media, Sliders, Events],
+
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -34,25 +37,22 @@ export default buildConfig({
     url: process.env.DATABASE_URI || '',
   }),
 
-  // --- CONFIGURACIÓN DE SEGURIDAD COMPLETA ---
   cors: [
     'https://cms-duendefinder.vercel.app',
     'https://buscador.afland.es',
     'https://afland.es',
     'http://localhost:8080',
     'http://localhost:3000',
-    'http://127.0.0.1:5500', // Para pruebas con Live Server
+    'http://127.0.0.1:5500',
   ],
-  // AÑADIDO: Esta propiedad faltaba y es CRUCIAL
   csrf: [
     'https://cms-duendefinder.vercel.app',
     'https://buscador.afland.es',
     'https://afland.es',
     'http://localhost:8080',
     'http://localhost:3000',
-    'http://127.0.0.1:5500', // Para pruebas con Live Server
+    'http://127.0.0.1:5500',
   ],
-  // --- FIN DE LA CONFIGURACIÓN DE SEGURIDAD ---
 
   plugins: [
     payloadCloudPlugin(),
