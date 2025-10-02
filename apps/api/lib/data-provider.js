@@ -1,31 +1,18 @@
-// lib/data-provider.js
+// apps/api/src/lib/data-provider.js
+
 const config = require('../config');
 const payloadAPI = require('./payload-api');
-const { getEventModel, connectToMainDb } = require('./database');
+const { getEventModel } = require('./database');
 const { ObjectId } = require('mongodb');
 
-// FunciÃ³n para la lÃ³gica de agregaciÃ³n de MongoDB (movida desde la ruta de la API)
-async function getMongoAggregatedEvents(queryParams) {
-    const Event = await getEventModel();
-    const {
-        search = null, artist = null, city = null, country = null,
-        dateFrom = null, dateTo = null, timeframe = null, lat = null,
-        lon = null, radius = null, sort = null, featured = null,
-        featured_events = null,
-        month = null, page = '1', limit = '10'
-    } = queryParams;
-
-    let aggregationPipeline = [];
-
-    // ... (toda la lÃ³gica de agregaciÃ³n de MongoDB que estaba en la API va aquÃ­)
-    // ... (geoNear, matchFilter, addFields, sort, skip, limit)
-
-    const events = await Event.aggregate(aggregationPipeline);
-    return { events }; // Devolvemos un objeto consistente
-}
-
-// FunciÃ³n principal del proveedor de datos
+/**
+ * Obtiene eventos agregados, ya sea desde Payload CMS o MongoDB,
+ * dependiendo de la variable de entorno USE_PAYLOAD_CMS.
+ * @param {object} queryParams - Parámetros de la consulta para filtrar y paginar.
+ * @returns {Promise<object>} - Un objeto que contiene el array de eventos.
+ */
 async function getAggregatedEvents(queryParams) {
+    // Usamos el Feature Flag para decidir qué fuente de datos usar
     if (config.USE_PAYLOAD_CMS) {
         console.log("[DataProvider] Usando Payload CMS para buscar eventos.");
         return await payloadAPI.getEvents(queryParams);
@@ -42,6 +29,7 @@ async function getAggregatedEvents(queryParams) {
 
         let aggregationPipeline = [];
 
+        // Etapa de geolocalización si se proveen coordenadas
         if (lat && lon) {
             const latitude = parseFloat(lat);
             const longitude = parseFloat(lon);
@@ -58,6 +46,7 @@ async function getAggregatedEvents(queryParams) {
             }
         }
 
+        // Construcción del filtro de búsqueda ($match)
         const matchFilter = {};
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -65,7 +54,6 @@ async function getAggregatedEvents(queryParams) {
         if (!month) {
             matchFilter.eventDate = { $gte: today };
         }
-
         matchFilter.name = { $ne: null, $nin: ["", "N/A"] };
 
         if (month) {
@@ -76,7 +64,6 @@ async function getAggregatedEvents(queryParams) {
             endDate.setUTCMilliseconds(-1);
             matchFilter.eventDate = { $gte: startDate, $lte: endDate };
         } else if (search && !lat) {
-            const normalizedSearch = search.trim().toLowerCase();
             matchFilter.$or = [
                 { name: { $regex: new RegExp(search, 'i') } },
                 { artist: { $regex: new RegExp(search, 'i') } },
@@ -89,33 +76,10 @@ async function getAggregatedEvents(queryParams) {
         if (featured_events === 'true') matchFilter.artist = { $exists: true, $ne: null, $ne: "" };
         if (artist) matchFilter.artist = { $regex: new RegExp(artist, 'i') };
         if (city) matchFilter.city = { $regex: new RegExp(city, 'i') };
-        if (country) matchFilter.country = { $regex: new RegExp(`^${country}// lib/data-provider.js
-const config = require('../config');
-const payloadAPI = require('./payload-api');
-const { getEventModel } = require('./database');
 
-// FunciÃ³n para la lÃ³gica de agregaciÃ³n de MongoDB (movida desde la ruta de la API)
-async function getMongoAggregatedEvents(queryParams) {
-    const Event = await getEventModel();
-    const {
-        search = null, artist = null, city = null, country = null,
-        dateFrom = null, dateTo = null, timeframe = null, lat = null,
-        lon = null, radius = null, sort = null, featured = null,
-        featured_events = null,
-        month = null, page = '1', limit = '10'
-    } = queryParams;
-
-    let aggregationPipeline = [];
-
-    // ... (toda la lÃ³gica de agregaciÃ³n de MongoDB que estaba en la API va aquÃ­)
-    // ... (geoNear, matchFilter, addFields, sort, skip, limit)
-
-    const events = await Event.aggregate(aggregationPipeline);
-    return { events }; // Devolvemos un objeto consistente
-}
-
-// FunciÃ³n principal del proveedor de datos
-, 'i') };
+        // --- ESTA ES LA LÍNEA QUE ESTABA ROTA ---
+        if (country) matchFilter.country = { $regex: new RegExp(`^${country}`, 'i') };
+        // -----------------------------------------
 
         if (dateFrom) {
             if (!matchFilter.eventDate) matchFilter.eventDate = {};
@@ -137,6 +101,7 @@ async function getMongoAggregatedEvents(queryParams) {
 
         aggregationPipeline.push({ $match: matchFilter });
 
+        // Añadir campo para ordenar por estado de verificación
         aggregationPipeline.push({
             $addFields: {
                 verificationSort: {
@@ -150,7 +115,8 @@ async function getMongoAggregatedEvents(queryParams) {
                 }
             }
         });
-        
+
+        // Ordenamiento
         let sortOrder = { verificationSort: 1, eventDate: 1 };
         if (sort === 'date' && queryParams.order === 'desc') {
             sortOrder = { eventDate: -1 };
@@ -161,6 +127,7 @@ async function getMongoAggregatedEvents(queryParams) {
             aggregationPipeline.push({ $sort: sortOrder });
         }
 
+        // Paginación
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
         if (!isNaN(pageNum) && !isNaN(limitNum) && pageNum > 0 && limitNum > 0) {
@@ -176,8 +143,11 @@ async function getMongoAggregatedEvents(queryParams) {
     }
 }
 
-// ... (la funciÃ³n getAggregatedEvents se mantiene igual)
-
+/**
+ * Obtiene un evento por su ID.
+ * @param {string} id - El ID del evento a buscar.
+ * @returns {Promise<object|null>} - El evento encontrado o null.
+ */
 async function getEventById(id) {
     if (config.USE_PAYLOAD_CMS) {
         console.log(`[DataProvider] Usando Payload CMS para buscar el evento ${id}.`);
@@ -185,11 +155,10 @@ async function getEventById(id) {
     } else {
         console.log(`[DataProvider] Usando MongoDB para buscar el evento ${id}.`);
         if (!ObjectId.isValid(id)) {
-            return null; // O lanzar un error, segÃºn el manejo deseado
+            return null;
         }
-        const db = await connectToMainDb();
-        const eventsCollection = db.collection("events");
-        const event = await eventsCollection.findOne({ _id: new ObjectId(id) });
+        const Event = await getEventModel();
+        const event = await Event.findOne({ _id: new ObjectId(id) });
         return event;
     }
 }
