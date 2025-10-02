@@ -10,6 +10,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 interface DeviceData {
     device_type: string;
     count: number;
+    [key: string]: string | number;
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
