@@ -1,6 +1,6 @@
 // /apps/payload-cms/src/collections/Artists.ts
 
-import type { CollectionConfig } from 'payload/types'
+import type { CollectionConfig } from 'payload'
 
 const slugify = (text: string): string => {
   return text
@@ -71,11 +71,14 @@ export const Artists: CollectionConfig = {
       // para evitar cambios accidentales que rompan URLs.
       hooks: {
         beforeChange: [
-          ({ data, req, operation }: { data: any; req: any; operation: 'create' | 'update' | 'delete' }) => {
-            if (operation === 'create' || data.name) {
+          ({ data, operation }) => {
+            if (operation === 'create' && data?.name) {
               return slugify(data.name);
             }
-            return data.slug;
+            if (operation === 'update' && data?.name) {
+              return slugify(data.name);
+            }
+            return data?.slug;
           }
         ],
       },
