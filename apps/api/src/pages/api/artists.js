@@ -38,19 +38,19 @@ async function getAllArtists(page = 1) {
         {
             $facet: {
                 artists: [
-                    { $group: { _id: "$name" } }, // Agrupar por nombre para eliminar duplicados
-                    { $sort: { _id: 1 } }, // Ordenar alfabéticamente por el nombre (que ahora es el _id)
+                    { $group: { _id: "$artist" } }, // Agrupar por el campo 'artist' para eliminar duplicados
+                    { $sort: { _id: 1 } }, // Ordenar alfabéticamente por el artista (que ahora es el _id)
                     { $skip: skip },
                     { $limit: BATCH_SIZE },
                     {
                         $project: {
                             _id: 0,
-                            name: '$_id' // Devolver solo el campo 'name'
+                            artist: '$_id' // Devolver solo el campo 'artist'
                         }
                     }
                 ],
                 totalCount: [
-                    { $group: { _id: "$name" } }, // Contar los artistas únicos
+                    { $group: { _id: "$artist" } }, // Contar los artistas únicos
                     { $count: 'total' }
                 ]
             }
