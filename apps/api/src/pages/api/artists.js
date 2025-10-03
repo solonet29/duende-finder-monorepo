@@ -26,7 +26,7 @@ export default async function handler(req, res) {
  * Obtiene una lista paginada de todos los artistas de la base de datos, ordenados alfabéticamente.
  */
 async function getAllArtists(page = 1) {
-    console.log(`🚀 Solicitud para obtener el listado completo de artistas. Página: ${page}`);
+    console.log(`🚀 Solicitud para obtener el listado completo de artistas únicos. Página: ${page}`);
     
     const db = await connectToMainDb();
     const artistsCollection = db.collection('artists');
@@ -34,27 +34,23 @@ async function getAllArtists(page = 1) {
 
     const skip = (page - 1) * BATCH_SIZE;
 
-    const pipeline = [
-        {
-            $sort: { name: 1 } // Ordenar alfabéticamente por nombre
-        }
-    ];
-
     const results = await artistsCollection.aggregate([
         {
             $facet: {
                 artists: [
-                    ...pipeline,
+                    { $group: { _id: "$name" } }, // Agrupar por nombre para eliminar duplicados
+                    { $sort: { _id: 1 } }, // Ordenar alfabéticamente por el nombre (que ahora es el _id)
                     { $skip: skip },
                     { $limit: BATCH_SIZE },
                     {
                         $project: {
-                            name: 1,
-                            _id: 1 
+                            _id: 0,
+                            name: '$_id' // Devolver solo el campo 'name'
                         }
                     }
                 ],
                 totalCount: [
+                    { $group: { _id: "$name" } }, // Contar los artistas únicos
                     { $count: 'total' }
                 ]
             }
@@ -64,7 +60,7 @@ async function getAllArtists(page = 1) {
     const artists = results[0].artists;
     const totalArtists = results[0].totalCount[0] ? results[0].totalCount[0].total : 0;
 
-    console.log(`✅ Lote de ${artists.length} artistas obtenido.`);
+    console.log(`✅ Lote de ${artists.length} artistas únicos obtenido.`);
 
     return {
         artists,
