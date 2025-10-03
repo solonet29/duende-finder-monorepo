@@ -22,10 +22,10 @@ export const Sliders: CollectionConfig = {
       name: 'sliderItems',
       label: 'Items del Slider',
       type: 'relationship',
-      relationTo: ['artists', 'events'] as const,
+      relationTo: 'events',
       hasMany: true,
       admin: {
-        description: 'Añade artistas o eventos a este slider.',
+        description: 'Añade eventos a este slider.',
       },
     },
   ],

@@ -118,11 +118,15 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Colección para los usuarios, administradores y editores del sistema.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
   id: string;
+  name?: string | null;
+  roles: ('admin' | 'editor')[];
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;
@@ -133,6 +137,8 @@ export interface User {
   resetPasswordExpiration?: string | null;
   salt?: string | null;
   hash?: string | null;
+  _verified?: boolean | null;
+  _verificationToken?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
   sessions?:
@@ -170,14 +176,10 @@ export interface Media {
 export interface Slider {
   id: string;
   title: string;
-  sliderItems?:
-    | {
-        artistName: string;
-        artistImageURL: string;
-        artistProfileURL: string;
-        id?: string | null;
-      }[]
-    | null;
+  /**
+   * Añade eventos a este slider.
+   */
+  sliderItems?: (string | Event)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -302,6 +304,8 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  roles?: T;
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;
@@ -312,6 +316,8 @@ export interface UsersSelect<T extends boolean = true> {
   resetPasswordExpiration?: T;
   salt?: T;
   hash?: T;
+  _verified?: T;
+  _verificationToken?: T;
   loginAttempts?: T;
   lockUntil?: T;
   sessions?:
@@ -346,14 +352,7 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface SlidersSelect<T extends boolean = true> {
   title?: T;
-  sliderItems?:
-    | T
-    | {
-        artistName?: T;
-        artistImageURL?: T;
-        artistProfileURL?: T;
-        id?: T;
-      };
+  sliderItems?: T;
   updatedAt?: T;
   createdAt?: T;
 }
