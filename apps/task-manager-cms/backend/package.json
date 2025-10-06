@@ -1,0 +1,16 @@
+{
+  "name": "task-manager-backend",
+  "version": "1.0.0",
+  "description": "Backend for the Task Manager CMS",
+  "main": "api/index.js",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "mongoose": "^8.0.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "vercel": "^32.3.0"
+  }
+}
