@@ -30,10 +30,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run URL verification script
-        # Especificamos la ruta completa al script desde la raíz
-        run: node ./apps/api/verify-event-urls.js
+        working-directory: ./apps/api
+        run: node verify-event-urls.js
         env:
-          # Usamos un nombre de variable consistente
           MONGODB_URI: ${{ secrets.MONGO_URI }}
 
       - name: Notify on failure
