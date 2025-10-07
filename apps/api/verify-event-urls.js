@@ -3,7 +3,7 @@ require('dotenv').config({ path: '.env.local' });
 const mongoose = require('mongoose');
 const axios = require('axios');
 // MEJORA: Importamos directamente el modelo compilado, es más limpio.
-const Event = require('./models/Event');
+const Event = require('./models/eventSchema');
 
 const MONGO_URI = process.env.MONGO_URI;
 

@@ -35,12 +35,11 @@ async function publishPosts() {
 
     // 3. Procesar y publicar cada evento del lote
     for (let event of eventsToPublish) {
+        const eventId = event.id || event._id.toString(); // Definir eventId fuera del try para que estÃ© disponible en el catch
         try {
-            const eventId = event.id || event._id.toString();
-
-            // A. Generar contenido si es necesario (ya no se pasa la BBDD)
+            // A. Generar contenido si es necesario
             if (event.contentStatus !== 'content_ready' && (!event.content || event.content.status !== 'generated')) {
-                console.log(`   -> ✍️  El contenido para "${event.name}" no está listo. Generando...`);
+                console.log(`   -> ✍️  El contenido para "${event.name}" no estÃ¡ listo. Generando...`);
                 // La funciÃ³n refactorizada actualiza el evento internamente
                 await generateContentForEvent(event);
                 // Volvemos a cargar el evento para tener los datos mÃ¡s recientes
@@ -48,13 +47,13 @@ async function publishPosts() {
                 // Por ahora, asumimos que el siguiente paso lo manejarÃ¡.
             }
 
-            // B. Preparar el nuevo contenido del post (sin cambios)
-            // ... (toda la lÃ³gica de HTML se mantiene igual)
+            // B. Preparar el contenido del post
+            const postBody = converter.makeHtml(event.content.body || '');
 
             // C. Preparar datos para WordPress
             const postData = {
                 title: event.blogPostTitle || event.content.blogPostTitle,
-                content: postBody, // Asumimos que postBody se construye como antes
+                content: postBody,
                 status: 'future',
                 date: publicationDate.toISOString(),
                 categories: [config.WORDPRESS_EVENTS_CATEGORY_ID],
@@ -81,10 +80,14 @@ async function publishPosts() {
             publicationDate = new Date(publicationDate.getTime() + intervalMinutes * 60 * 1000);
 
         } catch (error) {
-            console.error(`   -> ❌ Error fatal publicando "${event.name}":`, error.message);
-            // Opcional: Marcar como 'publishing_failed'
-            const eventId = event.id || event._id.toString();
-            await dataProvider.updateEventAfterPublishing(eventId, { contentStatus: 'publishing_failed' });
+            console.error(`   -> ❌ Error publicando "${event.name}":`, error.message);
+            // Marcamos el evento como fallido, pero con su propio try/catch para no detener el bucle
+            try {
+                console.log(`   -> 📝 Marcando "${event.name}" como 'publishing_failed'.`);
+                await dataProvider.updateEventAfterPublishing(eventId, { contentStatus: 'publishing_failed' });
+            } catch (updateError) {
+                console.error(`   -> 🚨 CRÍTICO: Fallo al intentar marcar "${event.name}" como fallido.`, updateError.message);
+            }
         }
     }
 }
