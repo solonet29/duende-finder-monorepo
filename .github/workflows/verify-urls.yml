@@ -33,7 +33,7 @@ jobs:
         working-directory: ./apps/api
         run: node verify-event-urls.js
         env:
-          MONGODB_URI: ${{ secrets.MONGO_URI }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
 
       - name: Notify on failure
         if: failure()
