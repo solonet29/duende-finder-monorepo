@@ -22,13 +22,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # Nota: El caché fallará hasta que no exista un 'package-lock.json'.
-          # Lo dejamos para el siguiente paso de optimización.
-          cache: 'npm'
 
-      - name: Install dependencies from root
-        # Ejecutamos npm install desde la raíz, donde está el package.json
-        run: npm install
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies with pnpm
+        run: pnpm install --frozen-lockfile
 
       - name: Run URL verification script
         # Especificamos la ruta completa al script desde la raíz

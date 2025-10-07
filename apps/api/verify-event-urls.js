@@ -18,10 +18,17 @@ const verifyEventUrls = async () => {
         await mongoose.connect(MONGO_URI);
         console.log('✅ Conectado a MongoDB con éxito.');
 
-        // Buscamos eventos futuros que no hayan sido verificados hoy
+        // Calculamos la fecha de aquí a 7 días
+        const sevenDaysFromNow = new Date();
+        sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+        // Buscamos eventos en los próximos 7 días que no hayan sido verificados hoy
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
         const eventsToVerify = await Event.find({
-            eventDate: { $gte: new Date() }, // Solo eventos futuros
+            eventDate: { 
+                $gte: new Date(), // Solo eventos futuros
+                $lte: sevenDaysFromNow // Y que ocurran en los próximos 7 días
+            },
             // MEJORA: Evitamos verificar un evento que ya se verificó con éxito recientemente
             $or: [
                 { verificationStatus: { $ne: 'verified' } },
