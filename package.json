@@ -30,6 +30,11 @@
   "pnpm": {
     "overrides": {
       "@types/react": "18.3.25"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "sharp",
+      "esbuild",
+      "unrs-resolver"
+    ]
   }
 }
