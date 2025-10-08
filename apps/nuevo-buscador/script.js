@@ -6,7 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. CONFIGURACIÓN Y SELECTORES
     // =========================================================================
     const APP_CONFIG = {
-        USAR_PAGINAS_DE_EVENTOS: true // Poner en false para volver al modo modal
+        USAR_PAGINAS_DE_EVENTOS: true, // Poner en false para volver al modo modal
+        INFINITE_SCROLL_ENABLED: true, // Poner en false para desactivar la funcionalidad de scroll infinito en los sliders
     };
 
     const getApiBaseUrl = () => {
@@ -1230,5 +1231,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. INICIALIZACIÓN
     // =========================================================================
     init();
+
+    function initializeInfiniteScrollFeature() {
+        const sliderSections = [
+            { id: 'destacados-section', category: 'featured=true', title: 'Artistas Destacados 2025' },
+            { id: 'recent-section', category: 'sort=createdAt', title: 'Recién Añadidos' },
+            { id: 'semana-section', category: 'timeframe=week', title: 'Esta Semana' },
+        ];
+
+        sliderSections.forEach(sectionInfo => {
+            const sectionElement = document.getElementById(sectionInfo.id);
+            if (sectionElement) {
+                const titleContainer = sectionElement.querySelector('.slider-title-container');
+                if (titleContainer) {
+                    const seeAllBtn = document.createElement('button');
+                    seeAllBtn.className = 'see-all-btn';
+                    seeAllBtn.innerHTML = 'Ver todos <ion-icon name="arrow-forward-outline"></ion-icon>';
+                    seeAllBtn.addEventListener('click', () => {
+                        openInfiniteScrollModal(sectionInfo.category, sectionInfo.title);
+                    });
+                    titleContainer.appendChild(seeAllBtn);
+                }
+            }
+        });
+    }
+
+    function openInfiniteScrollModal(category, title) {
+        console.log(`Opening modal for ${category} - ${title}`);
+    }
 
 });

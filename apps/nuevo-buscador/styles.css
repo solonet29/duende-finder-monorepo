@@ -1435,7 +1435,7 @@ header.header-main {
     }
 }
 
-/* =========================================================================
+/* ==========================================================================
    13. ESTILOS DE VERIFICACIÓN DE EVENTOS
    ========================================================================== */
 
@@ -1517,4 +1517,88 @@ header.header-main {
 
 [data-theme="dark"] .business-cta {
     color: white;
+}
+
+/* Estilos para el botón "Ver todos" */
+.see-all-btn {
+    background-color: transparent;
+    border: 1px solid var(--color-borde);
+    color: var(--color-texto-secundario);
+    padding: 4px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease-in-out;
+}
+
+.see-all-btn:hover {
+    background-color: var(--color-primario-transparente);
+    border-color: var(--color-primario);
+    color: var(--color-primario);
+}
+
+/* Ajustes al contenedor del título del slider */
+.slider-title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+/* Estilos para el Modal de Scroll Infinito */
+#infinite-scroll-modal-overlay .modal {
+    max-width: 95%;
+    width: 1200px;
+}
+
+#infinite-scroll-modal-content {
+    padding: 0;
+}
+
+#infinite-scroll-modal-slider {
+    display: flex;
+    overflow-x: auto;
+    padding: 1rem;
+    gap: 1rem;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch; /* Para un scroll suave en iOS */
+}
+
+/* Forzar que las tarjetas no se encojan */
+#infinite-scroll-modal-slider .event-card {
+    flex: 0 0 auto;
+    width: 250px; /* O el ancho que prefieras */
+    scroll-snap-align: start;
+}
+
+/* Ocultar la barra de scroll si se prefiere, pero mantener la funcionalidad */
+#infinite-scroll-modal-slider::-webkit-scrollbar {
+    height: 8px;
+}
+
+#infinite-scroll-modal-slider::-webkit-scrollbar-track {
+    background: var(--color-fondo);
+}
+
+#infinite-scroll-modal-slider::-webkit-scrollbar-thumb {
+    background-color: var(--color-borde);
+    border-radius: 10px;
+    border: 2px solid var(--color-fondo);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-borde);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
 }
