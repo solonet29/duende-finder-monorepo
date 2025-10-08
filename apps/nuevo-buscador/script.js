@@ -1163,6 +1163,137 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
 
+    function setupHorizontalInfiniteScroll(sentinel, category) {
+        const slider = sentinel.parentElement;
+
+        const observer = new IntersectionObserver(async (entries) => {
+            if (entries[0].isIntersecting) {
+                observer.unobserve(sentinel);
+
+                let page = parseInt(slider.dataset.page || '1', 10);
+                page++;
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/events?${category}&page=${page}&limit=10`);
+                    if (!response.ok) return;
+
+                    const data = await response.json();
+                    if (data.events && data.events.length > 0) {
+                        data.events.forEach(event => {
+                            eventsCache[event._id] = event;
+                            slider.insertBefore(createSliderCard(event), sentinel);
+                        });
+                        slider.dataset.page = page;
+
+                        if (data.events.length === 10) {
+                            observer.observe(sentinel);
+                        } else {
+                            sentinel.remove();
+                        }
+                    } else {
+                        sentinel.remove();
+                    }
+                } catch (error) {
+                    console.error('Error cargando más eventos en scroll horizontal:', error);
+                    observer.observe(sentinel);
+                }
+            }
+        }, { root: slider, rootMargin: '0px 200px 0px 0px' }); // Observe on the horizontal axis
+
+        sentinel.observer = observer;
+        observer.observe(sentinel);
+    }
+
+    function openInfiniteScrollModal(category, title) {
+        const modalOverlay = document.getElementById('infinite-scroll-modal-overlay');
+        const modalTitle = document.getElementById('infinite-scroll-modal-title');
+        const modalSlider = document.getElementById('infinite-scroll-modal-slider');
+        const closeBtn = document.getElementById('infinite-scroll-modal-close-btn');
+
+        if (!modalOverlay || !modalTitle || !modalSlider || !closeBtn) {
+            console.error('Elementos del modal de scroll infinito no encontrados.');
+            return;
+        }
+
+        // 1. Reset state
+        modalSlider.innerHTML = '';
+        modalTitle.textContent = title;
+        modalSlider.dataset.page = '1';
+        modalSlider.dataset.category = category;
+
+        // 2. Add loading skeletons
+        for (let i = 0; i < 5; i++) {
+            modalSlider.appendChild(createSkeletonCard());
+        }
+
+        // 3. Fetch initial data
+        fetch(`${API_BASE_URL}/api/events?${category}&page=1&limit=10`)
+            .then(response => response.json())
+            .then(data => {
+                modalSlider.innerHTML = ''; // Clear skeletons
+                if (data.events && data.events.length > 0) {
+                    renderSlider(modalSlider, data.events);
+
+                    // 4. Setup infinite scroll if needed
+                    if (data.events.length === 10) {
+                        const sentinel = document.createElement('div');
+                        sentinel.className = 'sentinel';
+                        modalSlider.appendChild(sentinel);
+                        setupHorizontalInfiniteScroll(sentinel, category);
+                    }
+                } else {
+                    modalSlider.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--color-texto-secundario);">No hay más eventos en esta categoría.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar eventos para el modal:', error);
+                modalSlider.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--color-texto-secundario);">Error al cargar eventos.</p>';
+            });
+
+        // 5. Show modal and add close listener
+        modalOverlay.classList.add('visible');
+        
+        const closeModal = () => {
+            modalOverlay.classList.remove('visible');
+            // Clean up observer to avoid memory leaks
+            const sentinel = modalSlider.querySelector('.sentinel');
+            if (sentinel && sentinel.observer) {
+                sentinel.observer.disconnect();
+            }
+        };
+
+        closeBtn.onclick = closeModal;
+        modalOverlay.onclick = (e) => {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        };
+    }
+
+    function initializeInfiniteScrollFeature() {
+        const sliderSections = [
+            { id: 'destacados-section', category: 'featured=true', title: 'Artistas Destacados 2025' },
+            { id: 'recent-section', category: 'sort=createdAt', title: 'Recién Añadidos' },
+            { id: 'semana-section', category: 'timeframe=week', title: 'Esta Semana' },
+        ];
+
+        sliderSections.forEach(sectionInfo => {
+            const sectionElement = document.getElementById(sectionInfo.id);
+            if (sectionElement) {
+                const titleContainer = sectionElement.querySelector('.slider-title-container');
+                if (titleContainer) {
+                    const seeAllBtn = document.createElement('button');
+                    seeAllBtn.className = 'see-all-btn';
+                    seeAllBtn.innerHTML = 'Ver todos <ion-icon name="arrow-forward-outline"></ion-icon>';
+                    seeAllBtn.addEventListener('click', () => {
+                        openInfiniteScrollModal(sectionInfo.category, sectionInfo.title);
+                    });
+                    titleContainer.appendChild(seeAllBtn);
+                }
+            }
+        });
+    }
+
     // =========================================================================
     // 3. FUNCIÓN PRINCIPAL DE ORQUESTACIÓN
     // =========================================================================
@@ -1219,6 +1350,10 @@ document.addEventListener('DOMContentLoaded', () => {
         createVerifiedInfoModal();
         handleWelcomeModal();
 
+        if (APP_CONFIG.INFINITE_SCROLL_ENABLED) {
+            initializeInfiniteScrollFeature();
+        }
+
         const isEventPage = await handleInitialPageLoadRouting();
 
         if (!isEventPage) {
@@ -1231,33 +1366,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. INICIALIZACIÓN
     // =========================================================================
     init();
-
-    function initializeInfiniteScrollFeature() {
-        const sliderSections = [
-            { id: 'destacados-section', category: 'featured=true', title: 'Artistas Destacados 2025' },
-            { id: 'recent-section', category: 'sort=createdAt', title: 'Recién Añadidos' },
-            { id: 'semana-section', category: 'timeframe=week', title: 'Esta Semana' },
-        ];
-
-        sliderSections.forEach(sectionInfo => {
-            const sectionElement = document.getElementById(sectionInfo.id);
-            if (sectionElement) {
-                const titleContainer = sectionElement.querySelector('.slider-title-container');
-                if (titleContainer) {
-                    const seeAllBtn = document.createElement('button');
-                    seeAllBtn.className = 'see-all-btn';
-                    seeAllBtn.innerHTML = 'Ver todos <ion-icon name="arrow-forward-outline"></ion-icon>';
-                    seeAllBtn.addEventListener('click', () => {
-                        openInfiniteScrollModal(sectionInfo.category, sectionInfo.title);
-                    });
-                    titleContainer.appendChild(seeAllBtn);
-                }
-            }
-        });
-    }
-
-    function openInfiniteScrollModal(category, title) {
-        console.log(`Opening modal for ${category} - ${title}`);
-    }
 
 });
