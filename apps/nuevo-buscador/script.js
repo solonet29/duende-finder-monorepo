@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     const APP_CONFIG = {
         USAR_PAGINAS_DE_EVENTOS: true, // Poner en false para volver al modo modal
-        INFINITE_SCROLL_ENABLED: true, // Poner en false para desactivar la funcionalidad de scroll infinito en los sliders
+        INFINITE_SCROLL_ENABLED: false, // Poner en false para desactivar la funcionalidad de scroll infinito en los sliders
     };
 
     const getApiBaseUrl = () => {
@@ -273,15 +273,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- 1. Asegurar visibilidad de elementos de la página principal ---
         const heroHeader = document.querySelector('.hero-header');
         if (heroHeader) heroHeader.style.display = 'block';
-        
+
         const filterBar = document.querySelector('.filter-bar');
         if (filterBar) filterBar.style.display = 'flex';
-        
+
         const actionsContainer = document.querySelector('.main-actions-container');
         if (actionsContainer) actionsContainer.style.display = 'flex';
 
         const eventStats = document.getElementById('event-stats');
-        if(eventStats) eventStats.innerHTML = 'Descubre la magia del flamenco.'; // Subtítulo estático
+        if (eventStats) eventStats.innerHTML = 'Descubre la magia del flamenco.'; // Subtítulo estático
 
         // --- 2. Lógica de carga de sliders (revertida a /api/events) ---
         console.log("✅ Paso 1: Entrando en initializeDashboard (modo API/EVENTS).");
@@ -536,7 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         } else if (event.verificationStatus === 'link_broken') {
-             verificationInfoHtml = `
+            verificationInfoHtml = `
                 <div class="verification-info">
                      <span class="unverified-badge-page"><ion-icon name="alert-circle-outline"></ion-icon> No verificado (posiblemente cancelado)</span>
                 </div>
@@ -823,7 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalContent) {
             modalContent.innerHTML = `<div class="loading-container"><div class="loader"></div><p>${loadingMessages[messageIndex]}</p></div>`;
             const loadingTextElement = modalContent.querySelector('p');
-            
+
             loadingInterval = setInterval(() => {
                 messageIndex = (messageIndex + 1) % loadingMessages.length;
                 if (loadingTextElement) {
@@ -874,19 +874,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     const [hours, minutes] = time.split(':').map(Number);
                     const d = new Date(`${dateStr}T00:00:00`); // Usar T00:00:00 para evitar problemas de zona horaria del navegador
                     d.setHours(hours, minutes, 0, 0);
-                    
+
                     // Convertir a UTC para el enlace. Google lo ajustará a la zona del usuario.
                     const utcDate = new Date(d.getTime() - (d.getTimezoneOffset() * 60000));
                     return utcDate.toISOString().replace(/\.\d{3}Z$/, "Z").replace(/[-:]/g, '');
                 };
 
                 const startTime = toGoogleISO(event.date, event.time);
-                
+
                 // Crear fecha de fin asumiendo 2 horas de duración
                 const endDateObj = new Date(`${event.date}T00:00:00`);
                 const [startHours, startMinutes] = (event.time || '21:00').split(':').map(Number);
                 endDateObj.setHours(startHours + 2, startMinutes, 0, 0);
-                const endTime = toGoogleISO(endDateObj.toISOString().split('T')[0], endDateObj.toTimeString().split(' ')[0].substring(0,5));
+                const endTime = toGoogleISO(endDateObj.toISOString().split('T')[0], endDateObj.toTimeString().split(' ')[0].substring(0, 5));
 
                 shareUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventName)}&dates=${startTime}/${endTime}&details=${encodeURIComponent(shareText)}&location=${encodeURIComponent(location)}&ctz=Europe/Madrid`;
                 break;
@@ -1252,7 +1252,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 5. Show modal and add close listener
         modalOverlay.classList.add('visible');
-        
+
         const closeModal = () => {
             modalOverlay.classList.remove('visible');
             // Clean up observer to avoid memory leaks
@@ -1315,7 +1315,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Cambiar subtítulo del hero
                 const eventStats = document.getElementById('event-stats');
-                if(eventStats) eventStats.textContent = 'Evento disponible';
+                if (eventStats) eventStats.textContent = 'Evento disponible';
 
                 // --- 2. Cargar datos del evento ---
                 mainContainer.innerHTML = `<div class="loading-container"><div class="loader"></div><p>Cargando evento...</p></div>`;
