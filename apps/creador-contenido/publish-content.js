@@ -13,7 +13,7 @@ const converter = new showdown.Converter();
 async function publishPosts() {
     console.log('⚙️ Buscando eventos para publicar...');
     const batchSize = config.PUBLISH_BATCH_SIZE;
-    
+
     // 1. Usar el Data Provider para buscar eventos
     const eventsToPublish = await dataProvider.getEventsToPublish(batchSize);
 
@@ -22,9 +22,9 @@ async function publishPosts() {
         return;
     }
 
-    console.log(`   -> Se encontraron ${eventsToPublish.length} eventos para procesar.`);
+    console.log(`  -> Se encontraron ${eventsToPublish.length} eventos para procesar.`);
 
-    // 2. Lógica para escalonar la publicación (sin cambios)
+    // 2. Lógica para escalonar la publicación
     const scheduleBaseDate = new Date();
     scheduleBaseDate.setUTCHours(0, 0, 0, 0);
     const tomorrow = new Date(scheduleBaseDate);
@@ -34,39 +34,59 @@ async function publishPosts() {
     const intervalMinutes = 90;
 
     // 3. Procesar y publicar cada evento del lote
-    for (let event of eventsToPublish) {
+    for (const event of eventsToPublish) {
         const eventId = event._id ? event._id.toString() : event.id;
 
         if (!eventId) {
-            console.error(`   -> ??? CRÍTICO: Evento "${event.name}" no tiene un ID válido. Saltando...`);
+            console.error(`  -> ??? CRÍTICO: Evento "${event.name}" no tiene un ID válido. Saltando...`);
             continue;
         }
 
         try {
+            // --- CORRECCIÓN ---
+            // Usamos una nueva variable para mantener el estado más reciente del evento.
+            let currentEventData = event;
+
             // A. Generar contenido si es necesario
-            if (event.contentStatus !== 'content_ready' && (!event.content || event.content.status !== 'generated')) {
-                console.log(`   -> ✍️  El contenido para "${event.name}" no estÃ¡ listo. Generando...`);
-                // La funciÃ³n refactorizada actualiza el evento internamente
-                await generateContentForEvent(event);
-                // Volvemos a cargar el evento para tener los datos mÃ¡s recientes
-                // (Esta parte podrÃ­a mejorarse si generateContentForEvent devolviera el evento actualizado)
-                // Por ahora, asumimos que el siguiente paso lo manejarÃ¡.
+            if (currentEventData.contentStatus !== 'content_ready') {
+                console.log(`  -> ✍️  El contenido para "${currentEventData.name}" no está listo. Generando...`);
+
+                // --- CORRECCIÓN ---
+                // Capturamos el resultado que ahora devuelve 'generateContentForEvent'.
+                currentEventData = await generateContentForEvent(currentEventData);
+
+                // --- CORRECCIÓN ---
+                // Añadimos una comprobación de seguridad. Si el enriquecimiento falló, saltamos al siguiente evento.
+                if (!currentEventData) {
+                    console.error(`  -> ⏭️  El enriquecimiento para "${event.name}" falló. Saltando al siguiente evento.`);
+                    continue; // Pasa al siguiente evento del bucle
+                }
             }
 
+            // --- CORRECCIÓN ---
+            // A partir de aquí, usamos SIEMPRE 'currentEventData' para asegurar que tenemos los datos más frescos.
+            // También hacemos el acceso a las propiedades anidadas más seguro.
+
             // B. Preparar el contenido del post
-            const postBody = converter.makeHtml(event.content.body || '');
+            const postBodyMarkdown = (currentEventData.blogPostMarkdown) ? currentEventData.blogPostMarkdown : '';
+            const postBody = converter.makeHtml(postBodyMarkdown);
 
             // C. Preparar datos para WordPress
             const postData = {
-                title: event.blogPostTitle || event.content.blogPostTitle,
+                title: currentEventData.blogPostTitle,
                 content: postBody,
                 status: 'future',
                 date: publicationDate.toISOString(),
                 categories: [config.WORDPRESS_EVENTS_CATEGORY_ID],
-                featured_media: event.imageId || event.content.imageId,
+                featured_media: currentEventData.imageId,
             };
 
-            console.log(`   -> 🗓️  Programando "${postData.title}" para las ${publicationDate.toISOString()}`);
+            // Verificación de datos esenciales antes de publicar
+            if (!postData.title || !postData.featured_media) {
+                throw new Error(`Faltan datos críticos para publicar: Título o Imagen Destacada no encontrados para el evento ${eventId}.`);
+            }
+
+            console.log(`  -> 🗓️  Programando "${postData.title}" para las ${publicationDate.toISOString()}`);
 
             // D. Publicar en WordPress
             const wordpressResponse = await publishToWordPress(postData);
@@ -80,19 +100,18 @@ async function publishPosts() {
             };
             await dataProvider.updateEventAfterPublishing(eventId, updateData);
 
-            console.log(`   -> ✅ Post para "${event.name}" programado. URL: ${wordpressResponse.link}`);
+            console.log(`  -> ✅ Post para "${currentEventData.name}" programado. URL: ${wordpressResponse.link}`);
 
             // Incrementar la fecha para el siguiente post
             publicationDate = new Date(publicationDate.getTime() + intervalMinutes * 60 * 1000);
 
         } catch (error) {
-            console.error(`   -> ❌ Error publicando "${event.name}":`, error.message);
-            // Marcamos el evento como fallido, pero con su propio try/catch para no detener el bucle
+            console.error(`  -> ❌ Error publicando "${event.name}":`, error.message);
             try {
-                console.log(`   -> 📝 Marcando "${event.name}" como 'publishing_failed'.`);
+                console.log(`  -> 📝 Marcando "${event.name}" como 'publishing_failed'.`);
                 await dataProvider.updateEventAfterPublishing(eventId, { contentStatus: 'publishing_failed' });
             } catch (updateError) {
-                console.error(`   -> 🚨 CRÍTICO: Fallo al intentar marcar "${event.name}" como fallido.`, updateError.message);
+                console.error(`  -> 🚨 CRÍTICO: Fallo al intentar marcar "${event.name}" como fallido.`, updateError.message);
             }
         }
     }
@@ -103,18 +122,18 @@ module.exports = { publishPosts };
 
 // Permitir la ejecución directa del script
 if (require.main === module) {
-    console.log("Ejecutando el publicador de WordPress de forma manual...");
-    
+    console.log("Ejecuting the WordPress publisher manually...");
+
     (async () => {
         try {
             await dataProvider.connect();
             await publishPosts();
         } catch (err) {
-            console.error("Ocurrió un error durante la publicación manual:", err);
+            console.error("An error occurred during manual publishing:", err);
             process.exit(1);
         } finally {
             await dataProvider.disconnect();
-            console.log("Proceso de publicación manual finalizado.");
+            console.log("Manual publishing process finished.");
         }
     })();
 }

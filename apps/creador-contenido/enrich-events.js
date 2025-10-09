@@ -13,7 +13,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 if (!process.env.GEMINI_API_KEY) throw new Error('La variable de entorno GEMINI_API_KEY no está definida.');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "models/gemini-2.5-flash" });
+// CORRECCIÓN: Se cambió el nombre del modelo a uno válido y recomendado como gemini-1.5-flash
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 const converter = new showdown.Converter();
 
 // --- PROMPT PARA GEMINI ---
@@ -24,8 +25,8 @@ Tu tarea es generar un paquete de contenido para el siguiente evento musical.
 **Evento:**
 - Título: ${event.name}
 - Artista: ${event.artist}
-- Ciudad: ${event.location.city}
-- Sala: ${event.location.venueName}
+- Ciudad: ${event.city}
+- Sala: ${event.venue}
 - Fecha: ${new Date(event.date).toLocaleDateString()}
 
 **Instrucciones:**
@@ -41,24 +42,12 @@ Tu tarea es generar un paquete de contenido para el siguiente evento musical.
       "hashtags": ["string"]
     }
 3.  El contenido debe ser atractivo, informativo y optimizado para SEO y redes sociales.
-4.  El 
-urlSlug
- debe ser una cadena de texto corta, en minúsculas y separada por guiones, ideal para una URL.
-5.  El 
-blogPostMarkdown
- debe ser un artículo de blog completo sobre el evento.
-6.  El 
-nightPlanMarkdown
- debe ser una breve descripción de un "plan de noche" para alguien que asista al evento.
-7.  El 
-tweetText
- debe ser un tweet corto y atractivo para promocionar el evento.
-8.  El 
-instagramText
- debe ser un post para Instagram, un poco más largo que el tweet.
-9.  Los 
-hashtags
- deben ser relevantes para el evento y el artista.
+4.  El urlSlug debe ser una cadena de texto corta, en minúsculas y separada por guiones, ideal para una URL.
+5.  El blogPostMarkdown debe ser un artículo de blog completo sobre el evento.
+6.  El nightPlanMarkdown debe ser una breve descripción de un "plan de noche" para alguien que asista al evento.
+7.  El tweetText debe ser un tweet corto y atractivo para promocionar el evento.
+8.  El instagramText debe ser un post para Instagram, un poco más largo que el tweet.
+9.  Los hashtags deben ser relevantes para el evento y el artista.
 
 **IMPORTANTE:** Responde únicamente con el objeto JSON, sin texto introductorio ni explicaciones adicionales. Asegúrate de que el JSON sea válido y no contenga comas al final de las listas o de los objetos.
 `;
@@ -78,13 +67,14 @@ async function generateContentForEvent(event) {
         const result = await geminiModel.generateContent(prompt);
         const response = await result.response;
         const responseText = response.text().replace(/```json|```/g, '').trim();
-        
+
         let generatedContentPackage;
         try {
             generatedContentPackage = JSON.parse(responseText);
         } catch (e) {
             console.error(`  ❌ Error fatal: No se pudo parsear el JSON para "${event.name}". Respuesta de Gemini:`, responseText);
-            return; // Skip this event
+            // MODIFICACIÓN: Devolvemos null en lugar de return vacío para ser más explícitos
+            return null;
         }
 
         if (!generatedContentPackage.blogTitle || !generatedContentPackage.blogPostMarkdown) {
@@ -119,13 +109,24 @@ async function generateContentForEvent(event) {
         const eventId = event._id ? event._id.toString() : event.id;
         if (!eventId) {
             console.error(`  ❌ Error fatal: El evento "${event.name}" no tiene un ID válido.`);
-            return;
+            // MODIFICACIÓN: Devolvemos null en lugar de return vacío
+            return null;
         }
         await dataProvider.updateEventWithContent(eventId, finalContentPackage);
         console.log(`  💾 Paquete de contenido COMPLETO para "${event.name}" guardado.`);
 
+        // --- INICIO DE LA CORRECCIÓN ---
+        // 1. Después de guardar, volvemos a leer el evento completo desde la base de datos.
+        const updatedEvent = await dataProvider.getEventById(eventId);
+
+        // 2. Devolvemos el objeto actualizado.
+        return updatedEvent;
+        // --- FIN DE LA CORRECIÓN ---
+
     } catch (error) {
         console.error(`  ❌ Error fatal enriqueciendo "${event.name}" con Gemini:`, error.message);
+        // MODIFICACIÓN: Devolvemos null para que el llamador sepa que hubo un fallo.
+        return null;
     }
 }
 
