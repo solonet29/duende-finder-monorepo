@@ -6,12 +6,12 @@ const dataProvider = require('./lib/data-provider');
 const showdown = require('showdown');
 const config = require('./config.js');
 const { generateAndUploadImage } = require('./image-enricher.js');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const genai = require('@google/genai');
 
 // --- INICIALIZACIÓN DE SERVICIOS ---
 if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY no está definida.');
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+const genAI = new genai.GoogleGenAI(process.env.GEMINI_API_KEY);
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 const converter = new showdown.Converter();
 
 // --- PROMPT PARA GEMINI (sin cambios) ---
@@ -29,7 +29,8 @@ async function generateContentForEvent(event) {
         console.log(`      -> ✍️  Generando paquete de texto con Gemini...`);
         const prompt = contentGenerationPrompt(event);
         const result = await geminiModel.generateContent(prompt);
-        const responseText = result.response.text().replace(/```json|```/g, '').trim();
+        const response = await result.response;
+        const responseText = response.text().replace(/```json|```/g, '').trim();
         const generatedContentPackage = JSON.parse(responseText);
 
         if (!generatedContentPackage.blogTitle || !generatedContentPackage.blogPostMarkdown || !generatedContentPackage.nightPlanMarkdown || !generatedContentPackage.urlSlug || !generatedContentPackage.tweetText || !generatedContentPackage.instagramText || !generatedContentPackage.hashtags) {
@@ -70,7 +71,7 @@ async function generateContentForEvent(event) {
 
     } catch (error) {
         console.error(`   ❌ Error fatal enriqueciendo "${event.name}" con Gemini:`, error.message);
-        // Opcional: se podrÃ­a aÃ±adir una funciÃ³n al dataProvider para marcar como fallido
+        // Opcional: se podría añadir una función al dataProvider para marcar como fallido
         // await dataProvider.markEventAsFailed(event.id || event._id.toString());
     }
 }

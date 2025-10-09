@@ -35,7 +35,13 @@ async function publishPosts() {
 
     // 3. Procesar y publicar cada evento del lote
     for (let event of eventsToPublish) {
-        const eventId = event.id || event._id.toString(); // Definir eventId fuera del try para que estÃ© disponible en el catch
+        const eventId = event._id ? event._id.toString() : event.id;
+
+        if (!eventId) {
+            console.error(`   -> ??? CRÍTICO: Evento "${event.name}" no tiene un ID válido. Saltando...`);
+            continue;
+        }
+
         try {
             // A. Generar contenido si es necesario
             if (event.contentStatus !== 'content_ready' && (!event.content || event.content.status !== 'generated')) {
