@@ -10,9 +10,9 @@ const { generateAndUploadImage } = require('./image-enricher.js');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // --- INICIALIZACIÓN DE SERVICIOS ---
-if (!process.env.GOOGLE_API_KEY) throw new Error('La variable de entorno GOOGLE_API_KEY no está definida.');
+if (!process.env.GEMINI_API_KEY) throw new Error('La variable de entorno GEMINI_API_KEY no está definida.');
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const geminiModel = genAI.getGenerativeModel({ model: "models/gemini-2.5-flash" });
 const converter = new showdown.Converter();
 
