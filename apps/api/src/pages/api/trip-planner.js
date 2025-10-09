@@ -53,7 +53,7 @@ Tu tarea es crear un itinerario detallado y profesional. Sigue ESTRICTAMENTE est
 Usa un tono inspirador y práctico. Sigue envolviendo los nombres de lugares recomendados entre corchetes: [Nombre del Lugar].`;
 
             // 6. Llama a la API de Gemini.
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
             const payload = { contents: [{ role: "user", parts: [{ text: tripPrompt }] }] };
             const geminiResponse = await fetch(geminiUrl, {
                 method: 'POST',
