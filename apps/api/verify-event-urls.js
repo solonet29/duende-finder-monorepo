@@ -3,7 +3,7 @@ require('dotenv').config({ path: '.env.local' });
 const mongoose = require('mongoose');
 const axios = require('axios');
 // MEJORA: Importamos directamente el modelo compilado, es más limpio.
-const Event = require('./models/eventSchema');
+const Event = mongoose.models.Event || mongoose.model('Event', require('./models/eventSchema'));
 
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -25,6 +25,7 @@ const verifyEventUrls = async () => {
         // Buscamos eventos en los próximos 7 días que no hayan sido verificados hoy
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
         const eventsToVerify = await Event.find({
+            sourceUrl: { $exists: true, $ne: null },
             eventDate: { 
                 $gte: new Date(), // Solo eventos futuros
                 $lte: sevenDaysFromNow // Y que ocurran en los próximos 7 días
@@ -47,14 +48,9 @@ const verifyEventUrls = async () => {
             let status = 'failed';
             try {
                 // Usamos una petición HEAD por eficiencia
-                const response = await axios.head(event.referenceURL, { timeout: 10000 });
+                const response = await axios.head(event.sourceUrl, { timeout: 10000 });
                 if (response.status >= 200 && response.status < 400) {
                     status = 'verified';
-
-                    // *** LA CORRECCIÓN CLAVE ESTÁ AQUÍ ***
-                    // Si la URL de referencia es válida, la asignamos como la URL fuente.
-                    event.sourceUrl = event.referenceURL;
-
                     console.log(`✅ ÉXITO: La URL del evento "${event.name}" es válida.`);
                 } else {
                     console.log(`❌ FALLO: La URL del evento "${event.name}" devolvió el estado ${response.status}.`);
