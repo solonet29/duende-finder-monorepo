@@ -1,0 +1,165 @@
+/*
+Theme Name: Duende Finder Theme
+Theme URI: https://afland.es/
+Author: Tu Nombre / Tu Agencia
+Author URI: https://afland.es/
+Description: Tema personalizado para el ecosistema de Duende Finder, incluyendo plantillas para eventos y viajes.
+Version: 1.0
+*/
+
+/* --- 1. Variables Globales y Estilos Base --- */
+:root {
+    --color-primario: #d35400;
+    /* Un naranja flamenco/terracota */
+    --color-fondo-oscuro: #1a1a1a;
+    --color-texto-claro: #ffffff;
+    --color-texto-oscuro: #333333;
+    --color-fondo-claro: #f9f9f9;
+    --overlay-oscuro: rgba(0, 0, 0, 0.6);
+    --fuente-principal: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+body {
+    font-family: var(--fuente-principal);
+    color: var(--color-texto-oscuro);
+    line-height: 1.6;
+    margin: 0;
+}
+
+h1,
+h2,
+h3 {
+    font-weight: 700;
+}
+
+/* --- 2. Estructura Principal de la Plantilla de Viaje --- */
+
+/* Contenedor principal para centrar el contenido */
+.content-area {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* --- 3. Sección "Hero" (La cabecera impactante) --- */
+.viaje-header {
+    position: relative;
+    /* Necesario para el overlay */
+    height: 60vh;
+    /* Ocupa el 60% de la altura de la pantalla */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--color-texto-claro);
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    overflow: hidden;
+    /* Para que el overlay no se salga */
+}
+
+/* El fondo de la imagen se establece desde el HTML/PHP (the_post_thumbnail) */
+.viaje-header .viaje-featured-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Asegura que la imagen cubra todo el espacio */
+    z-index: -2;
+}
+
+
+/* Overlay oscuro para que el texto resalte */
+.viaje-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--overlay-oscuro);
+    z-index: -1;
+}
+
+.viaje-title {
+    font-size: 3.5rem;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+    margin: 0;
+}
+
+/* --- 4. Diseño de Dos Columnas --- */
+.viaje-content-wrapper {
+    display: flex;
+    gap: 2rem;
+    /* Espacio entre las columnas */
+    margin-top: 2rem;
+}
+
+.viaje-main-content {
+    flex: 2;
+    /* Ocupa 2/3 del espacio */
+}
+
+.viaje-sidebar {
+    flex: 1;
+    /* Ocupa 1/3 del espacio */
+}
+
+/* --- 5. Caja de Detalles (Sidebar) --- */
+.viaje-details-box {
+    background-color: var(--color-fondo-claro);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.viaje-details-box h2 {
+    margin-top: 0;
+    border-bottom: 2px solid var(--color-primario);
+    padding-bottom: 0.5rem;
+}
+
+.viaje-details-box ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+}
+
+.viaje-details-box li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+/* Botón de Reserva (Llamada a la acción) */
+.button-reserva {
+    display: block;
+    background-color: var(--color-primario);
+    color: var(--color-texto-claro) !important;
+    text-align: center;
+    padding: 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.button-reserva:hover {
+    background-color: #a03e00;
+    /* Un naranja más oscuro */
+    color: var(--color-texto-claro);
+}
+
+/* --- 6. Diseño Adaptable (Móvil) --- */
+@media (max-width: 768px) {
+    .viaje-title {
+        font-size: 2.5rem;
+    }
+
+    .viaje-content-wrapper {
+        flex-direction: column;
+        /* Las columnas se ponen una encima de la otra */
+    }
+}
