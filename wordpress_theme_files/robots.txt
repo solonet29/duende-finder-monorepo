@@ -3,3 +3,4 @@ Disallow: /wp-admin/
 Disallow: /wp-login.php
 
 Sitemap: https://afland.es/sitemap.xml
+Sitemap: https://nuevobuscador.afland.es/sitemap.xml
