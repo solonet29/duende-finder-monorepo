@@ -326,11 +326,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const weekData = await weekResponse.json();
             const todayData = await todayResponse.json();
 
+            // LCP Preload Injection
+            if (featuredData.events && featuredData.events.length > 0) {
+                const lcpImageUrl = featuredData.events[0].imageUrl;
+                if (lcpImageUrl && typeof lcpImageUrl === 'string' && lcpImageUrl.startsWith('http')) {
+                    const preloadLink = document.createElement('link');
+                    preloadLink.rel = 'preload';
+                    preloadLink.as = 'image';
+                    preloadLink.href = lcpImageUrl;
+                    preloadLink.setAttribute('fetchpriority', 'high');
+                    document.head.appendChild(preloadLink);
+                }
+            }
+
             // Sort recent events by date
             const recentEvents = recentData.events || [];
             recentEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            renderSlider(featuredSlider, featuredData.events || []);
+            renderSlider(featuredSlider, featuredData.events || [], null, true); // isLCPSection = true
             renderSlider(recentSlider, recentEvents);
             renderSlider(weekSlider, weekData.events || []);
             renderSlider(todaySlider, todayData.events || []);
@@ -348,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderSlider(container, events, monthKey = null) {
+    function renderSlider(container, events, monthKey = null, isLCPSection = false) {
         if (!container) return;
         const section = container.closest('.sliders-section');
 
@@ -366,9 +379,10 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = '';
         }
 
-        events.forEach(event => {
+        events.forEach((event, index) => {
             eventsCache[event._id] = event;
-            container.appendChild(createSliderCard(event));
+            const isLCP = isLCPSection && index === 0;
+            container.appendChild(createSliderCard(event, isLCP));
         });
 
         // Configurar para scroll infinito si es un slider mensual y tiene potencial de más eventos
@@ -474,7 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(sentinel);
     }
 
-    function createSliderCard(event) {
+    function createSliderCard(event, isLCP = false) {
         const eventCard = document.createElement('div');
         eventCard.className = 'event-card';
         eventCard.setAttribute('data-event-id', event._id);
@@ -491,7 +505,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         eventCard.innerHTML = `
             <div class="card-image-container">
-                <img src="${eventImageUrl}" alt="${artistName}" class="card-image" onerror="this.onerror=null;this.src='${placeholderUrl}'">
+                <img src="${eventImageUrl}" 
+                     alt="${artistName}" 
+                     class="card-image" 
+                     loading="${isLCP ? 'eager' : 'lazy'}"
+                     fetchpriority="${isLCP ? 'high' : 'auto'}"
+                     decoding="async"
+                     onerror="this.onerror=null;this.src='${placeholderUrl}'">
             </div>
             <div class="card-content">
                 <div style="display: flex; align-items: center; gap: 8px;">
