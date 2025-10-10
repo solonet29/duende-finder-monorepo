@@ -50,8 +50,13 @@ async function generarSitemapBuscador() {
 
   xml += `</urlset>`;
 
-  // Se asegura de que la ruta 'apps/buscador-web/public' sea correcta. Ajústala si es necesario.
-  const outputPath = path.join(MONOREPO_ROOT, 'apps', 'buscador-web', 'dist', 'sitemap.xml');
+  // Se asegura de que la ruta 'apps/nuevo-buscador/dist' sea correcta.
+  const outputDir = path.join(MONOREPO_ROOT, 'apps', 'nuevo-buscador', 'dist');
+  const outputPath = path.join(outputDir, 'sitemap.xml');
+
+  // Asegurarse de que el directorio de salida exista
+  fs.mkdirSync(outputDir, { recursive: true });
+
   fs.writeFileSync(outputPath, xml);
   console.log(`✅ Sitemap para el buscador generado con éxito en: ${outputPath}`);
 }
