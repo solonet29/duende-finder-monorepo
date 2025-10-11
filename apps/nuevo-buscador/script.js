@@ -1,16 +1,8 @@
 import { CountUp } from './libs/countup.js';
 import { initPushNotifications } from './notifications.js';
+import 'ionicons';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Function to dynamically load ionicons
-    function loadIonicons() {
-        const script = document.createElement('script');
-        script.type = 'module';
-        script.src = '/ionicons/ionicons.esm.js';
-        document.head.appendChild(script);
-    }
-    loadIonicons();
-
     // =========================================================================
     // 1. CONFIGURACIÓN Y SELECTORES
     // =========================================================================
