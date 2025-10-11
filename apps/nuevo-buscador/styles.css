@@ -73,6 +73,10 @@ body {
     padding-right: 15px;
 }
 
+ion-icon {
+    color: var(--color-texto-secundario);
+}
+
 /* ==========================================================================
    3. CABECERA Y TÍTULO
    ========================================================================== */
@@ -1626,5 +1630,5 @@ header.header-main {
 }
 
 ion-icon {
-  color: red !important;
+  border: 1px solid red !important;
 }
