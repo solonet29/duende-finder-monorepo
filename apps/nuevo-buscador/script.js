@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadIonicons() {
         const script = document.createElement('script');
         script.type = 'module';
-        script.src = 'libs/ionicons/ionicons.esm.js';
+        script.src = '/ionicons/ionicons.esm.js';
         document.head.appendChild(script);
     }
     loadIonicons();
