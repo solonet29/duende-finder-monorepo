@@ -2,6 +2,7 @@
 <html lang="es" data-theme="light">
 
 <head>
+    <link rel="preload" as="image" href="/assets/img_header.webp" fetchpriority="high">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador de Conciertos Flamencos - Duende Finder</title>
@@ -15,8 +16,8 @@
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap"></noscript>
 
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script type="module" src="libs/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="libs/ionicons/ionicons.js"></script>
 
     <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
@@ -34,6 +35,7 @@
     <noscript><link rel="stylesheet" href="chatbot.css"></noscript>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
     <!-- Google tag (gtag.js) -->
+    <link rel="preconnect" href="https://www.googletagmanager.com">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0CDETYT85Z"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
