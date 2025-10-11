@@ -85,7 +85,7 @@ h1, h2, h3, h4, h5, h6, .main-title, .hero-text .main-title {
 
 .hero-header {
     position: relative;
-    background-image: url('/assets/img_header.png');
+    background-image: url('/assets/img_header.webp');
     background-size: cover;
     background-position: center;
     width: 100%;
