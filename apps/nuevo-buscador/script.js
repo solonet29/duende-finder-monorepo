@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function openMapModal(sliderContainer) {
+    async function openMapModal(sliderContainer) {
         if (!mapModalOverlay || !sliderContainer) return;
 
         const eventCards = sliderContainer.querySelectorAll('.event-card');
@@ -143,7 +143,32 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         mapModalOverlay.classList.add('visible');
-        setTimeout(() => initializeModalMap(eventsToShow), 10);
+
+        const mapContainer = document.getElementById('modal-map-container');
+        if (mapContainer) {
+            mapContainer.innerHTML = '<div class="loading-indicator" style="display: flex; justify-content: center; align-items: center; height: 100%; flex-direction: column; gap: 1rem;"><ion-icon name="map-outline" style="font-size: 3rem;"></ion-icon><p>Cargando mapa...</p></div>';
+        }
+
+        try {
+            if (!document.querySelector('link[href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"]')) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                document.head.appendChild(link);
+            }
+
+            if (!window.L) {
+                await import('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
+            }
+            
+            initializeModalMap(eventsToShow);
+
+        } catch (error) {
+            console.error("Error al cargar Leaflet:", error);
+            if (mapContainer) {
+                mapContainer.innerHTML = '<p style="text-align: center; padding: 2rem;">Error al cargar el mapa.</p>';
+            }
+        }
     }
 
     function closeMapModal() {
