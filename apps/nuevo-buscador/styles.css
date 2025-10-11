@@ -1611,3 +1611,16 @@ header.header-main {
     margin: 0;
     font-size: 1.5rem;
 }
+
+/* ==========================================================================
+   A11Y: Mejoras de Accesibilidad
+   ========================================================================== */
+
+/* Fix: Contraste de color para el chip de filtro activo */
+[data-theme="light"] .filter-chip.active {
+    color: #000000;
+}
+
+[data-theme="dark"] .filter-chip.active {
+    color: #FFFFFF;
+}

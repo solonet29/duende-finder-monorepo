@@ -101,7 +101,7 @@
         <div class="main-actions-container">
             <form class="search-bar-container" id="header-search-form">
                 <input type="text" id="header-search-input" class="search-input"
-                    placeholder="Buscar artistas, ciudades, tablaos...">
+                    placeholder="Buscar artistas, ciudades, tablaos..." aria-label="Buscar artistas, ciudades, tablaos...">
                 <button type="submit" class="search-button">
                     <ion-icon name="search-outline"></ion-icon>
                 </button>
@@ -174,20 +174,20 @@
     </main>
 
     <div id="how-it-works-modal-overlay" class="modal-overlay">
-        <div class="modal">
-            <button class="modal-close-btn">&times;</button>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="how-it-works-title">
+            <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
             <div class="modal-content">
-                <h2><i class="fas fa-question-circle"></i> ¿Cómo funciona?</h2>
+                <h2 id="how-it-works-title"><i class="fas fa-question-circle"></i> ¿Cómo funciona?</h2>
                 <div id="how-it-works-text-container"></div>
             </div>
         </div>
     </div>
 
     <div id="terms-modal-overlay" class="modal-overlay">
-        <div class="modal">
-            <button class="modal-close-btn">&times;</button>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+            <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
             <div class="modal-content">
-                <h2><i class="fas fa-file-contract"></i> Términos y Condiciones</h2>
+                <h2 id="terms-title"><i class="fas fa-file-contract"></i> Términos y Condiciones</h2>
                 <div id="terms-text-container"></div>
             </div>
         </div>
@@ -211,16 +211,16 @@
         <button class="modal-close-btn">&times;</button><img id="image-modal-content" src="" alt="Imagen ampliada">
     </div>
     <nav id="bottom-nav">
-        <button class="nav-btn active" id="nav-home-btn" title="Inicio"><ion-icon name="home"></ion-icon></button>
-        <button class="nav-btn" id="nav-how-it-works-btn" title="Cómo Funciona"><ion-icon
+        <button class="nav-btn active" id="nav-home-btn" title="Inicio" aria-label="Inicio"><ion-icon name="home"></ion-icon></button>
+        <button class="nav-btn" id="nav-how-it-works-btn" title="Cómo Funciona" aria-label="Cómo Funciona"><ion-icon
                 name="help-circle-outline"></ion-icon></button>
-        <button class="nav-btn" id="nav-terms-btn" title="Términos"><ion-icon
+        <button class="nav-btn" id="nav-terms-btn" title="Términos" aria-label="Términos y Condiciones"><ion-icon
                 name="document-text-outline"></ion-icon></button>
-        <button class="nav-btn" id="nav-notifications-btn" title="Notificaciones"><ion-icon
+        <button class="nav-btn" id="nav-notifications-btn" title="Notificaciones" aria-label="Notificaciones"><ion-icon
                 name="notifications-outline"></ion-icon></button>
-        <button class="nav-btn" id="nav-theme-toggle" title="Tema"><ion-icon name="moon-outline"></ion-icon></button>
+        <button class="nav-btn" id="nav-theme-toggle" title="Cambiar tema" aria-label="Cambiar tema"><ion-icon name="moon-outline"></ion-icon></button>
         <a href="https://afland.es" target="_blank" rel="noopener noreferrer" class="nav-btn"
-            title="Visitar Afland.es"><ion-icon name="flame-outline"></ion-icon></a>
+            title="Visitar Afland.es" aria-label="Visitar Afland.es"><ion-icon name="flame-outline"></ion-icon></a>
     </nav>
     <script type="module" src="script.js"></script>
     <script type="module" src="search.js"></script>
