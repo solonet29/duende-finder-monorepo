@@ -10,6 +10,8 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
+      // 🛠️ SOLUCIÓN: Añadir ionicons como paquete externo para Rollup
+      external: ['ionicons'],
       output: {
         entryFileNames: `assets/[name].js`,
         chunkFileNames: `assets/[name].js`,
