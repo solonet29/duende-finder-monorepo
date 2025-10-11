@@ -19,7 +19,7 @@ get_header();
                         <?php the_title('<h1 class="entry-title viaje-title">', '</h1>'); ?>
                         <?php if (has_post_thumbnail()) : ?>
                             <div class="viaje-featured-image">
-                                <?php the_post_thumbnail('full'); ?>
+                                <?php the_post_thumbnail('large'); ?>
                             </div>
                         <?php endif; ?>
                     </header>

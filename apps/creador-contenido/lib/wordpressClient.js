@@ -21,9 +21,10 @@ const authHeaders = { 'Authorization': `Basic ${wpAuth}` };
  * Sube una imagen a la Biblioteca de Medios de WordPress.
  * @param {string} imagePath - La ruta local al archivo de imagen.
  * @param {string} title - El título que se le dará a la imagen en WordPress.
+ * @param {string} [mimeType] - El tipo MIME del fichero (ej. 'image/webp'). Si no se provee, se infiere.
  * @returns {Promise<object|null>} Un objeto con imageId y imageUrl si la subida fue exitosa, o null en caso de error.
  */
-async function uploadImage(imagePath, title) {
+async function uploadImage(imagePath, title, mimeType = null) {
     if (!imagePath || !fs.existsSync(imagePath)) {
         console.error(`⚠️ La imagen no existe en la ruta: ${imagePath}`);
         return null;
@@ -34,7 +35,13 @@ async function uploadImage(imagePath, title) {
         const fileBuffer = fs.readFileSync(imagePath);
         const filename = path.basename(imagePath);
         const form = new FormData();
-        form.append('file', fileBuffer, { filename });
+        
+        const fileOptions = { filename };
+        if (mimeType) {
+            fileOptions.contentType = mimeType;
+        }
+
+        form.append('file', fileBuffer, fileOptions);
         if (title) form.append('title', title);
 
         const response = await axios.post(endpoint, form, {
@@ -42,7 +49,6 @@ async function uploadImage(imagePath, title) {
             timeout: 60000
         });
 
-        // Ahora devolvemos la información que necesitamos
         if (response.status === 201 && response.data) {
             console.log(`✅ Imagen subida con éxito. ID: ${response.data.id}`);
             return {
