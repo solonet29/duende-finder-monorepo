@@ -84,14 +84,22 @@ h1, h2, h3, h4, h5, h6, .main-title, .hero-text .main-title {
 /* --- FIN TIPOGRAFÍA GLOBAL --- */
 
 .hero-header {
-    position: relative;
-    background-image: url('/assets/img_header.webp');
-    background-size: cover;
-    background-position: center;
+    position: relative; /* Necesario para posicionar la imagen dentro */
+    overflow: hidden; /* Opcional, pero bueno para contener la imagen */
     width: 100%;
     height: 0;
     padding-bottom: 34.64%;
     /* Aspect ratio 665/1920 */
+}
+
+.hero-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* La magia: hace que la imagen cubra el área sin deformarse */
+    z-index: -1;       /* Coloca la imagen DETRÁS del texto */
 }
 
 .hero-header::before {
