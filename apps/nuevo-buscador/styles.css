@@ -1624,3 +1624,7 @@ header.header-main {
 [data-theme="dark"] .filter-chip.active {
     color: #FFFFFF;
 }
+
+ion-icon {
+  color: red !important;
+}
