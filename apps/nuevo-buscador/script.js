@@ -2,6 +2,15 @@ import { CountUp } from './libs/countup.js';
 import { initPushNotifications } from './notifications.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Function to dynamically load ionicons
+    function loadIonicons() {
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = 'libs/ionicons/ionicons.esm.js';
+        document.head.appendChild(script);
+    }
+    loadIonicons();
+
     // =========================================================================
     // 1. CONFIGURACIÓN Y SELECTORES
     // =========================================================================
@@ -9,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
         USAR_PAGINAS_DE_EVENTOS: true, // Poner en false para volver al modo modal
         INFINITE_SCROLL_ENABLED: false, // Poner en false para desactivar la funcionalidad de scroll infinito en los sliders
     };
-
     const getApiBaseUrl = () => {
         const hostname = window.location.hostname;
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
