@@ -1,5 +1,8 @@
 {
   "name": "api",
+  "scripts": {
+    "build": "next build"
+  },
   "dependencies": {
     "@upstash/qstash": "^2.8.2",
     "apps-payload-cms": "workspace:^",
