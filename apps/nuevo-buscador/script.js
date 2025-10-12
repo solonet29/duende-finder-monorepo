@@ -1438,12 +1438,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const isEventPage = await handleInitialPageLoadRouting();
 
         if (!isEventPage) {
-            // Carga inicial del planificador de viajes
-            const { startDate, endDate } = getCurrentWeekDateRange();
-            fetchTripEvents('Sevilla', startDate, endDate);
-
-            // Ahora solo llamamos a initializeDashboard, que se encarga de todo.
+            // 1. Initialize the main dashboard immediately. This is the critical content.
             initializeDashboard();
+
+            // 2. Defer the non-critical Trip Planner default search.
+            // This allows the main content to render first, improving FCP/LCP.
+            setTimeout(() => {
+                const { startDate, endDate } = getCurrentWeekDateRange();
+                fetchTripEvents('Sevilla', startDate, endDate);
+            }, 500); // Delay of 500ms
         }
     }
 
