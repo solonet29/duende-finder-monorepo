@@ -243,6 +243,27 @@ header.header-main {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer;
+}
+
+.trip-planner-section h2 ion-icon {
+    transition: transform 0.3s ease;
+    font-size: 1.4rem;
+}
+
+.trip-planner-section.active h2 ion-icon {
+    transform: rotate(180deg);
+}
+
+.trip-planner-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+}
+
+.trip-planner-section.active .trip-planner-content {
+    max-height: 1000px;
+    /* Large enough value */
 }
 
 .trip-planner-form {
