@@ -1669,3 +1669,15 @@ header.header-main {
 [data-theme="dark"] .filter-chip.active {
     color: #FFFFFF;
 }
+/* ==========================================================================
+   14. TRIP PLANNER DESCRIPTION
+   ========================================================================== */
+.trip-planner-description {
+    padding: 20px;
+    text-align: center;
+    color: var(--color-texto-secundario);
+    font-style: italic;
+    border: 2px dashed var(--color-borde);
+    border-radius: 8px;
+    margin-top: 32px;
+}

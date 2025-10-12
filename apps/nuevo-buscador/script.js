@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_BASE_URL = getApiBaseUrl();
     let eventsCache = {};
     let modalMapInstance = null;
+    let isTripPlannerInitialized = false;
 
     const modalContent = {
         howItWorks: `
@@ -1189,6 +1190,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tripPlannerSection = document.getElementById('trip-planner-section');
                 if (tripPlannerSection) {
                     tripPlannerSection.classList.toggle('active');
+
+                    // Cargar contenido por defecto solo la primera vez que se expande
+                    if (tripPlannerSection.classList.contains('active') && !isTripPlannerInitialized) {
+                        const { startDate, endDate } = getCurrentWeekDateRange();
+                        fetchTripEvents('Sevilla', startDate, endDate);
+                        isTripPlannerInitialized = true;
+                    }
                 }
             });
         }
@@ -1438,10 +1446,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const isEventPage = await handleInitialPageLoadRouting();
 
         if (!isEventPage) {
-            // Carga inicial del planificador de viajes
-            const { startDate, endDate } = getCurrentWeekDateRange();
-            fetchTripEvents('Sevilla', startDate, endDate);
-
             // Ahora solo llamamos a initializeDashboard, que se encarga de todo.
             initializeDashboard();
         }
