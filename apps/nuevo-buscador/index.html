@@ -58,10 +58,17 @@
 <body>
 
     <div class="hero-header">
-        <img src="/assets/img_header.webp" alt="Guitarrista flamenco en un escenario oscuro" class="hero-image" fetchpriority="high">
+        <picture>
+            <source media="(max-width: 768px)" srcset="/assets/img_header-mobile.webp">
+
+            <source media="(min-width: 769px)" srcset="/assets/img_header.webp">
+
+            <img src="/assets/img_header.webp" alt="Guitarrista flamenco en un escenario oscuro" class="hero-image"
+                fetchpriority="high">
+        </picture>
         <div class="hero-text">
             <h1 class="main-title">Duende Finder</h1>
-            <p id="event-stats" class="hero-subtitle">Cargando eventos...</p>
+            <p id="event-stats" class="hero-subtitle">Un proyecto de AFLand</p>
         </div>
     </div>
 
@@ -101,7 +108,8 @@
         <div class="main-actions-container">
             <form class="search-bar-container" id="header-search-form">
                 <input type="text" id="header-search-input" class="search-input"
-                    placeholder="Buscar artistas, ciudades, tablaos..." aria-label="Buscar artistas, ciudades, tablaos...">
+                    placeholder="Buscar artistas, ciudades, tablaos..."
+                    aria-label="Buscar artistas, ciudades, tablaos...">
                 <button type="submit" class="search-button">
                     <ion-icon name="search-outline"></ion-icon>
                 </button>
@@ -211,16 +219,18 @@
         <button class="modal-close-btn">&times;</button><img id="image-modal-content" src="" alt="Imagen ampliada">
     </div>
     <nav id="bottom-nav">
-        <button class="nav-btn active" id="nav-home-btn" title="Inicio" aria-label="Inicio"><ion-icon name="home"></ion-icon></button>
+        <button class="nav-btn active" id="nav-home-btn" title="Inicio" aria-label="Inicio"><ion-icon
+                name="home"></ion-icon></button>
         <button class="nav-btn" id="nav-how-it-works-btn" title="Cómo Funciona" aria-label="Cómo Funciona"><ion-icon
                 name="help-circle-outline"></ion-icon></button>
         <button class="nav-btn" id="nav-terms-btn" title="Términos" aria-label="Términos y Condiciones"><ion-icon
                 name="document-text-outline"></ion-icon></button>
         <button class="nav-btn" id="nav-notifications-btn" title="Notificaciones" aria-label="Notificaciones"><ion-icon
                 name="notifications-outline"></ion-icon></button>
-        <button class="nav-btn" id="nav-theme-toggle" title="Cambiar tema" aria-label="Cambiar tema"><ion-icon name="moon-outline"></ion-icon></button>
-        <a href="https://afland.es" target="_blank" rel="noopener noreferrer" class="nav-btn"
-            title="Visitar Afland.es" aria-label="Visitar Afland.es"><ion-icon name="flame-outline"></ion-icon></a>
+        <button class="nav-btn" id="nav-theme-toggle" title="Cambiar tema" aria-label="Cambiar tema"><ion-icon
+                name="moon-outline"></ion-icon></button>
+        <a href="https://afland.es" target="_blank" rel="noopener noreferrer" class="nav-btn" title="Visitar Afland.es"
+            aria-label="Visitar Afland.es"><ion-icon name="flame-outline"></ion-icon></a>
     </nav>
     <script type="module" src="https://unpkg.com/ionicons@7/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7/dist/ionicons/ionicons.js"></script>
