@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const howItWorksModal = document.getElementById('how-it-works-modal-overlay');
     const termsModal = document.getElementById('terms-modal-overlay');
     const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
+    const tripPlannerToggle = document.getElementById('trip-planner-toggle');
     const tripCityInput = document.getElementById('trip-city');
     const tripStartDateInput = document.getElementById('trip-start-date');
     const tripEndDateInput = document.getElementById('trip-end-date');
@@ -160,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!window.L) {
                 await import('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
             }
-            
+
             initializeModalMap(eventsToShow);
 
         } catch (error) {
