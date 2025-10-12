@@ -1387,6 +1387,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function init() {
+        document.querySelectorAll('ion-icon').forEach(icon => {
+            icon.style.color = 'red';
+        });
         const savedTheme = localStorage.getItem('duende-theme') || 'light';
         applyTheme(savedTheme);
         setupEventListeners();

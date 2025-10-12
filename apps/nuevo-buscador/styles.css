@@ -82,14 +82,24 @@ ion-icon {
    ========================================================================== */
 
 /* --- TIPOGRAFÍA GLOBAL --- */
-h1, h2, h3, h4, h5, h6, .main-title, .hero-text .main-title {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.main-title,
+.hero-text .main-title {
     font-family: 'Playfair Display', serif;
 }
+
 /* --- FIN TIPOGRAFÍA GLOBAL --- */
 
 .hero-header {
-    position: relative; /* Necesario para posicionar la imagen dentro */
-    overflow: hidden; /* Opcional, pero bueno para contener la imagen */
+    position: relative;
+    /* Necesario para posicionar la imagen dentro */
+    overflow: hidden;
+    /* Opcional, pero bueno para contener la imagen */
     width: 100%;
     height: 0;
     padding-bottom: 34.64%;
@@ -102,8 +112,10 @@ h1, h2, h3, h4, h5, h6, .main-title, .hero-text .main-title {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover; /* La magia: hace que la imagen cubra el área sin deformarse */
-    z-index: -1;       /* Coloca la imagen DETRÁS del texto */
+    object-fit: cover;
+    /* La magia: hace que la imagen cubra el área sin deformarse */
+    z-index: -1;
+    /* Coloca la imagen DETRÁS del texto */
 }
 
 .hero-header::before {
@@ -205,7 +217,8 @@ header.header-main {
    ========================================================================== */
 .sliders-section,
 .trip-planner-section {
-    min-height: 190px; /* Usamos 190px, un redondeo seguro de 188.375px */
+    min-height: 190px;
+    /* Usamos 190px, un redondeo seguro de 188.375px */
     width: 100%;
     margin: 30px 0;
 }
@@ -382,7 +395,8 @@ header.header-main {
 .card-title-button {
     cursor: pointer;
     position: relative;
-    align-self: flex-start; /* Para que el fondo solo ocupe el texto */
+    align-self: flex-start;
+    /* Para que el fondo solo ocupe el texto */
     padding: 4px 8px;
     border-radius: 5px;
     transition: background-color 0.2s ease-out;
@@ -402,16 +416,20 @@ header.header-main {
 /* Ajuste para el título de la tarjeta para que no se solape con el badge */
 .event-card .card-title {
     /* Se elimina el padding-top y se usa margin-top para empujar el título hacia abajo sin afectar su caja interna */
-    margin-top: 0; /* Restaurado a 0 al no haber badge */
+    margin-top: 0;
+    /* Restaurado a 0 al no haber badge */
 }
 
 /* FIX: Hacer que el contenido del modal de "Verificado" sea desplazable */
 #verified-info-modal .modal-content,
 #how-it-works-modal-overlay .modal-content,
 #terms-modal-overlay .modal-content {
-    max-height: 70vh; /* Limitar la altura al 70% de la altura de la ventana */
-    overflow-y: auto; /* Añadir barra de desplazamiento vertical cuando sea necesario */
-    padding-right: 15px; /* Espacio para la barra de scroll */
+    max-height: 70vh;
+    /* Limitar la altura al 70% de la altura de la ventana */
+    overflow-y: auto;
+    /* Añadir barra de desplazamiento vertical cuando sea necesario */
+    padding-right: 15px;
+    /* Espacio para la barra de scroll */
 }
 
 /* Estilos para la info de verificación en la página de evento */
@@ -423,7 +441,8 @@ header.header-main {
     flex-wrap: wrap;
 }
 
-.verified-badge-page, .unverified-badge-page {
+.verified-badge-page,
+.unverified-badge-page {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -1070,16 +1089,19 @@ header.header-main {
 .search-results-container {
     display: flex;
     flex-direction: column;
-    padding: 0 10px; /* Añadir padding al contenedor para separar del borde del modal */
+    padding: 0 10px;
+    /* Añadir padding al contenedor para separar del borde del modal */
 }
 
 .search-result-item {
     padding: 20px 10px;
     cursor: pointer;
     border-bottom: 1px solid var(--color-borde);
-    border-left: 4px solid transparent; /* Borde de acento oculto */
+    border-left: 4px solid transparent;
+    /* Borde de acento oculto */
     transition: transform 0.3s ease, background-color 0.3s ease;
-    opacity: 0; /* Oculto por defecto para la animación de entrada */
+    opacity: 0;
+    /* Oculto por defecto para la animación de entrada */
     animation: slide-up-fade-in 0.5s ease-out forwards;
 }
 
@@ -1088,14 +1110,17 @@ header.header-main {
 }
 
 .search-result-item:hover {
-    transform: translateX(5px); /* Ligero desplazamiento a la derecha */
+    transform: translateX(5px);
+    /* Ligero desplazamiento a la derecha */
     background-color: var(--color-superficie);
-    border-left-color: var(--color-acento); /* Mostrar borde de acento en hover */
+    border-left-color: var(--color-acento);
+    /* Mostrar borde de acento en hover */
 }
 
 .search-result-info h4 {
     margin: 0 0 12px 0;
-    font-size: 1.2rem; /* Título más grande */
+    font-size: 1.2rem;
+    /* Título más grande */
     font-weight: 700;
     color: var(--color-texto-principal);
     position: relative;
@@ -1154,6 +1179,7 @@ header.header-main {
         opacity: 0;
         transform: translateY(15px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1175,6 +1201,7 @@ header.header-main {
         flex: 0 0 calc(50% - 8px);
     }
 }
+
 /* =================================================================== */
 /* REFACTOR 2025-09-24: Mejoras en la página de detalles del evento */
 /* =================================================================== */
@@ -1183,7 +1210,8 @@ header.header-main {
 .event-page-container {
     display: flex;
     flex-direction: column;
-    min-height: calc(100vh - 70px); /* Ajustar 70px a la altura real del header + nav */
+    min-height: calc(100vh - 70px);
+    /* Ajustar 70px a la altura real del header + nav */
 }
 
 .event-page-content {
@@ -1246,7 +1274,8 @@ header.header-main {
 }
 
 .action-button {
-    flex: 1; /* Para que ocupen el mismo espacio */
+    flex: 1;
+    /* Para que ocupen el mismo espacio */
     padding: 10px 15px;
     font-size: 0.9rem;
     border-radius: 8px;
@@ -1266,6 +1295,7 @@ header.header-main {
     color: #fff;
     border: 2px solid var(--color-acento);
 }
+
 .action-button.primary:hover {
     filter: brightness(1.1);
     transform: translateY(-2px);
@@ -1319,23 +1349,25 @@ header.header-main {
 }
 
 .back-to-list-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px; /* Espacio entre el icono y el texto */
-  margin: 30px auto; /* Centrado y con espacio vertical */
-  padding: 10px 20px;
-  color: var(--color-acento);
-  background-color: transparent;
-  border: 2px solid var(--color-borde);
-  border-radius: 25px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    /* Espacio entre el icono y el texto */
+    margin: 30px auto;
+    /* Centrado y con espacio vertical */
+    padding: 10px 20px;
+    color: var(--color-acento);
+    background-color: transparent;
+    border: 2px solid var(--color-borde);
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
 }
 
 .back-to-list-link:hover {
-  background-color: var(--color-borde);
-  border-color: var(--color-acento);
+    background-color: var(--color-borde);
+    border-color: var(--color-acento);
 }
 
 /* ==========================================================================
@@ -1343,42 +1375,44 @@ header.header-main {
    ========================================================================== */
 
 #modal-text-content .modal-actions {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px; /* Espacio entre botones */
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* Espacio entre botones */
 }
 
 #modal-text-content .modal-action-button {
-  display: block;
-  padding: 14px 20px;
-  background: linear-gradient(145deg, #E53935, #C62828); /* Un gradiente rojo flamenco */
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 1em;
-  text-align: center;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    display: block;
+    padding: 14px 20px;
+    background: linear-gradient(145deg, #E53935, #C62828);
+    /* Un gradiente rojo flamenco */
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1em;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 #modal-text-content .modal-action-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
 }
 
 #modal-text-content .modal-footer-note {
-  font-size: 0.85em;
-  color: var(--color-texto-secundario);
-  margin-top: 20px;
-  margin-bottom: 0;
+    font-size: 0.85em;
+    color: var(--color-texto-secundario);
+    margin-top: 20px;
+    margin-bottom: 0;
 }
 
 .back-to-list-link ion-icon {
-  font-size: 1.2em;
+    font-size: 1.2em;
 }
 
 /* ==========================================================================
@@ -1394,7 +1428,8 @@ header.header-main {
 
 .main-actions-container .search-bar-container {
     flex-grow: 1;
-    margin: 0; /* Reset margin as it's now in a flex container */
+    margin: 0;
+    /* Reset margin as it's now in a flex container */
 }
 
 .slider-title-container {
@@ -1443,8 +1478,10 @@ header.header-main {
 /* Ajuste para la imagen de cabecera en pantallas grandes */
 @media (min-width: 992px) {
     .hero-header {
-        height: 450px; /* Establece una altura fija para la cabecera en PC */
-        padding-bottom: 0; /* Anula el truco del aspect-ratio */
+        height: 450px;
+        /* Establece una altura fija para la cabecera en PC */
+        padding-bottom: 0;
+        /* Anula el truco del aspect-ratio */
     }
 }
 
@@ -1462,7 +1499,8 @@ header.header-main {
     font-size: 0.85rem;
     font-weight: 500;
     margin: 0.5rem 0;
-    position: relative; /* For tooltip positioning */
+    position: relative;
+    /* For tooltip positioning */
 }
 
 .verification-badge[data-status="verified"] {
@@ -1490,7 +1528,8 @@ header.header-main {
     visibility: hidden;
     opacity: 0;
     position: absolute;
-    bottom: 125%; /* Position above the badge */
+    bottom: 125%;
+    /* Position above the badge */
     left: 50%;
     transform: translateX(0);
     background-color: var(--color-superficie);
@@ -1508,7 +1547,7 @@ header.header-main {
 }
 
 .verification-badge:hover .tooltip,
-.verification-badge .info-icon:hover + .tooltip {
+.verification-badge .info-icon:hover+.tooltip {
     visibility: visible;
     opacity: 1;
 }
@@ -1578,13 +1617,15 @@ header.header-main {
     padding: 1rem;
     gap: 1rem;
     scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch; /* Para un scroll suave en iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Para un scroll suave en iOS */
 }
 
 /* Forzar que las tarjetas no se encojan */
 #infinite-scroll-modal-slider .event-card {
     flex: 0 0 auto;
-    width: 250px; /* O el ancho que prefieras */
+    width: 250px;
+    /* O el ancho que prefieras */
     scroll-snap-align: start;
 }
 
@@ -1627,8 +1668,4 @@ header.header-main {
 
 [data-theme="dark"] .filter-chip.active {
     color: #FFFFFF;
-}
-
-ion-icon {
-  border: 1px solid red !important;
 }
