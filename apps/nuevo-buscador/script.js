@@ -175,6 +175,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mapModalOverlay) {
             mapModalOverlay.classList.remove('visible');
         }
+        // Destruir la instancia del mapa para asegurar una reinicialización limpia
+        if (modalMapInstance) {
+            modalMapInstance.remove();
+            modalMapInstance = null;
+        }
     }
 
     function initializeModalMap(events) {
