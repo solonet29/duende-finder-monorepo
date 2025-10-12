@@ -298,6 +298,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return skeletonCard;
     }
 
+    function createTripPlannerSkeleton() {
+        const skeletonContainer = document.createElement('div');
+        skeletonContainer.className = 'slider-container';
+        for (let i = 0; i < 3; i++) {
+            skeletonContainer.appendChild(createSkeletonCard());
+        }
+        return skeletonContainer.innerHTML;
+    }
+
+    function getCurrentWeekDateRange() {
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // Sunday = 0, Monday = 1, etc.
+        const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        const monday = new Date(new Date().setDate(today.getDate() + diffToMonday));
+        const sunday = new Date(new Date(monday).setDate(monday.getDate() + 6));
+
+        const formatDate = (date) => date.toISOString().split('T')[0];
+
+        return {
+            startDate: formatDate(monday),
+            endDate: formatDate(sunday)
+        };
+    }
+
     async function initializeDashboard() {
         // --- 1. Asegurar visibilidad de elementos de la página principal ---
         const heroHeader = document.querySelector('.hero-header');
@@ -814,39 +838,35 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
-    async function fetchTripEvents() {
-        if (!tripCityInput || !tripStartDateInput || !tripEndDateInput || !tripResultsSlider || !tripResultsMessage) return;
+    async function fetchTripEvents(city, startDate, endDate) {
+        if (!tripResultsSlider || !tripResultsMessage) return;
 
-        const city = tripCityInput.value.trim();
-        const startDate = tripStartDateInput.value;
-        const endDate = tripEndDateInput.value;
-
-        if (!city || !startDate || !endDate) {
-            tripResultsMessage.textContent = 'Por favor, completa todos los campos: ciudad y fechas.';
-            tripResultsMessage.style.display = 'block';
-            tripResultsSlider.style.display = 'none';
-            return;
-        }
-
-        tripResultsSlider.innerHTML = `<div class="skeleton-card" style="width: 100%;"></div>`;
+        // 1. Show skeleton and apply margin
+        tripResultsSlider.innerHTML = createTripPlannerSkeleton();
         tripResultsSlider.style.display = 'flex';
+        tripResultsSlider.style.marginTop = '32px';
         tripResultsMessage.style.display = 'none';
+        tripResultsMessage.style.marginTop = '32px';
 
         try {
+            // 2. Fetch data
             const response = await fetch(`${API_BASE_URL}/api/events?city=${encodeURIComponent(city)}&dateFrom=${startDate}&dateTo=${endDate}&limit=20`);
             if (!response.ok) throw new Error('Error en la respuesta del servidor.');
 
             const data = await response.json();
 
+            // 3. Render results or "not found" message
             if (data.events && data.events.length > 0) {
                 renderSlider(tripResultsSlider, data.events);
+                tripResultsSlider.style.display = 'flex';
             } else {
-                tripResultsMessage.textContent = 'No se encontraron eventos para esa ciudad y fechas.';
+                tripResultsMessage.textContent = `No se encontraron eventos para ${city} en estas fechas.`;
                 tripResultsMessage.style.display = 'block';
                 tripResultsSlider.innerHTML = '';
                 tripResultsSlider.style.display = 'none';
             }
         } catch (error) {
+            // 4. Render error message
             console.error('Error en la búsqueda de viaje:', error);
             tripResultsMessage.textContent = 'Ocurrió un error al realizar la búsqueda. Inténtalo de nuevo.';
             tripResultsMessage.style.display = 'block';
@@ -1174,7 +1194,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (tripSearchBtn) {
-            tripSearchBtn.addEventListener('click', fetchTripEvents);
+            tripSearchBtn.addEventListener('click', () => {
+                const city = tripCityInput.value.trim();
+                const startDate = tripStartDateInput.value;
+                const endDate = tripEndDateInput.value;
+
+                if (!city || !startDate || !endDate) {
+                    tripResultsMessage.textContent = 'Por favor, completa todos los campos: ciudad y fechas.';
+                    tripResultsMessage.style.display = 'block';
+                    tripResultsSlider.style.display = 'none';
+                    return;
+                }
+                fetchTripEvents(city, startDate, endDate);
+            });
         }
 
         if (closeMapModalBtn) {
@@ -1406,6 +1438,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const isEventPage = await handleInitialPageLoadRouting();
 
         if (!isEventPage) {
+            // Carga inicial del planificador de viajes
+            const { startDate, endDate } = getCurrentWeekDateRange();
+            fetchTripEvents('Sevilla', startDate, endDate);
+
             // Ahora solo llamamos a initializeDashboard, que se encarga de todo.
             initializeDashboard();
         }
