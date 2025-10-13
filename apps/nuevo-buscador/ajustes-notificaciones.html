@@ -24,7 +24,7 @@
         }
 
         .legal-container h1 {
-            color: var(--color-primario);
+            color: var(--color-acento);
             text-align: center;
             margin-bottom: 2rem;
         }
@@ -70,8 +70,7 @@
         }
 
         .action-button:hover {
-            background-color: #c72508;
-            /* Un primario más oscuro */
+            filter: brightness(1.1);
         }
 
         .action-button:disabled {
@@ -95,6 +94,10 @@
             <!-- El estado se insertará aquí dinámicamente -->
         </div>
 
+        <div id="benefits-container" style="display: none; margin-bottom: 1.5rem;">
+            <!-- Los beneficios se insertarán aquí dinámicamente -->
+        </div>
+
         <button id="notification-button" class="action-button" disabled>Activar Notificaciones</button>
 
         <p class="instructions" id="instructions-text">
@@ -110,8 +113,9 @@
             const statusContainer = document.getElementById('status-container');
             const notificationButton = document.getElementById('notification-button');
             const instructionsText = document.getElementById('instructions-text');
+            const benefitsContainer = document.getElementById('benefits-container');
 
-            if (!('Notification' in window)) {
+            if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
                 statusContainer.innerHTML = `<div class="status-box denied"><p>Tu navegador no soporta notificaciones.</p></div>`;
                 notificationButton.disabled = true;
                 return;
@@ -120,21 +124,30 @@
             function updateUI() {
                 const permission = Notification.permission;
                 statusContainer.innerHTML = '';
+                benefitsContainer.style.display = 'none'; // Ocultar por defecto
                 notificationButton.disabled = false;
 
                 if (permission === 'granted') {
                     statusContainer.innerHTML = `<div class="status-box granted"><p>✅ ¡Perfecto! Tienes las notificaciones activadas.</p></div>`;
-                    notificationButton.textContent = 'Desactivar Notificaciones (Próximamente)';
-                    notificationButton.disabled = true; // La desactivación se maneja en el navegador
+                    notificationButton.textContent = 'Notificaciones Activadas';
+                    notificationButton.disabled = true;
                     instructionsText.textContent = 'Para desactivar las notificaciones, debes hacerlo desde los ajustes de tu navegador para este sitio web.';
                 } else if (permission === 'denied') {
                     statusContainer.innerHTML = `<div class="status-box denied"><p>❌ Tienes las notificaciones bloqueadas.</p></div>`;
                     notificationButton.disabled = true;
                     instructionsText.textContent = 'Para poder recibir notificaciones, necesitas cambiar los permisos para este sitio directamente en la configuración de tu navegador.';
                 } else { // default
-                    statusContainer.innerHTML = `<div class="status-box default"><p>🤔 ¿Quieres ser el primero en enterarte de nuevos eventos?</p></div>`;
+                    statusContainer.innerHTML = `<div class="status-box default"><p>🤔 ¿Quieres ser el primero en enterarte de todo?</p></div>`;
+                    benefitsContainer.innerHTML = `
+                        <ul style="list-style-type: '✅'; padding-left: 20px; color: var(--color-texto-secundario);">
+                            <li style="padding-left: 10px; margin-bottom: 0.5rem;">Recibe alertas de <strong>nuevos eventos y festivales</strong> al instante.</li>
+                            <li style="padding-left: 10px; margin-bottom: 0.5rem;">Entérate de las <strong>giras de tus artistas favoritos</strong>.</li>
+                            <li style="padding-left: 10px;">No te pierdas ni un solo tablao cerca de ti.</li>
+                        </ul>
+                    `;
+                    benefitsContainer.style.display = 'block';
                     notificationButton.textContent = 'Activar Notificaciones';
-                    instructionsText.textContent = 'Pulsa el botón para recibir alertas sobre los últimos eventos de flamenco añadidos.';
+                    instructionsText.textContent = '¡No te quedes fuera! Pulsa el botón y únete a nuestra comunidad de flamencos.';
                 }
             }
 
@@ -144,20 +157,13 @@
                     console.log('Permiso concedido. Procediendo a suscribir...');
                     await subscribeUserToPush();
                 }
-                updateUI(); // Actualiza la UI después de la acción
+                updateUI();
             });
 
             updateUI();
 
             // --- LÓGICA DE SUSCRIPCIÓN (REUTILIZADA DE notifications.js) ---
-
-            const getApiBaseUrl = () => {
-                const hostname = window.location.hostname;
-                if (hostname.includes('localhost')) {
-                    return 'http://localhost:3000';
-                }
-                return 'https://api-v2.afland.es';
-            };
+            const getApiBaseUrl = () => window.location.hostname.includes('localhost') ? 'http://localhost:3000' : 'https://api-v2.afland.es';
             const API_BASE_URL = getApiBaseUrl();
 
             function urlBase64ToUint8Array(base64String) {
