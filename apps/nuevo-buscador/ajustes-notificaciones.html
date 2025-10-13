@@ -140,11 +140,56 @@
 
             notificationButton.addEventListener('click', async () => {
                 const permission = await Notification.requestPermission();
-                // Aquí iría la lógica para registrar la suscripción en tu backend
-                updateUI();
+                if (permission === 'granted') {
+                    console.log('Permiso concedido. Procediendo a suscribir...');
+                    await subscribeUserToPush();
+                }
+                updateUI(); // Actualiza la UI después de la acción
             });
 
             updateUI();
+
+            // --- LÓGICA DE SUSCRIPCIÓN (REUTILIZADA DE notifications.js) ---
+
+            const getApiBaseUrl = () => {
+                const hostname = window.location.hostname;
+                if (hostname.includes('localhost')) {
+                    return 'http://localhost:3000';
+                }
+                return 'https://api-v2.afland.es';
+            };
+            const API_BASE_URL = getApiBaseUrl();
+
+            function urlBase64ToUint8Array(base64String) {
+                const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+                const rawData = window.atob(base64);
+                const outputArray = new Uint8Array(rawData.length);
+                for (let i = 0; i < rawData.length; ++i) {
+                    outputArray[i] = rawData.charCodeAt(i);
+                }
+                return outputArray;
+            }
+
+            async function subscribeUserToPush() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/notifications/vapid-public-key`);
+                    const { publicKey } = await response.json();
+                    const applicationServerKey = urlBase64ToUint8Array(publicKey);
+                    const swRegistration = await navigator.serviceWorker.ready;
+                    const subscription = await swRegistration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey
+                    });
+
+                    await fetch(`${API_BASE_URL}/api/notifications/subscribe`, {
+                        method: 'POST', body: JSON.stringify(subscription), headers: { 'Content-Type': 'application/json' }
+                    });
+                    console.log('✅ Usuario suscrito con éxito en el backend.');
+                } catch (error) {
+                    console.error('❌ Fallo al registrar la suscripción en el backend:', error);
+                }
+            }
         });
     </script>
 </body>
