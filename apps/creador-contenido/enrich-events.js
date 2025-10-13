@@ -115,13 +115,6 @@ async function generateContentForEvent(event) {
         await dataProvider.updateEventWithContent(eventId, finalContentPackage);
         console.log(`  💾 Paquete de contenido COMPLETO para "${event.name}" guardado.`);
 
-        // --- INICIO DE LA CORRECCIÓN ---
-        // 1. Después de guardar, volvemos a leer el evento completo desde la base de datos.
-        const updatedEvent = await dataProvider.getEventById(eventId);
-
-        // 2. Devolvemos el objeto actualizado.
-        return updatedEvent;
-        // --- FIN DE LA CORRECIÓN ---
 
     } catch (error) {
         console.error(`  ❌ Error fatal enriqueciendo "${event.name}" con Gemini:`, error.message);
