@@ -13,8 +13,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 if (!process.env.GEMINI_API_KEY) throw new Error('La variable de entorno GEMINI_API_KEY no está definida.');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-// CORRECCIÓN: Se cambió el nombre del modelo a uno válido y recomendado como gemini-1.5-flash
-const geminiModel = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+// CORRECCIÓN: Se unifica el modelo a 'gemini-2.5-flash' para que sea consistente con los otros scripts que sí funcionan (como generate-night-plan.js).
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 const converter = new showdown.Converter();
 
 // --- PROMPT PARA GEMINI ---
