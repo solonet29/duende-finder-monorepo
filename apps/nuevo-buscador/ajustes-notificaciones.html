@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajustes de Notificaciones - Duende Finder</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            font-family: sans-serif;
+        }
+
+        .legal-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--color-superficie);
+            color: var(--color-texto-principal);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--color-borde);
+        }
+
+        .legal-container h1 {
+            color: var(--color-primario);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .status-box {
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border: 1px solid;
+        }
+
+        .status-box.granted {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .status-box.denied {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        .status-box.default {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+
+        .action-button {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            background-color: var(--color-acento);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .action-button:hover {
+            background-color: #c72508;
+            /* Un primario más oscuro */
+        }
+
+        .action-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .instructions {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--color-texto-secundario);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="legal-container">
+        <h1>🔔 Gestión de Notificaciones</h1>
+
+        <div id="status-container">
+            <!-- El estado se insertará aquí dinámicamente -->
+        </div>
+
+        <button id="notification-button" class="action-button" disabled>Activar Notificaciones</button>
+
+        <p class="instructions" id="instructions-text">
+            <!-- Las instrucciones se insertarán aquí dinámicamente -->
+        </p>
+
+        <a href="index.html" style="display: block; text-align: center; margin-top: 2rem;">Volver a la página
+            principal</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const statusContainer = document.getElementById('status-container');
+            const notificationButton = document.getElementById('notification-button');
+            const instructionsText = document.getElementById('instructions-text');
+
+            if (!('Notification' in window)) {
+                statusContainer.innerHTML = `<div class="status-box denied"><p>Tu navegador no soporta notificaciones.</p></div>`;
+                notificationButton.disabled = true;
+                return;
+            }
+
+            function updateUI() {
+                const permission = Notification.permission;
+                statusContainer.innerHTML = '';
+                notificationButton.disabled = false;
+
+                if (permission === 'granted') {
+                    statusContainer.innerHTML = `<div class="status-box granted"><p>✅ ¡Perfecto! Tienes las notificaciones activadas.</p></div>`;
+                    notificationButton.textContent = 'Desactivar Notificaciones (Próximamente)';
+                    notificationButton.disabled = true; // La desactivación se maneja en el navegador
+                    instructionsText.textContent = 'Para desactivar las notificaciones, debes hacerlo desde los ajustes de tu navegador para este sitio web.';
+                } else if (permission === 'denied') {
+                    statusContainer.innerHTML = `<div class="status-box denied"><p>❌ Tienes las notificaciones bloqueadas.</p></div>`;
+                    notificationButton.disabled = true;
+                    instructionsText.textContent = 'Para poder recibir notificaciones, necesitas cambiar los permisos para este sitio directamente en la configuración de tu navegador.';
+                } else { // default
+                    statusContainer.innerHTML = `<div class="status-box default"><p>🤔 ¿Quieres ser el primero en enterarte de nuevos eventos?</p></div>`;
+                    notificationButton.textContent = 'Activar Notificaciones';
+                    instructionsText.textContent = 'Pulsa el botón para recibir alertas sobre los últimos eventos de flamenco añadidos.';
+                }
+            }
+
+            notificationButton.addEventListener('click', async () => {
+                const permission = await Notification.requestPermission();
+                // Aquí iría la lógica para registrar la suscripción en tu backend
+                updateUI();
+            });
+
+            updateUI();
+        });
+    </script>
+</body>
+
+</html>
