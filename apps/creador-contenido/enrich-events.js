@@ -14,7 +14,7 @@ if (!process.env.GEMINI_API_KEY) throw new Error('La variable de entorno GEMINI_
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 // CORRECCIÓN: Se cambió el nombre del modelo a uno válido y recomendado como gemini-1.5-flash
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const geminiModel = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
 const converter = new showdown.Converter();
 
 // --- PROMPT PARA GEMINI ---
