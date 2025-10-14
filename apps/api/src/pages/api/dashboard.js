@@ -11,28 +11,35 @@ export default async function handler(req, res) {
 
     try {
         const Event = await getEventModel();
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
 
-        const endOfToday = new Date(today);
-        endOfToday.setHours(23, 59, 59, 999);
+        // Helper para formatear la fecha a YYYY-MM-DD, que es comparable como string.
+        const formatDate = (date) => date.toISOString().split('T')[0];
 
-        const endOfWeek = new Date(today);
-        endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
-        endOfWeek.setHours(23, 59, 59, 999);
+        const todayObj = new Date();
+        todayObj.setHours(0, 0, 0, 0);
 
-        // Filtro de estado: Solo mostrar eventos que están listos o ya publicados.
+        const endOfWeekObj = new Date(todayObj);
+        endOfWeekObj.setDate(todayObj.getDate() + (7 - todayObj.getDay()));
+        endOfWeekObj.setHours(23, 59, 59, 999);
+
+        const todayStr = formatDate(todayObj);
+        const endOfWeekStr = formatDate(endOfWeekObj);
+
+        // Filtro de estado: Solo mostrar eventos que están listos para ser visibles.
         const visibleStatuses = ['content_ready', 'published', 'pending', 'archived'];
 
         const [featuredEvents, recentEvents, weekEvents, todayEvents] = await Promise.all([
-            // Eventos destacados
-            Event.find({ featured: true, date: { $gte: today }, contentStatus: { $in: visibleStatuses } }).sort({ date: 1 }).limit(10).lean(),
-            // Eventos recién creados
-            Event.find({ date: { $gte: today }, contentStatus: { $in: visibleStatuses } }).sort({ createdAt: -1 }).limit(10).lean(),
-            // Eventos de esta semana
-            Event.find({ date: { $gte: today, $lte: endOfWeek }, contentStatus: { $in: visibleStatuses } }).sort({ date: 1 }).limit(10).lean(),
-            // Eventos para hoy
-            Event.find({ date: { $gte: today, $lte: endOfToday }, contentStatus: { $in: visibleStatuses } }).sort({ date: 1 }).limit(10).lean()
+            // Eventos destacados: Desde hoy en adelante
+            Event.find({ featured: true, date: { $gte: todayStr }, contentStatus: { $in: visibleStatuses } }).sort({ date: 1 }).limit(10).lean(),
+
+            // Eventos recién creados: Desde hoy en adelante, ordenados por fecha de creación
+            Event.find({ date: { $gte: todayStr }, contentStatus: { $in: visibleStatuses } }).sort({ createdAt: -1 }).limit(10).lean(),
+
+            // Eventos de esta semana: Desde hoy hasta el final de la semana
+            Event.find({ date: { $gte: todayStr, $lte: endOfWeekStr }, contentStatus: { $in: visibleStatuses } }).sort({ date: 1 }).limit(10).lean(),
+
+            // Eventos para hoy: Solo los que tienen la fecha de hoy
+            Event.find({ date: todayStr, contentStatus: { $in: visibleStatuses } }).sort({ date: 1 }).limit(10).lean()
         ]);
 
         // Ordenamos los eventos recientes por fecha de evento en lado del servidor
