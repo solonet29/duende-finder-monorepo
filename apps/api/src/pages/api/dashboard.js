@@ -12,15 +12,13 @@ export default async function handler(req, res) {
     try {
         const Event = await getEventModel();
 
-        // Helper para formatear la fecha a YYYY-MM-DD, que es comparable como string.
+        // Helper para formatear la fecha a YYYY-MM-DD, que coincide con el formato en la BD.
         const formatDate = (date) => date.toISOString().split('T')[0];
 
         const todayObj = new Date();
-        todayObj.setHours(0, 0, 0, 0);
 
         const endOfWeekObj = new Date(todayObj);
         endOfWeekObj.setDate(todayObj.getDate() + (7 - todayObj.getDay()));
-        endOfWeekObj.setHours(23, 59, 59, 999);
 
         const todayStr = formatDate(todayObj);
         const endOfWeekStr = formatDate(endOfWeekObj);
