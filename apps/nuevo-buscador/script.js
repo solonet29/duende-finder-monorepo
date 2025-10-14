@@ -324,6 +324,83 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // =========================================================================
+    // NUEVA LÓGICA DE SCROLL INFINITO
+    // =========================================================================
+    let infiniteScrollObserver;
+    let infiniteScrollPage = 1;
+    let isLoadingInfiniteScroll = false;
+
+    function createInfiniteScrollContainer() {
+        if (document.getElementById('infinite-scroll-section')) return;
+
+        const section = document.createElement('section');
+        section.id = 'infinite-scroll-section';
+        section.className = 'sliders-section'; // Reutilizamos estilos
+        section.innerHTML = `
+            <div class="slider-title-container">
+                <h2>Próximos Eventos</h2>
+            </div>
+            <div id="infinite-scroll-container" class="grid-container"></div>
+            <div id="infinite-scroll-sentinel"></div>
+        `;
+        // Insertar después de la sección "Cerca de ti"
+        const nearbySection = document.getElementById('cerca-section');
+        if (nearbySection) {
+            nearbySection.parentNode.insertBefore(section, nearbySection.nextSibling);
+        } else {
+            mainContainer.appendChild(section);
+        }
+    }
+
+    async function loadMoreInfiniteScrollEvents() {
+        if (isLoadingInfiniteScroll) return;
+        isLoadingInfiniteScroll = true;
+
+        const container = document.getElementById('infinite-scroll-container');
+        const sentinel = document.getElementById('infinite-scroll-sentinel');
+        if (!container || !sentinel) return;
+
+        // Mostrar indicador de carga
+        sentinel.innerHTML = '<div class="loading-indicator" style="margin: 2rem auto;"><ion-icon name="sync-outline" class="spin-animation"></ion-icon></div>';
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/events?sort=date&page=${infiniteScrollPage}&limit=12`);
+            if (!response.ok) throw new Error('Failed to fetch events');
+            const data = await response.json();
+
+            if (data.events && data.events.length > 0) {
+                data.events.forEach(event => {
+                    eventsCache[event._id] = event;
+                    container.appendChild(createSliderCard(event)); // Reutilizamos la función de crear tarjetas
+                });
+                infiniteScrollPage++;
+                isLoadingInfiniteScroll = false;
+            } else {
+                // No hay más eventos, detener el observer
+                if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
+                sentinel.innerHTML = '<p style="text-align: center; color: var(--color-texto-secundario); padding: 2rem;">Has llegado al final. ¡No hay más eventos por ahora!</p>';
+            }
+        } catch (error) {
+            console.error('Error loading more events:', error);
+            sentinel.innerHTML = '<p style="text-align: center; color: var(--color-texto-error); padding: 2rem;">Error al cargar más eventos.</p>';
+            isLoadingInfiniteScroll = false;
+        }
+    }
+
+    function setupInfiniteScrollObserver() {
+        const sentinel = document.getElementById('infinite-scroll-sentinel');
+        if (!sentinel) return;
+
+        infiniteScrollObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !isLoadingInfiniteScroll) {
+                loadMoreInfiniteScrollEvents();
+            }
+        }, { rootMargin: '400px' }); // Empezar a cargar 400px antes de que sea visible
+
+        infiniteScrollObserver.observe(sentinel);
+    }
+
     async function initializeDashboard() {
         // --- 1. Asegurar visibilidad de elementos de la página principal ---
         const heroHeader = document.querySelector('.hero-header');
@@ -338,67 +415,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventStats = document.getElementById('event-stats');
         if (eventStats) eventStats.innerHTML = 'Descubre la magia del flamenco.'; // Subtítulo estático
 
-        // --- 2. Lógica de carga de sliders (revertida a /api/events) ---
-        console.log("✅ Paso 1: Entrando en initializeDashboard (modo API/EVENTS).");
-
-        const sliders = [featuredSlider, recentSlider, weekSlider, todaySlider];
-        sliders.forEach(slider => {
+        // --- 2. Ocultar sliders antiguos ---
+        [featuredSlider, recentSlider, weekSlider, todaySlider].forEach(slider => {
             if (slider) {
                 const section = slider.closest('.sliders-section');
-                if (section) section.style.display = 'block';
-                slider.innerHTML = '';
-                for (let i = 0; i < 5; i++) {
-                    slider.appendChild(createSkeletonCard());
-                }
+                if (section) section.style.display = 'none';
             }
         });
-
-        // Ocultar el contador de eventos ya que no tenemos el total
-        const counterElement = document.getElementById('event-stats');
-        if (counterElement) counterElement.style.display = 'none';
-
-        // Ocultar sliders mensuales
         if (monthlySlidersContainer) monthlySlidersContainer.style.display = 'none';
 
-        try {
-            // --- MEJORA DE RENDIMIENTO ---
-            // Hacemos una única llamada al nuevo endpoint de dashboard
-            const response = await fetch(`${API_BASE_URL}/api/dashboard`);
-            if (!response.ok) {
-                throw new Error(`Error fetching dashboard data: ${response.statusText}`);
-            }
-            const dashboardData = await response.json();
+        // --- 3. Mantener la lógica de "Cerca de ti" ---
+        getUserLocation().then(location => {
+            if (location) fetchNearbyEvents();
+        }).catch(() => {
+            renderGeolocationDenied();
+        });
 
-            // LCP Preload Injection
-            if (dashboardData.featuredEvents?.length > 0) {
-                const lcpImageUrl = dashboardData.featuredEvents[0].imageUrl;
-                if (lcpImageUrl && typeof lcpImageUrl === 'string' && lcpImageUrl.startsWith('http')) {
-                    const preloadLink = document.createElement('link');
-                    preloadLink.rel = 'preload';
-                    preloadLink.as = 'image';
-                    preloadLink.href = lcpImageUrl;
-                    preloadLink.setAttribute('fetchpriority', 'high');
-                    document.head.appendChild(preloadLink);
-                }
-            }
-
-            // Corregimos los nombres de las propiedades para que coincidan con la respuesta de la API
-            renderSlider(featuredSlider, dashboardData.featuredEvents || [], null, true); // isLCPSection = true
-            renderSlider(recentSlider, dashboardData.recentEvents || []);
-            renderSlider(weekSlider, dashboardData.weekEvents || []);
-            renderSlider(todaySlider, dashboardData.todayEvents || []);
-
-            // La geolocalización se mantiene igual
-            getUserLocation().then(location => {
-                if (location) fetchNearbyEvents();
-            }).catch(() => {
-                renderGeolocationDenied();
-            });
-
-        } catch (error) {
-            console.error("❌ ERROR FATAL al cargar el dashboard:", error);
-            if (mainContainer) mainContainer.innerHTML = '<h2>Oops! No se pudo cargar el contenido.</h2>';
-        }
+        // --- 4. Inicializar el nuevo scroll infinito ---
+        createInfiniteScrollContainer();
+        await loadMoreInfiniteScrollEvents(); // Cargar la primera página
+        setupInfiniteScrollObserver();
     }
 
     function renderSlider(container, events, monthKey = null, isLCPSection = false) {
