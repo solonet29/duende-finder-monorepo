@@ -32,7 +32,7 @@ export default async function handler(req, res) {
             Event.find({ date: { $gte: today, $lte: endOfToday } }).sort({ date: 1 }).limit(10).lean()
         ]);
 
-        // Ordenamos los eventos recientes por fecha de evento en el lado del servidor
+        // Ordenamos los eventos recientes por fecha de evento en lado del servidor
         recentEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
