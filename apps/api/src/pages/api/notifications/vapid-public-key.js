@@ -2,7 +2,7 @@
 
 // 1. Importamos las herramientas de CORS desde nuestra librería compartida.
 // Asegúrate de que la ruta relativa ('../../../lib/cors') sea correcta desde tu archivo.
-import { runMiddleware, corsMiddleware } from '../../../lib/cors';
+import { runMiddleware, corsMiddleware } from '@/api/lib/cors';
 
 // 2. Convertimos la función a 'async' para poder usar 'await' con el middleware.
 export default async function handler(req, res) {
