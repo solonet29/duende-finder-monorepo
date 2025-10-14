@@ -42,7 +42,7 @@ export default async function handler(req, res) {
 
     try {
         const Event = await getEventModel();
-        
+
         // --- Definición robusta de rangos de fechas con objetos Date ---
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
@@ -78,7 +78,7 @@ export default async function handler(req, res) {
 
             // 4. Eventos de hoy
             Event.find({ date: { $gte: todayString, $lt: tomorrowString }, contentStatus: { $in: ['content_ready', 'published', 'pending', 'archived'] } }, { projection: lightweightProjection, limit: 10, sort: { time: 1 } }).lean(),
-            
+
             // 5. Eventos para los próximos 3 meses
             ...getNextMonths(3).map(monthKey => {
                 const startDate = new Date(monthKey + '-01');
@@ -95,13 +95,11 @@ export default async function handler(req, res) {
             })
         ]);
 
-        // --- Ensamblaje de la Respuesta ---
-
         const monthlyEvents = getNextMonths(3).map((monthKey, index) => ({
             monthKey,
             events: monthlyResults[index] || []
         }));
-
+        // --- Ensamblaje de la Respuesta ---
         const dashboardData = {
             totalEvents,
             featuredEvents,
@@ -109,6 +107,9 @@ export default async function handler(req, res) {
             todayEvents,
             monthlyEvents
         };
+        // No hay una consulta para 'recentEvents' en este endpoint.
+        // Si se necesita, se debe añadir una consulta a Promise.all, por ejemplo:
+        // Event.find({ date: { $gte: todayString } }).sort({ createdAt: -1 }).limit(10).lean()
 
         // --- Configuración del Caching ---
         // Cachear en CDN por 10 mins, y permitir servir 'stale' mientras se revalida en background.

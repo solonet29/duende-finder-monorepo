@@ -370,8 +370,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const dashboardData = await response.json();
 
             // LCP Preload Injection
-            if (dashboardData.featured?.events?.length > 0) {
-                const lcpImageUrl = dashboardData.featured.events[0].imageUrl;
+            if (dashboardData.featuredEvents?.length > 0) {
+                const lcpImageUrl = dashboardData.featuredEvents[0].imageUrl;
                 if (lcpImageUrl && typeof lcpImageUrl === 'string' && lcpImageUrl.startsWith('http')) {
                     const preloadLink = document.createElement('link');
                     preloadLink.rel = 'preload';
@@ -382,10 +382,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            renderSlider(featuredSlider, dashboardData.featured?.events || [], null, true); // isLCPSection = true
-            renderSlider(recentSlider, dashboardData.recent?.events || []);
-            renderSlider(weekSlider, dashboardData.week?.events || []);
-            renderSlider(todaySlider, dashboardData.today?.events || []);
+            // Corregimos los nombres de las propiedades para que coincidan con la respuesta de la API
+            renderSlider(featuredSlider, dashboardData.featuredEvents || [], null, true); // isLCPSection = true
+            renderSlider(recentSlider, dashboardData.recentEvents || []);
+            renderSlider(weekSlider, dashboardData.weekEvents || []);
+            renderSlider(todaySlider, dashboardData.todayEvents || []);
 
             // La geolocalización se mantiene igual
             getUserLocation().then(location => {

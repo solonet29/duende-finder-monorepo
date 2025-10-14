@@ -28,7 +28,7 @@ export default async function handler(req, res) {
         endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
         endOfWeek.setHours(23, 59, 59, 999);
 
-        const [featured, recent, week, todayEvents] = await Promise.all([
+        const [featuredEvents, recentEvents, weekEvents, todayEvents] = await Promise.all([
             // Eventos destacados
             Event.find({ featured: true, eventDate: { $gte: today } }).sort({ eventDate: 1 }).limit(10).lean(),
             // Eventos recién creados
@@ -40,13 +40,13 @@ export default async function handler(req, res) {
         ]);
 
         // Ordenamos los eventos recientes por fecha de evento en el lado del servidor
-        recent.sort((a, b) => new Date(a.date) - new Date(b.date));
+        recentEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         res.status(200).json({
-            featured: { events: featured },
-            recent: { events: recent },
-            week: { events: week },
-            today: { events: todayEvents }
+            featuredEvents,
+            recentEvents,
+            weekEvents,
+            todayEvents
         });
 
     } catch (error) {
