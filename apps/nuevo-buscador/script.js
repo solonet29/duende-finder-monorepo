@@ -574,9 +574,11 @@ document.addEventListener('DOMContentLoaded', () => {
         eventCard.setAttribute('data-event-name', eventName);
 
         const placeholderUrl = './assets/flamenco-placeholder.png';
-        let eventImageUrl = placeholderUrl;
-        if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim().startsWith('http')) {
-            eventImageUrl = event.imageUrl.trim();
+        // Priorizamos la nueva imagen WebP. Si no existe, usamos la antigua.
+        let eventImageUrl = event.webpImageUrl || event.imageUrl;
+
+        if (!eventImageUrl || typeof eventImageUrl !== 'string' || !eventImageUrl.trim().startsWith('http')) {
+            eventImageUrl = placeholderUrl;
         }
 
         eventCard.innerHTML = `
