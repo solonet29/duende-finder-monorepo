@@ -1047,7 +1047,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listener para la precarga en mouseover
         document.body.addEventListener('mouseover', async (e) => {
-            const sliderCard = e.target.closest('.slider-container .event-card');
+            const sliderCard = e.target.closest('.event-card'); // Generalizamos para que funcione en grid y sliders
             if (sliderCard) {
                 const eventId = sliderCard.dataset.eventId;
                 if (eventId && !eventsCache[eventId]) {
@@ -1065,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         document.body.addEventListener('click', async (e) => {
-            const sliderCard = e.target.closest('.slider-container .event-card');
+            const sliderCard = e.target.closest('.event-card'); // Generalizamos para que funcione en grid y sliders
             const geminiBtn = e.target.closest('.action-button.primary');
             const modalOverlay = e.target.closest('.modal-overlay:not(#welcome-modal-overlay)');
             const modalCloseBtn = e.target.closest('.modal-close-btn');
