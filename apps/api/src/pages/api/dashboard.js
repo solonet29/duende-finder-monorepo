@@ -21,18 +21,21 @@ export default async function handler(req, res) {
         endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
         endOfWeek.setHours(23, 59, 59, 999);
 
+        // Filtro de estado: Solo mostrar eventos que están listos o ya publicados.
+        const visibleStatuses = ['content_ready', 'published', 'pending', 'archived'];
+
         const [featuredEvents, recentEvents, weekEvents, todayEvents] = await Promise.all([
             // Eventos destacados
-            Event.find({ featured: true, date: { $gte: today } }).sort({ date: 1 }).limit(10).lean(),
+            Event.find({ featured: true, date: { $gte: today }, contentStatus: { $in: visibleStatuses } }).sort({ date: 1 }).limit(10).lean(),
             // Eventos recién creados
-            Event.find({ date: { $gte: today } }).sort({ createdAt: -1 }).limit(10).lean(),
+            Event.find({ date: { $gte: today }, contentStatus: { $in: visibleStatuses } }).sort({ createdAt: -1 }).limit(10).lean(),
             // Eventos de esta semana
-            Event.find({ date: { $gte: today, $lte: endOfWeek } }).sort({ date: 1 }).limit(10).lean(),
+            Event.find({ date: { $gte: today, $lte: endOfWeek }, contentStatus: { $in: visibleStatuses } }).sort({ date: 1 }).limit(10).lean(),
             // Eventos para hoy
-            Event.find({ date: { $gte: today, $lte: endOfToday } }).sort({ date: 1 }).limit(10).lean()
+            Event.find({ date: { $gte: today, $lte: endOfToday }, contentStatus: { $in: visibleStatuses } }).sort({ date: 1 }).limit(10).lean()
         ]);
 
-        // Ordenamosos los eventos recientes por fecha de evento en lado del servidor
+        // Ordenamos los eventos recientes por fecha de evento en lado del servidor
         recentEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
