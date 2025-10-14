@@ -44,6 +44,62 @@
     <noscript>
         <link rel="stylesheet" href="chatbot.css">
     </noscript>
+    <style>
+        .status-box {
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border: 1px solid;
+        }
+
+        .status-box.granted {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .status-box.denied {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        .status-box.default {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+
+        .action-button-notifications {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            background-color: var(--color-acento);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .action-button-notifications:hover {
+            filter: brightness(1.1);
+        }
+
+        .action-button-notifications:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .instructions {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--color-texto-secundario);
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
     <!-- Google tag (gtag.js) -->
     <link rel="preconnect" href="https://www.googletagmanager.com">
@@ -227,8 +283,8 @@
                 name="help-circle-outline"></ion-icon></button>
         <button class="nav-btn" id="nav-terms-btn" title="Términos" aria-label="Términos y Condiciones"><ion-icon
                 name="document-text-outline"></ion-icon></button>
-        <a href="/ajustes-notificaciones.html" class="nav-btn" id="nav-notifications-btn" title="Notificaciones"
-            aria-label="Notificaciones"><ion-icon name="notifications-outline"></ion-icon></a>
+        <button class="nav-btn" id="nav-notifications-btn" title="Notificaciones" aria-label="Notificaciones"
+            data-modal-trigger="notifications-modal-overlay"><ion-icon name="notifications-outline"></ion-icon></button>
         <button class="nav-btn" id="nav-theme-toggle" title="Cambiar tema" aria-label="Cambiar tema"><ion-icon
                 name="moon-outline"></ion-icon></button>
         <a href="https://afland.es" target="_blank" rel="noopener noreferrer" class="nav-btn" title="Visitar Afland.es"
