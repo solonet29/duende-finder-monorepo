@@ -361,29 +361,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (monthlySlidersContainer) monthlySlidersContainer.style.display = 'none';
 
         try {
-            const today = new Date();
-            const todayString = today.toISOString().split('T')[0];
-
-            const [featuredResponse, recentResponse, weekResponse, todayResponse] = await Promise.all([
-                fetch(`${API_BASE_URL}/api/events?featured=true&limit=10`),
-                fetch(`${API_BASE_URL}/api/events?sort=createdAt&limit=10`),
-                fetch(`${API_BASE_URL}/api/events?timeframe=week&limit=10`),
-                fetch(`${API_BASE_URL}/api/events?dateFrom=${todayString}&dateTo=${todayString}&limit=10`)
-            ]);
-
-            if (!featuredResponse.ok) console.error('Error fetching featured events');
-            if (!recentResponse.ok) console.error('Error fetching recent events');
-            if (!weekResponse.ok) console.error('Error fetching week events');
-            if (!todayResponse.ok) console.error('Error fetching today events');
-
-            const featuredData = await featuredResponse.json();
-            const recentData = await recentResponse.json();
-            const weekData = await weekResponse.json();
-            const todayData = await todayResponse.json();
+            // --- MEJORA DE RENDIMIENTO ---
+            // Hacemos una única llamada al nuevo endpoint de dashboard
+            const response = await fetch(`${API_BASE_URL}/api/dashboard`);
+            if (!response.ok) {
+                throw new Error(`Error fetching dashboard data: ${response.statusText}`);
+            }
+            const dashboardData = await response.json();
 
             // LCP Preload Injection
-            if (featuredData.events && featuredData.events.length > 0) {
-                const lcpImageUrl = featuredData.events[0].imageUrl;
+            if (dashboardData.featured?.events?.length > 0) {
+                const lcpImageUrl = dashboardData.featured.events[0].imageUrl;
                 if (lcpImageUrl && typeof lcpImageUrl === 'string' && lcpImageUrl.startsWith('http')) {
                     const preloadLink = document.createElement('link');
                     preloadLink.rel = 'preload';
@@ -394,14 +382,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Sort recent events by date
-            const recentEvents = recentData.events || [];
-            recentEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            renderSlider(featuredSlider, featuredData.events || [], null, true); // isLCPSection = true
-            renderSlider(recentSlider, recentEvents);
-            renderSlider(weekSlider, weekData.events || []);
-            renderSlider(todaySlider, todayData.events || []);
+            renderSlider(featuredSlider, dashboardData.featured?.events || [], null, true); // isLCPSection = true
+            renderSlider(recentSlider, dashboardData.recent?.events || []);
+            renderSlider(weekSlider, dashboardData.week?.events || []);
+            renderSlider(todaySlider, dashboardData.today?.events || []);
 
             // La geolocalización se mantiene igual
             getUserLocation().then(location => {
@@ -411,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
         } catch (error) {
-            console.error("❌ ERROR FATAL al cargar el dashboard con API/EVENTS:", error);
+            console.error("❌ ERROR FATAL al cargar el dashboard:", error);
             if (mainContainer) mainContainer.innerHTML = '<h2>Oops! No se pudo cargar el contenido.</h2>';
         }
     }
