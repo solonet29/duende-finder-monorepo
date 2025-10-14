@@ -1,8 +1,8 @@
 // /pages/api/notifications/vapid-public-key.js
 
 // 1. Importamos las herramientas de CORS desde nuestra librería compartida.
-// Asegúrate de que la ruta relativa ('../../../lib/cors') sea correcta desde tu archivo.
-import { runMiddleware, corsMiddleware } from '@/api/lib/cors';
+// La ruta relativa correcta, como en otros archivos de la API, es `../../../../lib/cors`.
+import { runMiddleware, corsMiddleware } from '../../../../lib/cors';
 
 // 2. Convertimos la función a 'async' para poder usar 'await' con el middleware.
 export default async function handler(req, res) {
