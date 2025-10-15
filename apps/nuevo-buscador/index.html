@@ -115,20 +115,17 @@
 
 <body>
 
-    <div id="heatmap-hero-container" class="heatmap-hero">
-        <div id="heatmap-container" class="heatmap-map">
-            <!-- El mapa se renderizará aquí -->
-            <div class="loading-indicator" style="background: rgba(0,0,0,0.5); color: white;">
-                <ion-icon name="flame-outline" class="spin-animation"></ion-icon>
-                <p>Cargando mapa de actividad...</p>
-            </div>
-            <div id="map-view-toggle-container" class="map-view-toggle" style="display: none;">
-                <button id="map-view-toggle-btn" title="Cambiar vista de mapa"><ion-icon
-                        name="flame-outline"></ion-icon></button>
-            </div>
+    <div class="hero-header">
+        <picture>
+            <source media="(max-width: 768px)" srcset="/assets/img_header-mobile.webp">
+            <source media="(min-width: 769px)" srcset="/assets/img_header.webp">
+            <img src="/assets/img_header.webp" alt="Guitarrista flamenco en un escenario oscuro" class="hero-image"
+                fetchpriority="high">
+        </picture>
+        <div class="hero-text">
+            <h1 class="main-title">Duende Finder</h1>
+            <p id="event-stats" class="hero-subtitle">Un proyecto de AFLand</p>
         </div>
-        <h1 class="main-title">Duende Finder</h1>
-        <p id="event-stats" class="hero-subtitle">Descubre la magia del flamenco.</p>
     </div>
 
     <div id="welcome-modal-overlay" class="modal-overlay">
@@ -153,49 +150,12 @@
 
     <header class="header-main">
         <div class="container">
-            <nav class="filter-bar-wrapper">
-                <div class="filter-bar" id="main-filter-bar">
-                    <a href="#" class="filter-chip active" data-filter="proximos">Próximos</a>
-                    <a href="#" class="filter-chip" data-filter="destacados">Destacados</a>
-                    <a href="#" class="filter-chip" data-filter="recientes">Recién Añadidos</a>
-                </div>
-                <div id="active-filters-container" class="active-filters-container">
-                    <!-- Las píldoras de filtros activos se insertarán aquí -->
-                    <button id="clear-all-filters-btn" class="clear-filters-btn" style="display: none;"
-                        title="Limpiar todos los filtros">&times;</button>
-                </div>
-                <button id="advanced-filter-toggle-btn" class="filter-chip">
-                    Más Filtros <ion-icon name="options-outline"></ion-icon>
-                </button>
+            <nav class="filter-bar" id="main-filter-bar">
+                <a href="#" class="filter-chip active" data-filter="proximos">Próximos</a>
+                <a href="#" class="filter-chip" data-filter="destacados">Destacados</a>
+                <a href="#" class="filter-chip" data-filter="recientes">Recién Añadidos</a>
+                <a href="#" class="filter-chip" data-filter="cerca">Cerca de Mí</a>
             </nav>
-            <div id="advanced-filter-panel" class="advanced-filter-panel" style="display: none;">
-                <div class="filter-group">
-                    <label for="city-search-input">Ciudad</label>
-                    <div class="search-input-wrapper">
-                        <input type="text" id="city-search-input" placeholder="Buscar por ciudad..." autocomplete="off">
-                        <div id="city-autocomplete-results" class="autocomplete-results"></div>
-                    </div>
-                </div>
-                <div class="filter-group">
-                    <label for="artist-search-input">Artista</label>
-                    <div class="search-input-wrapper">
-                        <input type="text" id="artist-search-input" placeholder="Buscar por artista..."
-                            autocomplete="off">
-                        <div id="artist-autocomplete-results" class="autocomplete-results"></div>
-                    </div>
-                </div>
-                <div class="filter-group date-range-group">
-                    <div class="form-group">
-                        <label for="filter-start-date">Desde</label>
-                        <input type="date" id="filter-start-date">
-                    </div>
-                    <div class="form-group">
-                        <label for="filter-end-date">Hasta</label>
-                        <input type="date" id="filter-end-date">
-                    </div>
-                    <button id="date-filter-apply-btn" class="filter-apply-btn">Aplicar</button>
-                </div>
-            </div>
         </div>
     </header>
 
@@ -237,21 +197,6 @@
                 <p id="trip-results-message" class="results-message" style="display: none;"></p>
             </div>
         </section>
-
-        <!-- El hero-header original se mueve aquí, como un banner de marca -->
-        <div class="hero-header" style="margin-top: 40px; margin-bottom: 20px;">
-            <picture>
-                <source media="(max-width: 768px)" srcset="/assets/img_header-mobile.webp">
-                <source media="(min-width: 769px)" srcset="/assets/img_header.webp">
-                <img src="/assets/img_header.webp" alt="Guitarrista flamenco en un escenario oscuro" class="hero-image"
-                    loading="lazy" fetchpriority="auto">
-            </picture>
-            <div class="hero-text">
-                <!-- Podemos poner un mensaje diferente o dejarlo vacío -->
-                <h2 style="color: white; text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">La Comunidad del Flamenco</h2>
-                <p class="hero-subtitle">Un proyecto de AFLand</p>
-            </div>
-        </div>
 
     </main>
 
@@ -309,7 +254,6 @@
     <script type="module" src="https://unpkg.com/ionicons@7/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7/dist/ionicons/ionicons.js"></script>
     <script type="module" src="script.js"></script>
-    <script type="module" src="search.js"></script>
     <script type="module" src="chatbot.js"></script>
 
     <!-- Search Modal Start -->

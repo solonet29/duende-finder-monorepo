@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. CONFIGURACIÓN Y SELECTORES
     // =========================================================================
     const APP_CONFIG = {
-        USAR_PAGINAS_DE_EVENTOS: true, // Poner en false para volver al modo modal
+        USAR_PAGINAS_DE_EVENTOS: true,
         INFINITE_SCROLL_ENABLED: false, // Poner en false para desactivar la funcionalidad de scroll infinito en los sliders
         HEATMAP_ENABLED: true, // Control para activar/desactivar el mapa de calor
     };
@@ -91,136 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return sessionId;
     }
 
-    // --- LÓGICA DEL MAPA DE CALOR ---
-    let heatmapInstance = null;
-    let heatLayer = null;
-    let markerLayer = null;
-    let mapViewMode = 'auto'; // 'auto', 'heatmap', 'markers'
-    let mapMoveDebounceTimer;
-    let isMapInteraction = false;
-
-    async function updateHeatmap(filters) {
-        if (!APP_CONFIG.HEATMAP_ENABLED || !heatmapInstance) return;
-
-        const params = new URLSearchParams();
-        if (filters.city) params.append('city', filters.city);
-        if (filters.artist) params.append('artist', filters.artist);
-        if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
-        if (filters.dateTo) params.append('dateTo', filters.dateTo);
-        if (filters.bbox) params.append('bbox', filters.bbox);
-        if (mapViewMode !== 'auto') {
-            params.append('view', mapViewMode);
-        }
-
-        const apiUrl = `${API_BASE_URL}/api/events/heatmap?${params.toString()}`;
-        const cachedResult = getCache(apiUrl);
-        if (cachedResult) {
-            processHeatmapData(cachedResult);
-            return;
-        }
-
-        try {
-            const response = await fetch(apiUrl);
-            if (!response.ok) throw new Error('No se pudieron cargar los datos del mapa de calor');
-            const result = await response.json();
-            setCache(apiUrl, result);
-            processHeatmapData(result);
-        } catch (error) {
-            console.error("Error al actualizar el mapa de calor:", error);
-        }
-    }
-
-    function processHeatmapData(result) {
-        if (heatLayer) { heatmapInstance.removeLayer(heatLayer); heatLayer = null; }
-        if (markerLayer) { heatmapInstance.removeLayer(markerLayer); markerLayer = null; }
-
-        if (result.type === 'heatmap') {
-            heatLayer = L.heatLayer(result.data, { radius: 25, blur: 15, maxZoom: 10, gradient: { 0.4: 'blue', 0.6: 'lime', 0.8: 'yellow', 1: 'red' } }).addTo(heatmapInstance);
-        } else if (result.type === 'markers') {
-            const markers = result.data.map(event => {
-                const marker = L.marker(event.coords);
-                marker.bindPopup(`<b>${event.artist || event.name}</b>`);
-                marker.on('mouseover', function () { this.openPopup(); });
-                marker.on('mouseout', function () { this.closePopup(); });
-                marker.on('click', () => {
-                    const fallbackSlug = (event.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                    window.location.href = `/eventos/${event.id}-${event.slug || fallbackSlug}`;
-                });
-                return marker;
-            });
-            if (markers.length > 0) {
-                markerLayer = L.featureGroup(markers).addTo(heatmapInstance);
-                if (!isMapInteraction) {
-                    heatmapInstance.fitBounds(markerLayer.getBounds().pad(0.1));
-                }
-            }
-        }
-    }
-
-    async function initializeHeatmap() {
-        if (!APP_CONFIG.HEATMAP_ENABLED) return;
-        const heatmapContainer = document.getElementById('heatmap-container');
-        if (!heatmapContainer) return;
-
-        try {
-            // Carga asíncrona de CSS y JS para no bloquear el renderizado
-            if (!document.querySelector('link[href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"]')) {
-                const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-                document.head.appendChild(link);
-            }
-
-            // Usamos import() dinámico para cargar las librerías bajo demanda
-            const L = await import('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
-            await import('./libs/leaflet.heat.js'); // Asume que tienes leaflet.heat.js en /libs
-
-            // Ocultar el indicador de carga
-            const loadingIndicator = heatmapContainer.querySelector('.loading-indicator');
-            if (loadingIndicator) loadingIndicator.remove();
-
-            // Inicialización del mapa interactivo
-            heatmapInstance = L.map(heatmapContainer, { center: [40.416775, -3.703790], zoom: 6, zoomControl: true, zoomControlPosition: 'topright' });
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' }).addTo(heatmapInstance);
-
-            // Mostrar y configurar el botón de cambio de vista
-            const toggleContainer = document.getElementById('map-view-toggle-container');
-            const toggleBtn = document.getElementById('map-view-toggle-btn');
-            if (toggleContainer) toggleContainer.style.display = 'block';
-            if (toggleBtn) {
-                toggleBtn.addEventListener('click', () => {
-                    const modes = ['auto', 'heatmap', 'markers'];
-                    const currentIndex = modes.indexOf(mapViewMode);
-                    mapViewMode = modes[(currentIndex + 1) % modes.length];
-
-                    const icons = { auto: 'flame-outline', heatmap: 'grid-outline', markers: 'location-outline' };
-                    const titles = { auto: 'Vista automática', heatmap: 'Forzar mapa de calor', markers: 'Forzar marcadores' };
-
-                    toggleBtn.innerHTML = `<ion-icon name="${icons[mapViewMode]}"></ion-icon>`;
-                    toggleBtn.title = titles[mapViewMode];
-
-                    updateHeatmap(activeFilters);
-                });
-            }
-
-            // Event listener para cuando el usuario deja de mover el mapa (con debounce)
-            heatmapInstance.on('moveend', () => {
-                clearTimeout(mapMoveDebounceTimer);
-                mapMoveDebounceTimer = setTimeout(() => {
-                    const bounds = heatmapInstance.getBounds();
-                    const bbox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()].join(',');
-                    activeFilters.bbox = bbox;
-                    isMapInteraction = true;
-                    applyFiltersAndReload();
-                }, 500); // Espera 500ms después del último movimiento
-            });
-
-            await updateHeatmap(activeFilters); // Carga inicial de datos en el mapa
-        } catch (error) {
-            console.error("Error al inicializar el mapa de calor:", error);
-            if (heatmapContainer) heatmapContainer.innerHTML = '<p style="color: white; text-align: center; padding: 2rem;">No se pudo cargar el mapa.</p>';
-        }
-    }
     // =========================================================================
     // 1.5. UTILIDADES DE CACHÉ EN CLIENTE
     // =========================================================================
@@ -497,12 +367,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let infiniteScrollPage = 1;
     let activeFilters = {
         type: 'proximos', // 'proximos', 'destacados', 'recientes'
-        city: null,
-        artist: null,
-        nearMe: false,
-        dateFrom: null,
-        dateTo: null,
-        bbox: null // Nuevo filtro para el área del mapa
+        lat: null,
+        lon: null
     };
     let isLoadingInfiniteScroll = false;
 
@@ -516,16 +382,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <div id="infinite-scroll-title-container" class="slider-title-container">
                 <h2>Próximos Eventos</h2>
             </div>
-            <div id="infinite-scroll-container" class="grid-container"></div>
+            <div id="infinite-scroll-container" class="grid-container"></div> 
             <div id="infinite-scroll-sentinel"></div>
         `;
-        // Insertar después de la sección "Cerca de ti"
-        const nearbySection = document.getElementById('cerca-section');
-        if (nearbySection) {
-            nearbySection.parentNode.insertBefore(section, nearbySection.nextSibling);
-        } else {
-            mainContainer.appendChild(section);
-        }
+        mainContainer.appendChild(section);
     }
 
     function resetInfiniteScroll() {
@@ -543,16 +403,11 @@ document.addEventListener('DOMContentLoaded', () => {
         switch (activeFilters.type) {
             case 'destacados': baseUrl += '&featured=true'; break;
             case 'recientes': sortParam = 'sort=createdAt&sortOrder=-1'; break;
+            case 'cerca':
+                if (activeFilters.lat && activeFilters.lon) return `${baseUrl}&lat=${activeFilters.lat}&lon=${activeFilters.lon}&radius=100`;
+                return null; // No hacer petición si no hay coordenadas
         }
-
-        const params = new URLSearchParams();
-        if (activeFilters.city) params.append('city', activeFilters.city);
-        if (activeFilters.artist) params.append('artist', activeFilters.artist);
-        if (activeFilters.dateFrom) params.append('dateFrom', activeFilters.dateFrom);
-        if (activeFilters.dateTo) params.append('dateTo', activeFilters.dateTo);
-        if (activeFilters.bbox) params.append('bbox', activeFilters.bbox);
-
-        return `${baseUrl}&${sortParam}&${params.toString()}`;
+        return `${baseUrl}&${sortParam}`;
     }
 
     async function loadMoreInfiniteScrollEvents() {
@@ -632,39 +487,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function applyFiltersAndReload() {
         resetInfiniteScroll();
-        // Solo actualizamos el mapa si el cambio NO vino del propio mapa
-        if (!isMapInteraction) {
-            updateHeatmap(activeFilters);
-        }
-        isMapInteraction = false; // Resetear el flag aquí para asegurar que se limpie
-
-        renderActiveFilterPills();
-        updateURLWithFilters(); // <-- ¡AQUÍ ACTUALIZAMOS LA URL!
-        updateSeoTags(); // <-- ¡AQUÍ ACTUALIZAMOS LAS ETIQUETAS SEO!
 
         const titleContainer = document.getElementById('infinite-scroll-title-container');
         const titleElement = titleContainer?.querySelector('h2');
 
         if (titleElement) {
             let title = 'Eventos';
-            if (activeFilters.artist && activeFilters.city) {
-                title = `Eventos de ${activeFilters.artist} en ${activeFilters.city}`;
-            } else if (activeFilters.artist) {
-                title = `Eventos de ${activeFilters.artist}`;
-            } else if (activeFilters.city) {
-                title = `Eventos en ${activeFilters.city}`;
-            } else if (activeFilters.dateFrom && activeFilters.dateTo) {
-                const from = new Date(activeFilters.dateFrom).toLocaleDateString('es-ES');
-                const to = new Date(activeFilters.dateTo).toLocaleDateString('es-ES');
-                title = `Eventos del ${from} al ${to}`;
-            } else {
-                const titles = {
-                    proximos: 'Próximos Eventos',
-                    destacados: 'Eventos Destacados',
-                    recientes: 'Recién Añadidos',
-                };
-                title = titles[activeFilters.type];
-            }
+            const titles = {
+                proximos: 'Próximos Eventos',
+                destacados: 'Eventos Destacados',
+                recientes: 'Recién Añadidos',
+                cerca: 'Eventos Cerca de Ti'
+            };
+            title = titles[activeFilters.type] || 'Eventos';
             titleElement.textContent = title;
         }
 
@@ -672,153 +507,10 @@ document.addEventListener('DOMContentLoaded', () => {
         setupInfiniteScrollObserver();
     }
 
-    function renderActiveFilterPills() {
-        const container = document.getElementById('active-filters-container');
-        const clearAllBtn = document.getElementById('clear-all-filters-btn');
-        if (!container || !clearAllBtn) return;
-
-        // Limpiar solo las píldoras, no el botón de limpiar todo
-        container.querySelectorAll('.active-filter-pill').forEach(pill => pill.remove());
-
-        const createPill = (text, filterType) => {
-            const pill = document.createElement('div');
-            pill.className = 'active-filter-pill';
-            pill.innerHTML = `
-                <span>${text}</span>
-                <button class="remove-filter-btn" data-filter-type="${filterType}" title="Eliminar filtro">&times;</button>
-            `;
-            pill.querySelector('.remove-filter-btn').addEventListener('click', () => {
-                if (filterType === 'city') activeFilters.city = null;
-                if (filterType === 'artist') activeFilters.artist = null;
-                if (filterType === 'date') { activeFilters.dateFrom = null; activeFilters.dateTo = null; }
-                if (filterType === 'bbox') activeFilters.bbox = null;
-                applyFiltersAndReload();
-            });
-            return pill;
-        };
-
-        let hasActiveFilters = false;
-
-        if (activeFilters.city) {
-            container.appendChild(createPill(activeFilters.city, 'city'));
-            hasActiveFilters = true;
-        }
-        if (activeFilters.artist) {
-            container.appendChild(createPill(activeFilters.artist, 'artist'));
-            hasActiveFilters = true;
-        }
-        if (activeFilters.dateFrom && activeFilters.dateTo) {
-            const from = new Date(activeFilters.dateFrom).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
-            const to = new Date(activeFilters.dateTo).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
-            container.appendChild(createPill(`${from} - ${to}`, 'date'));
-            hasActiveFilters = true;
-        }
-        if (activeFilters.bbox) {
-            container.appendChild(createPill('Vista del Mapa', 'bbox'));
-            hasActiveFilters = true;
-        }
-
-        // Mostrar u ocultar el botón de limpiar todo
-        clearAllBtn.style.display = hasActiveFilters ? 'inline-flex' : 'none';
-    }
-
-    function updateSeoTags() {
-        const baseTitle = 'Duende Finder';
-        const baseDescription = 'Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por todo el Mundo.';
-
-        let newTitle = `Buscador de Conciertos Flamencos - ${baseTitle}`;
-        let newDescription = baseDescription;
-
-        const { artist, city, dateFrom, dateTo, type } = activeFilters;
-
-        if (artist && city) {
-            newTitle = `Eventos de ${artist} en ${city} - ${baseTitle}`;
-            newDescription = `Encuentra todos los conciertos y actuaciones de ${artist} en ${city}. Fechas, entradas y más en Duende Finder.`;
-        } else if (artist) {
-            newTitle = `Eventos de ${artist} - ${baseTitle}`;
-            newDescription = `Descubre la agenda completa de conciertos de ${artist}. Próximas actuaciones y festivales en Duende Finder.`;
-        } else if (city) {
-            newTitle = `Eventos de flamenco en ${city} - ${baseTitle}`;
-            newDescription = `Agenda de flamenco en ${city}. Encuentra tablaos, conciertos y festivales cerca de ti con Duende Finder.`;
-        } else if (dateFrom && dateTo) {
-            const from = new Date(dateFrom).toLocaleDateString('es-ES');
-            const to = new Date(dateTo).toLocaleDateString('es-ES');
-            newTitle = `Eventos de flamenco del ${from} al ${to} - ${baseTitle}`;
-            newDescription = `Busca eventos de flamenco, conciertos y tablaos en el rango de fechas del ${from} al ${to}.`;
-        } else if (type === 'destacados') {
-            newTitle = `Artistas de Flamenco Destacados - ${baseTitle}`;
-            newDescription = 'Descubre los artistas de flamenco más destacados y sus próximas giras y conciertos.';
-        } else if (type === 'recientes') {
-            newTitle = `Nuevos Eventos de Flamenco - ${baseTitle}`;
-            newDescription = 'Consulta los últimos eventos de flamenco añadidos. ¡Sé el primero en enterarte de las novedades!';
-        }
-
-        // Aplicar los nuevos valores a las etiquetas del DOM
-        document.title = newTitle;
-
-        const metaDescription = document.querySelector('meta[name="description"]');
-        if (metaDescription) {
-            metaDescription.setAttribute('content', newDescription);
-        }
-
-        // Actualizar también las etiquetas Open Graph para redes sociales
-        const ogTitle = document.querySelector('meta[property="og:title"]');
-        if (ogTitle) ogTitle.setAttribute('content', newTitle);
-        const ogDescription = document.querySelector('meta[property="og:description"]');
-        if (ogDescription) ogDescription.setAttribute('content', newDescription);
-    }
-
-    function updateURLWithFilters() {
-        const params = new URLSearchParams();
-        // Solo añadimos los filtros si tienen un valor
-        if (activeFilters.type && activeFilters.type !== 'proximos') {
-            params.set('type', activeFilters.type);
-        }
-        if (activeFilters.city) {
-            params.set('city', activeFilters.city);
-        }
-        if (activeFilters.artist) {
-            params.set('artist', activeFilters.artist);
-        }
-        if (activeFilters.dateFrom) {
-            params.set('dateFrom', activeFilters.dateFrom);
-        }
-        if (activeFilters.dateTo) {
-            params.set('dateTo', activeFilters.dateTo);
-        }
-
-        const queryString = params.toString();
-        const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
-
-        // Usamos pushState para cambiar la URL sin recargar y para permitir el uso del botón "atrás" del navegador
-        history.pushState({ filters: activeFilters }, '', newUrl);
-    }
-
-    function applyFiltersFromURL() {
-        const params = new URLSearchParams(window.location.search);
-        let filtersApplied = false;
-
-        // Leer cada filtro de la URL y actualizar el estado
-        if (params.has('type')) { activeFilters.type = params.get('type'); filtersApplied = true; }
-        if (params.has('city')) { activeFilters.city = params.get('city'); filtersApplied = true; }
-        if (params.has('artist')) { activeFilters.artist = params.get('artist'); filtersApplied = true; }
-        if (params.has('dateFrom')) { activeFilters.dateFrom = params.get('dateFrom'); filtersApplied = true; }
-        if (params.has('dateTo')) { activeFilters.dateTo = params.get('dateTo'); filtersApplied = true; }
-
-        if (filtersApplied) {
-            // Actualizar la UI de los chips principales
-            const allChips = filterBar.querySelectorAll('.filter-chip');
-            allChips.forEach(btn => btn.classList.remove('active'));
-            const activeChip = filterBar.querySelector(`[data-filter="${activeFilters.type}"]`);
-            if (activeChip) activeChip.classList.add('active');
-
-            applyFiltersAndReload();
-        }
-    }
-
     async function initializeDashboard() {
         // --- 1. Inicializar el mapa de calor o el hero header tradicional ---
-        if (APP_CONFIG.HEATMAP_ENABLED) initializeHeatmap();
+        const heroHeader = document.querySelector('.hero-header');
+        if (heroHeader) heroHeader.style.display = 'block';
 
         // --- 2. Asegurar visibilidad de elementos principales ---
         const filterBar = document.querySelector('.filter-bar');
@@ -1851,12 +1543,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('popstate', (event) => {
             if (event.state && event.state.filters) {
                 applyFiltersFromURL();
+            } else if (!window.location.search) { // Si la URL está limpia, volver al dashboard
+                initializeDashboard();
             }
         });
-
-        if (APP_CONFIG.INFINITE_SCROLL_ENABLED) {
-            initializeInfiniteScrollFeature();
-        }
 
         const isEventPage = await handleInitialPageLoadRouting();
 
