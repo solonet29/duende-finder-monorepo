@@ -153,17 +153,48 @@
 
     <header class="header-main">
         <div class="container">
-            <nav class="filter-bar" id="main-filter-bar">
-                <a href="#" class="filter-chip active" data-filter="proximos">Próximos</a>
-                <a href="#" class="filter-chip" data-filter="destacados">Destacados</a>
-                <a href="#" class="filter-chip" data-filter="recientes">Recién Añadidos</a>
-                <a href="#" class="filter-chip" data-filter="cerca">Cerca de Mí</a>
-                <a href="#" class="filter-chip" data-filter="ciudad-toggle">Por Ciudad <ion-icon
-                        name="search-outline"></ion-icon></a>
+            <nav class="filter-bar-wrapper">
+                <div class="filter-bar" id="main-filter-bar">
+                    <a href="#" class="filter-chip active" data-filter="proximos">Próximos</a>
+                    <a href="#" class="filter-chip" data-filter="destacados">Destacados</a>
+                    <a href="#" class="filter-chip" data-filter="recientes">Recién Añadidos</a>
+                </div>
+                <div id="active-filters-container" class="active-filters-container">
+                    <!-- Las píldoras de filtros activos se insertarán aquí -->
+                    <button id="clear-all-filters-btn" class="clear-filters-btn" style="display: none;"
+                        title="Limpiar todos los filtros">&times;</button>
+                </div>
+                <button id="advanced-filter-toggle-btn" class="filter-chip">
+                    Más Filtros <ion-icon name="options-outline"></ion-icon>
+                </button>
             </nav>
-            <div class="city-search-bar" id="city-search-bar" style="display: none;">
-                <input type="text" id="city-search-input" placeholder="Escribe una ciudad y pulsa Enter...">
-                <button id="city-search-cancel-btn" title="Cancelar búsqueda por ciudad">&times;</button>
+            <div id="advanced-filter-panel" class="advanced-filter-panel" style="display: none;">
+                <div class="filter-group">
+                    <label for="city-search-input">Ciudad</label>
+                    <div class="search-input-wrapper">
+                        <input type="text" id="city-search-input" placeholder="Buscar por ciudad..." autocomplete="off">
+                        <div id="city-autocomplete-results" class="autocomplete-results"></div>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label for="artist-search-input">Artista</label>
+                    <div class="search-input-wrapper">
+                        <input type="text" id="artist-search-input" placeholder="Buscar por artista..."
+                            autocomplete="off">
+                        <div id="artist-autocomplete-results" class="autocomplete-results"></div>
+                    </div>
+                </div>
+                <div class="filter-group date-range-group">
+                    <div class="form-group">
+                        <label for="filter-start-date">Desde</label>
+                        <input type="date" id="filter-start-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-end-date">Hasta</label>
+                        <input type="date" id="filter-end-date">
+                    </div>
+                    <button id="date-filter-apply-btn" class="filter-apply-btn">Aplicar</button>
+                </div>
             </div>
         </div>
     </header>
