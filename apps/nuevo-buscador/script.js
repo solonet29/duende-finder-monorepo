@@ -573,27 +573,31 @@ document.addEventListener('DOMContentLoaded', () => {
         eventCard.setAttribute('data-artist-name', artistName);
         eventCard.setAttribute('data-event-name', eventName);
 
-        const placeholderUrl = './assets/flamenco-placeholder.png';
-        // Priorizamos la nueva imagen WebP. Si no existe, usamos la antigua.
+        // Priorizamos la nueva imagen WebP. Si no existe, usamos la antigua o un placeholder.
         let eventImageUrl = event.webpImageUrl || event.imageUrl;
+        const placeholderUrl = './assets/flamenco-placeholder.png'; // URL a tu imagen de placeholder
 
         if (!eventImageUrl || typeof eventImageUrl !== 'string' || !eventImageUrl.trim().startsWith('http')) {
             eventImageUrl = placeholderUrl;
         }
 
+        // Usamos un fondo para el placeholder para que no interfiera con el LCP.
+        // La imagen real se carga encima.
         eventCard.innerHTML = `
-            <div class="card-image-container">
+            <div class="card-image-container" style="background-image: url('${placeholderUrl}');">
                 <img src="${eventImageUrl}" 
                      alt="${artistName}" 
                      class="card-image" 
                      loading="${isLCP ? 'eager' : 'lazy'}"
                      fetchpriority="${isLCP ? 'high' : 'auto'}"
                      decoding="async"
-                     onerror="this.onerror=null;this.src='${placeholderUrl}'">
+                     onerror="this.style.display='none';">
             </div>
             <div class="card-content">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <h3 class="card-title card-title-button" style="margin: 0;">${artistName}</h3>
+                    <h3 class="card-title card-title-button" style="margin: 0;">
+                        <a href="/eventos/${event._id}-${(event.slug || eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}" class="card-link-title">${artistName}</a>
+                    </h3>
                     ${event.verificationStatus === 'verified' ? '<ion-icon name="checkmark-circle" style="color: #1abc9c; font-size: 1.2rem;"></ion-icon>' : ''}
                 </div>
             </div>`;
