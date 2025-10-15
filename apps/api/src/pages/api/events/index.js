@@ -1,5 +1,5 @@
 // RUTA: /src/pages/api/events/index.js
-// VERSIÃN REFACTORIZADA USANDO EL DATA PROVIDER
+// VERSIÓN REFACTORIZADA USANDO EL DATA PROVIDER
 
 import { getAggregatedEvents } from '@/lib/data-provider.js';
 import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
@@ -7,6 +7,20 @@ import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
 // --- MANEJADOR PRINCIPAL DE LA API ---
 export default async function handler(req, res) {
     await runMiddleware(req, res, corsMiddleware);
+
+    // Añadimos soporte para el filtro de bounding box (bbox)
+    if (req.query.bbox) {
+        const [sw_lng, sw_lat, ne_lng, ne_lat] = req.query.bbox.split(',').map(parseFloat);
+        if ([sw_lng, sw_lat, ne_lng, ne_lat].every(c => !isNaN(c))) {
+            // El data-provider.js deberá ser actualizado para entender este nuevo filtro.
+            // Se espera que use una consulta geoespacial como $geoWithin con $box.
+            req.query.geoQuery = {
+                'location.coordinates': {
+                    $geoWithin: { $box: [[sw_lng, sw_lat], [ne_lng, ne_lat]] }
+                }
+            };
+        }
+    }
 
     try {
         // Toda la lÃ³gica compleja de agregaciÃ³n ahora vive en el data-provider

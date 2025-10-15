@@ -212,6 +212,47 @@ header.header-main {
     border-color: var(--color-acento);
 }
 
+.date-range-filter {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    width: 100%;
+    padding: 10px;
+    background-color: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: 12px;
+}
+
+.date-range-filter .form-group {
+    min-width: 120px;
+}
+
+.date-range-filter input[type="date"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--color-borde);
+    background-color: var(--color-fondo);
+    color: var(--color-texto-principal);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    height: auto;
+}
+
+.filter-apply-btn {
+    padding: 8px 16px;
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.filter-apply-btn:hover {
+    filter: brightness(1.1);
+}
+
 /* ==========================================================================
    4. SLIDERS Y PLANIFICADOR
    ========================================================================== */
@@ -224,10 +265,22 @@ header.header-main {
 }
 
 .trip-planner-section {
+    position: relative;
+    overflow: hidden;
     background-color: var(--color-superficie);
+    /* Fallback para navegadores antiguos */
     padding: 20px;
     border-radius: 12px;
     border: 1px solid var(--color-borde);
+}
+
+.trip-planner-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Abarca todo el contenedor: top, right, bottom, left = 0 */
+    background: linear-gradient(135deg, transparent 60%, color-mix(in srgb, var(--color-acento) 10%, transparent));
+    z-index: 0;
 }
 
 .sliders-section h2 {
@@ -244,6 +297,8 @@ header.header-main {
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
+    position: relative;
+    /* Para que esté por encima del degradado */
 }
 
 .trip-planner-section h2 ion-icon {
@@ -259,6 +314,8 @@ header.header-main {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.5s ease-in-out;
+    position: relative;
+    /* Para que esté por encima del degradado */
 }
 
 .trip-planner-section.active .trip-planner-content {
@@ -1371,6 +1428,126 @@ header.header-main {
 }
 
 /* ==========================================================================
+   15. CITY SEARCH BAR
+   ========================================================================== */
+
+.city-search-container {
+    position: relative;
+    width: 100%;
+}
+
+.artist-search-container {
+    position: relative;
+    display: flex;
+    width: 100%;
+}
+
+.city-search-bar {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+    align-items: center;
+    position: relative;
+    /* Para que el input esté sobre los resultados */
+    z-index: 2;
+}
+
+#city-search-input,
+.search-input-autocomplete {
+    flex-grow: 1;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 1px solid var(--color-borde);
+    border-radius: 20px;
+    background-color: var(--color-superficie);
+    color: var(--color-texto-principal);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#city-search-input:focus,
+.search-input-autocomplete:focus {
+    border-color: var(--color-acento);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-acento) 20%, transparent);
+}
+
+#city-search-cancel-btn,
+.search-cancel-btn {
+    background: none;
+    border: none;
+    color: var(--color-texto-secundario);
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0 10px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+#city-search-cancel-btn:hover,
+.search-cancel-btn:hover {
+    color: var(--color-texto-principal);
+}
+
+.autocomplete-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    z-index: 1;
+    max-height: 250px;
+    overflow-y: auto;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.autocomplete-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.95rem;
+}
+
+.autocomplete-item:hover {
+    background-color: var(--color-borde);
+}
+
+.autocomplete-item.active {
+    background-color: var(--color-acento);
+    color: var(--color-superficie);
+}
+
+[data-theme="light"] .autocomplete-item.active {
+    color: #000000;
+}
+
+/* Estilos para el botón de cambio de vista del mapa */
+.map-view-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    /* Por encima de las capas del mapa */
+}
+
+#map-view-toggle-btn {
+    background-color: rgba(24, 24, 24, 0.8);
+    color: white;
+    border: 1px solid var(--color-borde);
+    border-radius: 4px;
+    width: 34px;
+    height: 34px;
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
+}
+
+/* ==========================================================================
    11. ESTILOS PARA MODAL DE GUÍA DE BÚSQUEDA (AÑADIDO)
    ========================================================================== */
 
@@ -1669,6 +1846,7 @@ header.header-main {
 [data-theme="dark"] .filter-chip.active {
     color: #FFFFFF;
 }
+
 /* ==========================================================================
    14. TRIP PLANNER DESCRIPTION
    ========================================================================== */

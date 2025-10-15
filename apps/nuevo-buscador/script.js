@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const APP_CONFIG = {
         USAR_PAGINAS_DE_EVENTOS: true, // Poner en false para volver al modo modal
         INFINITE_SCROLL_ENABLED: false, // Poner en false para desactivar la funcionalidad de scroll infinito en los sliders
+        HEATMAP_ENABLED: true, // Control para activar/desactivar el mapa de calor
     };
     const getApiBaseUrl = () => {
         const hostname = window.location.hostname;
@@ -90,6 +91,41 @@ document.addEventListener('DOMContentLoaded', () => {
         return sessionId;
     }
 
+    // =========================================================================
+    // 1.5. UTILIDADES DE CACHÉ EN CLIENTE
+    // =========================================================================
+    const CACHE_TTL = 5 * 60 * 1000; // 5 minutos de Time-To-Live
+
+    function setCache(key, data) {
+        const cacheItem = {
+            timestamp: Date.now(),
+            data: data
+        };
+        try {
+            // Usamos sessionStorage para que la caché se limpie al cerrar la pestaña.
+            sessionStorage.setItem(key, JSON.stringify(cacheItem));
+        } catch (error) {
+            console.warn("Error al guardar en caché (posiblemente llena):", error);
+            // Si el almacenamiento está lleno, una estrategia simple es limpiarlo.
+            sessionStorage.clear();
+        }
+    }
+
+    function getCache(key) {
+        try {
+            const cachedItem = sessionStorage.getItem(key);
+            if (!cachedItem) return null;
+
+            const { timestamp, data } = JSON.parse(cachedItem);
+            const isExpired = (Date.now() - timestamp) > CACHE_TTL;
+
+            if (isExpired) { sessionStorage.removeItem(key); return null; }
+            return data;
+        } catch (error) {
+            console.warn("Error al leer de la caché:", error);
+            return null;
+        }
+    }
     async function trackInteraction(type, details) {
         const sessionId = getSessionId();
         const apiUrl = 'https://api-v2.afland.es/api/analytics/track';
@@ -329,6 +365,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     let infiniteScrollObserver;
     let infiniteScrollPage = 1;
+    let activeFilters = {
+        type: 'proximos', // 'proximos', 'destacados', 'recientes'
+        city: null,
+        artist: null,
+        nearMe: false,
+        dateFrom: null,
+        dateTo: null,
+        bbox: null // Nuevo filtro para el área del mapa
+    };
     let isLoadingInfiniteScroll = false;
 
     function createInfiniteScrollContainer() {
@@ -338,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         section.id = 'infinite-scroll-section';
         section.className = 'sliders-section'; // Reutilizamos estilos
         section.innerHTML = `
-            <div class="slider-title-container">
+            <div id="infinite-scroll-title-container" class="slider-title-container">
                 <h2>Próximos Eventos</h2>
             </div>
             <div id="infinite-scroll-container" class="grid-container"></div>
@@ -353,6 +398,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function resetInfiniteScroll() {
+        infiniteScrollPage = 1;
+        isLoadingInfiniteScroll = false;
+        const container = document.getElementById('infinite-scroll-container');
+        if (container) container.innerHTML = '';
+        if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
+    }
+
+    function getApiUrlForFilter() {
+        let baseUrl = `${API_BASE_URL}/api/events?limit=12&page=${infiniteScrollPage}`;
+        let sortParam = 'sort=date'; // Orden por fecha por defecto
+
+        switch (activeFilters.type) {
+            case 'destacados': baseUrl += '&featured=true'; break;
+            case 'recientes': sortParam = 'sort=createdAt&sortOrder=-1'; break;
+        }
+
+        const params = new URLSearchParams();
+        if (activeFilters.city) params.append('city', activeFilters.city);
+        if (activeFilters.artist) params.append('artist', activeFilters.artist);
+        if (activeFilters.dateFrom) params.append('dateFrom', activeFilters.dateFrom);
+        if (activeFilters.dateTo) params.append('dateTo', activeFilters.dateTo);
+        if (activeFilters.bbox) params.append('bbox', activeFilters.bbox);
+
+        return `${baseUrl}&${sortParam}&${params.toString()}`;
+    }
+
     async function loadMoreInfiniteScrollEvents() {
         if (isLoadingInfiniteScroll) return;
         isLoadingInfiniteScroll = true;
@@ -364,27 +436,54 @@ document.addEventListener('DOMContentLoaded', () => {
         // Mostrar indicador de carga
         sentinel.innerHTML = '<div class="loading-indicator" style="margin: 2rem auto;"><ion-icon name="sync-outline" class="spin-animation"></ion-icon></div>';
 
+        const apiUrl = getApiUrlForFilter();
+        if (!apiUrl) {
+            sentinel.innerHTML = '<p style="text-align: center; color: var(--color-texto-secundario); padding: 2rem;">Activa la ubicación para ver eventos cercanos.</p>';
+            isLoadingInfiniteScroll = false;
+            return;
+        }
+
+        // 1. Comprobar la caché primero
+        const cachedData = getCache(apiUrl);
+        if (cachedData) {
+            console.log(`[CACHE HIT] Cargando eventos desde caché para la página ${infiniteScrollPage}.`);
+            processInfiniteScrollData(cachedData);
+            isLoadingInfiniteScroll = false;
+            return;
+        }
+
         try {
-            const response = await fetch(`${API_BASE_URL}/api/events?sort=date&page=${infiniteScrollPage}&limit=12`);
+            // 2. Si no está en caché, hacer la petición a la red
+            const response = await fetch(apiUrl);
             if (!response.ok) throw new Error('Failed to fetch events');
             const data = await response.json();
 
-            if (data.events && data.events.length > 0) {
-                data.events.forEach(event => {
-                    eventsCache[event._id] = event;
-                    container.appendChild(createSliderCard(event)); // Reutilizamos la función de crear tarjetas
-                });
-                infiniteScrollPage++;
-                isLoadingInfiniteScroll = false;
-            } else {
-                // No hay más eventos, detener el observer
-                if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
-                sentinel.innerHTML = '<p style="text-align: center; color: var(--color-texto-secundario); padding: 2rem;">Has llegado al final. ¡No hay más eventos por ahora!</p>';
-            }
+            // 3. Guardar en caché y procesar los datos
+            setCache(apiUrl, data);
+            processInfiniteScrollData(data);
+
         } catch (error) {
             console.error('Error loading more events:', error);
             sentinel.innerHTML = '<p style="text-align: center; color: var(--color-texto-error); padding: 2rem;">Error al cargar más eventos.</p>';
+        } finally {
             isLoadingInfiniteScroll = false;
+        }
+    }
+
+    function processInfiniteScrollData(data) {
+        const container = document.getElementById('infinite-scroll-container');
+        const sentinel = document.getElementById('infinite-scroll-sentinel');
+        if (!container || !sentinel) return;
+
+        if (data.events && data.events.length > 0) {
+            data.events.forEach(event => {
+                eventsCache[event._id] = event;
+                container.appendChild(createSliderCard(event));
+            });
+            infiniteScrollPage++;
+        } else {
+            if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
+            sentinel.innerHTML = '<p style="text-align: center; color: var(--color-texto-secundario); padding: 2rem;">Has llegado al final. ¡No hay más eventos por ahora!</p>';
         }
     }
 
@@ -401,11 +500,200 @@ document.addEventListener('DOMContentLoaded', () => {
         infiniteScrollObserver.observe(sentinel);
     }
 
-    async function initializeDashboard() {
-        // --- 1. Asegurar visibilidad de elementos de la página principal ---
-        const heroHeader = document.querySelector('.hero-header');
-        if (heroHeader) heroHeader.style.display = 'block';
+    async function applyFiltersAndReload() {
+        resetInfiniteScroll();
+        // Solo actualizamos el mapa si el cambio NO vino del propio mapa
+        if (!isMapInteraction) {
+            updateHeatmap(activeFilters);
+        }
+        isMapInteraction = false; // Resetear el flag aquí para asegurar que se limpie
 
+        renderActiveFilterPills();
+        updateURLWithFilters(); // <-- ¡AQUÍ ACTUALIZAMOS LA URL!
+        updateSeoTags(); // <-- ¡AQUÍ ACTUALIZAMOS LAS ETIQUETAS SEO!
+
+        const titleContainer = document.getElementById('infinite-scroll-title-container');
+        const titleElement = titleContainer?.querySelector('h2');
+
+        if (titleElement) {
+            let title = 'Eventos';
+            if (activeFilters.artist && activeFilters.city) {
+                title = `Eventos de ${activeFilters.artist} en ${activeFilters.city}`;
+            } else if (activeFilters.artist) {
+                title = `Eventos de ${activeFilters.artist}`;
+            } else if (activeFilters.city) {
+                title = `Eventos en ${activeFilters.city}`;
+            } else if (activeFilters.dateFrom && activeFilters.dateTo) {
+                const from = new Date(activeFilters.dateFrom).toLocaleDateString('es-ES');
+                const to = new Date(activeFilters.dateTo).toLocaleDateString('es-ES');
+                title = `Eventos del ${from} al ${to}`;
+            } else {
+                const titles = {
+                    proximos: 'Próximos Eventos',
+                    destacados: 'Eventos Destacados',
+                    recientes: 'Recién Añadidos',
+                };
+                title = titles[activeFilters.type];
+            }
+            titleElement.textContent = title;
+        }
+
+        await loadMoreInfiniteScrollEvents();
+        setupInfiniteScrollObserver();
+    }
+
+    function renderActiveFilterPills() {
+        const container = document.getElementById('active-filters-container');
+        const clearAllBtn = document.getElementById('clear-all-filters-btn');
+        if (!container || !clearAllBtn) return;
+
+        // Limpiar solo las píldoras, no el botón de limpiar todo
+        container.querySelectorAll('.active-filter-pill').forEach(pill => pill.remove());
+
+        const createPill = (text, filterType) => {
+            const pill = document.createElement('div');
+            pill.className = 'active-filter-pill';
+            pill.innerHTML = `
+                <span>${text}</span>
+                <button class="remove-filter-btn" data-filter-type="${filterType}" title="Eliminar filtro">&times;</button>
+            `;
+            pill.querySelector('.remove-filter-btn').addEventListener('click', () => {
+                if (filterType === 'city') activeFilters.city = null;
+                if (filterType === 'artist') activeFilters.artist = null;
+                if (filterType === 'date') { activeFilters.dateFrom = null; activeFilters.dateTo = null; }
+                if (filterType === 'bbox') activeFilters.bbox = null;
+                applyFiltersAndReload();
+            });
+            return pill;
+        };
+
+        let hasActiveFilters = false;
+
+        if (activeFilters.city) {
+            container.appendChild(createPill(activeFilters.city, 'city'));
+            hasActiveFilters = true;
+        }
+        if (activeFilters.artist) {
+            container.appendChild(createPill(activeFilters.artist, 'artist'));
+            hasActiveFilters = true;
+        }
+        if (activeFilters.dateFrom && activeFilters.dateTo) {
+            const from = new Date(activeFilters.dateFrom).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+            const to = new Date(activeFilters.dateTo).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+            container.appendChild(createPill(`${from} - ${to}`, 'date'));
+            hasActiveFilters = true;
+        }
+        if (activeFilters.bbox) {
+            container.appendChild(createPill('Vista del Mapa', 'bbox'));
+            hasActiveFilters = true;
+        }
+
+        // Mostrar u ocultar el botón de limpiar todo
+        clearAllBtn.style.display = hasActiveFilters ? 'inline-flex' : 'none';
+    }
+
+    function updateSeoTags() {
+        const baseTitle = 'Duende Finder';
+        const baseDescription = 'Descubre la magia del flamenco. Busca conciertos, tablaos y festivales por todo el Mundo.';
+
+        let newTitle = `Buscador de Conciertos Flamencos - ${baseTitle}`;
+        let newDescription = baseDescription;
+
+        const { artist, city, dateFrom, dateTo, type } = activeFilters;
+
+        if (artist && city) {
+            newTitle = `Eventos de ${artist} en ${city} - ${baseTitle}`;
+            newDescription = `Encuentra todos los conciertos y actuaciones de ${artist} en ${city}. Fechas, entradas y más en Duende Finder.`;
+        } else if (artist) {
+            newTitle = `Eventos de ${artist} - ${baseTitle}`;
+            newDescription = `Descubre la agenda completa de conciertos de ${artist}. Próximas actuaciones y festivales en Duende Finder.`;
+        } else if (city) {
+            newTitle = `Eventos de flamenco en ${city} - ${baseTitle}`;
+            newDescription = `Agenda de flamenco en ${city}. Encuentra tablaos, conciertos y festivales cerca de ti con Duende Finder.`;
+        } else if (dateFrom && dateTo) {
+            const from = new Date(dateFrom).toLocaleDateString('es-ES');
+            const to = new Date(dateTo).toLocaleDateString('es-ES');
+            newTitle = `Eventos de flamenco del ${from} al ${to} - ${baseTitle}`;
+            newDescription = `Busca eventos de flamenco, conciertos y tablaos en el rango de fechas del ${from} al ${to}.`;
+        } else if (type === 'destacados') {
+            newTitle = `Artistas de Flamenco Destacados - ${baseTitle}`;
+            newDescription = 'Descubre los artistas de flamenco más destacados y sus próximas giras y conciertos.';
+        } else if (type === 'recientes') {
+            newTitle = `Nuevos Eventos de Flamenco - ${baseTitle}`;
+            newDescription = 'Consulta los últimos eventos de flamenco añadidos. ¡Sé el primero en enterarte de las novedades!';
+        }
+
+        // Aplicar los nuevos valores a las etiquetas del DOM
+        document.title = newTitle;
+
+        const metaDescription = document.querySelector('meta[name="description"]');
+        if (metaDescription) {
+            metaDescription.setAttribute('content', newDescription);
+        }
+
+        // Actualizar también las etiquetas Open Graph para redes sociales
+        const ogTitle = document.querySelector('meta[property="og:title"]');
+        if (ogTitle) ogTitle.setAttribute('content', newTitle);
+        const ogDescription = document.querySelector('meta[property="og:description"]');
+        if (ogDescription) ogDescription.setAttribute('content', newDescription);
+    }
+
+    function updateURLWithFilters() {
+        const params = new URLSearchParams();
+        // Solo añadimos los filtros si tienen un valor
+        if (activeFilters.type && activeFilters.type !== 'proximos') {
+            params.set('type', activeFilters.type);
+        }
+        if (activeFilters.city) {
+            params.set('city', activeFilters.city);
+        }
+        if (activeFilters.artist) {
+            params.set('artist', activeFilters.artist);
+        }
+        if (activeFilters.dateFrom) {
+            params.set('dateFrom', activeFilters.dateFrom);
+        }
+        if (activeFilters.dateTo) {
+            params.set('dateTo', activeFilters.dateTo);
+        }
+
+        const queryString = params.toString();
+        const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+
+        // Usamos pushState para cambiar la URL sin recargar y para permitir el uso del botón "atrás" del navegador
+        history.pushState({ filters: activeFilters }, '', newUrl);
+    }
+
+    function applyFiltersFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        let filtersApplied = false;
+
+        // Leer cada filtro de la URL y actualizar el estado
+        if (params.has('type')) { activeFilters.type = params.get('type'); filtersApplied = true; }
+        if (params.has('city')) { activeFilters.city = params.get('city'); filtersApplied = true; }
+        if (params.has('artist')) { activeFilters.artist = params.get('artist'); filtersApplied = true; }
+        if (params.has('dateFrom')) { activeFilters.dateFrom = params.get('dateFrom'); filtersApplied = true; }
+        if (params.has('dateTo')) { activeFilters.dateTo = params.get('dateTo'); filtersApplied = true; }
+
+        if (filtersApplied) {
+            // Actualizar la UI de los chips principales
+            const allChips = filterBar.querySelectorAll('.filter-chip');
+            allChips.forEach(btn => btn.classList.remove('active'));
+            const activeChip = filterBar.querySelector(`[data-filter="${activeFilters.type}"]`);
+            if (activeChip) activeChip.classList.add('active');
+
+            applyFiltersAndReload();
+        }
+    }
+
+    async function initializeDashboard() {
+        // --- 1. Inicializar el mapa de calor o el hero header tradicional ---
+        if (APP_CONFIG.HEATMAP_ENABLED) {
+            // initializeHeatmap(); // Asumo que esta función existe
+            initializeHeatmap();
+        } else {
+            // Si el mapa de calor está desactivado, se mostraría el hero original
+        }
         const filterBar = document.querySelector('.filter-bar');
         if (filterBar) filterBar.style.display = 'flex';
 
@@ -424,12 +712,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (monthlySlidersContainer) monthlySlidersContainer.style.display = 'none';
 
-        // --- 3. Mantener la lógica de "Cerca de ti" ---
-        getUserLocation().then(location => {
-            if (location) fetchNearbyEvents();
-        }).catch(() => {
-            renderGeolocationDenied();
-        });
+        // --- 3. Ocultar la sección "Cerca de ti" antigua ---
+        document.getElementById('cerca-section')?.closest('.sliders-section')?.remove();
 
         // --- 4. Inicializar el nuevo scroll infinito ---
         createInfiniteScrollContainer();
@@ -1171,24 +1455,16 @@ document.addEventListener('DOMContentLoaded', () => {
             filterBar.addEventListener('click', (e) => {
                 const filterChip = e.target.closest('.filter-chip');
                 if (filterChip) {
-                    e.preventDefault();
+                    e.preventDefault(); // Prevenir el salto de #
+                    const newFilter = filterChip.dataset.filter;
+                    if (!newFilter) return;
+
                     const allChips = filterBar.querySelectorAll('.filter-chip');
-                    if (allChips) allChips.forEach(btn => btn.classList.remove('active'));
+                    allChips.forEach(btn => btn.classList.remove('active'));
                     filterChip.classList.add('active');
-                    if (filterChip.dataset.filter === 'cerca') {
-                        geolocationSearch();
-                        return;
-                    }
-                    const targetId = filterChip.getAttribute('href');
-                    if (targetId && targetId !== '#') { // Check for valid targetId
-                        const targetSection = document.querySelector(targetId);
-                        if (targetSection) {
-                            const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
-                            const elementPosition = targetSection.getBoundingClientRect().top;
-                            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                            window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-                        }
-                    }
+
+                    activeFilters.type = newFilter;
+                    applyFiltersAndReload();
                 }
             });
         }
@@ -1212,30 +1488,30 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        if (tripPlannerToggle) {
-            tripPlannerToggle.addEventListener('click', () => {
-                const tripPlannerSection = document.getElementById('trip-planner-section');
-                if (tripPlannerSection) {
-                    tripPlannerSection.classList.toggle('active');
-                }
-            });
-        }
+        // if (tripPlannerToggle) {
+        //     tripPlannerToggle.addEventListener('click', () => {
+        //         const tripPlannerSection = document.getElementById('trip-planner-section');
+        //         if (tripPlannerSection) {
+        //             tripPlannerSection.classList.toggle('active');
+        //         }
+        //     });
+        // }
 
-        if (tripSearchBtn) {
-            tripSearchBtn.addEventListener('click', () => {
-                const city = tripCityInput.value.trim();
-                const startDate = tripStartDateInput.value;
-                const endDate = tripEndDateInput.value;
+        // if (tripSearchBtn) {
+        //     tripSearchBtn.addEventListener('click', () => {
+        //         const city = tripCityInput.value.trim();
+        //         const startDate = tripStartDateInput.value;
+        //         const endDate = tripEndDateInput.value;
 
-                if (!city || !startDate || !endDate) {
-                    tripResultsMessage.textContent = 'Por favor, completa todos los campos: ciudad y fechas.';
-                    tripResultsMessage.style.display = 'block';
-                    tripResultsSlider.style.display = 'none';
-                    return;
-                }
-                fetchTripEvents(city, startDate, endDate);
-            });
-        }
+        //         if (!city || !startDate || !endDate) {
+        //             tripResultsMessage.textContent = 'Por favor, completa todos los campos: ciudad y fechas.';
+        //             tripResultsMessage.style.display = 'block';
+        //             tripResultsSlider.style.display = 'none';
+        //             return;
+        //         }
+        //         fetchTripEvents(city, startDate, endDate);
+        //     });
+        // }
 
         if (closeMapModalBtn) {
             closeMapModalBtn.addEventListener('click', closeMapModal);
@@ -1459,6 +1735,13 @@ document.addEventListener('DOMContentLoaded', () => {
         createVerifiedInfoModal();
         handleWelcomeModal();
 
+        // Escuchar los cambios de historial (botón atrás/adelante del navegador)
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.filters) {
+                applyFiltersFromURL();
+            }
+        });
+
         if (APP_CONFIG.INFINITE_SCROLL_ENABLED) {
             initializeInfiniteScrollFeature();
         }
@@ -1466,7 +1749,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const isEventPage = await handleInitialPageLoadRouting();
 
         if (!isEventPage) {
-            initializeDashboard();
+            // Comprobar si hay filtros en la URL antes de cargar el dashboard por defecto
+            if (window.location.search) {
+                applyFiltersFromURL();
+            } else {
+                initializeDashboard();
+            }
         }
     }
 

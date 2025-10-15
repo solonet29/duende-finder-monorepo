@@ -115,19 +115,20 @@
 
 <body>
 
-    <div class="hero-header">
-        <picture>
-            <source media="(max-width: 768px)" srcset="/assets/img_header-mobile.webp">
-
-            <source media="(min-width: 769px)" srcset="/assets/img_header.webp">
-
-            <img src="/assets/img_header.webp" alt="Guitarrista flamenco en un escenario oscuro" class="hero-image"
-                fetchpriority="high">
-        </picture>
-        <div class="hero-text">
-            <h1 class="main-title">Duende Finder</h1>
-            <p id="event-stats" class="hero-subtitle">Un proyecto de AFLand</p>
+    <div id="heatmap-hero-container" class="heatmap-hero">
+        <div id="heatmap-container" class="heatmap-map">
+            <!-- El mapa se renderizará aquí -->
+            <div class="loading-indicator" style="background: rgba(0,0,0,0.5); color: white;">
+                <ion-icon name="flame-outline" class="spin-animation"></ion-icon>
+                <p>Cargando mapa de actividad...</p>
+            </div>
+            <div id="map-view-toggle-container" class="map-view-toggle" style="display: none;">
+                <button id="map-view-toggle-btn" title="Cambiar vista de mapa"><ion-icon
+                        name="flame-outline"></ion-icon></button>
+            </div>
         </div>
+        <h1 class="main-title">Duende Finder</h1>
+        <p id="event-stats" class="hero-subtitle">Descubre la magia del flamenco.</p>
     </div>
 
     <div id="welcome-modal-overlay" class="modal-overlay">
@@ -152,12 +153,18 @@
 
     <header class="header-main">
         <div class="container">
-            <nav class="filter-bar">
-                <a href="#destacados-section" class="filter-chip active">Destacados</a>
-                <a href="#semana-section" class="filter-chip">Esta Semana</a>
-                <a href="#hoy-section" class="filter-chip">Hoy</a>
-                <a href="#cerca-section" class="filter-chip" data-filter="cerca">Cerca de Mí</a>
+            <nav class="filter-bar" id="main-filter-bar">
+                <a href="#" class="filter-chip active" data-filter="proximos">Próximos</a>
+                <a href="#" class="filter-chip" data-filter="destacados">Destacados</a>
+                <a href="#" class="filter-chip" data-filter="recientes">Recién Añadidos</a>
+                <a href="#" class="filter-chip" data-filter="cerca">Cerca de Mí</a>
+                <a href="#" class="filter-chip" data-filter="ciudad-toggle">Por Ciudad <ion-icon
+                        name="search-outline"></ion-icon></a>
             </nav>
+            <div class="city-search-bar" id="city-search-bar" style="display: none;">
+                <input type="text" id="city-search-input" placeholder="Escribe una ciudad y pulsa Enter...">
+                <button id="city-search-cancel-btn" title="Cancelar búsqueda por ciudad">&times;</button>
+            </div>
         </div>
     </header>
 
@@ -174,7 +181,7 @@
             </form>
         </div>
         <!-- End Search Actions -->
-        <section id="trip-planner-section" class="trip-planner-section">
+        <section id="trip-planner-section" class="trip-planner-section" style="display: none;">
             <h2 id="trip-planner-toggle">
                 Planificador de Viaje 🗺️
                 <ion-icon name="chevron-down-outline"></ion-icon>
@@ -199,6 +206,21 @@
                 <p id="trip-results-message" class="results-message" style="display: none;"></p>
             </div>
         </section>
+
+        <!-- El hero-header original se mueve aquí, como un banner de marca -->
+        <div class="hero-header" style="margin-top: 40px; margin-bottom: 20px;">
+            <picture>
+                <source media="(max-width: 768px)" srcset="/assets/img_header-mobile.webp">
+                <source media="(min-width: 769px)" srcset="/assets/img_header.webp">
+                <img src="/assets/img_header.webp" alt="Guitarrista flamenco en un escenario oscuro" class="hero-image"
+                    loading="lazy" fetchpriority="auto">
+            </picture>
+            <div class="hero-text">
+                <!-- Podemos poner un mensaje diferente o dejarlo vacío -->
+                <h2 style="color: white; text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">La Comunidad del Flamenco</h2>
+                <p class="hero-subtitle">Un proyecto de AFLand</p>
+            </div>
+        </div>
 
         <section id="destacados-section" class="sliders-section">
             <div class="slider-title-container">
