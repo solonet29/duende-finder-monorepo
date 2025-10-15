@@ -1541,22 +1541,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Escuchar los cambios de historial (botón atrás/adelante del navegador)
         window.addEventListener('popstate', (event) => {
-            if (event.state && event.state.filters) {
-                applyFiltersFromURL();
-            } else if (!window.location.search) { // Si la URL está limpia, volver al dashboard
+            // Si el usuario navega hacia atrás a una URL sin parámetros, recargar el dashboard.
+            if (!window.location.search) {
                 initializeDashboard();
             }
         });
 
         const isEventPage = await handleInitialPageLoadRouting();
 
+        // Si no es una página de evento, siempre inicializar el dashboard por defecto.
         if (!isEventPage) {
-            // Comprobar si hay filtros en la URL antes de cargar el dashboard por defecto
-            if (window.location.search) {
-                applyFiltersFromURL();
-            } else {
-                initializeDashboard();
-            }
+            initializeDashboard();
         }
     }
 
