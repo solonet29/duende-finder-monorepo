@@ -21,19 +21,19 @@ export default async function handler(req, res) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Usamos `distinct` en el campo 'artist' para obtener nombres únicos de forma eficiente.
-        const artists = await eventsCollection.distinct('artist', {
-            artist: { $regex: `^${query}`, $options: 'i' },
-            date: { $gte: today.toISOString() } // Sugerir solo artistas con eventos futuros
+        // Usamos `distinct` en el campo 'city' para obtener nombres únicos de forma eficiente.
+        const cities = await eventsCollection.distinct('city', {
+            city: { $regex: `^${query}`, $options: 'i' },
+            date: { $gte: today.toISOString() } // Sugerir solo ciudades con eventos futuros
         });
 
-        const limitedArtists = artists.slice(0, 10);
+        const limitedCities = cities.slice(0, 10);
 
         res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=59');
-        return res.status(200).json(limitedArtists);
+        return res.status(200).json(limitedCities);
 
     } catch (error) {
-        console.error("Error en el endpoint de autocompletado de artistas:", error);
-        return res.status(500).json({ error: 'Error al obtener las sugerencias de artistas.' });
+        console.error("Error en el endpoint de autocompletado de ciudades:", error);
+        return res.status(500).json({ error: 'Error al obtener las sugerencias de ciudades.' });
     }
 }
