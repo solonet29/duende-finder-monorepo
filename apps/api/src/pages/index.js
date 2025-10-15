@@ -9,13 +9,13 @@ const EventCard = ({ event }) => {
     const eventUrl = `/eventos/${slug}`;
 
     // Manejo del campo artist: si es un objeto, usa event.artist.name
-    const artistDisplayName = typeof event.artist === 'object' && event.artist !== null 
-                              ? event.artist.name 
-                              : event.artist || 'Artista por confirmar';
+    const artistDisplayName = typeof event.artist === 'object' && event.artist !== null
+        ? event.artist.name
+        : event.artist || 'Artista por confirmar';
 
     return (
         <a href={eventUrl} className="event-card">
-            <img src={event.imageUrl || '/assets/flamenco-placeholder.png'} alt={artistDisplayName} className="card-image" onError={(e) => { e.target.onerror = null; e.target.src='/assets/flamenco-placeholder.png'}} />
+            <img src={event.imageUrl || '/assets/flamenco-placeholder.png'} alt={artistDisplayName} className="card-image" onError={(e) => { e.target.onerror = null; e.target.src = '/assets/flamenco-placeholder.png' }} />
             <div className="card-content">
                 <h3 className="card-title">{artistDisplayName}</h3>
             </div>
@@ -47,14 +47,14 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // km
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 0.5 - Math.cos(dLat)/2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon))/2;
+    const a = 0.5 - Math.cos(dLat) / 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon)) / 2;
     return R * 2 * Math.asin(Math.sqrt(a));
 };
 
 
 // --- Componente Principal de la Página ---
 const HomePage = ({ staticProps }) => {
-    const { featuredEvents: initialFeaturedEvents, weekEvents, todayEvents, allEvents, eventCount } = staticProps;
+    const { featuredEvents: initialFeaturedEvents, weekEvents, todayEvents, eventCount } = staticProps;
 
     // --- Estados de la Aplicación ---
     const [featuredEvents, setFeaturedEvents] = useState(initialFeaturedEvents);
@@ -90,20 +90,6 @@ const HomePage = ({ staticProps }) => {
         }
     }, [initialFeaturedEvents]); // Se ejecuta si los eventos iniciales cambian
 
-    // Efecto para agrupar eventos por mes
-    useEffect(() => {
-        if (allEvents.length > 0) {
-            const grouped = allEvents.reduce((acc, event) => {
-                if (!event.date) return acc;
-                const monthKey = event.date.substring(0, 7);
-                if (!acc[monthKey]) acc[monthKey] = [];
-                acc[monthKey].push(event);
-                return acc;
-            }, {});
-            setMonthlyEvents(grouped);
-        }
-    }, [allEvents]);
-
     return (
         <>
             <Head>
@@ -129,18 +115,6 @@ const HomePage = ({ staticProps }) => {
                 <EventSlider events={todayEvents} />
             </section>
 
-            <div id="monthly-sliders-container">
-                {Object.keys(monthlyEvents).sort().map(monthKey => {
-                    const monthName = new Date(monthKey + '-02').toLocaleString('es-ES', { month: 'long' });
-                    const year = monthKey.split('-')[0];
-                    return (
-                        <section key={monthKey} className="sliders-section">
-                            <h2>{`${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`}</h2>
-                            <EventSlider events={monthlyEvents[monthKey]} />
-                        </section>
-                    );
-                })}
-            </div>
         </>
     );
 };
@@ -152,11 +126,10 @@ const HomePage = ({ staticProps }) => {
 export async function getStaticProps() {
     const API_BASE_URL = process.env.API_BASE_URL || 'https://api-v2.afland.es';
     try {
-        const [featuredData, weekData, todayData, allEventsData, countData] = await Promise.all([
+        const [featuredData, weekData, todayData, countData] = await Promise.all([
             fetch(`${API_BASE_URL}/api/events?featured_events=true&limit=100`).then(res => res.json()),
             fetch(`${API_BASE_URL}/api/events?timeframe=week&limit=10`).then(res => res.json()),
             fetch(`${API_BASE_URL}/api/events?timeframe=today&limit=10`).then(res => res.json()),
-            fetch(`${API_BASE_URL}/api/events?sort=date`).then(res => res.json()),
             fetch(`${API_BASE_URL}/api/events/count`).then(res => res.json())
         ]);
 
@@ -166,7 +139,6 @@ export async function getStaticProps() {
                     featuredEvents: featuredData?.events || [],
                     weekEvents: weekData?.events || [],
                     todayEvents: todayData?.events || [],
-                    allEvents: allEventsData?.events || [],
                     eventCount: countData?.total || 0,
                 }
             },
@@ -174,7 +146,7 @@ export async function getStaticProps() {
         };
     } catch (error) {
         console.error("Error fetching data for home page:", error);
-        return { props: { staticProps: { featuredEvents: [], weekEvents: [], todayEvents: [], allEvents: [], eventCount: 0 } } };
+        return { props: { staticProps: { featuredEvents: [], weekEvents: [], todayEvents: [], eventCount: 0 } } };
     }
 }
 

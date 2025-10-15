@@ -91,89 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return sessionId;
     }
 
-    // --- LÓGICA DEL MAPA DE CALOR ---
-    let heatmapInstance = null;
-    let heatLayer = null;
-    let markerLayer = null;
-    let mapViewMode = 'auto'; // 'auto', 'heatmap', 'markers'
-    let mapMoveDebounceTimer;
-    let isMapInteraction = false;
-
-    async function updateHeatmap(filters) {
-        if (!APP_CONFIG.HEATMAP_ENABLED || !heatmapInstance) return;
-
-        const params = new URLSearchParams();
-        if (filters.lat && filters.lon && filters.type === 'cerca') {
-            params.append('lat', filters.lat);
-            params.append('lon', filters.lon);
-            params.append('radius', 100);
-        }
-
-        const apiUrl = `${API_BASE_URL}/api/events/heatmap?${params.toString()}`;
-
-        try {
-            const response = await fetch(apiUrl);
-            if (!response.ok) throw new Error('No se pudieron cargar los datos del mapa de calor');
-            const result = await response.json();
-            processHeatmapData(result);
-        } catch (error) {
-            console.error("Error al actualizar el mapa de calor:", error);
-        }
-    }
-
-    function processHeatmapData(result) {
-        if (!heatmapInstance) return;
-        if (heatLayer) { heatmapInstance.removeLayer(heatLayer); heatLayer = null; }
-        if (markerLayer) { heatmapInstance.removeLayer(markerLayer); markerLayer = null; }
-
-        if (result.type === 'heatmap') {
-            heatLayer = L.heatLayer(result.data, { radius: 25, blur: 15, maxZoom: 10, gradient: { 0.4: 'blue', 0.6: 'lime', 0.8: 'yellow', 1: 'red' } }).addTo(heatmapInstance);
-        } else if (result.type === 'markers') {
-            const markers = result.data.map(event => {
-                const marker = L.marker(event.coords);
-                marker.bindPopup(`<b>${event.artist || event.name}</b>`);
-                marker.on('click', () => {
-                    const fallbackSlug = (event.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                    window.location.href = `/eventos/${event.id}-${event.slug || fallbackSlug}`;
-                });
-                return marker;
-            });
-            if (markers.length > 0) {
-                markerLayer = L.featureGroup(markers).addTo(heatmapInstance);
-                if (!isMapInteraction) {
-                    heatmapInstance.fitBounds(markerLayer.getBounds().pad(0.1));
-                }
-            }
-        }
-    }
-
-    async function initializeHeatmap() {
-        if (!APP_CONFIG.HEATMAP_ENABLED) return;
-        const heatmapContainer = document.getElementById('heatmap-container');
-        if (!heatmapContainer) return;
-
-        try {
-            // Carga asíncrona de CSS
-            if (!document.querySelector('link[href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"]')) {
-                const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(link);
-            }
-
-            // Carga de JS y espera a que L esté disponible globalmente
-            if (typeof L === 'undefined') {
-                await import('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
-            }
-            await import('./libs/leaflet.heat.js');
-
-            // Ahora que L está garantizado, procedemos
-            heatmapContainer.querySelector('.loading-indicator')?.remove();
-            heatmapInstance = L.map(heatmapContainer, { center: [40.416775, -3.703790], zoom: 6, zoomControl: true });
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' }).addTo(heatmapInstance);
-            await updateHeatmap(activeFilters);
-        } catch (error) {
-            console.error("Error al inicializar el mapa de calor:", error);
-            if (heatmapContainer) heatmapContainer.innerHTML = '<p style="text-align: center; padding: 2rem;">No se pudo cargar el mapa.</p>';
-        }
-    }
     // =========================================================================
     // 1.5. UTILIDADES DE CACHÉ EN CLIENTE
     // =========================================================================
@@ -451,7 +368,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeFilters = {
         type: 'proximos', // 'proximos', 'destacados', 'recientes'
         lat: null,
-        lon: null
+        lon: null,
+        city: null
     };
     let isLoadingInfiniteScroll = false;
 
@@ -484,13 +402,17 @@ document.addEventListener('DOMContentLoaded', () => {
         let sortParam = 'sort=date'; // Orden por fecha por defecto
 
         switch (activeFilters.type) {
-            case 'destacados': baseUrl += '&featured=true'; break;
-            case 'recientes': sortParam = 'sort=createdAt&sortOrder=-1'; break;
+            case 'destacados': baseUrl += '&featured=true'; break; // Mantenemos orden por fecha
+            case 'recientes': sortParam = 'sort=createdAt&sortOrder=-1'; break; // Ordenamos por fecha de creación
             case 'cerca':
                 if (activeFilters.lat && activeFilters.lon) return `${baseUrl}&lat=${activeFilters.lat}&lon=${activeFilters.lon}&radius=100`;
                 return null; // No hacer petición si no hay coordenadas
         }
-        return `${baseUrl}&${sortParam}`;
+
+        const params = new URLSearchParams();
+        if (activeFilters.city) params.append('city', activeFilters.city);
+
+        return `${baseUrl}&${sortParam}&${params.toString()}`;
     }
 
     async function loadMoreInfiniteScrollEvents() {
@@ -570,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function applyFiltersAndReload() {
         resetInfiniteScroll();
-        updateHeatmap(activeFilters);
+        renderActiveFilterPills();
 
         const titleContainer = document.getElementById('infinite-scroll-title-container');
         const titleElement = titleContainer?.querySelector('h2');
@@ -583,7 +505,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 recientes: 'Recién Añadidos',
                 cerca: 'Eventos Cerca de Ti'
             };
-            title = titles[activeFilters.type] || 'Eventos';
+            if (activeFilters.city) {
+                title = `Eventos en ${activeFilters.city}`;
+            } else {
+                title = titles[activeFilters.type] || 'Eventos';
+            }
             titleElement.textContent = title;
         }
 
@@ -591,9 +517,33 @@ document.addEventListener('DOMContentLoaded', () => {
         setupInfiniteScrollObserver();
     }
 
+    function renderActiveFilterPills() {
+        const container = document.getElementById('active-filters-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (activeFilters.city) {
+            const pill = document.createElement('div');
+            pill.className = 'active-filter-pill';
+            pill.innerHTML = `
+                <span>${activeFilters.city}</span>
+                <button class="remove-filter-btn" title="Eliminar filtro de ciudad">&times;</button>
+            `;
+            pill.querySelector('.remove-filter-btn').addEventListener('click', () => {
+                activeFilters.city = null;
+                // Opcional: volver a la vista "Próximos"
+                const proximosChip = document.querySelector('.filter-chip[data-filter="proximos"]');
+                if (proximosChip) proximosChip.click();
+                else applyFiltersAndReload();
+            });
+            container.appendChild(pill);
+        }
+    }
+
     async function initializeDashboard() {
         // --- 1. Inicializar el mapa de calor o el hero header tradicional ---
-        if (APP_CONFIG.HEATMAP_ENABLED) initializeHeatmap();
+        const heroHeader = document.querySelector('.hero-header');
+        if (heroHeader) heroHeader.style.display = 'block';
 
         // --- 2. Asegurar visibilidad de elementos principales ---
         const filterBar = document.querySelector('.filter-bar');
@@ -1410,6 +1360,69 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function initializeAdvancedFilters() {
+        const toggleBtn = document.getElementById('advanced-filter-toggle-btn');
+        const panel = document.getElementById('advanced-filter-panel');
+
+        if (toggleBtn && panel) {
+            toggleBtn.addEventListener('click', () => {
+                const isVisible = panel.style.display === 'block';
+                panel.style.display = isVisible ? 'none' : 'block';
+                toggleBtn.classList.toggle('active', !isVisible);
+            });
+        }
+
+        const cityInput = document.getElementById('city-search-input');
+        const cityResults = document.getElementById('city-autocomplete-results');
+
+        if (cityInput && cityResults) {
+            setupAutocomplete(cityInput, cityResults, `${API_BASE_URL}/api/cities/autocomplete`, (city) => {
+                activeFilters.city = city;
+                activeFilters.type = 'proximos'; // Reset type filter
+
+                // Desactivar otros chips y el panel
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                if (panel) panel.style.display = 'none';
+                if (toggleBtn) toggleBtn.classList.remove('active');
+
+                applyFiltersAndReload();
+            });
+        }
+    }
+
+    // --- Función Genérica de Autocompletado ---
+    function setupAutocomplete(inputElement, resultsContainer, apiUrl, onSelect) {
+        let debounce;
+        inputElement.addEventListener('input', () => {
+            clearTimeout(debounce);
+            const query = inputElement.value.trim();
+            if (query.length < 2) { resultsContainer.innerHTML = ''; return; }
+            debounce = setTimeout(async () => {
+                const fullApiUrl = `${apiUrl}?query=${encodeURIComponent(query)}`;
+                const cached = getCache(fullApiUrl);
+                if (cached) { renderAutocomplete(cached, resultsContainer, inputElement, onSelect); return; }
+                try {
+                    const res = await fetch(fullApiUrl);
+                    const suggestions = await res.json();
+                    setCache(fullApiUrl, suggestions);
+                    renderAutocomplete(suggestions, resultsContainer, inputElement, onSelect);
+                } catch (e) { console.error('Autocomplete fetch error:', e); }
+            }, 300);
+        });
+        document.addEventListener('click', (e) => { if (!inputElement.parentElement.contains(e.target)) resultsContainer.innerHTML = ''; });
+    }
+
+    function renderAutocomplete(suggestions, resultsContainer, inputElement, onSelect) {
+        resultsContainer.innerHTML = '';
+        suggestions.forEach(suggestion => {
+            const item = document.createElement('div');
+            item.className = 'autocomplete-item';
+            item.textContent = suggestion;
+            item.onclick = () => { inputElement.value = suggestion; resultsContainer.innerHTML = ''; onSelect(suggestion); };
+            resultsContainer.appendChild(item);
+        });
+    }
+
     function createVerifiedInfoModal() {
         const modalHtml = `
             <div class="modal-overlay" id="verified-info-modal">
@@ -1617,6 +1630,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedTheme = localStorage.getItem('duende-theme') || 'light';
         applyTheme(savedTheme);
         setupEventListeners();
+        initializeAdvancedFilters();
         initPushNotifications();
         populateInfoModals();
         createVerifiedInfoModal();
