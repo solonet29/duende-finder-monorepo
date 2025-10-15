@@ -1885,6 +1885,29 @@ header.header-main {
     color: var(--color-primario);
 }
 
+.status-box {
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    margin: 1rem 0;
+    border: 1px solid;
+    background-color: var(--color-superficie);
+}
+
+.status-box.prompt {
+    border-color: var(--color-acento);
+}
+
+.status-box.denied {
+    border-color: #e74c3c;
+    color: #e74c3c;
+}
+
+.status-box.error {
+    border-color: #e74c3c;
+    color: #e74c3c;
+}
+
 /* Ajustes al contenedor del título del slider */
 .slider-title-container {
     display: flex;
