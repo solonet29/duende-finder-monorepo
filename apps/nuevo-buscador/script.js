@@ -91,6 +91,83 @@ document.addEventListener('DOMContentLoaded', () => {
         return sessionId;
     }
 
+    // --- LÓGICA DEL MAPA DE CALOR ---
+    let heatmapInstance = null;
+    let heatLayer = null;
+    let markerLayer = null;
+    let mapViewMode = 'auto'; // 'auto', 'heatmap', 'markers'
+    let mapMoveDebounceTimer;
+    let isMapInteraction = false;
+
+    async function updateHeatmap(filters) {
+        if (!APP_CONFIG.HEATMAP_ENABLED || !heatmapInstance) return;
+
+        const params = new URLSearchParams();
+        if (filters.lat && filters.lon && filters.type === 'cerca') {
+            params.append('lat', filters.lat);
+            params.append('lon', filters.lon);
+            params.append('radius', 100);
+        }
+
+        const apiUrl = `${API_BASE_URL}/api/events/heatmap?${params.toString()}`;
+
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error('No se pudieron cargar los datos del mapa de calor');
+            const result = await response.json();
+            processHeatmapData(result);
+        } catch (error) {
+            console.error("Error al actualizar el mapa de calor:", error);
+        }
+    }
+
+    function processHeatmapData(result) {
+        if (!heatmapInstance) return;
+        if (heatLayer) { heatmapInstance.removeLayer(heatLayer); heatLayer = null; }
+        if (markerLayer) { heatmapInstance.removeLayer(markerLayer); markerLayer = null; }
+
+        if (result.type === 'heatmap') {
+            heatLayer = L.heatLayer(result.data, { radius: 25, blur: 15, maxZoom: 10, gradient: { 0.4: 'blue', 0.6: 'lime', 0.8: 'yellow', 1: 'red' } }).addTo(heatmapInstance);
+        } else if (result.type === 'markers') {
+            const markers = result.data.map(event => {
+                const marker = L.marker(event.coords);
+                marker.bindPopup(`<b>${event.artist || event.name}</b>`);
+                marker.on('click', () => {
+                    const fallbackSlug = (event.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                    window.location.href = `/eventos/${event.id}-${event.slug || fallbackSlug}`;
+                });
+                return marker;
+            });
+            if (markers.length > 0) {
+                markerLayer = L.featureGroup(markers).addTo(heatmapInstance);
+                if (!isMapInteraction) {
+                    heatmapInstance.fitBounds(markerLayer.getBounds().pad(0.1));
+                }
+            }
+        }
+    }
+
+    async function initializeHeatmap() {
+        if (!APP_CONFIG.HEATMAP_ENABLED) return;
+        const heatmapContainer = document.getElementById('heatmap-container');
+        if (!heatmapContainer) return;
+
+        try {
+            if (!document.querySelector('link[href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"]')) {
+                const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(link);
+            }
+            const L = await import('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
+            await import('./libs/leaflet.heat.js');
+
+            heatmapContainer.querySelector('.loading-indicator')?.remove();
+            heatmapInstance = L.map(heatmapContainer, { center: [40.416775, -3.703790], zoom: 6, zoomControl: true });
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' }).addTo(heatmapInstance);
+            await updateHeatmap(activeFilters);
+        } catch (error) {
+            console.error("Error al inicializar el mapa de calor:", error);
+            if (heatmapContainer) heatmapContainer.innerHTML = '<p style="text-align: center; padding: 2rem;">No se pudo cargar el mapa.</p>';
+        }
+    }
     // =========================================================================
     // 1.5. UTILIDADES DE CACHÉ EN CLIENTE
     // =========================================================================
@@ -487,6 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function applyFiltersAndReload() {
         resetInfiniteScroll();
+        updateHeatmap(activeFilters);
 
         const titleContainer = document.getElementById('infinite-scroll-title-container');
         const titleElement = titleContainer?.querySelector('h2');
@@ -509,8 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function initializeDashboard() {
         // --- 1. Inicializar el mapa de calor o el hero header tradicional ---
-        const heroHeader = document.querySelector('.hero-header');
-        if (heroHeader) heroHeader.style.display = 'block';
+        if (APP_CONFIG.HEATMAP_ENABLED) initializeHeatmap();
 
         // --- 2. Asegurar visibilidad de elementos principales ---
         const filterBar = document.querySelector('.filter-bar');

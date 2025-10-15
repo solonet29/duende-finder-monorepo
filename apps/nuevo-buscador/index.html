@@ -115,19 +115,6 @@
 
 <body>
 
-    <div class="hero-header">
-        <picture>
-            <source media="(max-width: 768px)" srcset="/assets/img_header-mobile.webp">
-            <source media="(min-width: 769px)" srcset="/assets/img_header.webp">
-            <img src="/assets/img_header.webp" alt="Guitarrista flamenco en un escenario oscuro" class="hero-image"
-                fetchpriority="high">
-        </picture>
-        <div class="hero-text">
-            <h1 class="main-title">Duende Finder</h1>
-            <p id="event-stats" class="hero-subtitle">Un proyecto de AFLand</p>
-        </div>
-    </div>
-
     <div id="welcome-modal-overlay" class="modal-overlay">
         <div class="modal">
             <div class="modal-content welcome-modal-content">
@@ -158,6 +145,14 @@
             </nav>
         </div>
     </header>
+
+    <div id="heatmap-container" class="heatmap-container">
+        <!-- El mapa se renderizará aquí -->
+        <div class="loading-indicator">
+            <ion-icon name="flame-outline" class="spin-animation"></ion-icon>
+            <p>Cargando mapa de actividad...</p>
+        </div>
+    </div>
 
     <main class="container">
         <!-- Search Actions -->
