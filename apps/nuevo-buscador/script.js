@@ -153,12 +153,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!heatmapContainer) return;
 
         try {
+            // Carga asíncrona de CSS
             if (!document.querySelector('link[href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"]')) {
                 const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(link);
             }
-            const L = await import('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
+
+            // Carga de JS y espera a que L esté disponible globalmente
+            if (typeof L === 'undefined') {
+                await import('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
+            }
             await import('./libs/leaflet.heat.js');
 
+            // Ahora que L está garantizado, procedemos
             heatmapContainer.querySelector('.loading-indicator')?.remove();
             heatmapInstance = L.map(heatmapContainer, { center: [40.416775, -3.703790], zoom: 6, zoomControl: true });
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' }).addTo(heatmapInstance);
