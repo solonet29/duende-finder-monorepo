@@ -26,9 +26,12 @@ const generateSitemapXml = (urls) => {
 };
 
 /**
- * Handler de la API que genera y sirve el sitemap.xml.
+ * Componente de página vacío. No renderizará nada en el lado del cliente.
+ * La magia ocurre en getServerSideProps.
  */
-export default async function handler(req, res) {
+const Sitemap = () => { };
+
+export async function getServerSideProps({ res }) {
     try {
         const db = await connectToMainDb();
         const eventsCollection = db.collection('events');
@@ -82,9 +85,15 @@ export default async function handler(req, res) {
         // Cachear el sitemap por 24 horas para no sobrecargar la base de datos
         res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate');
         res.status(200).send(sitemap);
-
     } catch (error) {
         console.error("Error al generar el sitemap.xml:", error);
         res.status(500).send('Error al generar el sitemap.');
     }
+
+    // Devolvemos un objeto props vacío porque la respuesta ya se ha enviado.
+    return {
+        props: {},
+    };
 }
+
+export default Sitemap;
