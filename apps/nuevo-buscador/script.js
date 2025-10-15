@@ -162,11 +162,65 @@ document.addEventListener('DOMContentLoaded', () => {
         const heatmapContainer = document.getElementById('heatmap-container');
         if (!heatmapContainer) return;
 
-        // Esta función se ha dejado vacía intencionadamente en este parche.
-        // El código completo para inicializar Leaflet y sus listeners debe ir aquí.
-        // Por favor, revisa tus commits anteriores para restaurar la lógica completa de `initializeHeatmap`.
-    }
+        try {
+            // Carga asíncrona de CSS y JS para no bloquear el renderizado
+            if (!document.querySelector('link[href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"]')) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                document.head.appendChild(link);
+            }
 
+            // Usamos import() dinámico para cargar las librerías bajo demanda
+            const L = await import('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
+            await import('./libs/leaflet.heat.js'); // Asume que tienes leaflet.heat.js en /libs
+
+            // Ocultar el indicador de carga
+            const loadingIndicator = heatmapContainer.querySelector('.loading-indicator');
+            if (loadingIndicator) loadingIndicator.remove();
+
+            // Inicialización del mapa interactivo
+            heatmapInstance = L.map(heatmapContainer, { center: [40.416775, -3.703790], zoom: 6, zoomControl: true, zoomControlPosition: 'topright' });
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' }).addTo(heatmapInstance);
+
+            // Mostrar y configurar el botón de cambio de vista
+            const toggleContainer = document.getElementById('map-view-toggle-container');
+            const toggleBtn = document.getElementById('map-view-toggle-btn');
+            if (toggleContainer) toggleContainer.style.display = 'block';
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    const modes = ['auto', 'heatmap', 'markers'];
+                    const currentIndex = modes.indexOf(mapViewMode);
+                    mapViewMode = modes[(currentIndex + 1) % modes.length];
+
+                    const icons = { auto: 'flame-outline', heatmap: 'grid-outline', markers: 'location-outline' };
+                    const titles = { auto: 'Vista automática', heatmap: 'Forzar mapa de calor', markers: 'Forzar marcadores' };
+
+                    toggleBtn.innerHTML = `<ion-icon name="${icons[mapViewMode]}"></ion-icon>`;
+                    toggleBtn.title = titles[mapViewMode];
+
+                    updateHeatmap(activeFilters);
+                });
+            }
+
+            // Event listener para cuando el usuario deja de mover el mapa (con debounce)
+            heatmapInstance.on('moveend', () => {
+                clearTimeout(mapMoveDebounceTimer);
+                mapMoveDebounceTimer = setTimeout(() => {
+                    const bounds = heatmapInstance.getBounds();
+                    const bbox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()].join(',');
+                    activeFilters.bbox = bbox;
+                    isMapInteraction = true;
+                    applyFiltersAndReload();
+                }, 500); // Espera 500ms después del último movimiento
+            });
+
+            await updateHeatmap(activeFilters); // Carga inicial de datos en el mapa
+        } catch (error) {
+            console.error("Error al inicializar el mapa de calor:", error);
+            if (heatmapContainer) heatmapContainer.innerHTML = '<p style="color: white; text-align: center; padding: 2rem;">No se pudo cargar el mapa.</p>';
+        }
+    }
     // =========================================================================
     // 1.5. UTILIDADES DE CACHÉ EN CLIENTE
     // =========================================================================
