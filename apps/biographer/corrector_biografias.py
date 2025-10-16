@@ -101,11 +101,36 @@ def find_youtube_videos(artist_name, api_key):
         print(f"No se pudieron buscar vídeos: {e}")
         return []
 
+def generate_image_search_queries(artist_name, api_key):
+    """Usa Gemini para generar consultas de búsqueda de imágenes de alta calidad."""
+    print(f"Generando consultas de búsqueda de imágenes con IA para {artist_name}...")
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        prompt = f"""
+        Eres un experto en búsqueda de imágenes. Para el artista flamenco '{artist_name}', genera una lista de 5 prompts de búsqueda para Google Images que maximicen la probabilidad de encontrar una imagen de retrato de alta calidad, artística y profesional.
+        Responde únicamente con un objeto JSON que contenga una clave "queries" con un array de strings.
+        Ejemplo de respuesta: {{"queries": ["{artist_name} primer plano blanco y negro", "{artist_name} actuando en directo con guitarra", "{artist_name} retrato artistico flamenco"]}}
+        """
+        response = model.generate_content(prompt)
+        data = json.loads(clean_gemini_response(response.text))
+        if "queries" in data and isinstance(data["queries"], list):
+            print(f"  ✅ Consultas generadas por IA: {data['queries']}")
+            return data["queries"]
+    except Exception as e:
+        print(f"  - Error al generar consultas con IA: {e}. Usando consultas por defecto.")
+    return None
+
 def find_main_image(artist_name, api_key, cx_id):
     """Busca una imagen principal usando Google Custom Search con varias consultas."""
     print(f"Buscando imagen principal para {artist_name} con consultas mejoradas...")
     
-    search_queries = [
+    # Primero, intenta generar queries con IA
+    search_queries = generate_image_search_queries(artist_name, os.getenv("GEMINI_API_KEY"))
+
+    # Si falla la IA o no devuelve nada, usa las de por defecto
+    if not search_queries:
+        search_queries = [
         f"{artist_name} flamenco retrato primer plano",
         f"{artist_name} actuando en directo",
         f"{artist_name} flamenco"

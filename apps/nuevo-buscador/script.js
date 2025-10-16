@@ -755,18 +755,48 @@ document.addEventListener('DOMContentLoaded', () => {
         eventCard.setAttribute('data-artist-name', artistName);
         eventCard.setAttribute('data-event-name', eventName);
 
-        // Priorizamos la nueva imagen WebP. Si no existe, usamos la antigua o un placeholder.
-        let eventImageUrl = event.webpImageUrl || event.imageUrl;
+        // --- Lógica de selección de imagen mejorada ---
+        const isTemplateImage = (url) => url && url.includes('Portadas-eventos-afland');
+        const specificEventImage = event.webpImageUrl || event.imageUrl;
         const placeholderUrl = './assets/flamenco-placeholder.webp'; // URL a tu imagen de placeholder
+        let eventImageUrl = placeholderUrl; // Empezamos con el peor caso
 
-        if (!eventImageUrl || typeof eventImageUrl !== 'string' || !eventImageUrl.trim().startsWith('http')) {
-            eventImageUrl = placeholderUrl;
+        // 1. Prioridad máxima: Imagen del artista
+        if (event.artistImageUrl && typeof event.artistImageUrl === 'string' && event.artistImageUrl.trim().startsWith('http')) {
+            eventImageUrl = event.artistImageUrl;
         }
+        // 2. Segunda prioridad: Imagen de la ciudad
+        else {
+            const city = (event.city || '').toLowerCase();
+            if (city && cityImageMap[city] && cityImageMap[city].length > 0) {
+                const images = cityImageMap[city];
+                // Selecciona una imagen aleatoria del array de la ciudad
+                eventImageUrl = images[Math.floor(Math.random() * images.length)];
+            }
+        }
+
+        // 3. Si seguimos con el placeholder, comprobamos si hay una imagen de evento que no sea de plantilla
+        if (eventImageUrl === placeholderUrl && specificEventImage && !isTemplateImage(specificEventImage)) {
+            eventImageUrl = specificEventImage;
+        } else if (eventImageUrl === placeholderUrl && specificEventImage) {
+            eventImageUrl = specificEventImage; // Como último recurso antes del placeholder, usamos la de plantilla
+        }
+        const eventDate = new Date(event.date);
+        const day = eventDate.getDate();
+        const month = eventDate.toLocaleString('es-ES', { month: 'short' }).replace('.', '');
+
+        const description = sanitizeField(event.description, 'Haz clic para ver los detalles de este evento flamenco.');
+
+        const eventUrl = `/eventos/${event._id}-${(event.slug || eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}`;
 
         // Usamos un fondo para el placeholder para que no interfiera con el LCP.
         // La imagen real se carga encima.
         eventCard.innerHTML = `
             <div class="card-image-container" style="background-image: url('${placeholderUrl}');">
+                <div class="card-date-badge">
+                    <span class="day">${day}</span>
+                    <span class="month">${month}</span>
+                </div>
                 <img src="${eventImageUrl}" 
                      alt="${artistName}" 
                      class="card-image" 
@@ -777,11 +807,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="card-content">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <h3 class="card-title card-title-button" style="margin: 0;">
-                        <a href="/eventos/${event._id}-${(event.slug || eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}" class="card-link-title">${artistName}</a>
+                    <h3 class="card-title" style="margin: 0;">
+                        <a href="${eventUrl}" class="card-link-title">${artistName}</a>
                     </h3>
                     ${event.verificationStatus === 'verified' ? '<ion-icon name="checkmark-circle" style="color: #1abc9c; font-size: 1.2rem;"></ion-icon>' : ''}
                 </div>
+                <p class="card-description">${description}</p>
+                <a href="${eventUrl}" class="card-know-more-btn">Saber más</a>
             </div>`;
         return eventCard;
     }

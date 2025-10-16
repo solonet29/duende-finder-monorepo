@@ -520,6 +520,11 @@ header.header-main {
     flex-direction: column;
 }
 
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
 
 
 .card-image-container {
@@ -579,6 +584,42 @@ header.header-main {
 .event-card:hover .card-title-button {
     background-color: var(--color-borde);
 }
+
+.event-card .card-description {
+    font-size: 0.9rem;
+    color: var(--color-texto-secundario);
+    margin-top: 8px;
+    line-height: 1.4;
+    height: 3.78em;
+    /* 0.9rem * 1.4 line-height * 3 lines */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    /* Limita el texto a 3 líneas */
+    -webkit-box-orient: vertical;
+}
+
+.card-know-more-btn {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 6px 14px;
+    background-color: transparent;
+    border: 1px solid var(--color-borde);
+    color: var(--color-texto-secundario);
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.card-know-more-btn:hover {
+    background-color: var(--color-acento);
+    border-color: var(--color-acento);
+    color: var(--color-superficie);
+}
+
 
 /* ==========================================================================
    VERIFIED BADGE Y MODAL (AÑADIDO)
