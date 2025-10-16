@@ -979,18 +979,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function geolocationSearch() {
-        const cercaSection = document.getElementById('cerca-section');
-        if (!cercaSection || !navigator.geolocation) return;
-        cercaSection.style.display = 'block';
-        const headerOffset = document.querySelector('header.header-main')?.offsetHeight + 15 || 80;
-        const elementPosition = cercaSection.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+    async function geolocationSearch() {
+        if (!navigator.geolocation) {
+            alert("La geolocalización no es compatible con tu navegador.");
+            return;
+        }
+
         navigator.permissions.query({ name: 'geolocation' }).then(result => {
-            if (result.state === 'granted') fetchNearbyEvents();
-            else if (result.state === 'prompt') renderGeolocationPrompt();
-            else if (result.state === 'denied') renderGeolocationDenied();
+            if (result.state === 'granted') {
+                fetchNearbyEvents();
+            } else if (result.state === 'prompt') {
+                // El navegador mostrará su propio prompt al llamar a getCurrentPosition
+                fetchNearbyEvents();
+            } else if (result.state === 'denied') {
+                renderGeolocationDenied();
+            }
+
+            // Actualizar la UI del chip de filtro
+            const allChips = filterBar.querySelectorAll('.filter-chip');
+            allChips.forEach(btn => btn.classList.remove('active'));
+            const cercaChip = filterBar.querySelector('.filter-chip[data-filter="cerca"]');
+            if (cercaChip) {
+                cercaChip.classList.add('active');
+            }
         });
     }
 
@@ -1012,18 +1023,19 @@ document.addEventListener('DOMContentLoaded', () => {
         navigator.geolocation.getCurrentPosition(
             async position => {
                 const { latitude, longitude } = position.coords;
+                activeFilters.type = 'cerca';
+                activeFilters.lat = latitude;
+                activeFilters.lon = longitude;
+                activeFilters.city = null; // Limpiar filtro de ciudad si lo hubiera
+
                 trackInteraction('nearMeSearch', { location: { lat: latitude, lng: longitude } });
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/events?lat=${latitude}&lon=${longitude}&radius=60&limit=10`);
-                    if (!response.ok) throw new Error('Error en la petición');
-                    const nearbyData = await response.json();
-                    renderSlider(nearbySlider, nearbyData?.events);
-                } catch (error) {
-                    renderGeolocationDenied();
-                }
+
+                // Recargar la vista con los nuevos filtros de geolocalización
+                await applyFiltersAndReload();
             },
             error => {
                 console.error("Error de geolocalización:", error);
+                activeFilters.type = 'proximos'; // Volver a la vista por defecto si hay error
                 renderGeolocationDenied();
             }
         );

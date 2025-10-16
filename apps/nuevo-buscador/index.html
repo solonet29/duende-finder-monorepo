@@ -217,6 +217,42 @@
 
     </main>
 
+    <!-- Modal de Filtros Avanzados -->
+    <div id="advanced-filter-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close-btn">&times;</button>
+            <div class="modal-content">
+                <h2>Filtros Avanzados</h2>
+                <form id="advanced-filter-form">
+                    <div class="filter-group" style="margin-bottom: 20px;">
+                        <label for="modal-city-search-input">Buscar por Ciudad</label>
+                        <div class="search-input-wrapper">
+                            <input type="text" id="modal-city-search-input" placeholder="Escribe una ciudad..."
+                                autocomplete="off">
+                            <div id="modal-city-autocomplete-results" class="autocomplete-results"></div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Filtrar por Fecha</label>
+                        <div class="date-range-filter">
+                            <div class="form-group">
+                                <label for="modal-start-date">Desde</label>
+                                <input type="date" id="modal-start-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="modal-end-date">Hasta</label>
+                                <input type="date" id="modal-end-date">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="filter-apply-btn" style="margin-top: 20px; width: 100%;">Aplicar
+                        Filtros</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div id="how-it-works-modal-overlay" class="modal-overlay">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="how-it-works-title">
             <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
