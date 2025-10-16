@@ -213,7 +213,7 @@ h1.entry-title {{ color: #000000 !important; }}
 
 def build_placeholder_content(artist_name):
     """Construye el HTML para una página placeholder."""
-    image_url = "https://buscador.afland.es/assets/flamenco-placeholder.png"
+    image_url = "https://buscador.afland.es/assets/flamenco-placeholder.webp"
     verified_image_html = f'<figure class="wp-block-image size-large artist-placeholder-image"><img src="{image_url}" alt="Imagen no disponible"/></figure>'
 
     placeholder_text = f"""
@@ -303,7 +303,7 @@ def main():
                     # CASO B: No hay info -> Crear placeholder
                     print("Artista no verificado. Creando perfil placeholder.")
                     new_content = build_placeholder_content(artist_name)
-                    new_meta = {"main_artist_image_url": "https://buscador.afland.es/assets/flamenco-placeholder.png"}
+                    new_meta = {"main_artist_image_url": "https://buscador.afland.es/assets/flamenco-placeholder.webp"}
                     profile_status = "placeholder"
 
                 # Actualizar WordPress

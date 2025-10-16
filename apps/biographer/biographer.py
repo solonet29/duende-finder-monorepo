@@ -192,7 +192,7 @@ def create_wordpress_placeholder_page(config, artist_name, main_image_url):
     """Publica una página 'placeholder' en WordPress."""
     print(f"Creando página PLACEHOLDER para {artist_name}...")
     wp_api_url = f"{config['WP_URL']}/wp-json/wp/v2/pages"
-    image_url = main_image_url or "https://buscador.afland.es/assets/flamenco-placeholder.png"
+    image_url = main_image_url or "https://buscador.afland.es/assets/flamenco-placeholder.webp"
 
     verified_image_html = f'<figure class="wp-block-image size-large artist-placeholder-image"><img src="{image_url}" alt="Imagen no disponible"/></figure>'
 

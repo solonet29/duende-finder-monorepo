@@ -749,7 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Priorizamos la nueva imagen WebP. Si no existe, usamos la antigua o un placeholder.
         let eventImageUrl = event.webpImageUrl || event.imageUrl;
-        const placeholderUrl = './assets/flamenco-placeholder.png'; // URL a tu imagen de placeholder
+        const placeholderUrl = './assets/flamenco-placeholder.webp'; // URL a tu imagen de placeholder
 
         if (!eventImageUrl || typeof eventImageUrl !== 'string' || !eventImageUrl.trim().startsWith('http')) {
             eventImageUrl = placeholderUrl;
