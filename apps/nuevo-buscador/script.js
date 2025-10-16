@@ -553,10 +553,17 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="remove-filter-btn" data-filter-type="${filterType}" title="Eliminar filtro">&times;</button>
         `;
         pill.querySelector('.remove-filter-btn').addEventListener('click', () => {
-            activeFilters[filterType] = null;
+            if (filterType === 'date') {
+                activeFilters.dateFrom = null;
+                activeFilters.dateTo = null;
+            } else {
+                activeFilters[filterType] = null;
+            }
+
             // Opcional: volver a la vista "Próximos" y recargar
             const proximosChip = document.querySelector('.filter-chip[data-filter="proximos"]');
-            if (proximosChip) proximosChip.click(); else applyFiltersAndReload();
+            if (proximosChip) proximosChip.click();
+            else applyFiltersAndReload();
         });
         return pill;
     }
