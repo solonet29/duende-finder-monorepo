@@ -1418,6 +1418,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.target === mapModalOverlay) closeMapModal();
             });
         }
+
+        // Listener para el nuevo botón de limpiar caché
+        const clearCacheBtn = document.getElementById('clear-cache-btn');
+        if (clearCacheBtn) {
+            clearCacheBtn.addEventListener('click', () => {
+                sessionStorage.clear();
+                alert('Caché de la sesión limpiada. La página se recargará.');
+                window.location.reload();
+            });
+        }
     }
 
     function initializeAdvancedFilters() {
