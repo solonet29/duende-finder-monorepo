@@ -270,6 +270,8 @@ header.header-main {
 #active-filters-container {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
+    /* Permite que los elementos se apilen en varias líneas */
     margin-top: 10px;
     padding: 0 15px;
 }

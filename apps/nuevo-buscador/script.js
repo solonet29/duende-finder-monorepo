@@ -377,7 +377,8 @@ document.addEventListener('DOMContentLoaded', () => {
         lon: null,
         city: null,
         dateFrom: null,
-        dateTo: null
+        dateTo: null,
+        artist: null
     };
     let isLoadingInfiniteScroll = false;
 
@@ -420,6 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams();
         if (activeFilters.city) params.append('city', activeFilters.city);
         if (activeFilters.dateFrom) params.append('dateFrom', activeFilters.dateFrom);
+        if (activeFilters.artist) params.append('artist', activeFilters.artist);
         if (activeFilters.dateTo) params.append('dateTo', activeFilters.dateTo);
 
         return `${baseUrl}&${sortParam}&${params.toString()}`;
@@ -550,6 +552,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <span>${text}</span>
             <button class="remove-filter-btn" data-filter-type="${filterType}" title="Eliminar filtro">&times;</button>
         `;
+        pill.querySelector('.remove-filter-btn').addEventListener('click', () => {
+            activeFilters[filterType] = null;
+            // Opcional: volver a la vista "Próximos" y recargar
+            const proximosChip = document.querySelector('.filter-chip[data-filter="proximos"]');
+            if (proximosChip) proximosChip.click(); else applyFiltersAndReload();
+        });
         return pill;
     }
 
@@ -558,10 +566,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const city = document.getElementById('modal-city-search-input').value;
         const startDate = document.getElementById('modal-start-date').value;
         const endDate = document.getElementById('modal-end-date').value;
+        const artist = document.getElementById('modal-artist-search-input').value;
 
         activeFilters.city = city || null;
         activeFilters.dateFrom = startDate || null;
         activeFilters.dateTo = endDate || null;
+        activeFilters.artist = artist || null;
 
         // Si hay filtros, la categoría principal ya no es relevante, usamos 'proximos' como base
         activeFilters.type = 'proximos';
@@ -1462,7 +1472,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let debounce;
         inputElement.addEventListener('input', () => {
             clearTimeout(debounce);
-            const query = inputElement.value.trim();
+            // FIX: No hacer trim() aquí para permitir espacios intermedios,
+            // pero sí asegurarse de que no es solo un espacio en blanco.
+            const rawQuery = inputElement.value;
+            if (rawQuery.trim().length === 0) { resultsContainer.innerHTML = ''; return; }
+
+            const query = rawQuery;
             if (query.length < 2) { resultsContainer.innerHTML = ''; return; }
             debounce = setTimeout(async () => {
                 const fullApiUrl = `${apiUrl}?query=${encodeURIComponent(query)}`;
