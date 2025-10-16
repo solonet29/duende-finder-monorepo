@@ -1010,11 +1010,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderGeolocationDenied() {
-        const container = document.getElementById('infinite-scroll-container');
-        if (container) {
-            container.innerHTML = `
-                <div class="status-box denied" style="margin: 2rem auto; max-width: 500px;"><p>Has bloqueado los permisos de ubicación. Para ver eventos cercanos, necesitas activarlos en los ajustes de tu navegador.</p><button id="request-location-btn" class="action-button primary" style="margin-top: 1rem;">Reintentar Permiso</button></div>
-            `;
+        const modal = document.getElementById('geolocation-error-modal-overlay');
+        if (modal) {
+            modal.classList.add('visible');
         }
     }
 
@@ -1253,6 +1251,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const shareBtn = e.target.closest('.share-btn');
             const modalTrigger = e.target.closest('[data-modal-trigger]');
             const sliderMapBtn = e.target.closest('.slider-map-btn');
+            const retryGeolocationBtn = e.target.closest('#retry-geolocation-btn');
 
             if (sliderMapBtn) {
                 const sliderSection = sliderMapBtn.closest('.sliders-section');
@@ -1338,6 +1337,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (modal) {
                     modal.classList.add('visible');
                 }
+            } else if (retryGeolocationBtn) {
+                const geoErrorModal = document.getElementById('geolocation-error-modal-overlay');
+                if (geoErrorModal) {
+                    geoErrorModal.classList.remove('visible');
+                }
+                geolocationSearch(); // Reintentar la búsqueda de geolocalización
             }
         });
 
