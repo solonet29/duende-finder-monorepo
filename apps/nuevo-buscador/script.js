@@ -436,7 +436,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container || !sentinel) return;
 
         // Mostrar indicador de carga
-        sentinel.innerHTML = '<div class="loading-indicator" style="margin: 2rem auto;"><ion-icon name="sync-outline" class="spin-animation"></ion-icon></div>';
+        // sentinel.innerHTML = '<div class="loading-indicator" style="margin: 2rem auto;"><ion-icon name="sync-outline" class="spin-animation"></ion-icon></div>';
+        const skeletonContainer = document.createElement('div');
+        skeletonContainer.className = 'skeleton-loader-container';
+        for (let i = 0; i < 3; i++) {
+            const skeletonCard = createSkeletonCard();
+            skeletonContainer.appendChild(skeletonCard);
+        }
+        sentinel.innerHTML = ''; // Limpiar contenido anterior
+        sentinel.appendChild(skeletonContainer);
 
         const apiUrl = getApiUrlForFilter();
         if (!apiUrl) {
