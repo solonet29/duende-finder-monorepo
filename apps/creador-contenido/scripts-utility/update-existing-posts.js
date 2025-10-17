@@ -33,6 +33,7 @@ const QUERY = {
 };
 
 async function updatePostBanners() {
+    const CONCURRENCY_LIMIT = 10; // Número de posts a procesar en paralelo
     console.log("--- 🚀 INICIANDO ACTUALIZACIÓN DE BANNERS EN POSTS PUBLICADOS ---");
 
     try {
@@ -41,17 +42,9 @@ async function updatePostBanners() {
 
         // 1. Obtener la configuración de los banners desde la API
         console.log("📡 Obteniendo configuración de banners desde la API...");
-        // const apiResponse = await fetch('https://api-v2.afland.es/api/config');
-        // if (!apiResponse.ok) throw new Error(`No se pudo obtener la configuración de la API. Status: ${apiResponse.status}`);
-        // const bannerConfig = await apiResponse.json();
-        const bannerConfig = {
-            post_banners_enabled: true,
-            post_banner_1_imageUrl: "https://afland.es/wp-content/uploads/2025/10/IMG_0814.webp",
-            post_banner_1_linkUrl: "http://www.turismohuelva.org/inicio//",
-            post_banner_2_imageUrl: "https://afland.es/wp-content/uploads/2025/10/Cabecera-revolut-afiliados.png",
-            post_banner_2_linkUrl: "https://revolut.com/referral/?referral-code=piconasus!OCT1-25-AR-CH1H-CRY&geo-redirect"
-        };
-        console.log("... Usando configuración de banners local temporalmente.");
+        const apiResponse = await fetch('https://api-v2.afland.es/api/config');
+        if (!apiResponse.ok) throw new Error(`No se pudo obtener la configuración de la API. Status: ${apiResponse.status}`);
+        const bannerConfig = await apiResponse.json();
 
         if (!bannerConfig.post_banners_enabled) {
             console.log("🟡 Los banners en posts están desactivados en la configuración. No se realizarán cambios.");
@@ -67,42 +60,66 @@ async function updatePostBanners() {
 
         console.log(`⚙️ Se encontraron ${eventsToProcess.length} posts para actualizar sus banners.`);
 
-        for (const event of eventsToProcess) {
-            console.log(`\n-----------------------------------------------------`);
-            console.log(`🖼️  Procesando banners para: "${event.name || event.blogPostTitle}" (WP ID: ${event.wordpressPostId})`);
+        let successCount = 0;
+        let errorCount = 0;
 
-            try {
-                const wordpressPost = await getPost(event.wordpressPostId);
+        for (let i = 0; i < eventsToProcess.length; i += CONCURRENCY_LIMIT) {
+            const chunk = eventsToProcess.slice(i, i + CONCURRENCY_LIMIT);
+            console.log(`\n--- Procesando lote de ${chunk.length} eventos (desde el ${i + 1} al ${i + chunk.length}) ---`);
 
-                if (!wordpressPost) {
-                    console.warn(`   ⚠️ No se pudo encontrar el post con ID ${event.wordpressPostId}. Omitiendo.`);
-                    continue;
+            const promises = chunk.map(async (event) => {
+                try {
+                    console.log(`  -> 🖼️  Procesando: "${event.name || event.blogPostTitle}" (WP ID: ${event.wordpressPostId})`);
+                    const wordpressPost = await getPost(event.wordpressPostId);
+
+                    if (!wordpressPost) {
+                        console.warn(`     ⚠️ No se pudo encontrar el post con ID ${event.wordpressPostId}. Omitiendo.`);
+                        return; // No cuenta como error, simplemente se omite.
+                    }
+
+                    let originalContent = wordpressPost.content.rendered;
+                    const bannerRegex = /<div[^>]*class="banner-container"[^>]*>[\s\S]*?<\/div>/g;
+                    let contentWithoutOldBanners = originalContent.replace(bannerRegex, '').trim();
+
+                    const updatedContent = contentWithoutOldBanners + createBannersHtml(bannerConfig);
+
+                    // c:\dev\DuendeFinderProject\duende-finder-monorepo\apps\creador-contenido\scripts-utility\update-existing-posts.js
+
+                    // ...
+                    const bannerConfig = await apiResponse.json();
+
+                    if (!bannerConfig.post_banners_enabled) { // <--- Esta comprobación está dando 'true'
+                        console.log("🟡 Los banners en posts están desactivados en la configuración. No se realizarán cambios.");
+                        return; // Y por eso el script se detiene aquí.
+                    }
+                    // ...
+                    // --- CORRECCIÓN ---
+                    // Nos aseguramos de que solo se envía el contenido para actualizar,
+                    // evitando que se modifique la imagen destacada del post.
+                    await updateWordPressPost(event.wordpressPostId, { content: updatedContent });
+
+                    await eventsCollection.updateOne(
+                        { _id: new ObjectId(event._id) },
+                        { $set: { bannersUpdated: true, bannersUpdateDate: new Date() } }
+                    );
+
+                    console.log(`     ✅ Post ${event.wordpressPostId} actualizado.`);
+                    successCount++;
+                } catch (error) {
+                    console.error(`     ❌ Error actualizando el post "${event.name}":`, error.message);
+                    errorCount++;
                 }
+            });
 
-                let originalContent = wordpressPost.content.rendered;
+            await Promise.all(promises);
+        }
 
-                // 1. Usar una expresión regular para encontrar y eliminar cualquier rastro de banners anteriores.
-                const bannerRegex = /<div[^>]*class="banner-container"[^>]*>[\s\S]*?<\/div>/g;
-                let contentWithoutOldBanners = originalContent.replace(bannerRegex, '').trim();
-
-                // 2. Añadir el bloque de banners actualizado al final del contenido.
-                // Se genera un banner aleatorio para CADA post.
-                const updatedContent = contentWithoutOldBanners + createBannersHtml(bannerConfig);
-
-                // 3. Actualizar el post en WordPress.
-                await updateWordPressPost(event.wordpressPostId, { content: updatedContent });
-
-                // 4. Marcar el evento en nuestra base de datos.
-                await eventsCollection.updateOne(
-                    { _id: new ObjectId(event._id) },
-                    { $set: { bannersUpdated: true, bannersUpdateDate: new Date() } }
-                );
-
-                console.log(`   ✅ Post ${event.wordpressPostId} actualizado en WordPress con los nuevos banners.`);
-
-            } catch (error) {
-                console.error(`   ❌ Error actualizando el post "${event.name}":`, error.message);
-            }
+        console.log("\n--- 📊 RESUMEN DE LA OPERACIÓN ---");
+        console.log(`   - ✅ Posts actualizados con éxito: ${successCount}`);
+        if (errorCount > 0) {
+            console.log(`   - ❌ Posts con errores: ${errorCount}`);
+        } else {
+            console.log("   - 👍 No hubo errores.");
         }
 
     } catch (error) {
