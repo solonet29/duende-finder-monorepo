@@ -436,9 +436,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container || !sentinel) return;
 
         // Mostrar indicador de carga
-        // sentinel.innerHTML = '<div class="loading-indicator" style="margin: 2rem auto;"><ion-icon name="sync-outline" class="spin-animation"></ion-icon></div>';
         const skeletonContainer = document.createElement('div');
-        skeletonContainer.className = 'skeleton-loader-container';
+        skeletonContainer.className = 'slider-container'; // Reutilizamos la clase para el layout
+        skeletonContainer.id = 'skeleton-loader';
         for (let i = 0; i < 3; i++) {
             const skeletonCard = createSkeletonCard();
             skeletonContainer.appendChild(skeletonCard);
@@ -484,6 +484,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('infinite-scroll-container');
         const sentinel = document.getElementById('infinite-scroll-sentinel');
         if (!container || !sentinel) return;
+
+        // Limpiar el skeleton loader
+        const skeletonLoader = document.getElementById('skeleton-loader');
+        if (skeletonLoader) {
+            skeletonLoader.remove();
+        }
 
         if (data.events && data.events.length > 0) {
             data.events.forEach(event => {
@@ -755,39 +761,32 @@ document.addEventListener('DOMContentLoaded', () => {
         eventCard.setAttribute('data-artist-name', artistName);
         eventCard.setAttribute('data-event-name', eventName);
 
-        // --- Lógica de selección de imagen mejorada ---
-        const isTemplateImage = (url) => url && url.includes('Portadas-eventos-afland');
-        const specificEventImage = event.webpImageUrl || event.imageUrl;
-        const placeholderUrl = './assets/flamenco-placeholder.webp'; // URL a tu imagen de placeholder
-        let eventImageUrl = placeholderUrl; // Empezamos con el peor caso
+        // --- NUEVA Lógica de selección de imagen con jerarquía ---
+        const placeholderUrl = './assets/flamenco-placeholder.webp';
+        const cityImages = window.cityImageMap || {}; // Asumimos que cityImageMap está en el scope global
+        let imageUrl = placeholderUrl;
 
-        // 1. Prioridad máxima: Imagen del artista
-        if (event.artistImageUrl && typeof event.artistImageUrl === 'string' && event.artistImageUrl.trim().startsWith('http')) {
-            eventImageUrl = event.artistImageUrl;
-        }
-        // 2. Segunda prioridad: Imagen de la ciudad
-        else {
-            const city = (event.city || '').toLowerCase();
-            if (city && cityImageMap[city] && cityImageMap[city].length > 0) {
-                const images = cityImageMap[city];
-                // Selecciona una imagen aleatoria del array de la ciudad
-                eventImageUrl = images[Math.floor(Math.random() * images.length)];
-            }
+        // 1. Imagen del artista
+        if (event.artistImageUrl && event.artistImageUrl.startsWith('http')) {
+            imageUrl = event.artistImageUrl;
+            // 2. Imagen de la ciudad (aleatoria)
+        } else if (event.city && cityImages[event.city.toLowerCase()]?.length > 0) {
+            const cityImgs = cityImages[event.city.toLowerCase()];
+            imageUrl = cityImgs[Math.floor(Math.random() * cityImgs.length)];
+            // 3. Imagen específica del evento
+        } else if (event.imageUrl && event.imageUrl.startsWith('http')) {
+            imageUrl = event.imageUrl;
         }
 
-        // 3. Si seguimos con el placeholder, comprobamos si hay una imagen de evento que no sea de plantilla
-        if (eventImageUrl === placeholderUrl && specificEventImage && !isTemplateImage(specificEventImage)) {
-            eventImageUrl = specificEventImage;
-        } else if (eventImageUrl === placeholderUrl && specificEventImage) {
-            eventImageUrl = specificEventImage; // Como último recurso antes del placeholder, usamos la de plantilla
-        }
         const eventDate = new Date(event.date);
         const day = eventDate.getDate();
         const month = eventDate.toLocaleString('es-ES', { month: 'short' }).replace('.', '');
 
         const description = sanitizeField(event.description, 'Haz clic para ver los detalles de este evento flamenco.');
 
-        const eventUrl = `/eventos/${event._id}-${(event.slug || eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}`;
+        const fallbackSlug = (event.name || 'evento').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        const finalSlug = event.slug || fallbackSlug;
+        const eventUrl = `/eventos/${event._id}-${finalSlug}`;
 
         // Usamos un fondo para el placeholder para que no interfiera con el LCP.
         // La imagen real se carga encima.
@@ -797,7 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="day">${day}</span>
                     <span class="month">${month}</span>
                 </div>
-                <img src="${eventImageUrl}" 
+                <img src="${imageUrl}" 
                      alt="${artistName}" 
                      class="card-image" 
                      loading="${isLCP ? 'eager' : 'lazy'}"
@@ -807,7 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="card-content">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <h3 class="card-title" style="margin: 0;">
+                    <h3 class="card-title card-title-button" style="margin: 0;">
                         <a href="${eventUrl}" class="card-link-title">${artistName}</a>
                     </h3>
                     ${event.verificationStatus === 'verified' ? '<ion-icon name="checkmark-circle" style="color: #1abc9c; font-size: 1.2rem;"></ion-icon>' : ''}
