@@ -1,4 +1,4 @@
-import { connectToDatabase } from '@/lib/database.js';
+import { connectToMainDb } from '@/lib/database.js';
 import { runMiddleware, corsMiddleware } from '@/lib/cors.js';
 
 export default async function handler(req, res) {
@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const db = await connectToDatabase();
+        const db = await connectToMainDb();
         const config = await db.collection('config').findOne({ _id: 'main_config' });
 
         if (!config) {
