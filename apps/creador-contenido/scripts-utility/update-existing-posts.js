@@ -45,6 +45,17 @@ async function updatePostBanners() {
         const apiResponse = await fetch('https://api-v2.afland.es/api/config');
         if (!apiResponse.ok) throw new Error(`No se pudo obtener la configuración de la API. Status: ${apiResponse.status}`);
         const bannerConfig = await apiResponse.json();
+        // const apiResponse = await fetch('https://api-v2.afland.es/api/config');
+        // if (!apiResponse.ok) throw new Error(`No se pudo obtener la configuración de la API. Status: ${apiResponse.status}`);
+        // const bannerConfig = await apiResponse.json();
+        const bannerConfig = {
+            post_banners_enabled: true,
+            post_banner_1_imageUrl: "https://afland.es/wp-content/uploads/2025/10/IMG_0814.webp",
+            post_banner_1_linkUrl: "http://www.turismohuelva.org/inicio//",
+            post_banner_2_imageUrl: "https://afland.es/wp-content/uploads/2025/10/Cabecera-revolut-afiliados.png",
+            post_banner_2_linkUrl: "https://revolut.com/referral/?referral-code=piconasus!OCT1-25-AR-CH1H-CRY&geo-redirect"
+        };
+        console.log("... ⚠️  Usando configuración de banners local temporalmente para forzar la actualización.");
 
         if (!bannerConfig.post_banners_enabled) {
             console.log("🟡 Los banners en posts están desactivados en la configuración. No se realizarán cambios.");
@@ -83,16 +94,6 @@ async function updatePostBanners() {
 
                     const updatedContent = contentWithoutOldBanners + createBannersHtml(bannerConfig);
 
-                    // c:\dev\DuendeFinderProject\duende-finder-monorepo\apps\creador-contenido\scripts-utility\update-existing-posts.js
-
-                    // ...
-                    const bannerConfig = await apiResponse.json();
-
-                    if (!bannerConfig.post_banners_enabled) { // <--- Esta comprobación está dando 'true'
-                        console.log("🟡 Los banners en posts están desactivados en la configuración. No se realizarán cambios.");
-                        return; // Y por eso el script se detiene aquí.
-                    }
-                    // ...
                     // --- CORRECCIÓN ---
                     // Nos aseguramos de que solo se envía el contenido para actualizar,
                     // evitando que se modifique la imagen destacada del post.
