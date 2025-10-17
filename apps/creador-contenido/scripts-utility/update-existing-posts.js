@@ -7,13 +7,19 @@ const { ObjectId } = require('mongodb');
 // --- FUNCIÓN PARA CREAR BANNERS ---
 // Acepta la configuración de banners obtenida de la API.
 function createBannersHtml(bannerConfig) {
+    // Decidimos aleatoriamente cuál de los dos banners mostrar.
+    const bannerToShow = Math.random() < 0.5 ? 1 : 2;
+
+    const imageUrl = bannerToShow === 1 ? bannerConfig.post_banner_1_imageUrl : bannerConfig.post_banner_2_imageUrl;
+    const linkUrl = bannerToShow === 1 ? bannerConfig.post_banner_1_linkUrl : bannerConfig.post_banner_2_linkUrl;
+
+    // Si la URL de la imagen seleccionada no existe, no devolvemos nada.
+    if (!imageUrl) return '';
+
     return `
         <div class="banner-container" style="text-align: center; margin: 30px 0;">
-            <a href="${bannerConfig.post_banner_1_linkUrl || '#'}" target="_blank" rel="noopener noreferrer">
-                <img src="${bannerConfig.post_banner_1_imageUrl}" alt="Publicidad de AFland" style="max-width: 100%; height: auto; margin-bottom: 20px;" />
-            </a>
-            <a href="${bannerConfig.post_banner_2_linkUrl || '#'}" target="_blank" rel="noopener noreferrer">
-                <img src="${bannerConfig.post_banner_2_imageUrl}" alt="Publicidad de AFland" style="max-width: 100%; height: auto;" />
+            <a href="${linkUrl || '#'}" target="_blank" rel="noopener noreferrer">
+                <img src="${imageUrl}" alt="Publicidad de AFland" style="max-width: 100%; height: auto;" />
             </a>
         </div>
     `;
@@ -50,7 +56,6 @@ async function updatePostBanners() {
             console.log("🟡 Los banners en posts están desactivados en la configuración. No se realizarán cambios.");
             return;
         }
-        const newBannersHtml = createBannersHtml(bannerConfig);
 
         const eventsToProcess = await eventsCollection.find(QUERY).toArray();
 
@@ -80,7 +85,8 @@ async function updatePostBanners() {
                 let contentWithoutOldBanners = originalContent.replace(bannerRegex, '').trim();
 
                 // 2. Añadir el bloque de banners actualizado al final del contenido.
-                const updatedContent = contentWithoutOldBanners + newBannersHtml;
+                // Se genera un banner aleatorio para CADA post.
+                const updatedContent = contentWithoutOldBanners + createBannersHtml(bannerConfig);
 
                 // 3. Actualizar el post en WordPress.
                 await updateWordPressPost(event.wordpressPostId, { content: updatedContent });
