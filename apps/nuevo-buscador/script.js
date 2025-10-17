@@ -1255,15 +1255,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (config && config.banner_enabled) {
                 const bannerContainer = document.getElementById('sponsored-banner-container');
                 if (bannerContainer) {
-                    const bannerHtml = `
+                    // --- Lógica de Banner Aleatorio ---
+                    // Decidimos aleatoriamente cuál de los dos banners mostrar.
+                    const bannerToShow = Math.random() < 0.5 ? 1 : 2;
+
+                    const imageUrl = bannerToShow === 1 ? config.banner_1_imageUrl : config.banner_2_imageUrl;
+                    const linkUrl = bannerToShow === 1 ? config.banner_1_linkUrl : config.banner_2_linkUrl;
+
+                    // Si la URL de la imagen seleccionada no existe, no mostramos nada.
+                    if (imageUrl) {
+                        const bannerHtml = `
                         <div class="sponsored-banner">
                             <span>Patrocinado</span>
-                            <a href="${config.banner_linkUrl || '#'}" target="_blank" rel="noopener noreferrer">
-                                <img src="${config.banner_imageUrl}" alt="Banner promocional">
+                            <a href="${linkUrl || '#'}" target="_blank" rel="noopener noreferrer">
+                                <img src="${imageUrl}" alt="Banner promocional">
                             </a>
                         </div>
                     `;
-                    bannerContainer.innerHTML = bannerHtml;
+                        bannerContainer.innerHTML = bannerHtml;
+                    }
                 }
             }
         } catch (error) {
