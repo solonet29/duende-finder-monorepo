@@ -2073,3 +2073,19 @@ header.header-main {
     text-transform: uppercase;
     font-weight: 600;
 }
+
+/* ==========================================================================
+   GRID CONTAINER FOR INFINITE SCROLL
+   ========================================================================== */
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    padding: 15px 0;
+}
+
+.grid-container .event-card {
+    width: 100%; /* Override the fixed width from the slider */
+    margin: 0;
+}
