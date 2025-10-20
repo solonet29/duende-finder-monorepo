@@ -183,9 +183,12 @@ export function initPushNotifications() {
         updateNotificationButtonUI();
     }
 
-    // Realizar el check-in de actividad al iniciar
-    performCheckIn();
+    // Defer non-critical tasks to improve LCP
+    setTimeout(() => {
+        // Realizar el check-in de actividad al iniciar
+        performCheckIn();
 
-    // Comprobar la ubicación al iniciar la app
-    checkLocationForNotification();
+        // Comprobar la ubicación al iniciar la app
+        checkLocationForNotification();
+    }, 4000); // 4 seconds delay
 }
