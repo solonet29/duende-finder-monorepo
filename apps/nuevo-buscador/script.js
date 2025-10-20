@@ -492,9 +492,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (data.events && data.events.length > 0) {
-            data.events.forEach(event => {
+            data.events.forEach((event, index) => {
                 eventsCache[event._id] = event;
-                container.appendChild(createSliderCard(event));
+                const isLCP = infiniteScrollPage === 1 && index < 2;
+                container.appendChild(createSliderCard(event, isLCP));
             });
             infiniteScrollPage++;
         } else {
