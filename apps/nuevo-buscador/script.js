@@ -788,21 +788,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const finalSlug = event.slug || fallbackSlug;
         const eventUrl = `/eventos/${event._id}-${finalSlug}`;
 
-        // Usamos un fondo para el placeholder para que no interfiera con el LCP.
-        // La imagen real se carga encima.
+        // La imagen es ahora el elemento principal, sin fondo en el contenedor.
         eventCard.innerHTML = `
-            <div class="card-image-container" style="background-image: url('${placeholderUrl}');">
+            <div class="card-image-container">
+                <img src="${imageUrl}"
+                     alt="${artistName}"
+                     class="card-image"
+                     loading="${isLCP ? 'eager' : 'lazy'}"
+                     fetchpriority="${isLCP ? 'high' : 'auto'}"
+                     decoding="async"
+                     onerror="this.onerror=null; this.src='${placeholderUrl}';">
                 <div class="card-date-badge">
                     <span class="day">${day}</span>
                     <span class="month">${month}</span>
                 </div>
-                <img src="${imageUrl}" 
-                     alt="${artistName}" 
-                     class="card-image" 
-                     loading="${isLCP ? 'eager' : 'lazy'}"
-                     fetchpriority="${isLCP ? 'high' : 'auto'}"
-                     decoding="async"
-                     onerror="this.style.display='none';">
             </div>
             <div class="card-content">
                 <div style="display: flex; align-items: center; gap: 8px;">
