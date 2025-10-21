@@ -75,14 +75,30 @@ async function publishToWordPress(postData) {
     const endpoint = `${WP_URL}/wp-json/wp/v2/posts`;
     try {
         console.log(`🚀 Enviando post a WordPress titulado: "${postData.title}"`);
+        console.log(`   -> Endpoint: ${endpoint}`);
+        console.log(`   -> Iniciando llamada a axios.post...`);
+
         const response = await axios.post(endpoint, postData, {
             headers: { ...authHeaders, 'Content-Type': 'application/json', 'User-Agent': BOT_USER_AGENT },
             timeout: 45000
         });
-        console.log(`✅ Post programado con éxito. URL: ${response.data.link}`);
-        return response.data;
+
+        console.log(`   -> Llamada a axios.post finalizada. Estado: ${response.status}`);
+
+        if (response && response.data && response.data.link) {
+            console.log(`✅ Post programado con éxito. URL: ${response.data.link}`);
+            return response.data;
+        } else {
+            console.error('❌ Error: La respuesta de WordPress no fue la esperada.');
+            console.error('   -> Respuesta recibida:', JSON.stringify(response.data, null, 2));
+            throw new Error('Respuesta inválida de WordPress al publicar.');
+        }
+
     } catch (error) {
         console.error('❌ Error al publicar en WordPress:', error.response?.data?.message || error.message);
+        if (error.code === 'ECONNABORTED') {
+            console.error('   -> La petición ha superado el tiempo de espera (timeout).');
+        }
         throw error;
     }
 }
