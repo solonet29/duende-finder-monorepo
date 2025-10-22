@@ -30,11 +30,18 @@ async function createPostImage(event, options = {}) {
         const dateY = yCenter - 7; // Ajustado para centrar dinámicamente
         const cityY = yCenter + 53; // Ajustado para centrar dinámicamente
 
+                const fontPath = path.join(__dirname, '..', 'templates', 'Cinzel-Bold.ttf');
+        const fontBase64 = fs.readFileSync(fontPath, 'base64');
+
         const svgContent = `
         <svg width="${imageWidth}" height="${imageHeight}">
             <style>
-                .date { fill: #FFFFFF; font-size: 55px; font-family: 'Montserrat', sans-serif; font-weight: bold; }
-                .city { fill: #FFFFFF; font-size: 36px; font-family: 'Montserrat', sans-serif; font-weight: bold; }
+                @font-face {
+                    font-family: 'Cinzel-Bold';
+                    src: url(data:font/truetype;charset=utf-8;base64,${fontBase64});
+                }
+                .date { fill: #FFFFFF; font-size: 55px; font-family: 'Cinzel-Bold', sans-serif; font-weight: bold; }
+                .city { fill: #FFFFFF; font-size: 36px; font-family: 'Cinzel-Bold', sans-serif; font-weight: bold; }
             </style>
             <text x="${textAreaXCenter}" y="${dateY}" text-anchor="middle" class="date">${dateText}</text>
             <text x="${textAreaXCenter}" y="${cityY}" text-anchor="middle" class="city">${cityText}</text>
