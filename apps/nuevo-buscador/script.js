@@ -764,17 +764,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- NUEVA Lógica de selección de imagen con jerarquía ---
         const placeholderUrl = './assets/flamenco-placeholder.webp';
-        const cityImages = window.cityImageMap || {}; // Asumimos que cityImageMap está en el scope global
         let imageUrl = placeholderUrl;
 
         // 1. Imagen del artista
         if (event.artistImageUrl && event.artistImageUrl.startsWith('http')) {
             imageUrl = event.artistImageUrl;
-            // 2. Imagen de la ciudad (aleatoria)
-        } else if (event.city && cityImages[event.city.toLowerCase()]?.length > 0) {
-            const cityImgs = cityImages[event.city.toLowerCase()];
-            imageUrl = cityImgs[Math.floor(Math.random() * cityImgs.length)];
-            // 3. Imagen específica del evento
+        // 2. Imagen específica del evento
         } else if (event.imageUrl && event.imageUrl.startsWith('http')) {
             imageUrl = event.imageUrl;
         }
