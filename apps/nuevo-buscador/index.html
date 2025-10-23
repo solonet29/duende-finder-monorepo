@@ -12,38 +12,77 @@
         content="https://www.afland.es/wp-content/uploads/2024/04/DUENDE-FINDER-LOGO-1200-X-630-PX.png">
 
     <link rel="preconnect" href="https://api-v2.afland.es" crossorigin>
-    <link rel="preconnect" href="https://afland.es" crossorigin>
-    <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link rel="stylesheet" href="/assets/index.css">
-
-    <link rel="preload"
+    <!-- Carga de fuentes optimizada para PageSpeed -->
+    <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap"
-        as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap">
-    </noscript>
-
-
-
-
+        rel="stylesheet">
 
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="manifest" href="/assets/manifest.json">
     <meta name="theme-color" content="#121212">
 
-    <style id="critical-css"></style>
-    <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <!-- CSS Crítico para renderizado Above-the-Fold -->
+    <style id="critical-css">
+        /* Estilos base mínimos para evitar FOUC */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            background-color: #f4f4f5;
+        }
+
+        [data-theme="dark"] body {
+            background-color: #121212;
+        }
+
+        /* Estilos del Hero Header */
+        .hero-header {
+            position: relative;
+            height: 40vh;
+            min-height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            overflow: hidden;
+        }
+
+        .hero-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            filter: brightness(0.5);
+        }
+
+        .hero-text {
+            z-index: 1;
+        }
+
+        .main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            margin: 0;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            margin-top: 0.5rem;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+        }
+    </style>
+    <link rel="preload" href="/assets/index.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript>
-        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="/assets/index.css">
     </noscript>
-    <link rel="preload" href="chatbot.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="chatbot.css">
-    </noscript>
+
     <style>
         .status-box {
             padding: 1rem;
@@ -159,10 +198,9 @@
                     Más Filtros <ion-icon name="options-outline"></ion-icon>
                 </button>
             </nav>
-            <div class="refresh-button-container" style="margin-top: 1rem; text-align: right;">
-                <button id="force-refresh-btn" class="filter-chip" style="background-color: var(--color-acento-secundario); color: white; border: none; cursor: pointer;">
-                    <ion-icon name="refresh-outline" style="vertical-align: middle;"></ion-icon> Actualizar Datos
-                </button>
+            <div class="refresh-button-container">
+                <button id="force-refresh-btn" class="refresh-btn">
+                    <ion-icon name="refresh-outline"></ion-icon> Actualizar Datos</button>
             </div>
             <div id="active-filters-container"></div>
         </div>

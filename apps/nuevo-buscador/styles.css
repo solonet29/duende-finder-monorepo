@@ -187,6 +187,37 @@ header.header-main {
     padding: 8px 0;
 }
 
+/* ==========================================================================
+   BOTÓN DE RECARGA MANUAL
+   ========================================================================== */
+.refresh-button-container {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0 8px 0;
+}
+
+.refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    background-color: var(--color-acento);
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.refresh-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .main-title {
     font-size: 2rem;
     text-align: center;
@@ -528,20 +559,23 @@ header.header-main {
 
 
 .card-image-container {
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); /* Sombra un poco más visible */
-  transition: transform 0.2s ease; /* Pequeña transición para el toque */
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background-color: var(--color-borde);
-  display: block;
-  position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    /* Sombra un poco más visible */
+    transition: transform 0.2s ease;
+    /* Pequeña transición para el toque */
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: var(--color-borde);
+    display: block;
+    position: relative;
 }
 
 /* Efecto al TOCAR la tarjeta */
 .card-image-container:active {
-  transform: scale(0.98); /* La tarjeta se encoge ligeramente al ser presionada */
+    transform: scale(0.98);
+    /* La tarjeta se encoge ligeramente al ser presionada */
 }
 
 .event-card .card-image {
@@ -2087,13 +2121,18 @@ header.header-main {
    ========================================================================== */
 
 .grid-container {
-  display: grid; /* Activa el modo Grid */
-  grid-template-columns: 1fr 1fr; /* Crea dos columnas de igual tamaño */
-  gap: 16px; /* Define un espacio de 16px entre las tarjetas */
-  padding: 16px; /* Añade un poco de espacio en los bordes */
+    display: grid;
+    /* Activa el modo Grid */
+    grid-template-columns: 1fr 1fr;
+    /* Crea dos columnas de igual tamaño */
+    gap: 16px;
+    /* Define un espacio de 16px entre las tarjetas */
+    padding: 16px;
+    /* Añade un poco de espacio en los bordes */
 }
 
 .grid-container .event-card {
-    width: 100%; /* Override the fixed width from the slider */
+    width: 100%;
+    /* Override the fixed width from the slider */
     margin: 0;
 }
