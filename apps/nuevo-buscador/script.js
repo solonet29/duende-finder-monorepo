@@ -813,13 +813,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- NUEVA Lógica de selección de imagen con jerarquía ---
         const placeholderUrl = './assets/flamenco-placeholder.webp';
         let imageUrl = placeholderUrl;
+        let rawImageUrl = null;
 
-        // 1. Imagen del artista
-        if (event.artistImageUrl && event.artistImageUrl.startsWith('http')) {
-            imageUrl = event.artistImageUrl;
-        // 2. Imagen específica del evento
-        } else if (event.imageUrl && event.imageUrl.startsWith('http')) {
-            imageUrl = event.imageUrl;
+        // 1. Prioridad: Imagen del artista
+        if (event.artistImageUrl) {
+            rawImageUrl = event.artistImageUrl;
+        // 2. Fallback: Imagen específica del evento
+        } else if (event.imageUrl) {
+            rawImageUrl = event.imageUrl;
+        }
+
+        if (rawImageUrl) {
+            // Si la URL es relativa (empieza con '/'), la completamos. Si es absoluta, la usamos tal cual.
+            if (rawImageUrl.startsWith('/')) {
+                imageUrl = API_BASE_URL + rawImageUrl;
+            } else if (rawImageUrl.startsWith('http')) {
+                imageUrl = rawImageUrl;
+            }
         }
 
         const eventDate = new Date(event.date);
@@ -876,11 +886,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const mapQuery = [eventName, venue, city, sanitizeField(event.country || (event.location && event.location.country), '')].filter(Boolean).join(', ');
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
-        const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
-
         let imageHtml = '';
-        if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim().startsWith('http')) {
-            imageHtml = `<div class="evento-card-img-container"><img src="${event.imageUrl.trim()}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
+        if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim()) {
+            let finalImageUrl = event.imageUrl.trim();
+            if (finalImageUrl.startsWith('/')) {
+                finalImageUrl = API_BASE_URL + finalImageUrl;
+            }
+            
+            // Solo renderizar si tenemos una URL que parece válida (absoluta o completada)
+            if (finalImageUrl.startsWith('http')) {
+                imageHtml = `<div class="evento-card-img-container"><img src="${finalImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
+            }
         }
 
         // --- INICIO: Lógica para la etiqueta "Verificado" y la fuente en la página de evento ---
@@ -1024,8 +1040,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const blogButtonClass = event.blogPostUrl ? 'blog-link-btn' : 'btn-blog-explorar';
 
         let imageHtml = '';
-        if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim().startsWith('http')) {
-            imageHtml = `<div class="evento-card-img-container"><img src="${event.imageUrl.trim()}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
+        if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim()) {
+            let finalImageUrl = event.imageUrl.trim();
+            if (finalImageUrl.startsWith('/')) {
+                finalImageUrl = API_BASE_URL + finalImageUrl;
+            }
+
+            if (finalImageUrl.startsWith('http')) {
+                imageHtml = `<div class="evento-card-img-container"><img src="${finalImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
+            }
         }
 
         eventDetailModalOverlay.innerHTML = `<div class="modal"><button class="modal-close-btn">×</button><div class="modal-content modal-event-details">${imageHtml}<div class="card-header"><h2 class="titulo-truncado" title="${eventName}">${eventName}</h2></div><div class="artista"><ion-icon name="person-outline"></ion-icon> <span>${artistName}</span></div><p class="descripcion-corta">${description}</p><div class="card-detalles"><div class="evento-detalle"><ion-icon name="calendar-outline"></ion-icon><span>${eventDate}</span></div><div class="evento-detalle"><ion-icon name="time-outline"></ion-icon><span>${eventTime}</span></div><div class="evento-detalle"><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"><ion-icon name="location-outline"></ion-icon><span>${displayLocation}</span></a></div></div><div class="card-actions"><div class="card-actions-primary"><button class="gemini-btn" data-event-id="${event._id}"><ion-icon name="sparkles-outline"></ion-icon> Planear Noche</button><a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="${blogButtonClass}"><ion-icon name="${blogIcon}"></ion-icon> ${blogText}</a></div></div></div></div>`;
