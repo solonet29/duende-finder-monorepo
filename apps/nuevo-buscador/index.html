@@ -78,12 +78,12 @@
             text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
         }
     </style>
-    <link rel="preload" href="/assets/index.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="/assets/index.css">
-    </noscript>
+    <link rel="stylesheet" href="styles.css">
 
     <style>
+        main.container {
+            min-height: 100vh;
+        }
         .status-box {
             padding: 1rem;
             border-radius: 8px;
@@ -198,10 +198,6 @@
                     Más Filtros <ion-icon name="options-outline"></ion-icon>
                 </button>
             </nav>
-            <div class="refresh-button-container">
-                <button id="force-refresh-btn" class="refresh-btn">
-                    <ion-icon name="refresh-outline"></ion-icon> Actualizar Datos</button>
-            </div>
             <div id="active-filters-container"></div>
         </div>
     </header>
@@ -373,6 +369,7 @@
                 name="document-text-outline"></ion-icon></button>
         <button class="nav-btn" id="nav-notifications-btn" title="Notificaciones" aria-label="Notificaciones"
             data-modal-trigger="notifications-modal-overlay"><ion-icon name="notifications-outline"></ion-icon></button>
+        <button class="nav-btn" id="force-refresh-btn" title="Actualizar Datos" aria-label="Actualizar Datos"><ion-icon name="refresh-outline"></ion-icon></button>
         <button class="nav-btn" id="nav-theme-toggle" title="Cambiar tema" aria-label="Cambiar tema"><ion-icon
                 name="moon-outline"></ion-icon></button>
         <a href="https://afland.es" target="_blank" rel="noopener noreferrer" class="nav-btn" title="Visitar Afland.es"
