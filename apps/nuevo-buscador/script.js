@@ -894,7 +894,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 finalImageUrl = API_BASE_URL + finalImageUrl;
             }
 
-            // Solo renderizar si tenemos una URL que parece válida (absoluta o completada)
+            // Solo hay que renderizar si tenemos una URL que parece válida (absoluta o completada)
             if (finalImageUrl.startsWith('http')) {
                 imageHtml = `<div class="evento-card-img-container"><img src="${finalImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
             }
