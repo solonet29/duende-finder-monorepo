@@ -818,7 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Prioridad: Imagen del artista
         if (event.artistImageUrl) {
             rawImageUrl = event.artistImageUrl;
-        // 2. Fallback: Imagen específica del evento
+            // 2. Fallback: Imagen específica del evento
         } else if (event.imageUrl) {
             rawImageUrl = event.imageUrl;
         }
@@ -885,6 +885,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (venue || city) displayLocation = venue || city;
         const mapQuery = [eventName, venue, city, sanitizeField(event.country || (event.location && event.location.country), '')].filter(Boolean).join(', ');
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+        const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
         let imageHtml = '';
         if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim()) {
@@ -892,7 +893,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (finalImageUrl.startsWith('/')) {
                 finalImageUrl = API_BASE_URL + finalImageUrl;
             }
-            
+
             // Solo renderizar si tenemos una URL que parece válida (absoluta o completada)
             if (finalImageUrl.startsWith('http')) {
                 imageHtml = `<div class="evento-card-img-container"><img src="${finalImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
