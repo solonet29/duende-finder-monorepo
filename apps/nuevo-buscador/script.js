@@ -1628,7 +1628,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const item = document.createElement('div');
             item.className = 'autocomplete-item';
             item.textContent = suggestion;
-            item.onclick = () => { onSelect(suggestion); };
+            item.onclick = () => { onSelect(suggestion.trim()); };
             resultsContainer.appendChild(item);
         });
     }
