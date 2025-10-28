@@ -848,6 +848,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const finalSlug = event.slug || fallbackSlug;
         const eventUrl = `/eventos/${event._id}-${finalSlug}`;
 
+        let categoryBadgeHtml = '';
+        if (event.category) {
+            categoryBadgeHtml = `<div class="card-category">${event.category}</div>`;
+        }
+
         eventCard.innerHTML = `
             <div class="card-image-container">
                 <img src="${imageUrl}"
@@ -861,6 +866,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="day">${day}</span>
                     <span class="month">${month}</span>
                 </div>
+                ${categoryBadgeHtml}
             </div>
             <div class="card-content">
                 <div style="display: flex; align-items: center; gap: 8px;">
