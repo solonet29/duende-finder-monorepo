@@ -802,9 +802,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const categoryImages = {
-        'Cante': ['cante1.png', 'cante2.png', 'cante3.png'],
-        'Baile': ['baile1.png', 'baile2.png', 'baile3.png'],
-        'Toque': ['toque1.png', 'toque2.png', 'toque3.png']
+        'Cante': ['cante1.webp', 'cante2.webp', 'cante3.webp'],
+        'Baile': ['baile1.webp', 'baile2.webp', 'baile3.webp'],
+        'Toque': ['toque1.webp', 'toque2.webp', 'toque3.webp']
     };
 
     function createSliderCard(event, isLCP = false) {
