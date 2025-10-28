@@ -801,6 +801,12 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(sentinel);
     }
 
+    const categoryImages = {
+        'Cante': ['cante1.png', 'cante2.png', 'cante3.png'],
+        'Baile': ['baile1.png', 'baile2.png', 'baile3.png'],
+        'Toque': ['toque1.png', 'toque2.png', 'toque3.png']
+    };
+
     function createSliderCard(event, isLCP = false) {
         const eventCard = document.createElement('div');
         eventCard.className = 'event-card';
@@ -810,25 +816,25 @@ document.addEventListener('DOMContentLoaded', () => {
         eventCard.setAttribute('data-artist-name', artistName);
         eventCard.setAttribute('data-event-name', eventName);
 
-        // --- NUEVA Lógica de selección de imagen con jerarquía ---
+        // --- NUEVA Lógica de selección de imagen ---
         const placeholderUrl = './assets/flamenco-placeholder.webp';
-        let imageUrl = placeholderUrl;
-        let rawImageUrl = null;
+        let imageUrl = placeholderUrl; // Fallback por defecto
 
         // 1. Prioridad: Imagen del artista
         if (event.artistImageUrl) {
-            rawImageUrl = event.artistImageUrl;
-            // 2. Fallback: Imagen específica del evento
-        } else if (event.imageUrl) {
-            rawImageUrl = event.imageUrl;
-        }
-
-        if (rawImageUrl) {
-            // Si la URL es relativa (empieza con '/'), la completamos. Si es absoluta, la usamos tal cual.
+            let rawImageUrl = event.artistImageUrl;
             if (rawImageUrl.startsWith('/')) {
                 imageUrl = API_BASE_URL + rawImageUrl;
             } else if (rawImageUrl.startsWith('http')) {
                 imageUrl = rawImageUrl;
+            }
+        } else {
+            // 2. Fallback: Imagen de categoría aleatoria (se ignora event.imageUrl)
+            const category = event.category;
+            if (category && categoryImages[category]) {
+                const images = categoryImages[category];
+                const randomIndex = Math.floor(Math.random() * images.length);
+                imageUrl = `./assets/${images[randomIndex]}`;
             }
         }
 
@@ -842,7 +848,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const finalSlug = event.slug || fallbackSlug;
         const eventUrl = `/eventos/${event._id}-${finalSlug}`;
 
-        // La imagen es ahora el elemento principal, sin fondo en el contenedor.
         eventCard.innerHTML = `
             <div class="card-image-container">
                 <img src="${imageUrl}"
