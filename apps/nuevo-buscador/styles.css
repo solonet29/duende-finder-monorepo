@@ -1998,43 +1998,32 @@ header.header-main {
 .slider-title-container {
     display: flex;
     justify-content: space-between;
-
-/* ==========================================================================
-   17. FIX HERO IMAGE ON MOBILE
-   ========================================================================== */
-@media (max-width: 768px) {
-    .hero-image {
-        object-fit: contain; /* Muestra la imagen completa sin recortar */
-    }
-
-    .hero-header {
-        background-color: #000; /* Fondo negro para rellenar posible espacio vacío */
-    }
 }
 
-
 /* ==========================================================================
-   16. IMAGE DISCLAIMER
+   18. GLOBAL IMAGE DISCLAIMER
    ========================================================================== */
 
-.image-disclaimer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
+.image-disclaimer-global {
+    background-color: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin: 20px 0;
     text-align: center;
-    font-size: 0.65rem;
-    padding: 3px 0;
-    margin: 0;
-    z-index: 2;
-    box-sizing: border-box;
-    pointer-events: none; /* Allows clicks to go through to the image/card */
 }
-
+.image-disclaimer-global p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--color-texto-secundario);
+    display: flex;
     align-items: center;
-    margin-bottom: 0.5rem;
+    justify-content: center;
+    gap: 8px;
+}
+.image-disclaimer-global ion-icon {
+    font-size: 1.2rem;
+    color: var(--color-acento);
 }
 
 /* Estilos para el Modal de Scroll Infinito */

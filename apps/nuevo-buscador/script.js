@@ -660,20 +660,31 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- 1. Inicializar el mapa de calor o el hero header tradicional ---
         const heroHeader = document.querySelector('.hero-header');
         if (heroHeader) heroHeader.style.display = 'block';
-
+    
         // --- 2. Asegurar visibilidad de elementos principales ---
         const filterBar = document.querySelector('.filter-bar');
         if (filterBar) filterBar.style.display = 'flex';
-
+    
         const actionsContainer = document.querySelector('.main-actions-container');
         if (actionsContainer) actionsContainer.style.display = 'flex';
-
+    
+        // --- 3. Añadir disclaimer de imágenes ---
+        if (!document.getElementById('image-disclaimer-container')) {
+            const disclaimerContainer = document.createElement('div');
+            disclaimerContainer.id = 'image-disclaimer-container';
+            disclaimerContainer.className = 'image-disclaimer-global';
+            disclaimerContainer.innerHTML = '<p><ion-icon name="information-circle-outline"></ion-icon> Las imágenes de los eventos sin un artista asignado son representaciones de la categoría y no del evento en sí.</p>';
+            
+            if (actionsContainer) {
+                actionsContainer.insertAdjacentElement('afterend', disclaimerContainer);
+            }
+        }
+    
         // --- 4. Inicializar el nuevo scroll infinito ---
         createInfiniteScrollContainer();
         await loadMoreInfiniteScrollEvents(); // Cargar la primera página
         setupInfiniteScrollObserver();
     }
-
     function renderSlider(container, events, monthKey = null, isLCPSection = false) {
         if (!container) return;
         const section = container.closest('.sliders-section');
@@ -819,7 +830,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- NUEVA Lógica de selección de imagen ---
         const placeholderUrl = './assets/flamenco-placeholder.webp';
         let imageUrl = placeholderUrl; // Fallback por defecto
-        let imageDisclaimerHtml = ''; // Inicializar el texto del disclaimer
 
         // 1. Prioridad: Imagen del artista
         if (event.artistImageUrl) {
@@ -836,8 +846,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const images = categoryImages[category];
                 const randomIndex = Math.floor(Math.random() * images.length);
                 imageUrl = `./assets/${images[randomIndex]}`;
-                // Añadir el disclaimer solo cuando se usa una imagen de categoría
-                imageDisclaimerHtml = '<p class="image-disclaimer">Imagen no representativa</p>';
             }
         }
 
@@ -870,7 +878,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="month">${month}</span>
                 </div>
                 ${categoryBadgeHtml}
-                ${imageDisclaimerHtml}
             </div>
             <div class="card-content">
                 <div style="display: flex; align-items: center; gap: 8px;">
