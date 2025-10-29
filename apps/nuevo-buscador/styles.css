@@ -2000,6 +2000,20 @@ header.header-main {
     justify-content: space-between;
 
 /* ==========================================================================
+   17. FIX HERO IMAGE ON MOBILE
+   ========================================================================== */
+@media (max-width: 768px) {
+    .hero-image {
+        object-fit: contain; /* Muestra la imagen completa sin recortar */
+    }
+
+    .hero-header {
+        background-color: #000; /* Fondo negro para rellenar posible espacio vacío */
+    }
+}
+
+
+/* ==========================================================================
    16. IMAGE DISCLAIMER
    ========================================================================== */
 
