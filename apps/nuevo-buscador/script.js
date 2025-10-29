@@ -383,41 +383,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let isLoadingInfiniteScroll = false;
     let isForceRefreshing = false;
 
-    async function handleForceRefresh() {
-        console.log('Forzando actualización de datos...');
-        const refreshBtn = document.getElementById('force-refresh-btn');
-        if (refreshBtn) {
-            refreshBtn.innerHTML = '<ion-icon name="sync-outline" style="vertical-align: middle;"></ion-icon> Actualizando...';
-            refreshBtn.disabled = true;
-        }
-
-        // 1. Limpiar la caché de eventos de la sesión
-        try {
-            let clearedCount = 0;
-            for (let i = 0; i < sessionStorage.length; i++) {
-                const key = sessionStorage.key(i);
-                if (key && key.includes('/api/events')) {
-                    sessionStorage.removeItem(key);
-                    clearedCount++;
-                }
-            }
-            console.log(`Caché de ${clearedCount} entradas de eventos de la sesión limpiada.`);
-        } catch (error) {
-            console.error("Error limpiando la caché de sesión:", error);
-        }
-
-        // 2. Recargar los eventos con el parámetro para saltar la caché de Vercel
-        isForceRefreshing = true;
-        await applyFiltersAndReload();
-        isForceRefreshing = false;
-        console.log('Recarga forzada completada.');
-
-        if (refreshBtn) {
-            refreshBtn.innerHTML = '<ion-icon name="refresh-outline" style="vertical-align: middle;"></ion-icon> Actualizar Datos';
-            refreshBtn.disabled = false;
-        }
-    }
-
     function createInfiniteScrollContainer() {
         if (document.getElementById('infinite-scroll-section')) return;
 
@@ -1576,10 +1541,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const forceRefreshBtn = document.getElementById('force-refresh-btn');
-        if (forceRefreshBtn) {
-            forceRefreshBtn.addEventListener('click', handleForceRefresh);
-        }
     }
 
     function initializeAdvancedFilters() {
