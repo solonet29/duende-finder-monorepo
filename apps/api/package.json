@@ -4,6 +4,7 @@
     "build": "next build"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.15.0",
     "@upstash/qstash": "^2.8.2",
     "apps-payload-cms": "workspace:^",
     "axios": "^1.12.2",
