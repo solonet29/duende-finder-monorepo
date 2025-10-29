@@ -909,18 +909,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
         const blogText = event.blogPostUrl ? 'Leer en el Blog' : 'Explorar Blog';
         const blogUrl = event.blogPostUrl || 'https://afland.es/';
-        let imageHtml = '';
-        if (event.imageUrl && typeof event.imageUrl === 'string' && event.imageUrl.trim()) {
-            let finalImageUrl = event.imageUrl.trim();
-            if (finalImageUrl.startsWith('/')) {
-                finalImageUrl = API_BASE_URL + finalImageUrl;
-            }
-
-            // Solo hay que renderizar si tenemos una URL que parece válida (absoluta o completada)
-            if (finalImageUrl.startsWith('http')) {
-                imageHtml = `<div class="evento-card-img-container"><img src="${finalImageUrl}" alt="Imagen de ${eventName}" class="evento-card-img" onerror="this.parentElement.style.display='none'"></div>`;
-            }
-        }
 
         // --- INICIO: Lógica para la etiqueta "Verificado" y la fuente en la página de evento ---
         let verificationInfoHtml = '';
@@ -945,7 +933,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="event-page-container" data-event-id="${event._id}">
                 <div class="event-page-content">
                     <div id="sponsored-banner-container"></div>
-                    ${imageHtml}
                     
                     <h1>${eventName}</h1>
 

@@ -78,7 +78,8 @@
             text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
         }
     </style>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="styles.css"></noscript>
 
     <style>
         main.container {
