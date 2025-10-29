@@ -819,6 +819,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- NUEVA Lógica de selección de imagen ---
         const placeholderUrl = './assets/flamenco-placeholder.webp';
         let imageUrl = placeholderUrl; // Fallback por defecto
+        let imageDisclaimerHtml = ''; // Inicializar el texto del disclaimer
 
         // 1. Prioridad: Imagen del artista
         if (event.artistImageUrl) {
@@ -835,6 +836,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const images = categoryImages[category];
                 const randomIndex = Math.floor(Math.random() * images.length);
                 imageUrl = `./assets/${images[randomIndex]}`;
+                // Añadir el disclaimer solo cuando se usa una imagen de categoría
+                imageDisclaimerHtml = '<p class="image-disclaimer">Imagen no representativa</p>';
             }
         }
 
@@ -867,6 +870,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="month">${month}</span>
                 </div>
                 ${categoryBadgeHtml}
+                ${imageDisclaimerHtml}
             </div>
             <div class="card-content">
                 <div style="display: flex; align-items: center; gap: 8px;">
