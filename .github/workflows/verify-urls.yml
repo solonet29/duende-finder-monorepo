@@ -32,6 +32,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Debug node_modules
+        run: ls -R node_modules
+
       # 4. Run the verification script
       - name: Run URL verification script
         env:
