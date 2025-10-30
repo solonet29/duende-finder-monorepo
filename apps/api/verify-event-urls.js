@@ -60,13 +60,19 @@ const verifyEventUrls = async () => {
                 console.error(`🔴 ERROR: No se pudo acceder a la URL del evento "${event.name}". Estado: ${status}.`);
             }
 
-            // Actualizamos los campos de verificación en el documento
-            event.verificationStatus = status;
-            event.lastVerifiedAt = new Date();
-            event.verificationAttempts = (event.verificationAttempts || 0) + 1;
-
-            // Guardamos todos los cambios en la base de datos
-            await event.save();
+            // Usamos updateOne para una operación más atómica y robusta
+            await Event.updateOne(
+                { _id: event._id },
+                {
+                    $set: {
+                        verificationStatus: status,
+                        lastVerifiedAt: new Date(),
+                    },
+                    $inc: {
+                        verificationAttempts: 1
+                    }
+                }
+            );
         }
 
     } catch (error) {
