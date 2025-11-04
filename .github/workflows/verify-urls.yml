@@ -24,16 +24,24 @@ jobs:
         with:
           node-version: '20' # Use the Node.js version that matches your project
 
-      # 3. Install dependencies (assuming package.json is in the root)
+      # 3. Set up pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      # 4. Install dependencies
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
+
+      - name: Debug node_modules
+        run: ls -R node_modules
 
       # 4. Run the verification script
       - name: Run URL verification script
         env:
           # The MONGO_URI environment variable will be taken from GitHub secrets
           MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: node apps/api/verify-event-urls.js
+        working-directory: ./apps/api
+        run: node verify-event-urls.js
 
       # 5. (Optional) Send a notification on failure
       - name: Notify on failure
