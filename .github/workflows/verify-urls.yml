@@ -40,7 +40,8 @@ jobs:
         env:
           # The MONGO_URI environment variable will be taken from GitHub secrets
           MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: node apps/api/verify-event-urls.js
+        working-directory: ./apps/api
+        run: node verify-event-urls.js
 
       # 5. (Optional) Send a notification on failure
       - name: Notify on failure
